@@ -19,7 +19,7 @@ function Character:new(x, y, char, isPlayer)
     self.cameraPosition = {x = 0, y = 0}
 
     self.script = Script("characters/" .. char, self)
-    self.script:set("self", self)
+    self.script.variables["self"] = self
 
     self.script:call("create")
 

@@ -4,24 +4,20 @@ local chunkMt = {__index = _G}
 
 function Script:new(path)
     self.path = path
-    self.__vars = {}
+    self.variables = {}
 
     local p = "data/" .. path
     local chunk = paths.getLua(p)
     if chunk then
-        setfenv(chunk, setmetatable(self.__vars, chunkMt))
+        setfenv(chunk, setmetatable(self.variables, chunkMt))
         chunk()
     else
         error("script not found for " .. paths.getPath(p))
     end
 end
 
-function Script:set(name, val) self.__vars[name] = val end
-
-function Script:get(name) return self.__vars[name] end
-
 function Script:call(func, ...)
-    local f = self.__vars[func]
+    local f = self.variables[func]
     if f and type(f) == "function" then
         return f(...)
     else

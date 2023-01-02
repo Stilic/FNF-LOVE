@@ -15,8 +15,8 @@ function Stage:new(name)
 
     local path = "stages/" .. name
     self.script = Script(path)
-    self.script:set("self", self)
-    self.script:set("path", path .. "/")
+    self.script.variables["self"] = self
+    self.script.variables["SCRIPT_PATH"] = path .. "/"
 
     self.script:call("create")
     self.script:call("createPost")
