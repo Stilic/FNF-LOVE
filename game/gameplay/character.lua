@@ -25,14 +25,8 @@ function Character:new(x, y, char, isPlayer)
 
     if self.isPlayer ~= self.flipX then
         self.__reverseDraw = true
-
-        local leftAnim = self.__animations["singLEFT"]
-        self.__animations["singLEFT"] = self.__animations["singRIGHT"]
-        self.__animations["singRIGHT"] = leftAnim
-
-        local leftOffsets = self.animOffsets["singLEFT"]
-        self.animOffsets["singLEFT"] = self.animOffsets["singRIGHT"]
-        self.animOffsets["singRIGHT"] = leftOffsets
+        self:switchAnim("singLEFT", "singRIGHT")
+        self:switchAnim("singLEFTmiss", "singRIGHTmiss")
     end
     if self.isPlayer then self.flipX = not self.flipX end
 
@@ -40,6 +34,16 @@ function Character:new(x, y, char, isPlayer)
     self:finish()
 
     self.script:call("createPost")
+end
+
+function Character:switchAnim(oldAnim, newAnim)
+    local leftAnim = self.__animations[oldAnim]
+    self.__animations[oldAnim] = self.__animations[newAnim]
+    self.__animations[newAnim] = leftAnim
+
+    local leftOffsets = self.animOffsets[oldAnim]
+    self.animOffsets[oldAnim] = self.animOffsets[newAnim]
+    self.animOffsets[newAnim] = leftOffsets
 end
 
 function Character:update(dt)
@@ -66,6 +70,7 @@ function Character:beat(b)
         if self.curAnim and util.startsWith(self.curAnim.name, "sing") then
             if self.lastHit + music.stepCrochet * self.singDuration <=
                 PlayState.songPosition then
+                print(b % 2 == 0)
                 self:dance()
                 self.holdTimer = 0
             end
