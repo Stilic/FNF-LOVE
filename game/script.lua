@@ -7,10 +7,10 @@ function Script:new(path)
     self.__vars = {}
 
     local p = "data/" .. path
-    self.__chunk = paths.getLua(p)
-    if self.__chunk then
-        setfenv(self.__chunk, setmetatable(self.__vars, chunkMt))
-        self.__chunk = self.__chunk()
+    local chunk = paths.getLua(p)
+    if chunk then
+        setfenv(chunk, setmetatable(self.__vars, chunkMt))
+        chunk()
     else
         error("script not found for " .. paths.getPath(p))
     end
@@ -21,7 +21,7 @@ function Script:set(name, val) self.__vars[name] = val end
 function Script:get(name) return self.__vars[name] end
 
 function Script:call(func, ...)
-    local f = self.__chunk[func]
+    local f = self.__vars[func]
     if f and type(f) == "function" then
         return f(...)
     else

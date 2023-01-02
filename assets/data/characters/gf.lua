@@ -1,6 +1,4 @@
-local s = {}
-
-function s.create()
+function create()
     self:setFrames(paths.getSparrowFrames("characters/GF_assets"))
 
     self:addAnimByIndices("danceLeft", "GF Dancing Beat", {
@@ -15,5 +13,3 @@ function s.create()
 
     self.danceSpeed = 1
 end
-
-return s

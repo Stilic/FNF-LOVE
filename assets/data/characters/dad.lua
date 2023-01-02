@@ -1,6 +1,4 @@
-local s = {}
-
-function s.create()
+function create()
     self:setFrames(paths.getSparrowFrames("characters/DADDY_DEAREST"))
 
     self:addAnimByPrefix("idle", "Dad idle dance", 24, false)
@@ -16,5 +14,3 @@ function s.create()
 
     self.singDuration = 6.1
 end
-
-return s

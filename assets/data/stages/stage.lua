@@ -1,6 +1,4 @@
-local s = {}
-
-function s.create()
+function create()
     local bg = Sprite(-600, -200):load(paths.getImage(path .. "stageback"))
     bg.antialiasing = true
     bg:setScrollFactor(0.9)
@@ -22,5 +20,3 @@ function s.create()
     stageCurtains:setScrollFactor(1.3)
     self:add(stageCurtains)
 end
-
-return s
