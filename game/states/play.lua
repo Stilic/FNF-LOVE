@@ -58,7 +58,7 @@ function PlayState:enter()
 
     self.judgementGroup = Group()
 
-    local song = "hi"
+    local song = "icecube"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
@@ -321,6 +321,7 @@ function PlayState:goodNoteHit(n)
         local char = n.mustPress and self.boyfriend or self.dad
         char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]), true)
         char.lastHit = PlayState.songPosition
+        char.holding = n.isSustain and not n.isSustainEnd
 
         if not n.mustPress then self.camZooming = true end
 

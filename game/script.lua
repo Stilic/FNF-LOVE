@@ -12,7 +12,7 @@ function Script:new(path)
         setfenv(self.__chunk, setmetatable(self.__vars, chunkMt))
         self.__chunk = self.__chunk()
     else
-        error("script not found for " .. p)
+        error("script not found for " .. paths.getPath(p))
     end
 end
 

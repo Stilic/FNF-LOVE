@@ -163,9 +163,6 @@ function love.draw()
     end
 
     push.finish()
-
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 10)
 end
 
 function love.focus(f)

@@ -12,8 +12,9 @@ function Note:new(time, data, prevNote, sustain)
     self.data = data
     self.prevNote = prevNote
     if sustain == nil then sustain = false end
-    self.isSustain, self.isEnd, self.sustainLength = sustain, false, 0
-    self.isEnd = false
+    self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
+        sustain, false, false, 0
+    self.parentNote, self.childNotes = nil, nil
     self.mustPress = false
     self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
     self.earlyHitMult, self.lateHitMult = 1, 1
@@ -44,20 +45,28 @@ function Note:new(time, data, prevNote, sustain)
         self.scrollOffset.x = self.scrollOffset.x + self.width / 2
 
         self:play(color .. "holdend")
-        self.isEnd = true
+        self.isSustainEnd = true
 
         self:updateHitbox()
 
         self.scrollOffset.x = self.scrollOffset.x - self.width / 2
 
         if prevNote.isSustain then
+            self.parentNote = prevNote
+            while self.parentNote.isSustain and self.parentNote.prevNote do
+                self.parentNote = self.parentNote.prevNote
+            end
+            table.insert(self.parentNote.childNotes, self)
+
             prevNote:play(Note.colors[prevNote.data + 1] .. "hold")
-            prevNote.isEnd = false
+            prevNote.isSustainEnd = false
 
             prevNote.scale.y = prevNote.scale.y * music.stepCrochet / 100 *
                                    1.525 * PlayState.song.speed
             prevNote:updateHitbox()
         end
+    else
+        self.childNotes = {}
     end
 end
 
