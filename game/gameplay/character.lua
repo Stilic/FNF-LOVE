@@ -7,6 +7,8 @@ function Character:new(x, y, char, isPlayer)
     self.isPlayer = isPlayer
     self.animOffsets = {}
 
+    self.__reverseDraw = false
+
     self.singDuration = 4
     self.lastHit = 0
     self.holding = false
@@ -21,7 +23,18 @@ function Character:new(x, y, char, isPlayer)
 
     self.script:call("create")
 
-    if isPlayer then self.flipX = not self.flipX end
+    if self.isPlayer ~= self.flipX then
+        self.__reverseDraw = true
+
+        local leftAnim = self.__animations["singLEFT"]
+        self.__animations["singLEFT"] = self.__animations["singRIGHT"]
+        self.__animations["singRIGHT"] = leftAnim
+
+        local leftOffsets = self.animOffsets["singLEFT"]
+        self.animOffsets["singLEFT"] = self.animOffsets["singRIGHT"]
+        self.animOffsets["singRIGHT"] = leftOffsets
+    end
+    if self.isPlayer then self.flipX = not self.flipX end
 
     self:dance()
     self:finish()
@@ -40,7 +53,9 @@ end
 
 function Character:draw()
     self.script:call("draw")
+    if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
     Character.super.draw(self)
+    if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
     self.script:call("postDraw")
 end
 

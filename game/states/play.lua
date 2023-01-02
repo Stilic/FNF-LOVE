@@ -58,7 +58,7 @@ function PlayState:enter()
 
     self.judgementGroup = Group()
 
-    local song = "icecube"
+    local song = "speed-criminal"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
