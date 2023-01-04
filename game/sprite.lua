@@ -203,10 +203,10 @@ end
 function Sprite:screenCenter(axes)
     if axes == nil then axes = "xy" end
     if util.startsWith(axes, "x") then
-        self.x = (push.getWidth() - self.width) / 2
+        self.x = (push.getWidth() - self.width) * 0.5
     end
     if util.endsWith(axes, "y") then
-        self.y = (push.getHeight() - self.height) / 2
+        self.y = (push.getHeight() - self.height) * 0.5
     end
     return self
 end
@@ -328,7 +328,7 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
-    if self.exists and self.alive and
+    if self.exists and self.alive and self.texture and
         (self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
         local f, x, y, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(),
                                                    self.x, self.y, self.angle,
@@ -351,10 +351,13 @@ function Sprite:draw()
 
         if self.camera then
             love.graphics.push()
-            love.graphics.translate(self.camera.w2 * self.scrollFactor.x,
-                                    self.camera.h2 * self.scrollFactor.y)
-            love.graphics.rotate(-self.camera.angle)
             love.graphics.scale(self.camera.scale)
+
+            love.graphics.translate((self.camera.w2 + self.camera.l) *
+                                        self.scrollFactor.x / self.camera.scale,
+                                    (self.camera.h2 + self.camera.t) *
+                                        self.scrollFactor.y / self.camera.scale)
+            love.graphics.rotate(-self.camera.angle)
             love.graphics.translate(-self.camera.x * self.scrollFactor.x,
                                     -self.camera.y * self.scrollFactor.y)
         end

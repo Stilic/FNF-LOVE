@@ -33,6 +33,9 @@ function PlayState:enter()
 
     self.camZooming = false
 
+    self.judgeSpr = Sprite()
+    self.judgeSprTimer = Timer.new()
+
     self.receptors = Group()
     self.playerReceptors = Group()
     self.enemyReceptors = Group()
@@ -55,8 +58,6 @@ function PlayState:enter()
     self.allNotes = Group()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
-
-    self.judgementGroup = Group()
 
     local song = "endless"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
@@ -136,10 +137,10 @@ function PlayState:enter()
 
     self.gf:setScrollFactor(0.95)
 
+    self.judgeSpr.camera = self.camHUD
     self.receptors.camera = self.camHUD
     self.notesGroup.camera = self.camHUD
     self.sustainsGroup.camera = self.camHUD
-    self.judgementGroup.camera = self.camHUD
     self.receptors.camera = self.camHUD
     self.allNotes.camera = self.camHUD
     self.stage.camera = self.camGame
@@ -180,10 +181,8 @@ function PlayState:update(dt)
     self.dad:update(dt)
     self.boyfriend:update(dt)
 
-    for _, o in ipairs(self.judgementGroup.members) do
-        o:update(dt)
-        if o.alive and o.exists then o.y = o.y + o.speed * dt end
-    end
+    self.judgeSpr:update(dt)
+    self.judgeSprTimer:update(dt)
 
     self.receptors:update(dt)
 
@@ -293,7 +292,7 @@ function PlayState:draw()
     self.dad:draw()
     self.boyfriend:draw()
 
-    self.judgementGroup:draw()
+    self.judgeSpr:draw()
 
     self.receptors:draw()
     self.sustainsGroup:draw()
@@ -340,21 +339,28 @@ function PlayState:goodNoteHit(n)
                     rating = PlayState.ratings[#PlayState.ratings - 1]
                 end
 
-                local judgement = self.judgementGroup:recycle(Sprite):load(
-                                      paths.getImage(
-                                          "gameplay/ratings/normal/" ..
-                                              rating.name))
-                judgement.alpha = 1
-                judgement.speed = love.math.random(40, 75)
-                judgement:screenCenter()
-                Timer.after((music.crochet + music.stepCrochet * 2) / 1000,
-                            function()
-                    Timer.tween(music.stepCrochet / 1000, judgement,
-                                {alpha = 0}, "linear",
-                                function()
-                        judgement:destroy()
+                self.judgeSprTimer:clear()
+                self.judgeSpr:revive()
+                self.judgeSpr:load(paths.getImage(
+                                       "gameplay/ratings/normal/" .. rating.name))
+                self.judgeSpr.alpha = 1
+                self.judgeSpr:screenCenter()
+                self.judgeSpr.x = self.judgeSpr.x - push.getWidth() * 0.05 - 40
+                self.judgeSpr.y = self.judgeSpr.y - 60
+                self.judgeSpr:setGraphicSize(math.floor(
+                                                 self.judgeSpr.width * 0.7))
+                self.judgeSpr:updateHitbox()
+
+                self.judgeSprTimer:tween(0.6, self.judgeSpr,
+                                         {y = self.judgeSpr.y - 25}, "out-circ")
+                self.judgeSprTimer:after(
+                    (music.crochet + music.stepCrochet * 2) / 1000, function()
+                        self.judgeSprTimer:tween(music.stepCrochet / 1000,
+                                                 self.judgeSpr, {alpha = 0},
+                                                 "linear", function()
+                            self.judgeSpr:destroy()
+                        end)
                     end)
-                end)
             end
 
             self:removeNote(n)

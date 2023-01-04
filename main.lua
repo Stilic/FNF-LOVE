@@ -102,12 +102,14 @@ function switchState(state, transition)
     isSwitchingState = true
 
     local function switch()
+        Timer.clear()
         for _, o in pairs(Gamestate.current()) do
             if type(o) == "table" and o.destroy then o:destroy() end
         end
         paths.clearCache()
         Gamestate.switch(state)
         isSwitchingState = false
+        collectgarbage()
     end
 
     if transition then
