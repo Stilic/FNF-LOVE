@@ -23,15 +23,8 @@ PlayState.ratings = {
 }
 
 function PlayState:enter()
-    self.defaultCamZoom = 0.9
-
     self.camGame = util.newCamera()
     self.camHUD = util.newCamera()
-
-    self.camGame:setScale(self.defaultCamZoom)
-    self.camFollow = {x = 0, y = 0}
-
-    self.camZooming = false
 
     self.judgeSpr = Sprite()
     self.judgeSprTimer = Timer.new()
@@ -127,6 +120,12 @@ function PlayState:enter()
     table.sort(self.unspawnNotes, sortByShit)
 
     self.stage = Stage("stage")
+
+    self.camFollow = {x = 0, y = 0}
+    self.camZooming = false
+
+    self.camGame:setScale(self.stage.camScale)
+
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
                         self.song.girlfriend, false)
     self.boyfriend = Character(self.stage.boyfriendPos.x,
@@ -164,7 +163,7 @@ function PlayState:update(dt)
     if self.camZooming then
         local ratio = 0.05 * 60 * dt
         self.camGame:setScale(util.lerp(self.camGame:getScale(),
-                                        self.defaultCamZoom, ratio))
+                                        self.stage.camScale, ratio))
         self.camHUD:setScale(util.lerp(self.camHUD:getScale(), 1, ratio))
     end
 
@@ -283,6 +282,8 @@ function PlayState:update(dt)
             end
             if release then r:play("static") end
         end
+
+        if release then self.boyfriend.holding = false end
     end
 end
 
@@ -344,13 +345,13 @@ function PlayState:goodNoteHit(n)
                 self.judgeSpr:load(paths.getImage(
                                        "gameplay/ratings/normal/" .. rating.name))
                 self.judgeSpr.alpha = 1
-                self.judgeSpr:screenCenter("y")
-                local w = push.getWidth()
-                self.judgeSpr.x = w * 0.35 - 40
-                self.judgeSpr.y = self.judgeSpr.y - 60
                 self.judgeSpr:setGraphicSize(math.floor(
                                                  self.judgeSpr.width * 0.7))
                 self.judgeSpr:updateHitbox()
+                self.judgeSpr:screenCenter("y")
+                local w = push.getWidth()
+                self.judgeSpr.x = (w - self.judgeSpr.width) * 0.35 + 40
+                self.judgeSpr.y = self.judgeSpr.y - 60
 
                 self.judgeSprTimer:tween(0.65, self.judgeSpr,
                                          {y = self.judgeSpr.y - 25}, "out-circ")

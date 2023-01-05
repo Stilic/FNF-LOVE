@@ -5,6 +5,8 @@ function Stage:new(name)
 
     self.name = name
 
+    self.camScale = 1.05
+
     self.boyfriendPos = {x = 770, y = 100}
     self.gfPos = {x = 400, y = 130}
     self.dadPos = {x = 100, y = 100}

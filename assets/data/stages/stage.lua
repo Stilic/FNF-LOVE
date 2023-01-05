@@ -1,4 +1,6 @@
 function create()
+    self.camScale = 0.9
+
     local bg = Sprite(-600, -200):load(
                    paths.getImage(SCRIPT_PATH .. "stageback"))
     bg.antialiasing = true

@@ -286,7 +286,6 @@ end
 
 function Sprite:destroy()
     self.exists = false
-    self.camera = nil
 
     self.texture = nil
 
