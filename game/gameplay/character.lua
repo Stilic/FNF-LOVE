@@ -67,15 +67,14 @@ function Character:beat(b)
     self.script:call("beat", b)
 
     if b % self.danceSpeed == 0 then
-        if self.curAnim and util.startsWith(self.curAnim.name, "sing") then
+        if self.lastHit > 0 then
             if self.lastHit + music.stepCrochet * self.singDuration <=
                 PlayState.songPosition then
-                print(b % 2 == 0)
                 self:dance()
-                self.holdTimer = 0
+                self.lastHit = 0
             end
         else
-            self:dance()
+            self:dance(self.danceSpeed <= 1)
         end
     end
 
@@ -93,19 +92,19 @@ function Character:playAnim(anim, force)
     end
 end
 
-function Character:dance()
+function Character:dance(force)
     if self.__animations and self.script:callReturn("dance") then
         self.holding = false
         if self.__animations["danceLeft"] and self.__animations["danceRight"] then
             self.danced = not self.danced
 
             if self.danced then
-                self:playAnim("danceRight")
+                self:playAnim("danceRight", force)
             else
-                self:playAnim("danceLeft")
+                self:playAnim("danceLeft", force)
             end
         else
-            self:playAnim("idle")
+            self:playAnim("idle", force)
         end
     end
 end

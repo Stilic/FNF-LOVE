@@ -352,7 +352,7 @@ function PlayState:goodNoteHit(n)
                                                  self.judgeSpr.width * 0.7))
                 self.judgeSpr:updateHitbox()
 
-                self.judgeSprTimer:tween(0.6, self.judgeSpr,
+                self.judgeSprTimer:tween(0.65, self.judgeSpr,
                                          {y = self.judgeSpr.y - 25}, "out-circ")
                 self.judgeSprTimer:after(
                     (music.crochet + music.stepCrochet * 2) / 1000, function()
