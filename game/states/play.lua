@@ -344,8 +344,9 @@ function PlayState:goodNoteHit(n)
                 self.judgeSpr:load(paths.getImage(
                                        "gameplay/ratings/normal/" .. rating.name))
                 self.judgeSpr.alpha = 1
-                self.judgeSpr:screenCenter()
-                self.judgeSpr.x = self.judgeSpr.x - push.getWidth() * 0.05 - 40
+                self.judgeSpr:screenCenter("y")
+                local w = push.getWidth()
+                self.judgeSpr.x = w * 0.35 - 40
                 self.judgeSpr.y = self.judgeSpr.y - 60
                 self.judgeSpr:setGraphicSize(math.floor(
                                                  self.judgeSpr.width * 0.7))
