@@ -353,9 +353,9 @@ function Sprite:draw()
             love.graphics.scale(self.camera.scale)
 
             love.graphics.translate((self.camera.w2 + self.camera.l) *
-                                        self.scrollFactor.x / self.camera.scale,
+                                        self.scrollFactor.x / self.camera.scale / self.scrollFactor.x,
                                     (self.camera.h2 + self.camera.t) *
-                                        self.scrollFactor.y / self.camera.scale)
+                                        self.scrollFactor.y / self.camera.scale / self.scrollFactor.y)
             love.graphics.rotate(-self.camera.angle)
             love.graphics.translate(-self.camera.x * self.scrollFactor.x,
                                     -self.camera.y * self.scrollFactor.y)
