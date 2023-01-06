@@ -22,6 +22,8 @@ PlayState.ratings = {
     }, {name = "shit", time = 180, score = 50, mod = 0, splash = false}
 }
 
+PlayState.downscroll = true
+
 function PlayState:enter()
     self.camGame = util.newCamera()
     self.camHUD = util.newCamera()
@@ -34,6 +36,7 @@ function PlayState:enter()
     self.enemyReceptors = Group()
 
     local rx, ry = 36, 50
+    if PlayState.downscroll then ry = push.getHeight() - 100 - ry end
     for i = 0, 3 do
         local rep = Receptor(rx, ry, i, 0)
         rep:init()
@@ -217,18 +220,33 @@ function PlayState:update(dt)
         local sy = r.y + n.scrollOffset.y
         n.x, n.y = r.x + n.scrollOffset.x,
                    sy - (PlayState.songPosition - time) *
-                       (0.45 * PlayState.song.speed)
+                       (0.45 * PlayState.song.speed) *
+                       (PlayState.downscroll and -1 or 1)
 
-        local center = sy + Note.swagWidth / 2
-        if n.isSustain and (n.wasGoodHit or n.prevNote.wasGoodHit) and n.y +
-            n.offset.y <= center then
-            n.clipRect = {
-                x = 0,
-                y = center - n.y,
-                width = n.width,
-                height = n.height
-            }
-            n.clipRect.height = n.clipRect.height - n.clipRect.y
+        if n.isSustain then
+            n.flipY = PlayState.downscroll
+
+            if (n.wasGoodHit or n.prevNote.wasGoodHit) then
+                local center = sy + Note.swagWidth / 2
+                local vert = center - n.y
+                if PlayState.downscroll then
+                    if n.y - n.offset.y + n.height >= center then
+                        n.clipRect = {
+                            x = 0,
+                            y = 0,
+                            width = n.width,
+                            height = vert
+                        }
+                    end
+                elseif n.y + n.offset.y <= center then
+                    n.clipRect = {
+                        x = 0,
+                        y = vert,
+                        width = n.width,
+                        height = n.height - vert
+                    }
+                end
+            end
         end
 
         if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
