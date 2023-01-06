@@ -25,8 +25,8 @@ PlayState.ratings = {
 PlayState.downscroll = false
 
 function PlayState:enter()
-    self.camGame = util.newCamera()
-    self.camHUD = util.newCamera()
+    self.camGame = Camera()
+    self.camHUD = Camera()
 
     self.judgeSpr = Sprite()
     self.judgeSprTimer = Timer.new()
@@ -127,7 +127,7 @@ function PlayState:enter()
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
 
-    self.camGame:setScale(self.stage.camScale)
+    self.camGame.zoom = self.stage.camZoom
 
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
                         self.song.girlfriend, false)
@@ -159,15 +159,15 @@ function PlayState:update(dt)
     end
 
     local lerpVal = 0.04 * 60 * dt
-    self.camGame:setPosition(
+    self.camGame.x, self.camGame.y =
         util.lerp(self.camGame.x, self.camFollow.x, lerpVal),
-        util.lerp(self.camGame.y, self.camFollow.y, lerpVal))
+        util.lerp(self.camGame.y, self.camFollow.y, lerpVal)
 
     if self.camZooming then
         local ratio = 0.05 * 60 * dt
-        self.camGame:setScale(util.lerp(self.camGame:getScale(),
-                                        self.stage.camScale, ratio))
-        self.camHUD:setScale(util.lerp(self.camHUD:getScale(), 1, ratio))
+        self.camGame.zoom = util.lerp(self.camGame.zoom, self.stage.camZoom,
+                                      ratio)
+        self.camHUD.zoom = util.lerp(self.camHUD.zoom, 1, ratio)
     end
 
     PlayState.songPosition = PlayState.songPosition + 1000 * dt
@@ -446,10 +446,9 @@ function PlayState:beat(b)
     if b % 4 == 0 then
         self:cameraMovement()
 
-        local gameScale = self.camGame:getScale()
-        if self.camZooming and gameScale < 1.35 then
-            self.camGame:setScale(gameScale + 0.015)
-            self.camHUD:setScale(self.camHUD:getScale() + 0.03)
+        if self.camZooming and self.camGame.zoom < 1.35 then
+            self.camGame.zoom = self.camGame.zoom + 0.015
+            self.camHUD.zoom = self.camHUD.zoom + 0.03
         end
     end
 

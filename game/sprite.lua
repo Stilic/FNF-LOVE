@@ -342,19 +342,6 @@ function Sprite:draw()
         local mode = self.antialiasing and "linear" or "nearest"
         self.texture:setFilter(mode, mode, anisotropy)
 
-        if self.camera then
-            love.graphics.push()
-            love.graphics.scale(self.camera.scale)
-
-            love.graphics.translate((self.camera.w2 + self.camera.l) *
-                                        self.scrollFactor.x / self.camera.scale,
-                                    (self.camera.h2 + self.camera.t) *
-                                        self.scrollFactor.y / self.camera.scale)
-            love.graphics.rotate(-self.camera.angle)
-            love.graphics.translate(-self.camera.x * self.scrollFactor.x,
-                                    -self.camera.y * self.scrollFactor.y)
-        end
-
         if self.clipRect then
             stencilInfo = {
                 x = x + self.clipRect.x,
@@ -372,6 +359,12 @@ function Sprite:draw()
         if self.flipX then sx = -sx end
         if self.flipY then sy = -sy end
 
+        if self.camera then
+            local oldx, oldy = x, y
+            x, y = self.camera:getTargetPosition(x, y, self.scrollFactor.x, self.scrollFactor.y)
+            x, y = util.lerp(oldx, x, self.scrollFactor.x), util.lerp(oldy, y, self.scrollFactor.y)
+        end
+
         if not f then
             love.graphics.draw(self.texture, x, y, r, sx, sy, ox, oy, kx, ky)
         else
@@ -384,8 +377,6 @@ function Sprite:draw()
             stencilInfo = nil
             love.graphics.setStencilTest()
         end
-
-        if self.camera then love.graphics.pop() end
 
         love.graphics.setColor(1, 1, 1)
 

@@ -16,6 +16,8 @@ util = require "game.util"
 
 Script = require "game.script"
 
+Camera = require "game.camera"
+
 Sprite = require "game.sprite"
 Group = require "game.group"
 

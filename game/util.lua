@@ -1,5 +1,3 @@
-local gamera = require "lib.gamera"
-
 local util = {}
 
 function util.round(num)
@@ -14,12 +12,6 @@ function util.startsWith(str, start) return string.sub(str, 1, #start) == start 
 
 function util.endsWith(str, ending)
     return ending == "" or string.sub(str, -#ending) == ending
-end
-
-function util.newCamera(x, y)
-    if x == nil then x = 0 end
-    if y == nil then y = 0 end
-    return gamera.new(x, y, push.getWidth(), push.getHeight())
 end
 
 function util.newGradient(dir, ...)
