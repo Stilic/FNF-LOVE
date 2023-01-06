@@ -22,7 +22,7 @@ PlayState.ratings = {
     }, {name = "shit", time = 180, score = 50, mod = 0, splash = false}
 }
 
-PlayState.downscroll = true
+PlayState.downscroll = false
 
 function PlayState:enter()
     self.camGame = util.newCamera()
@@ -202,7 +202,8 @@ function PlayState:update(dt)
             grp:sort(sortByShit)
         end
     end
-    local ogStepCrochet = ((60 / PlayState.song.bpm) * 1000) / 4
+    local ogCrochet = (60 / PlayState.song.bpm) * 1000
+    local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
         n:update(dt)
 
@@ -225,8 +226,22 @@ function PlayState:update(dt)
 
         if n.isSustain then
             n.flipY = PlayState.downscroll
+            if n.flipY then
+                if n.isSustainEnd then
+                    n.y = n.y + (n.height / 4.1) * (ogCrochet / 400) * 1.5 *
+                              PlayState.song.speed + 46 *
+                              (PlayState.song.speed - 1) - 46 *
+                              (1 - ogCrochet / 600) * PlayState.song.speed
+                end
+                n.y = n.y + Note.swagWidth / 2 - 60.5 *
+                          (PlayState.song.speed - 1) + 27.5 *
+                          (PlayState.song.bpm / 100 - 1) *
+                          (PlayState.song.speed - 1)
+            else
+                n.y = n.y + Note.swagWidth / 10
+            end
 
-            if (n.wasGoodHit or n.prevNote.wasGoodHit) then
+            if n.wasGoodHit or n.prevNote.wasGoodHit then
                 local center = sy + Note.swagWidth / 2
                 local vert = center - n.y
                 if PlayState.downscroll then

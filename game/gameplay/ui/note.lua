@@ -66,7 +66,6 @@ function Note:new(time, data, prevNote, sustain)
             prevNote:updateHitbox()
         end
     else
-        self.alpha = 0.7
         self.childNotes = {}
     end
 end
@@ -87,7 +86,5 @@ function Note:update(dt)
 
     Note.super.update(self, dt)
 end
-
--- TODO: implement downscroll offset fix
 
 return Note
