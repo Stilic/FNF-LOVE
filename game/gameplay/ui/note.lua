@@ -88,6 +88,6 @@ function Note:update(dt)
     Note.super.update(self, dt)
 end
 
--- TODO: implement downscroll offset fix (like the opponent as player fix)
+-- TODO: implement downscroll offset fix
 
 return Note
