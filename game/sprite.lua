@@ -335,12 +335,6 @@ function Sprite:draw()
                                                    self.origin.x, self.origin.y,
                                                    self.shear.x, self.shear.y
 
-        x = x - (self.offset.x - ox)
-        y = y - (self.offset.y - oy)
-
-        if self.flipX then sx = -sx end
-        if self.flipY then sy = -sy end
-
         love.graphics.setColor(self.color[1], self.color[2], self.color[3],
                                self.alpha)
 
@@ -363,21 +357,25 @@ function Sprite:draw()
 
         if self.clipRect then
             stencilInfo = {
-                x = self.x + self.clipRect.x,
-                y = self.y + self.clipRect.y,
+                x = x + self.clipRect.x,
+                y = y + self.clipRect.y,
                 width = self.clipRect.width,
                 height = self.clipRect.height,
-                angle = self.angle
+                angle = r
             }
             love.graphics.stencil(stencil, "replace", 1)
             love.graphics.setStencilTest("greater", 0)
         end
 
+        x, y = x - (self.offset.x - ox), y - (self.offset.y - oy)
+
+        if self.flipX then sx = -sx end
+        if self.flipY then sy = -sy end
+
         if not f then
             love.graphics.draw(self.texture, x, y, r, sx, sy, ox, oy, kx, ky)
         else
-            ox = ox + f.offset.x
-            oy = oy + f.offset.y
+            ox, oy = ox + f.offset.x, oy + f.offset.y
             love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy,
                                kx, ky)
         end
