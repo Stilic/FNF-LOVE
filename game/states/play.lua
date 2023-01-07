@@ -28,6 +28,8 @@ function PlayState:enter()
     self.camGame = Camera()
     self.camHUD = Camera()
 
+    Sprite.defaultCamera = self.camGame
+
     self.judgeSpr = Sprite()
     self.judgeSpr:setScrollFactor(0)
     self.judgeSprTimer = Timer.new()
@@ -65,6 +67,7 @@ function PlayState:enter()
         bpm = chart.bpm,
         speed = chart.speed,
         needsVoices = chart.needsVoices,
+        stage = chart.stage == nil and "stage" or chart.stage,
         boyfriend = chart.player1,
         dad = chart.player2,
         girlfriend = chart.gfVersion == nil and
@@ -101,7 +104,7 @@ function PlayState:enter()
                         util.round(n[3] / music.stepCrochet) * music.stepCrochet
                 end
                 note.altNote = n[4]
-        note:setScrollFactor(0)
+                note:setScrollFactor(0)
                 table.insert(self.unspawnNotes, note)
 
                 if note.sustainLength > 0 then
@@ -115,7 +118,7 @@ function PlayState:enter()
                                                     (susNote + 1), daNoteData,
                                                 oldNote, true)
                             sustain.mustPress = gottaHitNote
-        sustain:setScrollFactor(0)
+                            sustain:setScrollFactor(0)
                             table.insert(self.unspawnNotes, sustain)
                         end
                     end
@@ -127,7 +130,7 @@ function PlayState:enter()
     end
     table.sort(self.unspawnNotes, sortByShit)
 
-    self.stage = Stage("stage")
+    self.stage = Stage(PlayState.song.stage)
 
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
@@ -144,16 +147,9 @@ function PlayState:enter()
 
     self.gf:setScrollFactor(0.95)
 
-    self.judgeSpr.camera = self.camHUD
-    self.receptors.camera = self.camHUD
-    self.notesGroup.camera = self.camHUD
-    self.sustainsGroup.camera = self.camHUD
-    self.receptors.camera = self.camHUD
-    self.allNotes.camera = self.camHUD
-    self.stage.camera = self.camGame
-    self.gf.camera = self.camGame
-    self.dad.camera = self.camGame
-    self.boyfriend.camera = self.camGame
+    for _, o in ipairs({
+        self.judgeSpr, self.receptors, self.notesGroup, self.sustainsGroup
+    }) do o.camera = self.camHUD end
 
     self:cameraMovement(0)
 end
@@ -463,6 +459,9 @@ function PlayState:beat(b)
     self.boyfriend:beat(b)
 end
 
-function PlayState:leave() PlayState.songPosition = nil end
+function PlayState:leave()
+    PlayState.super.leave(self)
+    PlayState.songPosition = nil
+end
 
 return PlayState

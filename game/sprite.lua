@@ -1,7 +1,5 @@
 local parseXml = require "lib.xmlParser"
 
-local Sprite = Object:extend()
-
 local stencilInfo
 local function stencil()
     if stencilInfo then
@@ -15,6 +13,10 @@ local function stencil()
         love.graphics.pop()
     end
 end
+
+local Sprite = Object:extend()
+
+Sprite.defaultCamera = nil
 
 function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
     local aw, ah = x + w, y + h
@@ -342,18 +344,12 @@ function Sprite:draw()
         local mode = self.antialiasing and "linear" or "nearest"
         self.texture:setFilter(mode, mode, anisotropy)
 
-        if self.camera then
-            self.camera:attach()
-            x, y = self.camera:getLocalPosition(x, y, self.scrollFactor.x,
-                                                self.scrollFactor.y)
-            if self.scrollFactor.x == 0 then
-                local w2 = push.getWidth() * 0.5
-                love.graphics.translate(w2 / self.camera.zoom - w2, 0)
-            end
-            if self.scrollFactor.y == 0 then
-                local h2 = push.getHeight() * 0.5
-                love.graphics.translate(0, h2 / self.camera.zoom - h2)
-            end
+        local cam = self.camera or Sprite.defaultCamera
+
+        if cam then
+            cam:attach()
+            local tx, ty = cam:getPosition(x, y)
+            x, y = util.lerp(x, tx, self.scrollFactor.x), util.lerp(y, ty, self.scrollFactor.y)
         end
 
         if self.flipX then sx = -sx end
@@ -381,7 +377,7 @@ function Sprite:draw()
                                kx, ky)
         end
 
-        if self.camera then self.camera:detach() end
+        if cam then cam:detach() end
 
         if self.clipRect then
             stencilInfo = nil
