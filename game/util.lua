@@ -16,16 +16,9 @@ end
 
 function util.newGradient(dir, ...)
     local isHorizontal = true
-    if dir == "vertical" then
-        isHorizontal = false
-    elseif dir ~= "horizontal" then
-        error("bad argument #1 to 'gradient' (invalid value)", 2)
-    end
+    if dir == "vertical" then isHorizontal = false end
 
-    local colorLen = select("#", ...)
-    if colorLen < 2 then error("color list is less than two", 2) end
-
-    local meshData = {}
+    local colorLen, meshData = select("#", ...), {}
     if isHorizontal then
         for i = 1, colorLen do
             local color = select(i, ...)

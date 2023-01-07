@@ -29,6 +29,7 @@ function PlayState:enter()
     self.camHUD = Camera()
 
     self.judgeSpr = Sprite()
+    self.judgeSpr:setScrollFactor(0)
     self.judgeSprTimer = Timer.new()
 
     self.receptors = Group()
@@ -40,12 +41,14 @@ function PlayState:enter()
     for i = 0, 3 do
         local rep = Receptor(rx, ry, i, 0)
         rep:init()
+        rep:setScrollFactor(0)
         self.receptors:add(rep)
         self.enemyReceptors:add(rep)
     end
     for i = 0, 3 do
         local rep = Receptor(rx, ry, i, 1)
         rep:init()
+        rep:setScrollFactor(0)
         self.receptors:add(rep)
         self.playerReceptors:add(rep)
     end
@@ -98,6 +101,7 @@ function PlayState:enter()
                         util.round(n[3] / music.stepCrochet) * music.stepCrochet
                 end
                 note.altNote = n[4]
+        note:setScrollFactor(0)
                 table.insert(self.unspawnNotes, note)
 
                 if note.sustainLength > 0 then
@@ -111,6 +115,7 @@ function PlayState:enter()
                                                     (susNote + 1), daNoteData,
                                                 oldNote, true)
                             sustain.mustPress = gottaHitNote
+        sustain:setScrollFactor(0)
                             table.insert(self.unspawnNotes, sustain)
                         end
                     end
