@@ -1,6 +1,7 @@
 local Camera = Object:extend()
 
 Camera.transform = love.math.newTransform()
+Camera.currentCamera = nil
 
 function Camera:new(x, y)
     if x == nil then x = 0 end
@@ -12,11 +13,12 @@ function Camera:new(x, y)
 end
 
 function Camera:updateTransform(force)
-    if force or self.currentCamera ~= self then
+    if force or
+        (Camera.currentCamera ~= self and (Camera.currentCamera == nil or
+            (Camera.currentCamera.x ~= self.x and Camera.currentCamera.y ~= y))) then
         Camera.currentCamera = self
         Camera.transform:reset()
-        Camera.transform:translate(push.getWidth() * 0.5,
-                                   push.getHeight() * 0.5)
+        Camera.transform:translate(push.getWidth() * 0.5, push.getHeight() * 0.5)
         Camera.transform:translate(-self.x, -self.y)
     end
 end
@@ -27,6 +29,8 @@ function Camera:attach()
     self:updateTransform()
     love.graphics.push()
     love.graphics.scale(self.zoom)
+    local w2, h2 = push.getWidth() * 0.5, push.getHeight() * 0.5
+    love.graphics.translate(w2 / self.zoom - w2, h2 / self.zoom - h2)
     love.graphics.rotate(-self.angle)
 end
 
