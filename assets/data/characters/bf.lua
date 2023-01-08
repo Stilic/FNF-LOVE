@@ -7,10 +7,10 @@ function create()
     self:addAnimByPrefix("singRIGHT", "BF NOTE RIGHT0", 24, false)
     self:addAnimByPrefix("singDOWN", "BF NOTE DOWN0", 24, false)
 
-    self:addOffset("idle", -5)
-    self:addOffset("singUP", -47, 27)
-    self:addOffset("singRIGHT", -47, -6)
-    self:addOffset("singLEFT", 3, -7)
+    self:addOffset("idle", -5, 0)
+    self:addOffset("singUP", -46, 27)
+    self:addOffset("singRIGHT", -48, -6)
+    self:addOffset("singLEFT", 4, -7)
     self:addOffset("singDOWN", -20, -51)
 
     self.flipX = true
