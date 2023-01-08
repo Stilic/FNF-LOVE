@@ -23,7 +23,19 @@ function Camera:updateTransform(force)
     end
 end
 
-function Camera:getPosition(x, y) return Camera.transform:transformPoint(x, y) end
+function Camera:getPosition(x, y)
+    self:updateTransform()
+    return Camera.transform:transformPoint(x, y)
+end
+
+function Camera:getObjectPosition(obj)
+    local tx, ty = self:getPosition(0, 0)
+    if obj.scrollFactor then
+        tx = tx * obj.scrollFactor.x
+        ty = ty * obj.scrollFactor.y
+    end
+    return obj.x + tx, obj.y + ty
+end
 
 function Camera:attach()
     self:updateTransform()
