@@ -348,10 +348,8 @@ function Sprite:draw()
 
         if cam then
             cam:attach()
-            local tx, ty = cam:getPosition(x, y)
-            x, y = util.lerp(x, tx, self.scrollFactor.x),
-                   util.lerp(y, ty, self.scrollFactor.y)
-
+            local tx, ty = cam:getPosition(0, 0)
+            x, y = x + tx * self.scrollFactor.x, y + ty * self.scrollFactor.y
         end
 
         if self.flipX then sx = -sx end
