@@ -8,8 +8,8 @@ function Camera:new(x, y)
     if y == nil then y = 0 end
     rawset(self, "x", x)
     rawset(self, "y", y)
-    rawset(self, "angle", 0)
-    rawset(self, "zoom", 1)
+    self.angle = 0
+    self.zoom = 1
 end
 
 function Camera:updateTransform(force)
@@ -49,9 +49,7 @@ end
 function Camera:detach() love.graphics.pop() end
 
 function Camera:__newindex(k, v)
-    local d = (k == "x" and v ~= self.x) or (k == "y" and v ~= self.y) or
-                  (k == "angle" and v ~= self.angle) or
-                  (k == "zoom" and v ~= self.zoom)
+    local d = (k == "x" and v ~= self.x) or (k == "y" and v ~= self.y)
     rawset(self, k, v)
     if d then self:updateTransform(true) end
 end
