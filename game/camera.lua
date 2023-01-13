@@ -40,10 +40,13 @@ end
 function Camera:attach()
     self:updateTransform()
     love.graphics.push()
-    love.graphics.scale(self.zoom)
+
     local w2, h2 = push.getWidth() * 0.5, push.getHeight() * 0.5
+    love.graphics.scale(self.zoom)
+    love.graphics.translate(w2, h2)
     love.graphics.translate(w2 / self.zoom - w2, h2 / self.zoom - h2)
     love.graphics.rotate(-self.angle)
+    love.graphics.translate(-w2, -h2)
 end
 
 function Camera:detach() love.graphics.pop() end
