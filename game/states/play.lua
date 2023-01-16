@@ -31,10 +31,6 @@ function PlayState:enter()
 
     Sprite.defaultCamera = self.camGame
 
-    self.judgeSpr = Sprite()
-    self.judgeSpr:setScrollFactor(0)
-    self.judgeSprTimer = Timer.new()
-
     self.receptors = Group()
     self.playerReceptors = Group()
     self.enemyReceptors = Group()
@@ -132,6 +128,7 @@ function PlayState:enter()
     table.sort(self.unspawnNotes, sortByShit)
 
     self.stage = Stage(PlayState.song.stage)
+    self:add(self.stage)
 
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
@@ -140,13 +137,25 @@ function PlayState:enter()
 
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
                         self.song.girlfriend, false)
+    self.gf:setScrollFactor(0.95)
     self.boyfriend = Character(self.stage.boyfriendPos.x,
                                self.stage.boyfriendPos.y, self.song.boyfriend,
                                true)
     self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
                          self.song.dad, false)
+    self:add(self.gf)
+    self:add(self.boyfriend)
+    self:add(self.dad)
 
-    self.gf:setScrollFactor(0.95)
+    self.judgeSpr = Sprite()
+    self:add(self.judgeSpr)
+
+    self.judgeSpr:setScrollFactor(0)
+    self.judgeSprTimer = Timer.new()
+
+    self:add(self.receptors)
+    self:add(self.sustainsGroup)
+    self:add(self.notesGroup)
 
     for _, o in ipairs({
         self.judgeSpr, self.receptors, self.notesGroup, self.sustainsGroup
@@ -183,16 +192,6 @@ function PlayState:update(dt)
         self:resync()
     end
 
-    self.stage:update(dt)
-    self.gf:update(dt)
-    self.dad:update(dt)
-    self.boyfriend:update(dt)
-
-    self.judgeSpr:update(dt)
-    self.judgeSprTimer:update(dt)
-
-    self.receptors:update(dt)
-
     if self.unspawnNotes[1] then
         local time = 2000
         if PlayState.song.speed < 1 then
@@ -210,8 +209,6 @@ function PlayState:update(dt)
     local ogCrochet = (60 / PlayState.song.bpm) * 1000
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
-        n:update(dt)
-
         if not n.mustPress and not n.wasGoodHit and
             ((not n.isSustain and n.time <= PlayState.songPosition) or
                 (n.isSustain and n.canBeHit)) then self:goodNoteHit(n) end
@@ -323,19 +320,8 @@ function PlayState:update(dt)
 
         if release then self.boyfriend.holding = false end
     end
-end
 
-function PlayState:draw()
-    self.stage:draw()
-    self.gf:draw()
-    self.dad:draw()
-    self.boyfriend:draw()
-
-    self.judgeSpr:draw()
-
-    self.receptors:draw()
-    self.sustainsGroup:draw()
-    self.notesGroup:draw()
+    PlayState.super.update(self, dt)
 end
 
 function PlayState:goodNoteHit(n)
@@ -461,11 +447,12 @@ function PlayState:beat(b)
     self.gf:beat(b)
     self.dad:beat(b)
     self.boyfriend:beat(b)
+    PlayState.super.beat(self, b)
 end
 
 function PlayState:leave()
-    PlayState.super.leave(self)
     PlayState.songPosition = nil
+    PlayState.super.leave(self)
 end
 
 return PlayState

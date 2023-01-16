@@ -5,11 +5,7 @@ require "lib.autobatch"
 Object = require "lib.classic"
 push = require "lib.push"
 Timer = require "lib.timer"
-
 Gamestate = require "lib.gamestate"
-State = require "game.state"
-TitleState = require "game.states.title"
-PlayState = require "game.states.play"
 
 paths = require "game.paths"
 util = require "game.util"
@@ -26,6 +22,10 @@ Receptor = require "game.gameplay.ui.receptor"
 
 Stage = require "game.gameplay.stage"
 Character = require "game.gameplay.character"
+
+State = require "game.state"
+TitleState = require "game.states.title"
+PlayState = require "game.states.play"
 
 local gamePaused, firstTime = false, true
 

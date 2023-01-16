@@ -16,12 +16,14 @@ function TitleState:enter()
     self.gfDance:addAnimByIndices("danceRight", "gfDance", {
         15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
     }, 24, false)
+    self:add(self.gfDance)
 
     self.logoBl = Sprite(-150, -100)
     self.logoBl:setFrames(paths.getSparrowFrames("menus/title/logoBumpin"))
     self.logoBl:addAnimByPrefix("bump", "logo bumpin", 24, false)
     self.logoBl:play("bump")
     self.logoBl:updateHitbox()
+    self:add(self.logoBl)
 
     self.titleText = Sprite(100, 576)
     self.titleText:setFrames(paths.getSparrowFrames("menus/title/titleEnter"))
@@ -29,15 +31,12 @@ function TitleState:enter()
     self.titleText:addAnimByPrefix("press", "ENTER PRESSED", 24)
     self.titleText:play("idle")
     self.titleText:updateHitbox()
+    self:add(self.titleText)
 
     music:play()
 end
 
 function TitleState:update(dt)
-    self.gfDance:update(dt)
-    self.logoBl:update(dt)
-    self.titleText:update(dt)
-
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")
@@ -47,12 +46,7 @@ function TitleState:update(dt)
             switchState(PlayState())
         end)
     end
-end
-
-function TitleState:draw()
-    self.gfDance:draw()
-    self.logoBl:draw()
-    self.titleText:draw()
+    TitleState.super.update(self, dt)
 end
 
 function TitleState:beat(n)
@@ -64,6 +58,7 @@ function TitleState:beat(n)
     else
         self.gfDance:play("danceRight")
     end
+    TitleState.super.beat(self, n)
 end
 
 return TitleState
