@@ -33,8 +33,8 @@ function paths.clearCache()
                 end
             end
         end
+        paths.cache[p] = nil
     end
-    paths.cache = {}
     collectgarbage()
 end
 

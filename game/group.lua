@@ -17,6 +17,8 @@ function Group:remove(obj)
     return obj
 end
 
+function Group:clear() for i in ipairs(self.members) do self.members[i] = nil end end
+
 function Group:sort(func) return table.sort(self.members, func) end
 
 function Group:recycle(class, factory, revive)
