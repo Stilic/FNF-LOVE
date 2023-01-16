@@ -57,7 +57,7 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
-    local song = "arg"
+    local song = "todding"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
