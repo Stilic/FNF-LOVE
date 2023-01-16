@@ -69,7 +69,7 @@ function Character:beat(b)
     if b % self.danceSpeed == 0 then
         if self.lastHit > 0 then
             if self.lastHit + music.stepCrochet * self.singDuration <=
-                PlayState.visualPosition then
+                PlayState.songPosition then
                 self:dance()
                 self.lastHit = 0
             end
