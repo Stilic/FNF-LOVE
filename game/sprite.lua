@@ -191,6 +191,16 @@ function Sprite:setScrollFactor(value)
     self.scrollFactor.x, self.scrollFactor.y = value, value
 end
 
+-- IF THE SPRITE HAS A CAMERA, MAKE SURE THE CAMERA IS ATTACHED!!
+function Sprite:getScreenPosition(camera)
+    local tx, ty = 0, 0
+    if camera then
+        tx, ty = camera:getPosition(0, 0)
+        tx, ty = tx * self.scrollFactor.x, ty * self.scrollFactor.y
+    end
+    return self.x + tx, self.y + ty
+end
+
 function Sprite:getMidpoint()
     return {x = self.x + self.width * 0.5, y = self.y + self.height * 0.5}
 end
@@ -331,11 +341,12 @@ end
 function Sprite:draw()
     if self.exists and self.alive and self.texture and
         (self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
-        local f, x, y, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(),
-                                                   self.x, self.y, self.angle,
-                                                   self.scale.x, self.scale.y,
-                                                   self.origin.x, self.origin.y,
-                                                   self.shear.x, self.shear.y
+        local cam = self.camera or Sprite.defaultCamera
+        local x, y = self:getScreenPosition(cam)
+        local f, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(), self.angle,
+                                             self.scale.x, self.scale.y,
+                                             self.origin.x, self.origin.y,
+                                             self.shear.x, self.shear.y
 
         love.graphics.setColor(self.color[1], self.color[2], self.color[3],
                                self.alpha)
@@ -344,12 +355,7 @@ function Sprite:draw()
         local mode = self.antialiasing and "linear" or "nearest"
         self.texture:setFilter(mode, mode, anisotropy)
 
-        local cam = self.camera or Sprite.defaultCamera
-
-        if cam then
-            cam:attach()
-            x, y = cam:getObjectPosition(self)
-        end
+        if cam then cam:attach() end
 
         if self.flipX then sx = -sx end
         if self.flipY then sy = -sy end

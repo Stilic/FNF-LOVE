@@ -26,6 +26,7 @@ PlayState.downscroll = false
 
 function PlayState:enter()
     self.camGame = Camera()
+    self.camGame.target = {x = 0, y = 0}
     self.camHUD = Camera()
 
     Sprite.defaultCamera = self.camGame
@@ -160,9 +161,12 @@ function PlayState:update(dt)
     end
 
     local lerpVal = 0.04 * 60 * dt
-    self.camGame.x, self.camGame.y =
-        util.lerp(self.camGame.x, self.camFollow.x, lerpVal),
-        util.lerp(self.camGame.y, self.camFollow.y, lerpVal)
+    self.camGame.target.x, self.camGame.target.y = util.lerp(
+                                                       self.camGame.target.x,
+                                                       self.camFollow.x, lerpVal),
+                                                   util.lerp(
+                                                       self.camGame.target.y,
+                                                       self.camFollow.y, lerpVal)
 
     if self.camZooming then
         local ratio = 0.05 * 60 * dt
