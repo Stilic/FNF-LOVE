@@ -33,7 +33,7 @@ function Character:new(x, y, char, isPlayer)
     self:dance()
     self:finish()
 
-    self.script:call("createPost")
+    self.script:call("postCreate")
 end
 
 function Character:switchAnim(oldAnim, newAnim)
@@ -78,7 +78,7 @@ function Character:beat(b)
         end
     end
 
-    self.script:call("beatPost", b)
+    self.script:call("postBeat", b)
 end
 
 function Character:playAnim(anim, force)

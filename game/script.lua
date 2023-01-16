@@ -7,6 +7,7 @@ function Script:new(path)
     self.variables = {}
 
     local p = "data/" .. path
+
     local chunk = paths.getLua(p)
     if chunk then
         setfenv(chunk, setmetatable(self.variables, chunkMt))
@@ -14,6 +15,11 @@ function Script:new(path)
     else
         error("script not found for " .. paths.getPath(p))
     end
+
+    p = path
+    if not util.endsWith(p, "/") then p = p .. "/" end
+    self.variables["SCRIPT_PATH"] = p
+    self.variables["state"] = Gamestate.current()
 end
 
 function Script:call(func, ...)

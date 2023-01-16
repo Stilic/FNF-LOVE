@@ -18,28 +18,27 @@ function Stage:new(name)
     local path = "stages/" .. name
     self.script = Script(path)
     self.script.variables["self"] = self
-    self.script.variables["SCRIPT_PATH"] = path .. "/"
 
     self.script:call("create")
-    self.script:call("createPost")
+    self.script:call("postCreate")
 end
 
 function Stage:update(dt)
     self.script:call("update", dt)
     Stage.super.update(self, dt)
-    self.script:call("updatePost", dt)
+    self.script:call("postUpdate", dt)
 end
 
 function Stage:draw()
     self.script:call("draw")
     Stage.super.draw(self)
-    self.script:call("drawPost")
+    self.script:call("postDraw")
 end
 
 function Stage:beat(b)
     self.script:call("beat", b)
     Stage.super.beat(self, b)
-    self.script:call("beatPost", b)
+    self.script:call("postBeat", b)
 end
 
 return Stage

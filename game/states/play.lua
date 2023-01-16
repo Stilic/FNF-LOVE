@@ -57,7 +57,7 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
-    local song = "endless"
+    local song = "arg"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
@@ -69,7 +69,7 @@ function PlayState:enter()
         dad = chart.player2,
         girlfriend = chart.gfVersion == nil and
             (chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
-        cameraChanges = {}
+        mustHits = {}
     }
 
     setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
@@ -82,7 +82,7 @@ function PlayState:enter()
 
     for i, s in ipairs(chart.notes) do
         if s ~= nil and s.sectionNotes ~= nil then
-            table.insert(PlayState.song.cameraChanges, s.mustHitSection)
+            table.insert(PlayState.song.mustHits, s.mustHitSection)
             for _, n in ipairs(s.sectionNotes) do
                 local daStrumTime = n[1]
                 local daNoteData = n[2] % 4
@@ -122,7 +122,7 @@ function PlayState:enter()
                 end
             end
         else
-            table.insert(PlayState.song.cameraChanges, nil)
+            table.insert(PlayState.song.mustHits, nil)
         end
     end
     table.sort(self.unspawnNotes, sortByShit)
@@ -160,8 +160,6 @@ function PlayState:enter()
     for _, o in ipairs({
         self.judgeSpr, self.receptors, self.notesGroup, self.sustainsGroup
     }) do o.camera = self.camHUD end
-
-    self:cameraMovement(0)
 end
 
 function PlayState:update(dt)
@@ -176,6 +174,24 @@ function PlayState:update(dt)
                                                    util.lerp(
                                                        self.camGame.target.y,
                                                        self.camFollow.y, lerpVal)
+    local mustHit = self:getCurrentMustHit()
+    if mustHit ~= nil and not mustHit then
+        local midpoint = self.dad:getMidpoint()
+        self.camFollow.x, self.camFollow.y = midpoint.x + 150 +
+                                                 self.dad.cameraPosition.x +
+                                                 self.stage.dadCam.x,
+                                             midpoint.y - 100 +
+                                                 self.dad.cameraPosition.y +
+                                                 self.stage.dadCam.y
+    else
+        local midpoint = self.boyfriend:getMidpoint()
+        self.camFollow.x, self.camFollow.y = midpoint.x - 100 -
+                                                 self.boyfriend.cameraPosition.x -
+                                                 self.stage.boyfriendCam.x,
+                                             midpoint.y - 100 +
+                                                 self.boyfriend.cameraPosition.y +
+                                                 self.stage.boyfriendCam.y
+    end
 
     if self.camZooming then
         local ratio = 0.05 * 60 * dt
@@ -326,6 +342,12 @@ function PlayState:update(dt)
     PlayState.super.update(self, dt)
 end
 
+-- CAN RETURN NIL!!
+function PlayState:getCurrentMustHit()
+    return PlayState.song.mustHits[music.step ~= nil and
+               math.floor(music.step / 16) + 1 or 1]
+end
+
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
@@ -411,44 +433,14 @@ function PlayState:resync()
     if self.vocals then self.vocals:seek(PlayState.songPosition / 1000) end
 end
 
-function PlayState:cameraMovement(sec)
-    if sec == nil then sec = math.floor(music.step / 16) end
-    local mustHit = PlayState.song.cameraChanges[sec + 1]
-    if mustHit ~= nil and not mustHit then
-        local midpoint = self.dad:getMidpoint()
-        self.camFollow.x, self.camFollow.y = midpoint.x + 150 +
-                                                 self.dad.cameraPosition.x +
-                                                 self.stage.dadCam.x,
-                                             midpoint.y - 100 +
-                                                 self.dad.cameraPosition.y +
-                                                 self.stage.dadCam.y
-    else
-        local midpoint = self.boyfriend:getMidpoint()
-        self.camFollow.x, self.camFollow.y = midpoint.x - 100 -
-                                                 self.boyfriend.cameraPosition.x -
-                                                 self.stage.boyfriendCam.x,
-                                             midpoint.y - 100 +
-                                                 self.boyfriend.cameraPosition.y +
-                                                 self.stage.boyfriendCam.y
-    end
-end
-
 function PlayState:beat(b)
     if math.abs(music.time - PlayState.songPosition) > 2 then self:resync() end
 
-    if b % 4 == 0 then
-        self:cameraMovement()
-
-        if self.camZooming and self.camGame.zoom < 1.35 then
-            self.camGame.zoom = self.camGame.zoom + 0.015
-            self.camHUD.zoom = self.camHUD.zoom + 0.03
-        end
+    if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
+        self.camGame.zoom = self.camGame.zoom + 0.015
+        self.camHUD.zoom = self.camHUD.zoom + 0.03
     end
 
-    self.stage:beat(b)
-    self.gf:beat(b)
-    self.dad:beat(b)
-    self.boyfriend:beat(b)
     PlayState.super.beat(self, b)
 end
 
