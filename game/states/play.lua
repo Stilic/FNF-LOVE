@@ -321,6 +321,8 @@ function PlayState:update(dt)
         if release then self.boyfriend.holding = false end
     end
 
+    self.judgeSprTimer:update(dt)
+
     PlayState.super.update(self, dt)
 end
 
