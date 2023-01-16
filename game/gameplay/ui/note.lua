@@ -73,12 +73,12 @@ end
 function Note:update(dt)
     local safeZoneOffset = (10 / 60) * 1000
 
-    self.canBeHit = self.time > PlayState.songPosition - safeZoneOffset *
-                        self.lateHitMult and self.time < PlayState.songPosition +
+    self.canBeHit = self.time > PlayState.visualPosition - safeZoneOffset *
+                        self.lateHitMult and self.time < PlayState.visualPosition +
                         safeZoneOffset * self.earlyHitMult
 
     if self.mustPress then
-        if not self.wasGoodHit and self.time < PlayState.songPosition -
+        if not self.wasGoodHit and self.time < PlayState.visualPosition -
             safeZoneOffset then self.tooLate = true end
     end
 

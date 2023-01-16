@@ -74,7 +74,7 @@ function PlayState:enter()
 
     setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
         chart.bpm)
-    PlayState.songPosition = -music.crochet * 5
+    PlayState.visualPosition = -music.crochet * 5
     if chart.needsVoices then
         self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices",
                                            "stream")
@@ -175,22 +175,26 @@ function PlayState:update(dt)
                                                        self.camGame.target.y,
                                                        self.camFollow.y, lerpVal)
     local mustHit = self:getCurrentMustHit()
-    if mustHit ~= nil and not mustHit then
-        local midpoint = self.dad:getMidpoint()
-        self.camFollow.x, self.camFollow.y = midpoint.x + 150 +
-                                                 self.dad.cameraPosition.x +
-                                                 self.stage.dadCam.x,
-                                             midpoint.y - 100 +
-                                                 self.dad.cameraPosition.y +
-                                                 self.stage.dadCam.y
-    else
-        local midpoint = self.boyfriend:getMidpoint()
-        self.camFollow.x, self.camFollow.y = midpoint.x - 100 -
-                                                 self.boyfriend.cameraPosition.x -
-                                                 self.stage.boyfriendCam.x,
-                                             midpoint.y - 100 +
-                                                 self.boyfriend.cameraPosition.y +
-                                                 self.stage.boyfriendCam.y
+    if mustHit ~= nil then
+        if not mustHit then
+            local midpoint = self.dad:getMidpoint()
+            self.camFollow.x, self.camFollow.y = midpoint.x + 150 +
+                                                     self.dad.cameraPosition.x +
+                                                     self.stage.dadCam.x,
+                                                 midpoint.y - 100 +
+                                                     self.dad.cameraPosition.y +
+                                                     self.stage.dadCam.y
+        else
+            local midpoint = self.boyfriend:getMidpoint()
+            self.camFollow.x, self.camFollow.y = midpoint.x - 100 -
+                                                     self.boyfriend
+                                                         .cameraPosition.x -
+                                                     self.stage.boyfriendCam.x,
+                                                 midpoint.y - 100 +
+                                                     self.boyfriend
+                                                         .cameraPosition.y +
+                                                     self.stage.boyfriendCam.y
+        end
     end
 
     if self.camZooming then
@@ -200,8 +204,8 @@ function PlayState:update(dt)
         self.camHUD.zoom = util.lerp(self.camHUD.zoom, 1, ratio)
     end
 
-    PlayState.songPosition = PlayState.songPosition + 1000 * dt
-    if not self.startedSong and PlayState.songPosition >= 0 then
+    PlayState.visualPosition = PlayState.visualPosition + 1000 * dt
+    if not self.startedSong and PlayState.visualPosition >= 0 then
         self.startedSong = true
         music:play()
         if self.vocals then self.vocals:play() end
@@ -214,7 +218,7 @@ function PlayState:update(dt)
             time = time / PlayState.song.speed
         end
         while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-            PlayState.songPosition < time do
+            PlayState.visualPosition < time do
             local n = table.remove(self.unspawnNotes, 1)
             self.allNotes:add(n)
             local grp = n.isSustain and self.sustainsGroup or self.notesGroup
@@ -226,7 +230,7 @@ function PlayState:update(dt)
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
         if not n.mustPress and not n.wasGoodHit and
-            ((not n.isSustain and n.time <= PlayState.songPosition) or
+            ((not n.isSustain and n.time <= PlayState.visualPosition) or
                 (n.isSustain and n.canBeHit)) then self:goodNoteHit(n) end
 
         local time = n.time
@@ -238,7 +242,7 @@ function PlayState:update(dt)
                 1]
         local sy = r.y + n.scrollOffset.y
         n.x, n.y = r.x + n.scrollOffset.x,
-                   sy - (PlayState.songPosition - time) *
+                   sy - (PlayState.visualPosition - time) *
                        (0.45 * PlayState.song.speed) *
                        (PlayState.downscroll and -1 or 1)
 
@@ -282,7 +286,7 @@ function PlayState:update(dt)
             end
         end
 
-        if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
+        if PlayState.visualPosition > 350 / PlayState.song.speed + n.time then
             self:removeNote(n)
         end
     end
@@ -344,8 +348,7 @@ end
 
 -- CAN RETURN NIL!!
 function PlayState:getCurrentMustHit()
-    return PlayState.song.mustHits[music.step ~= nil and
-               math.floor(music.step / 16) + 1 or 1]
+    return PlayState.song.mustHits[math.floor(music.step / 16) + 1]
 end
 
 function PlayState:goodNoteHit(n)
@@ -368,14 +371,14 @@ function PlayState:goodNoteHit(n)
 
         local char = n.mustPress and self.boyfriend or self.dad
         char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]), true)
-        char.lastHit = PlayState.songPosition
+        char.lastHit = PlayState.visualPosition
         char.holding = n.isSustain and not n.isSustainEnd
 
         if not n.mustPress then self.camZooming = true end
 
         if not n.isSustain then
             if n.mustPress then
-                local diff = math.abs(n.time - PlayState.songPosition)
+                local diff = math.abs(n.time - PlayState.visualPosition)
                 local rating
                 for i = 1, #PlayState.ratings - 1 do
                     local r = PlayState.ratings[i]
@@ -429,12 +432,12 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:resync()
-    PlayState.songPosition = music.time
-    if self.vocals then self.vocals:seek(PlayState.songPosition / 1000) end
+    PlayState.visualPosition = music.time
+    if self.vocals then self.vocals:seek(PlayState.visualPosition / 1000) end
 end
 
 function PlayState:beat(b)
-    if math.abs(music.time - PlayState.songPosition) > 2 then self:resync() end
+    if math.abs(music.time - PlayState.visualPosition) > 2 then self:resync() end
 
     if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
         self.camGame.zoom = self.camGame.zoom + 0.015
@@ -445,7 +448,7 @@ function PlayState:beat(b)
 end
 
 function PlayState:leave()
-    PlayState.songPosition = nil
+    PlayState.visualPosition = nil
     PlayState.super.leave(self)
 end
 

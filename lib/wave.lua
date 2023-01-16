@@ -166,7 +166,12 @@ function waveObject:setBPM(bpm)
     self.crochet = crochet
     self.stepCrochet = crochet / 4
     self.detector = nil
-    self:updateBeat()
+    if music.time == nil then
+        music.step = 0
+        music.beat = 0
+    else
+        self:updateBeat()
+    end
     return self
 end
 

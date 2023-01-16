@@ -1,6 +1,6 @@
 module(..., package.seeall)
 
--- XML parser made by Stilic for FNF-LÖVE
+-- XML parser made by Stilic for FNF LÖVE
 -- Based off https://github.com/Cluain/Lua-Simple-XML-Parser
 
 local function trim(str) return string.match(str, "^%s*(.-)%s*$") end
