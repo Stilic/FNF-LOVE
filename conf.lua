@@ -4,7 +4,7 @@ function love.conf(t)
     t.identity = "funkin"
 
     t.window.title = "Friday Night Funkin'"
-    t.window.icon = "icon.png"
+    t.window.icon = "art/icon.png"
     t.window.width = dimensions.width
     t.window.height = dimensions.height
     t.window.resizable = true
