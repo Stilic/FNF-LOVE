@@ -35,8 +35,21 @@ end
 
 function Receptor:play(anim, force)
     Receptor.super.play(self, anim, force)
+
     self:centerOffsets()
     self:centerOrigin()
+
+    if anim == "confirm" then
+        if self.data == 0 then
+            self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 2
+        elseif self.data == 1 then
+            self.offset.x, self.offset.y = self.offset.x - 2, self.offset.y - 2
+        elseif self.data == 2 then
+            self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 1
+        elseif self.data == 3 then
+            self.offset.x = self.offset.x - 1.5
+        end
+    end
 end
 
 return Receptor
