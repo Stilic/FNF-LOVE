@@ -74,7 +74,7 @@ function Character:beat(b)
                 self.lastHit = 0
             end
         else
-            self:dance(self.danceSpeed <= 1)
+            self:dance()
         end
     end
 
