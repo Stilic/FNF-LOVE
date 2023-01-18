@@ -62,7 +62,7 @@ function Note:new(time, data, prevNote, sustain)
             prevNote.isSustainEnd = false
 
             prevNote.scale.y = prevNote.scale.y * music.stepCrochet / 100 *
-                                   1.525 * PlayState.song.speed
+                                   1.5 * PlayState.song.speed
             prevNote:updateHitbox()
         end
     else
