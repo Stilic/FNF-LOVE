@@ -393,8 +393,8 @@ function PlayState:goodNoteHit(n)
 
                 self.judgeSprTimer:clear()
                 self.judgeSpr:revive()
-                self.judgeSpr:load(paths.getImage(
-                                       "noteskins/normal/" .. rating.name))
+                self.judgeSpr:load(
+                    paths.getImage("skins/normal/" .. rating.name))
                 self.judgeSpr.alpha = 1
                 self.judgeSpr:setGraphicSize(math.floor(
                                                  self.judgeSpr.width * 0.7))

@@ -2,7 +2,7 @@ local Receptor = Sprite:extend()
 
 function Receptor:new(x, y, data, player)
     Receptor.super.new(self, x, y)
-    self:setFrames(paths.getSparrowFrames("noteskins/normal/NOTE_assets"))
+    self:setFrames(paths.getSparrowFrames("skins/normal/NOTE_assets"))
 
     self.data = data
     self.player = player

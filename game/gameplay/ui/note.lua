@@ -6,7 +6,7 @@ Note.directions = {"left", "down", "up", "right"}
 
 function Note:new(time, data, prevNote, sustain)
     Note.super.new(self, 0, -2000)
-    self:setFrames(paths.getSparrowFrames("noteskins/normal/NOTE_assets"))
+    self:setFrames(paths.getSparrowFrames("skins/normal/NOTE_assets"))
 
     self.time = time
     self.data = data
