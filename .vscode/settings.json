@@ -7,8 +7,5 @@
     "undefined-global",
     "redundant-parameter",
     "deprecated"
-  ],
-  "editor.insertSpaces": false,
-  "editor.tabSize": 4,
-  "editor.detectIndentation": true
+  ]
 }
