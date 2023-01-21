@@ -8,28 +8,28 @@ PlayState.controlDirs = {
 }
 
 PlayState.ratings = {
-	{name = "sick",
+	{ name = "sick",
 		time = 45,
 		score = 350,
 		fc = "MFC",
 		mod = 1,
 		splash = true
 	},
-	{name = "good",
+	{ name = "good",
 		time = 90,
 		score = 200,
 		fc = "GFC",
 		mod = 0.7,
 		splash = false
 	},
-	{name = "bad",
+	{ name = "bad",
 		time = 135,
 		score = 100,
 		fc = "FC",
 		mod = 0.4,
 		splash = false
 	},
-	{name = "shit",
+	{ name = "shit",
 		time = 180,
 		score = 50,
 		mod = 0,
@@ -148,7 +148,7 @@ function PlayState:enter()
 	self.stage = Stage(PlayState.song.stage)
 	self:add(self.stage)
 
-	self.camFollow = {x = 0, y = 0}
+	self.camFollow = { x = 0, y = 0 }
 	self.camZooming = false
 
 	self.camGame.zoom = self.stage.camZoom
