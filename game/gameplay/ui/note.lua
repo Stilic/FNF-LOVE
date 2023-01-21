@@ -16,7 +16,7 @@ function Note:new(time, data, prevNote, sustain)
 		sustain, false, false, 0
 	self.parentNote, self.childNotes = nil, nil
 	self.mustPress = false
-	self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
+	self.canBeHit, self.wasGoodHit, self.tooLate, self.hasMissed = false, false, false, false
 	self.earlyHitMult, self.lateHitMult = 1, 1
 	self.altNote = false
 
@@ -51,11 +51,16 @@ function Note:new(time, data, prevNote, sustain)
 
 		self.scrollOffset.x = self.scrollOffset.x - self.width / 2
 
-		if prevNote.isSustain then
-			self.parentNote = prevNote
-			while self.parentNote.isSustain and self.parentNote.prevNote do
-				self.parentNote = self.parentNote.prevNote
+		self.parentNote = prevNote
+		while self.parentNote.isSustain and self.parentNote.prevNote do
+			self.parentNote = self.parentNote.prevNote
+			if self.parentNote.parentNote then
+				self.parentNote = self.parentNote.parentNote
+				break
 			end
+		end
+
+		if prevNote.isSustain then
 			table.insert(self.parentNote.childNotes, self)
 
 			prevNote:play(Note.colors[prevNote.data + 1] .. "hold")
