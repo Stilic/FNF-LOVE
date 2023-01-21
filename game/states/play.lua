@@ -393,6 +393,23 @@ function PlayState:inputRelease(key)
 	end
 end
 
+function PlayState:onKeyPress(key, type)
+	local controls = controls:getControlsFromSource(type .. ':' .. key)
+	if not controls then return end
+	local key = self:getKeyFromEvent(controls)
+	if key >= 0 then
+		self:inputPress(key)
+	end
+end
+function PlayState:onKeyRelease(key, type)
+	local controls = controls:getControlsFromSource(type .. ':' .. key)
+	if not controls then return end
+	local key = self:getKeyFromEvent(controls)
+	if key >= 0 then
+		self:inputRelease(key)
+	end
+end
+
 function PlayState:strumPlayAnim(dad, dir, time)
 	local r = (dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
 	if not r then return end
@@ -406,7 +423,7 @@ function PlayState:goodNoteHit(n)
 
 		local time = 0
 		if not n.mustPress then
-			time = (n.isSustain and not n.curAnim.name:endsWith("end")) and 0.350 or 0.175
+			time = (n.isSustain and not n.curAnim.name:endsWith("end")) and 0.30 or 0.15
 		end
 		self:strumPlayAnim(not n.mustPress, n.data, time)
 
