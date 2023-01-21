@@ -76,12 +76,15 @@ function Note:new(time, data, prevNote, sustain)
 	end
 end
 
-function Note:update(dt)
-	local safeZoneOffset = (10 / 60) * 1000
+local safeZoneOffset = (10 / 60) * 1000
 
-	self.canBeHit = self.time > PlayState.songPosition - safeZoneOffset *
-						self.lateHitMult and self.time < PlayState.songPosition +
-						safeZoneOffset * self.earlyHitMult
+function Note:checkDiff()
+	return self.time > PlayState.songPosition - safeZoneOffset * self.lateHitMult and
+		self.time < PlayState.songPosition + safeZoneOffset * self.earlyHitMult
+end
+
+function Note:update(dt)
+	self.canBeHit = self:checkDiff()
 
 	if self.mustPress then
 		if not self.wasGoodHit and self.time < PlayState.songPosition -

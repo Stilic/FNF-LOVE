@@ -405,7 +405,7 @@ function Player:bindRelease(bind)
 end
 
 -- unbind releases callback
-function Player:bindRelease(bind)
+function Player:unbindRelease(bind)
 	local i = table.find(self._releaseBinds, bind)
 	if i then
 		table.remove(self._releaseBinds, i)

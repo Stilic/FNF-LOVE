@@ -1,5 +1,3 @@
-local function sortByShit(a, b) return a.time < b.time end
-
 local PlayState = State:extend()
 
 PlayState.controlDirs = {
@@ -307,56 +305,6 @@ function PlayState:update(dt)
 		end
 	end
 
-	for d, i in ipairs(Note.directions) do
-		local input = "note_" .. i
-		local press, hold, release = controls:pressed(input),
-									 controls:down(input),
-									 controls:released(input)
-
-		local noteList = {}
-		for _, n in ipairs(self.allNotes.members) do
-			if not n.isSustain then
-				if press and n.canBeHit and n.mustPress and not n.wasGoodHit and
-					not n.tooLate and n.data + 1 == d then
-					table.insert(noteList, n)
-				end
-			elseif hold and n.canBeHit and n.mustPress and not n.wasGoodHit and
-				not n.tooLate and n.data + 1 == d then
-				self:goodNoteHit(n)
-			end
-		end
-
-		if #noteList > 0 then
-			table.sort(noteList, sortByShit)
-
-			local epicList, done = {}, false
-			for _, n in ipairs(noteList) do
-				for _, dn in ipairs(epicList) do
-					if math.abs(dn.time - n.time) >= 1 then
-						done = true
-						break
-					end
-				end
-				if not done then
-					self:goodNoteHit(n)
-					table.insert(epicList, n)
-				else
-					break
-				end
-			end
-		end
-
-		local r = self.playerReceptors.members[d]
-		if r then
-			if press and r.curAnim.name ~= "confirm" then
-				r:play("pressed")
-			end
-			if release then r:play("static") end
-		end
-
-		if release then self.boyfriend.holding = false end
-	end
-
 	self.judgeSprTimer:update(dt)
 
 	PlayState.super.update(self, dt)
@@ -367,7 +315,12 @@ function PlayState:getCurrentMustHit()
 	return PlayState.song.mustHits[math.floor(music.step / 16) + 1]
 end
 
+function sortByShit(a, b) return a.time < b.time end
+
 function PlayState:inputPress(key)
+	local prevSongPos = PlayState.songPosition
+	PlayState.songPosition = music.time or prevSongPos
+
 	local noteList, canMiss = {}, false
 
 	for _, n in ipairs(self.allNotes.members) do
@@ -375,10 +328,10 @@ function PlayState:inputPress(key)
 			if not n.isSustain and not n.wasGoodHit then
 				if not n.canBeHit and n:checkDiff(PlayState.songPosition) then n:update(0) end
 				if n.canBeHit then
-					if n == key then table.insert(noteList, n) end
+					if n.data == key then table.insert(noteList, n) end
 					canMiss = true
 				end
-			elseif n.isSustain and  n.noteData == key and ((n.wasGoodHit or n.prevNote.wasGoodHit) and
+			elseif n.isSustain and  n.data == key and ((n.wasGoodHit or n.prevNote.wasGoodHit) and
 				(n.parentNote ~= nil and not n.parent.hasMissed and n.parent.wasGoodHit))
 			then
 				table.insert(noteList, n)
@@ -386,30 +339,47 @@ function PlayState:inputPress(key)
 		end
 	end
 
-	--[[
 	if #noteList > 0 then
 		table.sort(noteList, sortByShit)
+		local pressNotes, notesStopped = {}, false
 
-			local epicList, done = {}, false
-			for _, n in ipairs(noteList) do
-				for _, dn in ipairs(epicList) do
-					if math.abs(dn.time - n.time) >= 1 then
-						done = true
-						break
-					end
-				end
-				if not done then
-					self:goodNoteHit(n)
-					table.insert(epicList, n)
-				else
-					break
+		for _, epicNote in next, noteList do
+			for _, doubleNote in next, pressNotes do
+				if math.abs(doubleNote.time - epicNote.time) > 3 then
+					notesStopped = true
 				end
 			end
-		end]]
+
+			if not notesStopped then
+				if epicNote.isSustain then
+					table.insert(pressNotes, epicNote)
+				else
+					table.insert(pressNotes, epicNote)
+					self:goodNoteHit(epicNote)
+				end
+			end
+		end
+	end
+
+	PlayState.songPosition = prevSongPos
+
+	local r = self.playerReceptors.members[key + 1]
+	if r and r.curAnim.name ~= "confirm" then
+		r:play("pressed")
+	end
 end
 
 function PlayState:inputRelease(key)
+	local r = self.playerReceptors.members[key + 1]
+	if r then
+		r:play("static")
+		r.confirmTimer = 0
+	end
 
+	if self.boyfriend.holding then
+		self.boyfriend.holding = false
+		self.boyfriend:beat(music.step / 4)
+	end
 end
 
 function PlayState:onKeyPress(key, type)
@@ -418,8 +388,7 @@ function PlayState:onKeyPress(key, type)
 
 	local key = self:getKeyFromEvent(controls)
 	if key >= 0 then
-		print(key, music.time)
-		--self:inputPress(key)
+		self:inputPress(key)
 	end
 end
 
@@ -429,7 +398,7 @@ function PlayState:onKeyRelease(key, type)
 
 	local key = self:getKeyFromEvent(controls)
 	if key >= 0 then
-		--self:inputRelease(key)
+		self:inputRelease(key)
 	end
 end
 
@@ -440,23 +409,24 @@ function PlayState:getKeyFromEvent(controls)
 	return -1
 end
 
+function PlayState:strumPlayAnim(dad, dir, time)
+	local r = (dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
+	if not r then return end
+	r:play("confirm", true)
+	if time and time > 0 then
+		r.confirmTimer = time
+	end
+end
+
 function PlayState:goodNoteHit(n)
 	if not n.wasGoodHit then
 		n.wasGoodHit = true
 
-		local r =
-			(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-				1]
-		if r then
-			r:play("confirm", true)
-			if not n.mustPress then
-				local time = 0.175
-				if n.isSustain and not n.curAnim.name:endsWith("end") then
-					time = time * 2
-				end
-				r.confirmTimer = time
-			end
+		local time = 0
+		if not n.mustPress then
+			time = (n.isSustain and not n.curAnim.name:endsWith("end")) and 0.350 or 0.175
 		end
+		self:strumPlayAnim(not n.mustPress, n.data, time)
 
 		local char = n.mustPress and self.boyfriend or self.dad
 		char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]), true)
