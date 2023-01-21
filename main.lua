@@ -133,7 +133,6 @@ function love.load()
 
 	local dimensions = require "dimensions"
 	push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
-
 	love.graphics.setFont(paths.getFont("vcr.ttf", 18))
 
 	switchState(TitleState(), false)
