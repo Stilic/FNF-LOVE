@@ -29,10 +29,30 @@ PlayState.ratings = {
 
 PlayState.downscroll = false
 
-function PlayState.sortByShit(a, b) return a.time < b.time end
-
 function PlayState:enter()
 	self.keysPressed = {}
+
+	local song = "driveby"
+	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
+	PlayState.song = {
+		name = chart.name,
+		bpm = chart.bpm,
+		speed = chart.speed,
+		needsVoices = chart.needsVoices,
+		stage = chart.stage == nil and "stage" or chart.stage,
+		boyfriend = chart.player1 == nil and "bf" or chart.player1,
+		dad = chart.player2 == nil and "dad" or chart.player2,
+		girlfriend = chart.gfVersion == nil and (chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
+		mustHits = {}
+	}
+
+	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(chart.bpm)
+	if chart.needsVoices then
+		self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices",
+			"stream")
+	end
+
+	PlayState.songPosition = -music.crochet * 5
 
 	self.camGame = Camera()
 	self.camGame.target = { x = 0, y = 0 }
@@ -65,29 +85,6 @@ function PlayState:enter()
 	self.allNotes = Group()
 	self.notesGroup = Group()
 	self.sustainsGroup = Group()
-
-	local song = "funkytime"
-	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
-	PlayState.song = {
-		name = chart.name,
-		bpm = chart.bpm,
-		speed = chart.speed,
-		needsVoices = chart.needsVoices,
-		stage = chart.stage == nil and "stage" or chart.stage,
-		boyfriend = chart.player1 == nil and "bf" or chart.player1,
-		dad = chart.player2 == nil and "dad" or chart.player2,
-		girlfriend = chart.gfVersion == nil and
-			(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
-		mustHits = {}
-	}
-
-	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
-		chart.bpm)
-	PlayState.songPosition = -music.crochet * 5
-	if chart.needsVoices then
-		self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices",
-			"stream")
-	end
 
 	for _, s in ipairs(chart.notes) do
 		if s and s.sectionNotes then
@@ -187,33 +184,19 @@ function PlayState:update(dt)
 	end
 
 	local lerpVal = 0.04 * 60 * dt
-	self.camGame.target.x, self.camGame.target.y = math.lerp(
-		self.camGame.target.x,
-		self.camFollow.x, lerpVal),
-		math.lerp(
-			self.camGame.target.y,
-			self.camFollow.y, lerpVal)
+	self.camGame.target.x = math.lerp(self.camGame.target.x, self.camFollow.x, lerpVal)
+	self.camGame.target.y = math.lerp(self.camGame.target.y, self.camFollow.y, lerpVal)
 
 	local mustHit = self:getCurrentMustHit()
 	if mustHit ~= nil then
-		if not mustHit then
-			local midpoint = self.dad:getMidpoint()
-			self.camFollow.x, self.camFollow.y = midpoint.x + 150 +
-				self.dad.cameraPosition.x +
-				self.stage.dadCam.x,
-				midpoint.y - 100 +
-				self.dad.cameraPosition.y +
-				self.stage.dadCam.y
-		else
+		if mustHit then
 			local midpoint = self.boyfriend:getMidpoint()
-			self.camFollow.x, self.camFollow.y = midpoint.x - 100 -
-				self.boyfriend
-				.cameraPosition.x -
-				self.stage.boyfriendCam.x,
-				midpoint.y - 100 +
-				self.boyfriend
-				.cameraPosition.y +
-				self.stage.boyfriendCam.y
+			self.camFollow.x = midpoint.x - 100 - self.boyfriend.cameraPosition.x - self.stage.boyfriendCam.x
+			self.camFollow.y = midpoint.y - 100 + self.boyfriend.cameraPosition.y + self.stage.boyfriendCam.y
+		else
+			local midpoint = self.dad:getMidpoint()
+			self.camFollow.x = midpoint.y + 150 + self.dad.cameraPosition.x + self.stage.dadCam.x
+			self.camFollow.y = midpoint.y - 100 + self.dad.cameraPosition.y + self.stage.dadCam.y
 		end
 	end
 
@@ -336,24 +319,12 @@ function PlayState:getKeyFromEvent(controls)
 	return -1
 end
 
-function PlayState:onKeyPress(key, type)
-	local controls = controls:getControlsFromSource(type .. ':' .. key)
-	if not controls then return end
-
-	key = self:getKeyFromEvent(controls)
-	if key >= 0 then
-		self:inputPress(key)
-	end
-end
-
-function PlayState:onKeyRelease(key, type)
-	local controls = controls:getControlsFromSource(type .. ':' .. key)
-	if not controls then return end
-
-	key = self:getKeyFromEvent(controls)
-	if key >= 0 then
-		self:inputRelease(key)
-	end
+function PlayState:strumPlayAnim(dad, dir, time)
+	local r =
+	(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
+	if not r then return end
+	r:play("confirm", true)
+	if time > 0 then r.confirmTimer = time end
 end
 
 function PlayState:inputPress(key)
@@ -425,6 +396,7 @@ function PlayState:onKeyPress(key, type)
 		self:inputPress(key)
 	end
 end
+
 function PlayState:onKeyRelease(key, type)
 	local controls = controls:getControlsFromSource(type .. ':' .. key)
 	if not controls then return end
@@ -432,14 +404,6 @@ function PlayState:onKeyRelease(key, type)
 	if key >= 0 then
 		self:inputRelease(key)
 	end
-end
-
-function PlayState:strumPlayAnim(dad, dir, time)
-	local r =
-	(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
-	if not r then return end
-	r:play("confirm", true)
-	if time > 0 then r.confirmTimer = time end
 end
 
 function PlayState:goodNoteHit(n)
