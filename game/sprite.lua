@@ -5,11 +5,10 @@ local function stencil()
 	if stencilInfo then
 		love.graphics.push()
 		love.graphics.translate(stencilInfo.x + stencilInfo.width / 2,
-			stencilInfo.y + stencilInfo.height / 2)
+		                        stencilInfo.y + stencilInfo.height / 2)
 		love.graphics.rotate(stencilInfo.angle)
 		love.graphics.translate(-stencilInfo.width / 2, -stencilInfo.height / 2)
-		love.graphics.rectangle("fill", 0, 0, stencilInfo.width,
-			stencilInfo.height)
+		love.graphics.rectangle("fill", 0, 0, stencilInfo.width, stencilInfo.height)
 		love.graphics.pop()
 	end
 end
@@ -23,31 +22,28 @@ function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
 	return {
 		name = name,
 		quad = love.graphics.newQuad(x, y, aw > sw and w - (aw - sw) or w,
-			ah > sh and h - (ah - sh) or h, sw, sh),
+		                             ah > sh and h - (ah - sh) or h, sw, sh),
 		width = ow == nil and w or ow,
 		height = oh == nil and h or oh,
-		offset = { x = ox == nil and 0 or ox, y = oy == nil and 0 or oy }
+		offset = {x = ox == nil and 0 or ox, y = oy == nil and 0 or oy}
 	}
 end
 
 function Sprite.getFramesFromSparrow(texture, description)
-	if type(texture) == "string" then
-		texture = love.graphics.newImage(texture)
-	end
+	if type(texture) == "string" then texture = love.graphics.newImage(texture) end
 
-	local frames = { texture = texture, frames = {} }
+	local frames = {texture = texture, frames = {}}
 	local sw, sh = texture:getDimensions()
 	for _, c in ipairs(parseXml(description).TextureAtlas.children) do
 		if c.name == "SubTexture" then
 			table.insert(frames.frames,
-				Sprite.newFrame(c.attrs.name, tonumber(c.attrs.x),
-					tonumber(c.attrs.y),
-					tonumber(c.attrs.width),
-					tonumber(c.attrs.height), sw, sh,
-					tonumber(c.attrs.frameX),
-					tonumber(c.attrs.frameY),
-					tonumber(c.attrs.frameWidth),
-					tonumber(c.attrs.frameHeight)))
+			             Sprite.newFrame(c.attrs.name, tonumber(c.attrs.x),
+			                             tonumber(c.attrs.y), tonumber(c.attrs.width),
+			                             tonumber(c.attrs.height), sw, sh,
+			                             tonumber(c.attrs.frameX),
+			                             tonumber(c.attrs.frameY),
+			                             tonumber(c.attrs.frameWidth),
+			                             tonumber(c.attrs.frameHeight)))
 		end
 	end
 
@@ -69,16 +65,16 @@ function Sprite:new(x, y, texture)
 	self.alive = true
 	self.exists = true
 
-	self.origin = { x = 0, y = 0 }
-	self.offset = { x = 0, y = 0 }
-	self.scale = { x = 1, y = 1 }
-	self.shear = { x = 0, y = 0 }
-	self.scrollFactor = { x = 1, y = 1 }
+	self.origin = {x = 0, y = 0}
+	self.offset = {x = 0, y = 0}
+	self.scale = {x = 1, y = 1}
+	self.shear = {x = 0, y = 0}
+	self.scrollFactor = {x = 1, y = 1}
 	self.clipRect = nil
 	self.flipX = false
 	self.flipY = false
 
-	self.color = { 1, 1, 1 }
+	self.color = {1, 1, 1}
 	self.alpha = 1
 	self.angle = 0
 
@@ -94,9 +90,7 @@ function Sprite:new(x, y, texture)
 end
 
 function Sprite:load(texture, width, height)
-	if type(texture) == "string" then
-		texture = love.graphics.newImage(texture)
-	end
+	if type(texture) == "string" then texture = love.graphics.newImage(texture) end
 	self.texture = texture
 
 	self.width = width
@@ -173,18 +167,18 @@ function Sprite:updateHitbox()
 	self.width = math.abs(self.scale.x) * w
 	self.height = math.abs(self.scale.y) * h
 
-	self.offset = { x = -0.5 * (self.width - w), y = -0.5 * (self.height - h) }
+	self.offset = {x = -0.5 * (self.width - w), y = -0.5 * (self.height - h)}
 	self:centerOrigin()
 end
 
 function Sprite:centerOffsets()
 	self.offset.x, self.offset.y = (self:getFrameWidth() - self.width) * 0.5,
-		(self:getFrameHeight() - self.height) * 0.5
+	                               (self:getFrameHeight() - self.height) * 0.5
 end
 
 function Sprite:centerOrigin()
 	self.origin.x, self.origin.y = self:getFrameWidth() * 0.5,
-		self:getFrameHeight() * 0.5
+	                               self:getFrameHeight() * 0.5
 end
 
 function Sprite:setScrollFactor(value)
@@ -202,7 +196,7 @@ function Sprite:getScreenPosition(camera)
 end
 
 function Sprite:getMidpoint()
-	return { x = self.x + self.width * 0.5, y = self.y + self.height * 0.5 }
+	return {x = self.x + self.width * 0.5, y = self.y + self.height * 0.5}
 end
 
 function Sprite:getGraphicMidpoint()
@@ -223,12 +217,7 @@ function Sprite:addAnimByPrefix(name, prefix, framerate, looped)
 	if framerate == nil then framerate = 30 end
 	if looped == nil then looped = true end
 
-	local anim = {
-		name = name,
-		framerate = framerate,
-		looped = looped,
-		frames = {}
-	}
+	local anim = {name = name, framerate = framerate, looped = looped, frames = {}}
 	for _, f in ipairs(self.__frames) do
 		if f.name:startsWith(prefix) then table.insert(anim.frames, f) end
 	end
@@ -241,17 +230,11 @@ function Sprite:addAnimByIndices(name, prefix, indices, framerate, looped)
 	if framerate == nil then framerate = 30 end
 	if looped == nil then looped = true end
 
-	local anim = {
-		name = name,
-		framerate = framerate,
-		looped = looped,
-		frames = {}
-	}
+	local anim = {name = name, framerate = framerate, looped = looped, frames = {}}
 	local subEnd = #prefix + 1
 	for _, i in ipairs(indices) do
 		for _, f in ipairs(self.__frames) do
-			if f.name:startsWith(prefix) and
-				tonumber(string.sub(f.name, subEnd)) == i then
+			if f.name:startsWith(prefix) and tonumber(string.sub(f.name, subEnd)) == i then
 				table.insert(anim.frames, f)
 				break
 			end
@@ -264,7 +247,7 @@ end
 
 function Sprite:play(anim, force)
 	if not force and self.curAnim and self.curAnim.name == anim and
-		not self.animFinished then
+					not self.animFinished then
 		self.animFinished = false
 		self.animPaused = false
 		return
@@ -320,7 +303,7 @@ end
 
 function Sprite:update(dt)
 	if self.alive and self.exists and self.curAnim and not self.animFinished and
-		not self.animPaused then
+					not self.animPaused then
 		self.curFrame = self.curFrame + self.curAnim.framerate * dt
 		if self.curFrame >= #self.curAnim.frames then
 			if self.curAnim.looped then
@@ -334,16 +317,16 @@ end
 
 function Sprite:draw()
 	if self.exists and self.alive and self.texture and
-		(self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
+					(self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
 		local cam = self.camera or Sprite.defaultCamera
 		local x, y = self:getScreenPosition(cam)
 		local f, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(), self.angle,
-			self.scale.x, self.scale.y,
-			self.origin.x, self.origin.y,
-			self.shear.x, self.shear.y
+		                                     self.scale.x, self.scale.y,
+		                                     self.origin.x, self.origin.y,
+		                                     self.shear.x, self.shear.y
 
-		love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-			self.alpha)
+		love.graphics
+						.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
 
 		local min, mag, anisotropy = self.texture:getFilter()
 		local mode = self.antialiasing and "linear" or "nearest"
@@ -372,8 +355,7 @@ function Sprite:draw()
 			love.graphics.draw(self.texture, x, y, r, sx, sy, ox, oy, kx, ky)
 		else
 			ox, oy = ox + f.offset.x, oy + f.offset.y
-			love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy,
-				kx, ky)
+			love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy, kx, ky)
 		end
 
 		if cam then cam:detach() end

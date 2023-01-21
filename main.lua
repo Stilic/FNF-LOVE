@@ -43,26 +43,22 @@ end
 
 controls = (require "lib.baton").new({
 	controls = {
-		ui_left = { "key:left", "key:a", "axis:leftx-", "button:dpleft" },
-		ui_down = { "key:down", "key:s", "axis:lefty+", "button:dpdown" },
-		ui_up = { "key:up", "key:w", "axis:lefty-", "button:dpup" },
-		ui_right = { "key:right", "key:d", "axis:leftx+", "button:dpright" },
+		ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},
+		ui_down = {"key:down", "key:s", "axis:lefty+", "button:dpdown"},
+		ui_up = {"key:up", "key:w", "axis:lefty-", "button:dpup"},
+		ui_right = {"key:right", "key:d", "axis:leftx+", "button:dpright"},
 
-		note_left = {
-			"key:left", "key:a", "axis:leftx-", "button:dpleft", "button:x"
-		},
-		note_down = {
-			"key:down", "key:s", "axis:lefty+", "button:dpdown", "button:a"
-		},
-		note_up = { "key:up", "key:l", "axis:lefty-", "button:dpup", "button:y" },
+		note_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft", "button:x"},
+		note_down = {"key:down", "key:s", "axis:lefty+", "button:dpdown", "button:a"},
+		note_up = {"key:up", "key:l", "axis:lefty-", "button:dpup", "button:y"},
 		note_right = {
 			"key:right", "key:p", "axis:leftx+", "button:dpright", "button:b"
 		},
 
-		accept = { "key:space", "key:return", "button:a", "button:start" },
-		back = { "key:backspace", "key:escape", "button:b" },
-		pause = { "key:return", "key:escape", "button:start" },
-		reset = { "key:r", "button:leftstick" }
+		accept = {"key:space", "key:return", "button:a", "button:start"},
+		back = {"key:backspace", "key:escape", "button:b"},
+		pause = {"key:return", "key:escape", "button:start"},
+		reset = {"key:r", "button:leftstick"}
 	},
 	joystick = love.joystick.getJoysticks()[1]
 })
@@ -73,11 +69,10 @@ function fadeOut(time, callback)
 
 	fade = {
 		height = push.getHeight() * 2,
-		texture = util.newGradient("vertical", { 0, 0, 0 }, { 0, 0, 0 },
-			{ 0, 0, 0, 0 })
+		texture = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0}, {0, 0, 0, 0})
 	}
 	fade.y = -fade.height
-	fadeTimer = Timer.tween(time, fade, { y = 0 }, "linear", function()
+	fadeTimer = Timer.tween(time, fade, {y = 0}, "linear", function()
 		fade.texture:release()
 		fade = nil
 		if callback then callback() end
@@ -89,16 +84,14 @@ function fadeIn(time, callback)
 
 	fade = {
 		height = push.getHeight() * 2,
-		texture = util.newGradient("vertical", { 0, 0, 0, 0 }, { 0, 0, 0 },
-			{ 0, 0, 0 })
+		texture = util.newGradient("vertical", {0, 0, 0, 0}, {0, 0, 0}, {0, 0, 0})
 	}
 	fade.y = -fade.height / 2
-	fadeTimer = Timer.tween(time * 2, fade, { y = fade.height }, "linear",
-		function()
-			fade.texture:release()
-			fade = nil
-			if callback then callback() end
-		end)
+	fadeTimer = Timer.tween(time * 2, fade, {y = fade.height}, "linear", function()
+		fade.texture:release()
+		fade = nil
+		if callback then callback() end
+	end)
 end
 
 isSwitchingState = false
@@ -135,7 +128,7 @@ function love.load()
 	if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
 
 	local dimensions = require "dimensions"
-	push.setupScreen(dimensions.width, dimensions.height, { upscale = "normal" })
+	push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
 	love.graphics.setFont(paths.getFont("vcr.ttf", 18))
 
 	switchState(TitleState(), false)
@@ -171,8 +164,7 @@ function love.draw()
 	Gamestate.draw()
 
 	if fade then
-		love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(),
-			fade.height)
+		love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(), fade.height)
 	end
 
 	push.finish()
@@ -186,9 +178,7 @@ function love.focus(f)
 				o.lastPause = o.object:isPaused()
 				o.object:pause()
 			else
-				if not o.lastPause and not o.object:isFinished() then
-					o.object:resume()
-				end
+				if not o.lastPause and not o.object:isFinished() then o.object:resume() end
 				o.lastPause = nil
 			end
 		end

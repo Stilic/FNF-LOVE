@@ -7,5 +7,6 @@
     "undefined-global",
     "redundant-parameter",
     "deprecated"
-  ]
+  ],
+  "vscode-lua-format.configPath": "./.vscode/lua-format.yaml"
 }

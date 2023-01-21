@@ -30,7 +30,7 @@ end
 function Receptor:init()
 	self:play("static")
 	self.x = self.x + 50 + Note.swagWidth * self.data + (push.getWidth() / 2) *
-		self.player
+					         self.player
 end
 
 function Receptor:play(anim, force)
@@ -43,11 +43,9 @@ function Receptor:play(anim, force)
 		if self.data == 0 then
 			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 2
 		elseif self.data == 1 then
-			self.offset.x, self.offset.y = self.offset.x - 2.5,
-				self.offset.y - 2
+			self.offset.x, self.offset.y = self.offset.x - 2.5, self.offset.y - 2
 		elseif self.data == 2 then
-			self.offset.x, self.offset.y = self.offset.x - 1,
-				self.offset.y - 1.5
+			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 1.5
 		elseif self.data == 3 then
 			self.offset.x = self.offset.x - 1.5
 		end

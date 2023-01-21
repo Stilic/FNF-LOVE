@@ -1,11 +1,9 @@
 -- LUA 5.2-LUA 5.3 REIMPLEMENTATIONS
 function string.split(self, sep)
-	if sep == "" then return { self:match((self:gsub(".", "(.)"))) } end
+	if sep == "" then return {self:match((self:gsub(".", "(.)")))} end
 	if sep == nil then sep = "%s" end
 	local t = {}
-	for str in string.gmatch(self, "([^" .. sep .. "]+)") do
-		table.insert(t, str)
-	end
+	for str in string.gmatch(self, "([^" .. sep .. "]+)") do table.insert(t, str) end
 	return t
 end
 
@@ -103,7 +101,7 @@ function math.truncate(x, precision, round)
 
 	x = x * math.pow(10, precision);
 	return (round and math.floor(x + .5) or math.floor(x)) /
-		math.pow(10, precision)
+					       math.pow(10, precision)
 end
 
 function math.remap(value, start1, stop1, start2, stop2)

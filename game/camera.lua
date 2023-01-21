@@ -18,7 +18,7 @@ end
 
 function Camera:getPosition(x, y)
 	return x - (self.target == nil and 0 or self.target.x) + self.width * 0.5,
-		y - (self.target == nil and 0 or self.target.y) + self.height * 0.5
+	       y - (self.target == nil and 0 or self.target.y) + self.height * 0.5
 end
 
 function Camera:attach()

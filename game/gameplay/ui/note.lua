@@ -1,8 +1,8 @@
 local Note = Sprite:extend()
 
 Note.swagWidth = 160 * 0.7
-Note.colors = { "purple", "blue", "green", "red" }
-Note.directions = { "left", "down", "up", "right" }
+Note.colors = {"purple", "blue", "green", "red"}
+Note.directions = {"left", "down", "up", "right"}
 
 function Note:new(time, data, prevNote, sustain)
 	Note.super.new(self, 0, -2000)
@@ -13,15 +13,15 @@ function Note:new(time, data, prevNote, sustain)
 	self.prevNote = prevNote
 	if sustain == nil then sustain = false end
 	self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
-	sustain, false, false, 0
+					sustain, false, false, 0
 	self.parentNote, self.childNotes = nil, nil
 	self.mustPress = false
 	self.canBeHit, self.wasGoodHit, self.tooLate, self.hasMissed = false, false,
-		false, false
+	                                                               false, false
 	self.earlyHitMult, self.lateHitMult = 1, 1
 	self.altNote = false
 
-	self.scrollOffset = { x = 0, y = 0 }
+	self.scrollOffset = {x = 0, y = 0}
 
 	local color = Note.colors[data + 1]
 	if sustain then
@@ -63,9 +63,8 @@ function Note:new(time, data, prevNote, sustain)
 			prevNote:play(Note.colors[prevNote.data + 1] .. "hold")
 			prevNote.isSustainEnd = false
 
-			prevNote.scale.y =
-			prevNote.scale.y * music.stepCrochet / 100 * 1.5 *
-				PlayState.song.speed
+			prevNote.scale.y = prevNote.scale.y * music.stepCrochet / 100 * 1.5 *
+							                   PlayState.song.speed
 			prevNote:updateHitbox()
 		end
 	else
@@ -76,17 +75,18 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-	return self.time > PlayState.songPosition - safeZoneOffset *
-		self.lateHitMult and self.time < PlayState.songPosition +
-		safeZoneOffset * self.earlyHitMult
+	return
+					self.time > PlayState.songPosition - safeZoneOffset * self.lateHitMult and
+									self.time < PlayState.songPosition + safeZoneOffset * self.earlyHitMult
 end
 
 function Note:update(dt)
 	self.canBeHit = self:checkDiff()
 
 	if self.mustPress then
-		if not self.wasGoodHit and self.time < PlayState.songPosition -
-			safeZoneOffset then self.tooLate = true end
+		if not self.wasGoodHit and self.time < PlayState.songPosition - safeZoneOffset then
+			self.tooLate = true
+		end
 	end
 
 	if self.tooLate and self.alpha > 0.3 then self.alpha = 0.3 end

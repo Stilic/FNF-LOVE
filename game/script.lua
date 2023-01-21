@@ -1,6 +1,6 @@
 local Script = Object:extend()
 
-local chunkMt = { __index = _G }
+local chunkMt = {__index = _G}
 
 function Script:new(path)
 	self.path = path
