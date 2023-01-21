@@ -417,23 +417,6 @@ function PlayState:inputRelease(key)
 	end
 end
 
-function PlayState:onKeyPress(key, type)
-	local controls = controls:getControlsFromSource(type .. ':' .. key)
-	if not controls then return end
-	local key = self:getKeyFromEvent(controls)
-	if key >= 0 then
-		self:inputPress(key)
-	end
-end
-function PlayState:onKeyRelease(key, type)
-	local controls = controls:getControlsFromSource(type .. ':' .. key)
-	if not controls then return end
-	local key = self:getKeyFromEvent(controls)
-	if key >= 0 then
-		self:inputRelease(key)
-	end
-end
-
 function PlayState:strumPlayAnim(dad, dir, time)
 	local r =
 	(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
