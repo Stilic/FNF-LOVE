@@ -425,7 +425,7 @@ function PlayState:goodNoteHit(n)
 		local time = 0
 		if not n.mustPress then
 			time = (n.isSustain and not n.curAnim.name:endsWith("end")) and
-				0.350 or 0.175
+				0.30 or 0.15
 		end
 		self:strumPlayAnim(not n.mustPress, n.data, time)
 
