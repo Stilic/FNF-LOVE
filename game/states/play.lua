@@ -8,23 +8,33 @@ PlayState.controlDirs = {
 }
 
 PlayState.ratings = {
-	{ name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true },
-	{
-		name = "good",
+	{name = "sick",
+		time = 45,
+		score = 350,
+		fc = "MFC",
+		mod = 1,
+		splash = true
+	},
+	{name = "good",
 		time = 90,
 		score = 200,
 		fc = "GFC",
 		mod = 0.7,
 		splash = false
 	},
-	{
-		name = "bad",
+	{name = "bad",
 		time = 135,
 		score = 100,
 		fc = "FC",
 		mod = 0.4,
 		splash = false
-	}, { name = "shit", time = 180, score = 50, mod = 0, splash = false }
+	},
+	{name = "shit",
+		time = 180,
+		score = 50,
+		mod = 0,
+		splash = false
+	}
 }
 
 PlayState.downscroll = false
@@ -105,8 +115,7 @@ function PlayState:enter()
 				local note = Note(daStrumTime, daNoteData, oldNote)
 				note.mustPress = gottaHitNote
 				if n[3] ~= nil and n[3] > 0 then
-					note.sustainLength =
-					math.round(n[3] / music.stepCrochet) * music.stepCrochet
+					note.sustainLength = math.round(n[3] / music.stepCrochet) * music.stepCrochet
 				end
 				note.altNote = n[4]
 				note:setScrollFactor(0)
@@ -121,7 +130,8 @@ function PlayState:enter()
 							local sustain = Note(
 								daStrumTime + music.stepCrochet *
 								(susNote + 1), daNoteData,
-								oldNote, true)
+								oldNote, true
+							)
 							sustain.mustPress = gottaHitNote
 							sustain:setScrollFactor(0)
 							table.insert(self.unspawnNotes, sustain)
@@ -143,15 +153,11 @@ function PlayState:enter()
 
 	self.camGame.zoom = self.stage.camZoom
 
-	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-		self.song.girlfriend, false)
+	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y, self.song.girlfriend, false)
 	self.gf:setScrollFactor(0.95)
 
-	self.boyfriend = Character(self.stage.boyfriendPos.x,
-		self.stage.boyfriendPos.y, self.song.boyfriend,
-		true)
-	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
-		self.song.dad, false)
+	self.boyfriend = Character(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y, self.song.boyfriend, true)
+	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad, false)
 
 	self:add(self.gf)
 	self:add(self.boyfriend)
@@ -197,7 +203,7 @@ function PlayState:update(dt)
 			self.camFollow.y = midpoint.y - 100 + self.boyfriend.cameraPosition.y + self.stage.boyfriendCam.y
 		else
 			local midpoint = self.dad:getMidpoint()
-			self.camFollow.x = midpoint.y + 150 + self.dad.cameraPosition.x + self.stage.dadCam.x
+			self.camFollow.x = midpoint.x + 150 + self.dad.cameraPosition.x + self.stage.dadCam.x
 			self.camFollow.y = midpoint.y - 100 + self.dad.cameraPosition.y + self.stage.dadCam.y
 		end
 	end
