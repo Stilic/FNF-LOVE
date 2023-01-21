@@ -1,6 +1,6 @@
 -- LUA 5.2-LUA 5.3 REIMPLEMENTATIONS
 function string.split(self, sep)
-	if sep == "" then return {self:match((self:gsub(".", "(.)")))} end
+	if sep == "" then return { self:match((self:gsub(".", "(.)"))) } end
 	if sep == nil then sep = "%s" end
 	local t = {}
 	for str in string.gmatch(self, "([^" .. sep .. "]+)") do
@@ -27,6 +27,7 @@ function table.clear(t, includeKeys)
 end
 
 function math.clamp(x, min, max) return math.max(min, math.min(x, max)) end
+
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
 bit32 = bit
@@ -50,14 +51,17 @@ function string.duplicate(s, i)
 	for i = 1, i do str = str .. s end
 	return str
 end
+
 string.dupe = string.duplicate
 
 function string.ext(self) return self:sub(1 - (self:reverse():find("%.") or 1)) end
+
 function string.withoutExt(self)
 	return self:sub(0, -1 - (self:reverse():find("%.") or 1))
 end
 
 function string.startsWith(self, prefix) return self:find(prefix, 1, true) == 1 end
+
 function string.endsWith(self, suffix)
 	return self:find(suffix, 1, true) == #self - (#suffix - 1)
 end
@@ -87,6 +91,7 @@ end
 function string.trim(self) return string.ltrim(self:rtrim()) end
 
 function math.odd(self) return math.fmod(self, 2) == 0 end -- 2, 4, etc
+
 function math.even(self) return not math.even(self) end -- 1, 3, etc
 
 function math.lerp(from, to, i) return from + (to - from) * i end
@@ -98,7 +103,7 @@ function math.truncate(x, precision, round)
 
 	x = x * math.pow(10, precision);
 	return (round and math.floor(x + .5) or math.floor(x)) /
-			   math.pow(10, precision)
+		math.pow(10, precision)
 end
 
 function math.remap(value, start1, stop1, start2, stop2)
