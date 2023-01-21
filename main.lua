@@ -1,5 +1,6 @@
 io.stdout:setvbuf("no")
 
+require "lib.override"
 require "lib.autobatch"
 
 Object = require "lib.classic"

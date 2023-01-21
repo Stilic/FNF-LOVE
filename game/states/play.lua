@@ -57,7 +57,7 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
-    local song = "funkytime"
+    local song = "dont-preheat-your-boyfriend-because-if-you-do-he-wont-rap"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
@@ -98,7 +98,7 @@ function PlayState:enter()
                 note.mustPress = gottaHitNote
                 if n[3] ~= nil and n[3] > 0 then
                     note.sustainLength =
-                        util.round(n[3] / music.stepCrochet) * music.stepCrochet
+                        math.round(n[3] / music.stepCrochet) * music.stepCrochet
                 end
                 note.altNote = n[4]
                 note:setScrollFactor(0)
@@ -107,7 +107,7 @@ function PlayState:enter()
                 if note.sustainLength > 0 then
                     local susLength = note.sustainLength / music.stepCrochet
                     if susLength > 0 then
-                        for susNote = 0, math.max(util.round(susLength), 2) do
+                        for susNote = 0, math.max(math.round(susLength), 2) do
                             oldNote = self.unspawnNotes[#self.unspawnNotes]
 
                             local sustain = Note(
@@ -168,10 +168,10 @@ function PlayState:update(dt)
     end
 
     local lerpVal = 0.04 * 60 * dt
-    self.camGame.target.x, self.camGame.target.y = util.lerp(
+    self.camGame.target.x, self.camGame.target.y = math.lerp(
                                                        self.camGame.target.x,
                                                        self.camFollow.x, lerpVal),
-                                                   util.lerp(
+                                                   math.lerp(
                                                        self.camGame.target.y,
                                                        self.camFollow.y, lerpVal)
     local mustHit = self:getCurrentMustHit()
@@ -199,9 +199,9 @@ function PlayState:update(dt)
 
     if self.camZooming then
         local ratio = 0.05 * 60 * dt
-        self.camGame.zoom = util.lerp(self.camGame.zoom, self.stage.camZoom,
+        self.camGame.zoom = math.lerp(self.camGame.zoom, self.stage.camZoom,
                                       ratio)
-        self.camHUD.zoom = util.lerp(self.camHUD.zoom, 1, ratio)
+        self.camHUD.zoom = math.lerp(self.camHUD.zoom, 1, ratio)
     end
 
     PlayState.songPosition = PlayState.songPosition + 1000 * dt
@@ -362,7 +362,7 @@ function PlayState:goodNoteHit(n)
             r:play("confirm", true)
             if not n.mustPress then
                 local time = 0.175
-                if n.isSustain and not util.endsWith(n.curAnim.name, "end") then
+                if n.isSustain and not n.curAnim.name:endsWith("end") then
                     time = time * 2
                 end
                 r.confirmTimer = time
@@ -394,7 +394,7 @@ function PlayState:goodNoteHit(n)
                 self.judgeSprTimer:clear()
                 self.judgeSpr:revive()
                 self.judgeSpr:load(paths.getImage(
-                                       "gameplay/ratings/normal/" .. rating.name))
+                                       "noteskins/normal/" .. rating.name))
                 self.judgeSpr.alpha = 1
                 self.judgeSpr:setGraphicSize(math.floor(
                                                  self.judgeSpr.width * 0.7))

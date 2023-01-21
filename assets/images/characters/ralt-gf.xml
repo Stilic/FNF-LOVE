@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="ralt-gf.png">
+	<!-- Created with Adobe Animate version 20.0.3.25487 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="ralt idle0000" x="2048" y="4" width="507" height="433" frameX="0" frameY="-7" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0001" x="2048" y="4" width="507" height="433" frameX="0" frameY="-7" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0002" x="4" y="445" width="507" height="428" frameX="0" frameY="-12" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0003" x="1026" y="443" width="507" height="430" frameX="0" frameY="-12" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0004" x="515" y="445" width="507" height="428" frameX="0" frameY="-14" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0005" x="515" y="445" width="507" height="428" frameX="0" frameY="-14" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0006" x="1537" y="876" width="507" height="425" frameX="0" frameY="-14" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0007" x="2048" y="441" width="507" height="432" frameX="0" frameY="-7" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0008" x="2048" y="441" width="507" height="432" frameX="0" frameY="-7" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0009" x="1026" y="4" width="507" height="435" frameX="0" frameY="-2" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0010" x="1537" y="4" width="507" height="435" frameX="0" frameY="-2" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0011" x="4" y="4" width="507" height="437" frameX="0" frameY="0" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0012" x="4" y="4" width="507" height="437" frameX="0" frameY="0" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0013" x="1537" y="443" width="507" height="429" frameX="0" frameY="-4" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0014" x="1537" y="443" width="507" height="429" frameX="0" frameY="-4" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0015" x="1026" y="877" width="507" height="422" frameX="0" frameY="-11" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0016" x="515" y="877" width="507" height="423" frameX="0" frameY="-11" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0017" x="2048" y="877" width="507" height="422" frameX="0" frameY="-12" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0018" x="2559" y="877" width="507" height="422" frameX="0" frameY="-12" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0019" x="2559" y="877" width="507" height="422" frameX="0" frameY="-12" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0020" x="4" y="877" width="507" height="428" frameX="0" frameY="-8" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0021" x="4" y="877" width="507" height="428" frameX="0" frameY="-8" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0022" x="2559" y="441" width="507" height="432" frameX="0" frameY="-4" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0023" x="2559" y="4" width="507" height="433" frameX="0" frameY="-4" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0024" x="515" y="4" width="507" height="437" frameX="0" frameY="0" frameWidth="507" frameHeight="442"/>
+	<SubTexture name="ralt idle0025" x="515" y="4" width="507" height="437" frameX="0" frameY="0" frameWidth="507" frameHeight="442"/>
+</TextureAtlas>

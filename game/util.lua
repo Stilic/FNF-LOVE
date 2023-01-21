@@ -1,19 +1,5 @@
 local util = {}
 
-function util.round(num)
-    return num >= 0 and math.floor(num + 0.5) or math.ceil(num - 0.5)
-end
-
-function util.bound(value, min, max) return math.max(min, math.min(max, value)) end
-
-function util.lerp(a, b, c) return a + util.bound(c, 0, 1) * (b - a) end
-
-function util.startsWith(str, start) return string.sub(str, 1, #start) == start end
-
-function util.endsWith(str, ending)
-    return ending == "" or string.sub(str, -#ending) == ending
-end
-
 function util.newGradient(dir, ...)
     local isHorizontal = true
     if dir == "vertical" then isHorizontal = false end

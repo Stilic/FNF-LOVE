@@ -17,7 +17,7 @@ function Script:new(path)
     end
 
     p = path
-    if not util.endsWith(p, "/") then p = p .. "/" end
+    if not p:endsWith("/") then p = p .. "/" end
     self.variables["SCRIPT_PATH"] = p
     self.variables["state"] = Gamestate.current()
 end
