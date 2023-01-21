@@ -4,13 +4,12 @@ local stencilInfo
 local function stencil()
 	if stencilInfo then
 		love.graphics.push()
-		love.graphics.translate(
-			stencilInfo.x + stencilInfo.width / 2,
-			stencilInfo.y + stencilInfo.height / 2
-		)
+		love.graphics.translate(stencilInfo.x + stencilInfo.width / 2,
+								stencilInfo.y + stencilInfo.height / 2)
 		love.graphics.rotate(stencilInfo.angle)
 		love.graphics.translate(-stencilInfo.width / 2, -stencilInfo.height / 2)
-		love.graphics.rectangle("fill", 0, 0, stencilInfo.width, stencilInfo.height)
+		love.graphics.rectangle("fill", 0, 0, stencilInfo.width,
+								stencilInfo.height)
 		love.graphics.pop()
 	end
 end
@@ -40,15 +39,15 @@ function Sprite.getFramesFromSparrow(texture, description)
 	local sw, sh = texture:getDimensions()
 	for _, c in ipairs(parseXml(description).TextureAtlas.children) do
 		if c.name == "SubTexture" then
-			table.insert(frames.frames, Sprite.newFrame(c.attrs.name, tonumber(c.attrs.x),
-				tonumber(c.attrs.y),
-				tonumber(c.attrs.width),
-				tonumber(c.attrs.height), sw, sh,
-				tonumber(c.attrs.frameX),
-				tonumber(c.attrs.frameY),
-				tonumber(c.attrs.frameWidth),
-				tonumber(c.attrs.frameHeight)
-			))
+			table.insert(frames.frames,
+						 Sprite.newFrame(c.attrs.name, tonumber(c.attrs.x),
+										 tonumber(c.attrs.y),
+										 tonumber(c.attrs.width),
+										 tonumber(c.attrs.height), sw, sh,
+										 tonumber(c.attrs.frameX),
+										 tonumber(c.attrs.frameY),
+										 tonumber(c.attrs.frameWidth),
+										 tonumber(c.attrs.frameHeight)))
 		end
 	end
 
@@ -339,11 +338,12 @@ function Sprite:draw()
 		local cam = self.camera or Sprite.defaultCamera
 		local x, y = self:getScreenPosition(cam)
 		local f, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(), self.angle,
-			self.scale.x, self.scale.y,
-			self.origin.x, self.origin.y,
-			self.shear.x, self.shear.y
+											 self.scale.x, self.scale.y,
+											 self.origin.x, self.origin.y,
+											 self.shear.x, self.shear.y
 
-		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+		love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+							   self.alpha)
 
 		local min, mag, anisotropy = self.texture:getFilter()
 		local mode = self.antialiasing and "linear" or "nearest"
@@ -372,7 +372,8 @@ function Sprite:draw()
 			love.graphics.draw(self.texture, x, y, r, sx, sy, ox, oy, kx, ky)
 		else
 			ox, oy = ox + f.offset.x, oy + f.offset.y
-			love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy, kx, ky)
+			love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy,
+							   kx, ky)
 		end
 
 		if cam then cam:detach() end

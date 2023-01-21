@@ -1,11 +1,14 @@
 {
-    "Lua.runtime.version": "LuaJIT",
-    "Lua.workspace.library": ["${3rd}/love2d/library"],
-    "Lua.workspace.checkThirdParty": false,
-    "Lua.diagnostics.disable": [
-        "lowercase-global",
-        "undefined-global",
-        "redundant-parameter",
-        "deprecated"
-    ]
+  "Lua.runtime.version": "LuaJIT",
+  "Lua.workspace.library": ["${3rd}/love2d/library"],
+  "Lua.workspace.checkThirdParty": false,
+  "Lua.diagnostics.disable": [
+    "lowercase-global",
+    "undefined-global",
+    "redundant-parameter",
+    "deprecated"
+  ],
+  "editor.insertSpaces": false,
+  "editor.tabSize": 4,
+  "editor.detectIndentation": true
 }
