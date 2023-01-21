@@ -405,7 +405,6 @@ function PlayState:onKeyRelease(key, type)
 
 		if self.boyfriend.holding then
 			self.boyfriend.holding = false
-			self.boyfriend:beat(music.step / 4)
 		end
 	end
 end
