@@ -342,50 +342,7 @@ function PlayState:onKeyPress(key, type)
 
 	key = self:getKeyFromEvent(controls)
 	if key >= 0 then
-		self.keysPressed[key] = true
-
-		local prevSongPos = PlayState.songPosition
-		PlayState.songPosition = music.time or prevSongPos
-
-		local noteList = {}
-
-		for _, n in ipairs(self.notesGroup.members) do
-			if n.mustPress and not n.isSustain and not n.tooLate and
-				not n.wasGoodHit then
-				if not n.canBeHit and n:checkDiff(PlayState.songPosition) then
-					n:update(0)
-				end
-				if n.canBeHit and n.data == key then
-					table.insert(noteList, n)
-				end
-			end
-		end
-
-		if #noteList > 0 then
-			table.sort(noteList, PlayState.sortByShit)
-			local pressNotes, notesStopped = {}, false
-
-			for _, epicNote in next, noteList do
-				for _, doubleNote in next, pressNotes do
-					if math.abs(doubleNote.time - epicNote.time) > 3 then
-						notesStopped = true
-						break
-					end
-				end
-
-				if not notesStopped then
-					table.insert(pressNotes, epicNote)
-					self:goodNoteHit(epicNote)
-				else
-					break
-				end
-			end
-		end
-
-		PlayState.songPosition = prevSongPos
-
-		local r = self.playerReceptors.members[key + 1]
-		if r and r.curAnim.name ~= "confirm" then r:play("pressed") end
+		self:inputPress(key)
 	end
 end
 
@@ -395,17 +352,68 @@ function PlayState:onKeyRelease(key, type)
 
 	key = self:getKeyFromEvent(controls)
 	if key >= 0 then
-		self.keysPressed[key] = false
+		self:inputRelease(key)
+	end
+end
 
-		local r = self.playerReceptors.members[key + 1]
-		if r then
-			r:play("static")
-			r.confirmTimer = 0
-		end
+function PlayState:inputPress(key)
+	self.keysPressed[key] = true
 
-		if self.boyfriend.holding then
-			self.boyfriend.holding = false
+	local prevSongPos = PlayState.songPosition
+	PlayState.songPosition = music.time or prevSongPos
+
+	local noteList = {}
+
+	for _, n in ipairs(self.notesGroup.members) do
+		if n.mustPress and not n.isSustain and not n.tooLate and
+			not n.wasGoodHit then
+			if not n.canBeHit and n:checkDiff(PlayState.songPosition) then
+				n:update(0)
+			end
+			if n.canBeHit and n.data == key then
+				table.insert(noteList, n)
+			end
 		end
+	end
+
+	if #noteList > 0 then
+		table.sort(noteList, PlayState.sortByShit)
+		local pressNotes, notesStopped = {}, false
+
+		for _, epicNote in next, noteList do
+			for _, doubleNote in next, pressNotes do
+				if math.abs(doubleNote.time - epicNote.time) > 3 then
+					notesStopped = true
+					break
+				end
+			end
+
+			if not notesStopped then
+				table.insert(pressNotes, epicNote)
+				self:goodNoteHit(epicNote)
+			else
+				break
+			end
+		end
+	end
+
+	PlayState.songPosition = prevSongPos
+
+	local r = self.playerReceptors.members[key + 1]
+	if r and r.curAnim.name ~= "confirm" then r:play("pressed") end
+end
+
+function PlayState:inputRelease(key)
+	self.keysPressed[key] = false
+
+	local r = self.playerReceptors.members[key + 1]
+	if r then
+		r:play("static")
+		r.confirmTimer = 0
+	end
+
+	if self.boyfriend.holding then
+		self.boyfriend.holding = false
 	end
 end
 
