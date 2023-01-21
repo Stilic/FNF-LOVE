@@ -29,6 +29,8 @@ PlayState.ratings = {
 
 PlayState.downscroll = false
 
+function PlayState.sortByShit(a, b) return a.time < b.time end
+
 function PlayState:enter()
 	self.keysPressed = {}
 
@@ -136,7 +138,7 @@ function PlayState:enter()
 	self.stage = Stage(PlayState.song.stage)
 	self:add(self.stage)
 
-	self.camFollow = { x = 0, y = 0 }
+	self.camFollow = {x = 0, y = 0}
 	self.camZooming = false
 
 	self.camGame.zoom = self.stage.camZoom
