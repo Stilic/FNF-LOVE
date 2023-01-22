@@ -223,13 +223,10 @@ function PlayState:update(dt)
 	local ogCrochet = (60 / PlayState.song.bpm) * 1000
 	local ogStepCrochet = ogCrochet / 4
 	for i, n in ipairs(self.allNotes.members) do
-		if n.mustPress then
-			if n.isSustain and self.keysPressed[n.data] and n.parentNote and
-							not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit then
-				self:goodNoteHit(n)
-			end
-		elseif ((not n.isSustain and n.time <= PlayState.songPosition) or
-						(n.isSustain and n.canBeHit)) then
+		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
+			not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
+			(not n.mustPress and ((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition))
+		then
 			self:goodNoteHit(n)
 		end
 
@@ -238,9 +235,7 @@ function PlayState:update(dt)
 			time = time - ogStepCrochet + ogStepCrochet / PlayState.song.speed
 		end
 
-		local r =
-						(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-										1]
+		local r = (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data + 1]
 		local sy = r.y + n.scrollOffset.y
 
 		n.x = r.x + n.scrollOffset.x
@@ -261,7 +256,7 @@ function PlayState:update(dt)
 				n.y = n.y + Note.swagWidth / 10
 			end
 
-			if n.wasGoodHit or n.prevNote.wasGoodHit then
+			if (n.wasGoodHit or n.prevNote.wasGoodHit) and (self.keysPressed[n.data] or not n.mustPress) then
 				local center = sy + Note.swagWidth / 2
 				local vert = center - n.y
 				if PlayState.downscroll then
@@ -295,8 +290,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:strumPlayAnim(dad, dir, time)
-	local r =
-					(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
+	local r = (dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
 	if not r then return end
 	r:play("confirm", true)
 	if time > 0 then r.confirmTimer = time end

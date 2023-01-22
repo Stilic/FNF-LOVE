@@ -28,7 +28,7 @@ State = require "game.state"
 TitleState = require "game.states.title"
 PlayState = require "game.states.play"
 
-local gamePaused, firstTime = false, true
+local gamePaused = false
 
 local function onBeat(b) Gamestate.beat(b) end
 
@@ -121,6 +121,60 @@ function switchState(state, transition)
 	end
 end
 
+function love.run()
+	love.graphics.clear(love.graphics.getBackgroundColor())
+	love.graphics.origin()
+	love.graphics.present()
+
+	love.fpsCap = 120
+	love.pausedFpsCap = 8
+
+	if love.math then
+		love.math.setRandomSeed(os.time())
+	end
+
+	if love.load then love.load(arg) end
+	if love.timer then love.timer.step() end
+	local first = true
+	elapsed = 0
+
+	while true do
+		local start_time = love.timer.getTime()
+		if love.event then
+			love.event.pump()
+			for name, a,b,c,d,e,f in love.event.poll() do
+				if name == "quit" then
+					if not love.quit or not love.quit() then
+						return a
+					end
+				end
+				love.handlers[name](a,b,c,d,e,f)
+			end
+		end
+ 
+		if love.timer then
+			love.timer.step()
+			elapsed = love.timer.getDelta()
+		end
+
+		if first or not gamePaused then
+			if love.update then love.update(elapsed) end
+			first = false
+
+			if love.graphics and love.graphics.isActive() then
+				love.graphics.clear(love.graphics.getBackgroundColor())
+				love.graphics.origin()
+				if love.draw then love.draw() end
+				love.graphics.present()
+			end
+		end
+
+		local end_time = love.timer.getTime()
+		local frame_time = end_time - start_time
+		if love.timer then love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) - frame_time) end
+	end
+end
+
 function love.load()
 	love.mouse.setVisible(false)
 
@@ -144,9 +198,6 @@ function love.keypressed(...) controls:onKeyPress(...) end
 function love.keyreleased(...) controls:onKeyRelease(...) end
 
 function love.update(dt)
-	if not firstTime and gamePaused then return end
-	if firstTime then firstTime = false end
-
 	dt = math.min(dt, 1 / 30)
 
 	for _, o in pairs(paths.cache) do
@@ -168,6 +219,8 @@ function love.draw()
 	end
 
 	push.finish()
+
+	love.graphics.printf("FPS: " .. tostring(math.truncate(1 / elapsed)), 10, 10, 300, "left", 0)
 end
 
 function love.focus(f)
