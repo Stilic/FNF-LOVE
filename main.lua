@@ -126,32 +126,26 @@ function love.run()
 	love.graphics.origin()
 	love.graphics.present()
 
-	love.fpsCap = 120
-	love.pausedFpsCap = 8
-
-	if love.math then
-		love.math.setRandomSeed(os.time())
-	end
+	if love.math then love.math.setRandomSeed(os.time()) end
 
 	if love.load then love.load(arg) end
 	if love.timer then love.timer.step() end
-	local first = true
-	elapsed = 0
+	local first, elapsed = true, 0
+
+	collectgarbage("stop")
 
 	while true do
 		local start_time = love.timer.getTime()
 		if love.event then
 			love.event.pump()
-			for name, a,b,c,d,e,f in love.event.poll() do
+			for name, a, b, c, d, e, f in love.event.poll() do
 				if name == "quit" then
-					if not love.quit or not love.quit() then
-						return a
-					end
+					if not love.quit or not love.quit() then return a end
 				end
-				love.handlers[name](a,b,c,d,e,f)
+				love.handlers[name](a, b, c, d, e, f)
 			end
 		end
- 
+
 		if love.timer then
 			love.timer.step()
 			elapsed = love.timer.getDelta()
@@ -169,9 +163,11 @@ function love.run()
 			end
 		end
 
-		local end_time = love.timer.getTime()
-		local frame_time = end_time - start_time
-		if love.timer then love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) - frame_time) end
+		if love.timer then
+			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) -
+							                 (love.timer.getTime() - start_time))
+		end
+		collectgarbage()
 	end
 end
 
@@ -183,6 +179,11 @@ function love.load()
 
 	local dimensions = require "dimensions"
 	push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
+
+	local w, h, flags = love.window.getMode()
+	love.fpsCap = math.max(flags.refreshrate, 120)
+	love.pausedFpsCap = 8
+
 	love.graphics.setFont(paths.getFont("vcr.ttf", 18))
 
 	switchState(TitleState(), false)
@@ -219,8 +220,6 @@ function love.draw()
 	end
 
 	push.finish()
-
-	love.graphics.printf("FPS: " .. tostring(math.truncate(1 / elapsed)), 10, 10, 300, "left", 0)
 end
 
 function love.focus(f)
