@@ -9,9 +9,9 @@ PlayState.controlDirs = {
 
 PlayState.ratings = {
 	{name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true},
-	{name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
-	{name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
-	{name = "shit", time = 180, score = 50, mod = 0, splash = false}
+ {name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
+ {name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
+ {name = "shit", time = 180, score = 50, mod = 0, splash = false}
 }
 
 PlayState.downscroll = false
@@ -94,7 +94,7 @@ function PlayState:enter()
 				note.mustPress = gottaHitNote
 				if n[3] ~= nil and n[3] > 0 then
 					note.sustainLength = math.round(n[3] / music.stepCrochet) *
-														 music.stepCrochet
+									                     music.stepCrochet
 				end
 				note.altNote = n[4]
 				note:setScrollFactor(0)
@@ -107,7 +107,7 @@ function PlayState:enter()
 							oldNote = self.unspawnNotes[#self.unspawnNotes]
 
 							local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-												 daNoteData, oldNote, true)
+							                     daNoteData, oldNote, true)
 							sustain.mustPress = gottaHitNote
 							sustain:setScrollFactor(0)
 							table.insert(self.unspawnNotes, sustain)
@@ -129,11 +129,14 @@ function PlayState:enter()
 
 	self.camGame.zoom = self.stage.camZoom
 
-	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y, self.song.girlfriend, false)
+	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
+	                    self.song.girlfriend, false)
 	self.gf:setScrollFactor(0.95)
 
-	self.boyfriend = Character(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y, self.song.boyfriend, true)
-	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad, false)
+	self.boyfriend = Character(self.stage.boyfriendPos.x,
+	                           self.stage.boyfriendPos.y, self.song.boyfriend, true)
+	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad,
+	                     false)
 
 	self:add(self.gf)
 	self:add(self.boyfriend)
@@ -169,24 +172,24 @@ function PlayState:update(dt)
 
 	local lerpVal = 0.04 * 60 * dt
 	self.camGame.target.x = math.lerp(self.camGame.target.x, self.camFollow.x,
-									  lerpVal)
+	                                  lerpVal)
 	self.camGame.target.y = math.lerp(self.camGame.target.y, self.camFollow.y,
-									  lerpVal)
+	                                  lerpVal)
 
 	local mustHit = self:getCurrentMustHit()
 	if mustHit ~= nil then
 		if mustHit then
 			local midpoint = self.boyfriend:getMidpoint()
 			self.camFollow.x = midpoint.x - 100 - self.boyfriend.cameraPosition.x -
-											   self.stage.boyfriendCam.x
+							                   self.stage.boyfriendCam.x
 			self.camFollow.y = midpoint.y - 100 + self.boyfriend.cameraPosition.y +
-											   self.stage.boyfriendCam.y
+							                   self.stage.boyfriendCam.y
 		else
 			local midpoint = self.dad:getMidpoint()
 			self.camFollow.x = midpoint.x + 150 + self.dad.cameraPosition.x +
-											   self.stage.dadCam.x
+							                   self.stage.dadCam.x
 			self.camFollow.y = midpoint.y - 100 + self.dad.cameraPosition.y +
-											   self.stage.dadCam.y
+							                   self.stage.dadCam.y
 		end
 	end
 
@@ -239,18 +242,18 @@ function PlayState:update(dt)
 
 		n.x = r.x + n.scrollOffset.x
 		n.y = sy - (PlayState.songPosition - time) * (0.45 * PlayState.song.speed) *
-							  (PlayState.downscroll and -1 or 1)
+						      (PlayState.downscroll and -1 or 1)
 
 		if n.isSustain then
 			n.flipY = PlayState.downscroll
 			if n.flipY then
 				if n.isSustainEnd then
 					n.y = n.y + (n.height / 4.1) * (ogCrochet / 400) * 1.5 *
-										  PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
-										  (1 - ogCrochet / 600) * PlayState.song.speed
+									      PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
+									      (1 - ogCrochet / 600) * PlayState.song.speed
 				end
 				n.y = n.y + Note.swagWidth / 2 - 60.5 * (PlayState.song.speed - 1) + 27.5 *
-									  (PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
+								      (PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
 			else
 				n.y = n.y + Note.swagWidth / 10
 			end
@@ -407,12 +410,12 @@ function PlayState:goodNoteHit(n)
 				self.judgeSpr.y = self.judgeSpr.y - 60
 
 				self.judgeSprTimer:tween(0.65, self.judgeSpr, {y = self.judgeSpr.y - 25},
-										 "out-circ")
+				                         "out-circ")
 				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000,
-										 function()
+				                         function()
 					self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr,
-											 {alpha = 0}, "linear",
-											 function() self.judgeSpr:destroy() end)
+					                         {alpha = 0}, "linear",
+					                         function() self.judgeSpr:destroy() end)
 				end)
 			end
 
