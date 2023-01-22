@@ -18,8 +18,8 @@ function Character:new(x, y, char, isPlayer)
 
 	self.cameraPosition = {x = 0, y = 0}
 
-	self.script = Script("characters/" .. char, self)
-	if (self.script.closed) then self.script = Script("characters/bf", self) end
+	self.script = Script("characters/" .. char)
+	if (self.script.closed) then self.script = Script("characters/bf") end
 	self.script.variables["self"] = self
 
 	self.script:call("create")
