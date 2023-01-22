@@ -317,7 +317,8 @@ end
 
 function Sprite:draw()
 	if self.exists and self.alive and self.texture and
-					(self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
+		(self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0)
+	then
 		local cam = self.camera or Sprite.defaultCamera
 		local x, y = self:getScreenPosition(cam)
 		local f, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(), self.angle,
@@ -325,8 +326,7 @@ function Sprite:draw()
 		                                     self.origin.x, self.origin.y,
 		                                     self.shear.x, self.shear.y
 
-		love.graphics
-						.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
 
 		local min, mag, anisotropy = self.texture:getFilter()
 		local mode = self.antialiasing and "linear" or "nearest"
