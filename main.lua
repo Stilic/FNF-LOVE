@@ -162,7 +162,8 @@ function love.run()
 		end
 
 		if love.timer then
-			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) - (love.timer.getTime() - start_time))
+			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) -
+							                 (love.timer.getTime() - start_time))
 		end
 	end
 end
