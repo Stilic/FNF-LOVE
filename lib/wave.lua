@@ -4,12 +4,12 @@
 -- The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 local wave, waveObject = {
-    overwrite = false,
+	overwrite = false,
 
-    energyRatio = 1.2, -- energy peak detection threshold
-    trainSize = 108, -- train size for convolution, blocks of 1024 (430 = 10s)
+	energyRatio = 1.2, -- energy peak detection threshold
+	trainSize = 108, -- train size for convolution, blocks of 1024 (430 = 10s)
 
-    minLength = 2048 -- minimum length, in samples, to parse audio
+	minLength = 2048 -- minimum length, in samples, to parse audio
 
 }, {}
 setmetatable(wave, wave)
@@ -21,168 +21,167 @@ local tr2 = 1.0594630943592952645
 local playInstance, stopInstance
 
 local function removeStopped(sources)
-    local remove = {}
-    for s in pairs(sources) do remove[s] = true end
-    for s in pairs(remove) do sources[s] = nil end
+	local remove = {}
+	for s in pairs(sources) do remove[s] = true end
+	for s in pairs(remove) do sources[s] = nil end
 end
 
 local function lerp(a, b, k) -- smooth transitions
-    if a == b then
-        return a
-    else
-        if math.abs(a - b) < 0.005 then
-            return b
-        else
-            return a * (1 - k) + b * k
-        end
-    end
+	if a == b then
+		return a
+	else
+		if math.abs(a - b) < 0.005 then
+			return b
+		else
+			return a * (1 - k) + b * k
+		end
+	end
 end
 
 --[[ Public - Wave ]] --
 
 function wave:newSource(path, type)
-    local _object = {
-        _paused = false,
-        _finished = false,
-        path = path,
-        type = type,
-        instances = {},
-        looping = false,
-        pitch = 1,
-        volume = 1
-    }
+	local _object = {
+		_paused = false,
+		_finished = false,
+		path = path,
+		type = type,
+		instances = {},
+		looping = false,
+		pitch = 1,
+		volume = 1
+	}
 
-    setmetatable(_object, {__index = waveObject})
+	setmetatable(_object, {__index = waveObject})
 
-    if _object.type == "static" then _object:parse() end
+	if _object.type == "static" then _object:parse() end
 
-    return _object
+	return _object
 end
 
 --[[ Public - Source ]] --
 
 function waveObject:play(pitched)
 
-    removeStopped(self.instances)
-    if self._paused then self:stop() end
+	removeStopped(self.instances)
+	if self._paused then self:stop() end
 
-    self._paused = false
-    self._finished = false
+	self._paused = false
+	self._finished = false
 
-    local instance = love.audio.newSource(self.data or self.path,
-                                          self.type or "stream")
+	local instance = love.audio.newSource(self.data or self.path, self.type or "stream")
 
-    -- overwrite instance:stop() and instance:play()
-    if not (playInstance and stopInstance) then
-        playInstance = getmetatable(instance).play
+	-- overwrite instance:stop() and instance:play()
+	if not (playInstance and stopInstance) then
+		playInstance = getmetatable(instance).play
 
-        stopInstance = getmetatable(instance).stop
+		stopInstance = getmetatable(instance).stop
 
-        if wave.overwrite then
-            getmetatable(instance).play = error
-            getmetatable(instance).stop = function(this)
-                stopInstance(this)
-                self.instances[this] = nil
-            end
-            getmetatable(instance).isPlaying = error
-        end
-    end
+		if wave.overwrite then
+			getmetatable(instance).play = error
+			getmetatable(instance).stop = function(this)
+				stopInstance(this)
+				self.instances[this] = nil
+			end
+			getmetatable(instance).isPlaying = error
+		end
+	end
 
-    instance:setLooping(self.looping)
-    instance:setPitch(self.pitch + (pitched and (math.random() - .5) * .1 or 0))
-    instance:setVolume(self.volume)
+	instance:setLooping(self.looping)
+	instance:setPitch(self.pitch + (pitched and (math.random() - .5) * .1 or 0))
+	instance:setVolume(self.volume)
 
-    self.instances[instance] = instance
-    playInstance(instance)
-    self.instance = instance
+	self.instances[instance] = instance
+	playInstance(instance)
+	self.instance = instance
 
-    if self:isMusic() then -- start listening to beat
-        self.duration = self.duration or self.instance:getDuration()
-        self.previousFrame = love.timer.getTime() * 1000
-        self.lastTime = 0
-        self.time = 0
-        self.beat = 0
-        self.beatTime = 0
-        return self
-    end
+	if self:isMusic() then -- start listening to beat
+		self.duration = self.duration or self.instance:getDuration()
+		self.previousFrame = love.timer.getTime() * 1000
+		self.lastTime = 0
+		self.time = 0
+		self.beat = 0
+		self.beatTime = 0
+		return self
+	end
 
-    return self
+	return self
 end
 
 function waveObject:stop()
-    for s in pairs(self.instances) do
-        s:pause()
-        s:release()
-    end
-    self._paused = false
-    self._finished = true
-    self.instances = {}
-    return self
+	for s in pairs(self.instances) do
+		s:pause()
+		s:release()
+	end
+	self._paused = false
+	self._finished = true
+	self.instances = {}
+	return self
 end
 
 function waveObject:pause()
-    if self._paused then return end
-    for s in pairs(self.instances) do s:pause() end
-    self._paused = true
-    return self
+	if self._paused then return end
+	for s in pairs(self.instances) do s:pause() end
+	self._paused = true
+	return self
 end
 
 function waveObject:resume()
-    if not self._paused then return end
-    for s in pairs(self.instances) do s:play() end
-    self._paused = false
-    self.previousFrame = love.timer.getTime() * 1000
-    return self
+	if not self._paused then return end
+	for s in pairs(self.instances) do s:play() end
+	self._paused = false
+	self.previousFrame = love.timer.getTime() * 1000
+	return self
 end
 
 function waveObject:seek(position, unit)
-    for s in pairs(self.instances) do s:seek(position, unit) end
-    if self:isMusic() then
-        local _pos = position * 1000
-        self.time = _pos
-        self.lastTime = _pos
-        self.previousFrame = love.timer.getTime() * 1000
-        self.beatTime = self:calculateBeat()
-        self.beat = math.floor(self.beatTime)
-    end
-    return self
+	for s in pairs(self.instances) do s:seek(position, unit) end
+	if self:isMusic() then
+		local _pos = position * 1000
+		self.time = _pos
+		self.lastTime = _pos
+		self.previousFrame = love.timer.getTime() * 1000
+		self.beatTime = self:calculateBeat()
+		self.beat = math.floor(self.beatTime)
+	end
+	return self
 end
 
 -- // Configure music
 
 function waveObject:parse()
-    assert(not self.data, "Audio is already parsed.")
-    self.data = love.sound.newSoundData(self.path)
-    self.length = self.data:getSampleCount()
-    self.duration = self.data:getDuration()
-    return self
+	assert(not self.data, "Audio is already parsed.")
+	self.data = love.sound.newSoundData(self.path)
+	self.length = self.data:getSampleCount()
+	self.duration = self.data:getDuration()
+	return self
 end
 
 --
 
 function waveObject:setBPM(bpm)
-    self.bpm = bpm
-    local crochet = (60 / bpm) * 1000
-    self.crochet = crochet
-    self.stepCrochet = crochet / 4
-    self.detector = nil
-    if music.time == nil then
-        music.step = 0
-        music.beat = 0
-    else
-        self:updateBeat()
-    end
-    return self
+	self.bpm = bpm
+	local crochet = (60 / bpm) * 1000
+	self.crochet = crochet
+	self.stepCrochet = crochet / 4
+	self.detector = nil
+	if music.time == nil then
+		music.step = 0
+		music.beat = 0
+	else
+		self:updateBeat()
+	end
+	return self
 end
 
 function waveObject:setOffset(offset)
-    self.offset = offset
-    return self
+	self.offset = offset
+	return self
 end
 
 function waveObject:onBeat(f)
-    self.onBeat = f
-    return self
+	self.onBeat = f
+	return self
 end
 
 function waveObject:getBeat() return self.beat end
@@ -190,77 +189,77 @@ function waveObject:getBeat() return self.beat end
 function waveObject:getBeatTime() return self.beatTime - self.beat end
 
 function waveObject:calculateBeat()
-    return (self.bpm / 60) *
-               ((self.time + (self.offset or 0)) % (self.duration * 1000)) /
-               1000
+	return (self.bpm / 60) *
+			   ((self.time + (self.offset or 0)) % (self.duration * 1000)) /
+			   1000
 end
 
 --
 
 function waveObject:fadeIn(target)
-    if self:getTargetVolume() ~= 0 and not self:isPaused() then return self end
-    if self:isPlaying() and self:isPaused() then -- playing but paused
-        self:resume()
-    elseif not self:isPlaying() then -- not playing
-        self:play()
-    end
-    self:setTargetVolume(target or 1)
-    self.isFadingOut = nil
-    return self
+	if self:getTargetVolume() ~= 0 and not self:isPaused() then return self end
+	if self:isPlaying() and self:isPaused() then -- playing but paused
+		self:resume()
+	elseif not self:isPlaying() then -- not playing
+		self:play()
+	end
+	self:setTargetVolume(target or 1)
+	self.isFadingOut = nil
+	return self
 end
 
 function waveObject:fadeOut(speed)
-    self.isFadingOut = speed or true
-    self:setTargetVolume(0)
-    return self
+	self.isFadingOut = speed or true
+	self:setTargetVolume(0)
+	return self
 end
 
 --
 
 function waveObject:setIntensity(intensity)
-    self.intensity = intensity
-    self.energy = 0
-    return self
+	self.intensity = intensity
+	self.energy = 0
+	return self
 end
 
 function waveObject:getEnergy()
-    if not self:isParsed() then return 0 end
-    return self.energy
+	if not self:isParsed() then return 0 end
+	return self.energy
 end
 
 -- // Get/set properties
 for _, property in ipairs {'looping', 'pitch', 'volume'} do
-    local name = property:sub(1, 1):upper() .. property:sub(2)
+	local name = property:sub(1, 1):upper() .. property:sub(2)
 
-    waveObject['get' .. name] = function(self) return self[property] end
+	waveObject['get' .. name] = function(self) return self[property] end
 
-    waveObject['set' .. name] = function(self, val, force)
-        if force then waveObject['setTarget' .. name](self, val) end
-        self[property] = val
-        for s in pairs(self.instances) do s['set' .. name](s, val) end
-        return self
-    end
+	waveObject['set' .. name] = function(self, val, force)
+		if force then waveObject['setTarget' .. name](self, val) end
+		self[property] = val
+		for s in pairs(self.instances) do s['set' .. name](s, val) end
+		return self
+	end
 end
 
 for _, property in ipairs {'pitch', 'volume'} do
-    local name = 'Target' .. property:sub(1, 1):upper() .. property:sub(2)
-    waveObject['get' .. name] = function(self)
-        return self['target' .. property]
-    end
+	local name = 'Target' .. property:sub(1, 1):upper() .. property:sub(2)
+	waveObject['get' .. name] = function(self)
+		return self['target' .. property]
+	end
 
-    waveObject['set' .. name] = function(self, val)
-        self['target' .. property] = val
-        return self
-    end
+	waveObject['set' .. name] = function(self, val)
+		self['target' .. property] = val
+		return self
+	end
 end
 
 function waveObject:tone(offset)
 
-    local pitch = self:getTargetPitch() or self:getPitch()
+	local pitch = self:getTargetPitch() or self:getPitch()
 
-    pitch = pitch * (tr2 ^ offset)
+	pitch = pitch * (tr2 ^ offset)
 
-    return pitch
+	return pitch
 
 end
 
@@ -269,276 +268,276 @@ function waveObject:octave(offset) return self:tone(offset * 12) end
 -- // Beat detection
 
 function waveObject:detectBPM()
-    assert(self:isParsed(), "Parse audio before enabling beat detection.")
+	assert(self:isParsed(), "Parse audio before enabling beat detection.")
 
-    local length = self.length
-    local size = math.floor(length / 1024)
+	local length = self.length
+	local size = math.floor(length / 1024)
 
-    self.detector = {
+	self.detector = {
 
-        length = length,
-        e1024 = {}, -- size
-        e44100 = {}, -- size
-        energyPeak = {}, -- size + 21
+		length = length,
+		e1024 = {}, -- size
+		e44100 = {}, -- size
+		energyPeak = {}, -- size + 21
 
-        size = size
-    }
+		size = size
+	}
 
-    for i = 0, size + 21 do self.detector.energyPeak[i] = 0 end
+	for i = 0, size + 21 do self.detector.energyPeak[i] = 0 end
 
-    self:setBPM(self:calculateBPM()) -- heavy stuff
+	self:setBPM(self:calculateBPM()) -- heavy stuff
 
-    return self
+	return self
 end
 
 function waveObject:calculateEnergy(offset, size, limiter)
 
-    local _energy = 0
-    for i = offset, offset + size do
-        _energy = _energy + (self.data:getSample(i) ^ 2) / (limiter or size);
-    end
+	local _energy = 0
+	for i = offset, offset + size do
+		_energy = _energy + (self.data:getSample(i) ^ 2) / (limiter or size);
+	end
 
-    return _energy
+	return _energy
 end
 
 function waveObject:normalizeSignal(signal, size, maxValue)
-    local max = 0
+	local max = 0
 
-    for i = 0, size do
-        if (math.abs(signal[i]) > max) then max = math.abs(signal[i]) end
-    end
+	for i = 0, size do
+		if (math.abs(signal[i]) > max) then max = math.abs(signal[i]) end
+	end
 
-    -- adjust signal
-    local ratio = maxValue / max
+	-- adjust signal
+	local ratio = maxValue / max
 
-    for i = 0, size do signal[i] = signal[i] * ratio end
+	for i = 0, size do signal[i] = signal[i] * ratio end
 
-    return signal
+	return signal
 end
 
 function waveObject:findMax(signal, position, size)
-    local half = size * .5
-    local max = 0
-    local maxPosition = position
+	local half = size * .5
+	local max = 0
+	local maxPosition = position
 
-    for i = position - half, position + half do
+	for i = position - half, position + half do
 
-        if signal[i] > max then
-            max = signal[i]
-            maxPosition = i
-        end
+		if signal[i] > max then
+			max = signal[i]
+			maxPosition = i
+		end
 
-    end
+	end
 
-    return maxPosition
+	return maxPosition
 end
 
 function waveObject:calculateBPM()
 
-    local _d = self.detector
+	local _d = self.detector
 
-    local _size = _d.size -- length/1024
+	local _size = _d.size -- length/1024
 
-    -- calculate instant energy
+	-- calculate instant energy
 
-    for i = 0, _size + 42 do
-        _d.e1024[i] = self:calculateEnergy(1024 * i, 4096) -- 4096 makes it smoother
-    end
+	for i = 0, _size + 42 do
+		_d.e1024[i] = self:calculateEnergy(1024 * i, 4096) -- 4096 makes it smoother
+	end
 
-    -- calculate average energy for 1 sec
+	-- calculate average energy for 1 sec
 
-    _d.e44100[0] = 0
+	_d.e44100[0] = 0
 
-    -- average of the first 43 first e1024 gives the average e44100
+	-- average of the first 43 first e1024 gives the average e44100
 
-    local sum = 0
+	local sum = 0
 
-    for i = 0, 43 do sum = sum + _d.e1024[i]; end
+	for i = 0, 43 do sum = sum + _d.e1024[i]; end
 
-    _d.e44100[0] = sum / 43;
+	_d.e44100[0] = sum / 43;
 
-    -- fill others
+	-- fill others
 
-    for i = 1, _size do
-        sum = sum - _d.e1024[i - 1] + _d.e1024[i + 42] -- because 42 is the only answer
-        _d.e44100[i] = sum / 43;
-    end
+	for i = 1, _size do
+		sum = sum - _d.e1024[i - 1] + _d.e1024[i + 42] -- because 42 is the only answer
+		_d.e44100[i] = sum / 43;
+	end
 
-    -- calculate ratio
+	-- calculate ratio
 
-    for i = 21, _size do
+	for i = 21, _size do
 
-        -- -21 centers e1024 on e44100's second
+		-- -21 centers e1024 on e44100's second
 
-        if (_d.e1024[i] > wave.energyRatio * _d.e44100[i - 21]) then
+		if (_d.e1024[i] > wave.energyRatio * _d.e44100[i - 21]) then
 
-            _d.energyPeak[i] = 1
+			_d.energyPeak[i] = 1
 
-        end
+		end
 
-    end
+	end
 
-    -- calculate BPM
+	-- calculate BPM
 
-    -- calculate time between every energy peak
+	-- calculate time between every energy peak
 
-    local T = {}
+	local T = {}
 
-    local iPrevious = 0
+	local iPrevious = 0
 
-    for i = 1, _size do
+	for i = 1, _size do
 
-        if (_d.energyPeak[i] == 1) and (_d.energyPeak[i - 1] == 0) then
+		if (_d.energyPeak[i] == 1) and (_d.energyPeak[i - 1] == 0) then
 
-            local di = i - iPrevious
+			local di = i - iPrevious
 
-            if (di > 5) then -- interferences
+			if (di > 5) then -- interferences
 
-                table.insert(T, di)
+				table.insert(T, di)
 
-                iPrevious = i
+				iPrevious = i
 
-            end
-        end
-    end
+			end
+		end
+	end
 
-    -- let the statistics begin
+	-- let the statistics begin
 
-    local maxOccT, avgOccT = 0, 0
+	local maxOccT, avgOccT = 0, 0
 
-    -- count the frequency of each interval
+	-- count the frequency of each interval
 
-    local occT = {}; -- 86 = max 2 blocks of 43 gap (=2s)
+	local occT = {}; -- 86 = max 2 blocks of 43 gap (=2s)
 
-    for i = 0, 86 do occT[i] = 0 end
+	for i = 0, 86 do occT[i] = 0 end
 
-    for i = 1, #T do if (T[i] <= 86) then occT[T[i]] = occT[T[i]] + 1 end end
+	for i = 1, #T do if (T[i] <= 86) then occT[T[i]] = occT[T[i]] + 1 end end
 
-    local occMax = 0
+	local occMax = 0
 
-    for i = 1, 86 do
+	for i = 1, 86 do
 
-        if occT[i] > occMax then
+		if occT[i] > occMax then
 
-            occMaxT = i
+			occMaxT = i
 
-            occMax = occT[i]
+			occMax = occT[i]
 
-        end
-    end
+		end
+	end
 
-    -- average of max + max neighbour for more precision
+	-- average of max + max neighbour for more precision
 
-    local neighbour = occMaxT - 1
+	local neighbour = occMaxT - 1
 
-    if (occT[occMaxT + 1] > occT[neighbour]) then neighbour = occMaxT + 1 end
+	if (occT[occMaxT + 1] > occT[neighbour]) then neighbour = occMaxT + 1 end
 
-    local div = occT[occMaxT] + occT[neighbour]
+	local div = occT[occMaxT] + occT[neighbour]
 
-    if div == 0 then
-        avgOccT = 0
-    else
-        avgOccT = (occMaxT * occT[occMaxT] + neighbour * occT[neighbour]) / div
-    end
+	if div == 0 then
+		avgOccT = 0
+	else
+		avgOccT = (occMaxT * occT[occMaxT] + neighbour * occT[neighbour]) / div
+	end
 
-    -- last step
+	-- last step
 
-    local bpm = 60 / (avgOccT * (1024 / 44100))
+	local bpm = 60 / (avgOccT * (1024 / 44100))
 
-    while bpm < 90 or bpm > 180 do -- clamp at a reasonable bpm
-        if bpm < 90 then
-            bpm = bpm * 2
-        else
-            bpm = bpm * .5
-        end
-    end
+	while bpm < 90 or bpm > 180 do -- clamp at a reasonable bpm
+		if bpm < 90 then
+			bpm = bpm * 2
+		else
+			bpm = bpm * .5
+		end
+	end
 
-    return math.floor(bpm + .5)
+	return math.floor(bpm + .5)
 end
 
 -- // Update
 
 function waveObject:update(dt)
-    self:updateProperties(dt)
+	self:updateProperties(dt)
 
-    if not self:isPaused() and not self:isFinished() then
-        if self:isMusic() then self:updateBeat() end
-        if self:isParsed() then self:updateEnergy(dt) end
-    end
+	if not self:isPaused() and not self:isFinished() then
+		if self:isMusic() then self:updateBeat() end
+		if self:isParsed() then self:updateEnergy(dt) end
+	end
 
-    return self
+	return self
 end
 
 function waveObject:updateBeat()
-    local _instance = self.instances[self.instance]
-    if not _instance then return self end
+	local _instance = self.instances[self.instance]
+	if not _instance then return self end
 
-    local _offset = love.timer.getTime() * 1000
+	local _offset = love.timer.getTime() * 1000
 
-    local _elapsedBeats = 0
+	local _elapsedBeats = 0
 
-    self.time = self.time + _offset - self.previousFrame
+	self.time = self.time + _offset - self.previousFrame
 
-    self.previousFrame = _offset
-    local _position = _instance:tell() * 1000
-    if _position < self.lastTime then -- music looped
-        self.time = _position
-        self.lastTime = _position
-        _elapsedBeats = _elapsedBeats + 1
-        self.beat = 0
-    elseif _position ~= self.lastTime then -- updates music time, but with easing
-        self.time = (self.time + (_position)) / 2
-        self.lastTime = _position
-    end
+	self.previousFrame = _offset
+	local _position = _instance:tell() * 1000
+	if _position < self.lastTime then -- music looped
+		self.time = _position
+		self.lastTime = _position
+		_elapsedBeats = _elapsedBeats + 1
+		self.beat = 0
+	elseif _position ~= self.lastTime then -- updates music time, but with easing
+		self.time = (self.time + (_position)) / 2
+		self.lastTime = _position
+	end
 
-    self.beatTime = self:calculateBeat()
-    self.stepTime = self.beatTime * 4
+	self.beatTime = self:calculateBeat()
+	self.stepTime = self.beatTime * 4
 
-    local _beat = math.floor(self.beatTime)
-    _elapsedBeats = _elapsedBeats + _beat - self.beat
-    self.beat = _beat
-    self.step = math.floor(self.stepTime)
+	local _beat = math.floor(self.beatTime)
+	_elapsedBeats = _elapsedBeats + _beat - self.beat
+	self.beat = _beat
+	self.step = math.floor(self.stepTime)
 
-    if self.onBeat then for i = 1, _elapsedBeats do self.onBeat(_beat) end end
+	if self.onBeat then for i = 1, _elapsedBeats do self.onBeat(_beat) end end
 
-    return self
+	return self
 end
 
 function waveObject:updateEnergy(dt)
-    local _instance = self.instances[self.instance]
-    if not _instance then return self end
+	local _instance = self.instances[self.instance]
+	if not _instance then return self end
 
-    local _sample = _instance:tell("samples")
-    local size = 1024
-    if _sample > size then
+	local _sample = _instance:tell("samples")
+	local size = 1024
+	if _sample > size then
 
-        local _energy = self:calculateEnergy(_sample, size, self.intensity)
-        self.energy = lerp(self.energy, _energy, 10 * dt)
+		local _energy = self:calculateEnergy(_sample, size, self.intensity)
+		self.energy = lerp(self.energy, _energy, 10 * dt)
 
-    end
-    return self
+	end
+	return self
 end
 
 function waveObject:updateProperties(dt)
 
-    if self:getTargetPitch() then
-        self:setPitch(lerp(self:getPitch(), self:getTargetPitch(), 2 * dt))
-    end
+	if self:getTargetPitch() then
+		self:setPitch(lerp(self:getPitch(), self:getTargetPitch(), 2 * dt))
+	end
 
-    if self:getTargetVolume() then
-        self:setVolume(lerp(self:getVolume(), self:getTargetVolume(),
-                            ((self.isFadingOut and self.isFadingOut ~= true) and
-                                self.isFadingOut or 2) * dt))
-    end
+	if self:getTargetVolume() then
+		self:setVolume(lerp(self:getVolume(), self:getTargetVolume(),
+							((self.isFadingOut and self.isFadingOut ~= true) and
+								self.isFadingOut or 2) * dt))
+	end
 
-    if self.isFadingOut and self:getVolume() == self:getTargetVolume() then
-        self.isFadingOut = nil
-        self:pause()
-    end
+	if self.isFadingOut and self:getVolume() == self:getTargetVolume() then
+		self.isFadingOut = nil
+		self:pause()
+	end
 
-    local _instance = self.instances[self.instance]
-    self._finished = not _instance or
-                         (not self:isPaused() and not _instance:isPlaying())
+	local _instance = self.instances[self.instance]
+	self._finished = not _instance or
+						 (not self:isPaused() and not _instance:isPlaying())
 
 end
 
@@ -546,7 +545,7 @@ end
 
 function waveObject:isMusic() return self.bpm and true or false end
 function waveObject:isParsed()
-    return (self.data and self.duration > 10) and true or false
+	return (self.data and self.duration > 10) and true or false
 end
 
 function waveObject:isPaused() return self._paused end
@@ -554,11 +553,11 @@ function waveObject:isPaused() return self._paused end
 function waveObject:isFinished() return self._finished end
 
 function waveObject:isPlaying()
-    local _playing = false
-    for s in pairs(self.instances) do
-        if s then _playing = true end -- if there's at least one instance
-    end
-    return _playing
+	local _playing = false
+	for s in pairs(self.instances) do
+		if s then _playing = true end -- if there's at least one instance
+	end
+	return _playing
 end
 
 --[[ Aliases ]] --
@@ -566,11 +565,11 @@ end
 waveObject.isLooping = waveObject.getLooping
 
 function waveObject:fade(inout, target)
-    if inout == "in" then
-        return self:fadeIn(target)
-    else
-        return self:fadeOut()
-    end
+	if inout == "in" then
+		return self:fadeIn(target)
+	else
+		return self:fadeOut()
+	end
 end
 
 --[[ End ]] --

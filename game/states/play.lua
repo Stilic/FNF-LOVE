@@ -114,6 +114,7 @@ function PlayState:enter()
 			table.insert(PlayState.song.mustHits, nil)
 		end
 	end
+
 	table.sort(self.unspawnNotes, PlayState.sortByShit)
 
 	self.stage = Stage(PlayState.song.stage)
@@ -158,6 +159,8 @@ function PlayState:enter()
 
 	self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
 	controls:bindRelease(self.bindedKeyRelease)
+
+	self.startingSong = true
 end
 
 function PlayState:update(dt)
@@ -196,12 +199,15 @@ function PlayState:update(dt)
 		self.camHUD.zoom = math.lerp(self.camHUD.zoom, 1, ratio)
 	end
 
-	PlayState.songPosition = PlayState.songPosition + 1000 * dt
-	if not self.startedSong and PlayState.songPosition >= 0 then
-		self.startedSong = true
-		music:play()
-		if self.vocals then self.vocals:play() end
-		self:resync()
+	if self.startedSong then
+		PlayState.songPosition = music.time
+	elseif self.startingSong then
+		PlayState.songPosition = PlayState.songPosition + 1000 * dt
+		if PlayState.songPosition >= 0 then
+			self.startedSong = true
+			music:play()
+			if self.vocals then self.vocals:play() end
+		end
 	end
 
 	if self.unspawnNotes[1] then
@@ -296,7 +302,7 @@ function PlayState:inputPress(key)
 	self.keysPressed[key] = true
 
 	local prevSongPos = PlayState.songPosition
-	PlayState.songPosition = music.time or prevSongPos
+	PlayState.songPosition = (music.instance and music.instance:tell() * 1000) or music.time or prevSongPos
 
 	local noteList = {}
 
@@ -424,13 +430,9 @@ function PlayState:removeNote(n)
 	end
 end
 
-function PlayState:resync()
-	PlayState.songPosition = music.time
-	if self.vocals then self.vocals:seek(PlayState.songPosition / 1000) end
-end
-
 function PlayState:beat(b)
-	if math.abs(music.time - PlayState.songPosition) > 6 then self:resync() end
+	local time = music.instance:tell()
+	if self.vocals and math.abs(self.vocals.instance:tell() - time) * 1000 > 6 then self.vocals:seek(time) end
 
 	if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
 		self.camGame.zoom = self.camGame.zoom + 0.015
