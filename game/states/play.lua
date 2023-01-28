@@ -262,10 +262,14 @@ function PlayState:update(dt)
 				local vert = center - n.y
 				if PlayState.downscroll then
 					if n.y - n.offset.y + n.height >= center then
-						n.clipRect = {x = 0, y = 0, width = n.width, height = vert}
+						if not n.clipRect then n.clipRect = {} end
+						n.clipRect.x, n.clipRect.y = 0, 0
+						n.clipRect.width, n.clipRect.height = n.width, vert
 					end
 				elseif n.y + n.offset.y <= center then
-					n.clipRect = {x = 0, y = vert, width = n.width, height = n.height - vert}
+					if not n.clipRect then n.clipRect = {} end
+					n.clipRect.x, n.clipRect.y = 0, vert
+					n.clipRect.width, n.clipRect.height = n.width, n.height - vert
 				end
 			end
 		end

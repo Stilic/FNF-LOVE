@@ -194,9 +194,18 @@ function love.run()
 
 	elapsed = love.timer.step()
 	if not love.step(true, true) then
+		local gc_debounce = 0
 		while not love.step(not gamePaused, not gamePaused) do
-			elapsed = love.timer.step()
-			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) - elapsed)
+			focused, elapsed = love.window.hasFocus(), love.timer.step()
+			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or focused and love.fpsCap or love.unfocusedFpsCap) - elapsed)
+
+			if gamePaused or not focused then
+				if gc_debounce == 0 then collectgarbage() end
+				gc_debounce = gc_debounce + 1 % 8
+			else
+				collectgarbage("step")
+				gc_debounce = 0
+			end
 		end
 	end
 end
@@ -212,7 +221,8 @@ function love.load()
 
 	local w, h, flags = love.window.getMode()
 	love.fpsCap = math.max(flags.refreshrate, 90)
-	love.pausedFpsCap = 8
+	love.unfocusedFpsCap = 8
+	love.pausedFpsCap = 4
 
 	love.graphics.setFont(paths.getFont("vcr.ttf", 18))
 
@@ -254,7 +264,7 @@ function love.draw()
 	end
 
 	push.finish()
-	love.graphics.printf("FPS: " .. tostring(math.truncate(1 / elapsed, 0)), 8, 8, 300, "left", 0)
+	love.graphics.printf("FPS: " .. tostring(math.truncate(1 / elapsed, 0)) .. "\nMEM: " .. collectgarbage("count"), 8, 8, 300, "left", 0)
 end
 
 function love.focus(f)
