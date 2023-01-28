@@ -87,6 +87,7 @@ end
 math.noise = require "lib.noise"
 ffi = require "ffi"
 
+--[=[ no need to, there is already love.timer.sleep which are equilevant to SDL Sleep function
 pcall(function()
 	ffi.cdef[[
 		void Sleep(int ms);
@@ -103,3 +104,4 @@ pcall(function()
 		end
 	end
 end)
+]=]
