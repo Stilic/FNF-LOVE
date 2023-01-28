@@ -140,6 +140,15 @@ function love.step(update, draw)
 		love.graphics.origin()
 		love.draw()
 
+		local stats = love.graphics.getStats()
+		love.graphics.setFont(paths.getFont("vcr.ttf", 14))
+		love.graphics.printf(
+			"FPS: " .. tostring(math.truncate(1 / (elapsed or 0), 0)) ..
+			"\nGC MEM: " .. math.countbytes(collectgarbage("count")) ..
+			"\nTEX MEM: " .. math.countbytes(stats.texturememory) ..
+			"\nDRAWS: " .. stats.drawcalls,
+		6, 6, 300, "left", 0)
+
 		love.graphics.present()
 	end
 end
@@ -147,50 +156,13 @@ end
 function love.run()
 	love.graphics.clear(0, 0, 0, 0, false, false)
 	love.graphics.present()
-	love.step(false, false)
+	love.event.pump()
 	love.steps = 0	
 
 	if love.math then love.math.setRandomSeed(os.time()) end
-
 	if love.load then love.load(arg) end
-	if love.timer then love.timer.step() end
-	collectgarbage("stop")
 
-	--[=[
-	winName = "Friday Night Funkin'"
-	ffi.cdef [[
-		typedef int BOOL;
-		typedef int BYTE;
-		typedef int LONG;
-		typedef LONG DWORD;
-		typedef DWORD COLORREF;
-		typedef unsigned long HANDLE;
-		typedef HANDLE HWND;
-		typedef int bInvert;
-
-		HWND GetActiveWindow(void);
-
-		LONG SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
-
-		HWND SetLayeredWindowAttributes(HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
-
-		DWORD GetLastError();
-	]]
-
-	local win = ffi.C.GetActiveWindow()
-
-	if win == nil then
-		print('Error finding window!!! idiot!!!!')
-		print('cool code: '..tostring(ffi.C.GetLastError()))
-	end
-	if ffi.C.SetWindowLongA(win, -20, 0x00080000) == 0 then
-		print('error setting window to be layed WTF DFOES THAT EVBEN MEAN LMAOOO!!! IM NOT NO NERD!')
-		print('cool code: '..tostring(ffi.C.GetLastError()))
-	end
-	if ffi.C.SetLayeredWindowAttributes(win, 0x00000000, 0, 0x00000001) == 0 then
-		print('error setting color key or whatever')
-		print('cool code: '..tostring(ffi.C.GetLastError()))
-	end]=]
+	collectgarbage(); collectgarbage("stop")
 
 	elapsed = love.timer.step()
 	if not love.step(true, true) then
@@ -223,8 +195,6 @@ function love.load()
 	love.fpsCap = math.max(flags.refreshrate, 90)
 	love.unfocusedFpsCap = 8
 	love.pausedFpsCap = 4
-
-	love.graphics.setFont(paths.getFont("vcr.ttf", 18))
 
 	switchState(TitleState(), false)
 end
@@ -264,7 +234,6 @@ function love.draw()
 	end
 
 	push.finish()
-	love.graphics.printf("FPS: " .. tostring(math.truncate(1 / elapsed, 0)) .. "\nMEM: " .. collectgarbage("count"), 8, 8, 300, "left", 0)
 end
 
 function love.focus(f)

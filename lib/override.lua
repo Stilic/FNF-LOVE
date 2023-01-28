@@ -84,6 +84,13 @@ function math.remap(x, start1, stop1, start2, stop2)
 	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
 end
 
+local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
+function math.countbytes(x)
+	local i = 1
+	while x >= 0x400 and i < 5 do x = x / 0x400; i = i + 1 end
+	return math.truncate(x, 2, true) .. " " .. intervals[i]
+end
+
 math.noise = require "lib.noise"
 ffi = require "ffi"
 
