@@ -121,49 +121,82 @@ function switchState(state, transition)
 	end
 end
 
+function love.step(update, draw)
+	love.event.pump()
+	for name, a, b, c, d, e, f in love.event.poll() do
+		if name == "quit" and not love.quit() then
+			return true
+		end
+		love.handlers[name](a, b, c, d, e, f)
+	end
+
+	if update then
+		love.update(elapsed)
+		love.steps = love.steps + 1
+	end
+
+	if draw and love.graphics.isActive() then
+		love.graphics.clear(0, 0, 0, 0, false, false)
+		love.graphics.origin()
+		love.draw()
+
+		love.graphics.present()
+	end
+end
+
 function love.run()
-	love.graphics.clear(0, 0, 0, 0, true, true)
-	love.graphics.origin()
+	love.graphics.clear(0, 0, 0, 0, false, false)
 	love.graphics.present()
+	love.step(false, false)
+	love.steps = 0	
 
 	if love.math then love.math.setRandomSeed(os.time()) end
 
 	if love.load then love.load(arg) end
 	if love.timer then love.timer.step() end
-	local first, elapsed = true, 0
-
 	collectgarbage("stop")
 
-	while true do
-		local start_time = love.timer.getTime()
+	--[=[
+	winName = "Friday Night Funkin'"
+	ffi.cdef [[
+		typedef int BOOL;
+		typedef int BYTE;
+		typedef int LONG;
+		typedef LONG DWORD;
+		typedef DWORD COLORREF;
+		typedef unsigned long HANDLE;
+		typedef HANDLE HWND;
+		typedef int bInvert;
 
-		love.event.pump()
-		for name, a, b, c, d, e, f in love.event.poll() do
-			if name == "quit" then
-				if not love.quit or not love.quit() then return a end
-			end
-			love.handlers[name](a, b, c, d, e, f)
-		end
+		HWND GetActiveWindow(void);
 
-		love.timer.step()
-		elapsed = love.timer.getDelta()
+		LONG SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
 
-		if first or not gamePaused then
-			if love.update then love.update(elapsed) end
-			first = false
+		HWND SetLayeredWindowAttributes(HWND hwnd, COLORREF crKey, BYTE bAlpha, DWORD dwFlags);
 
-			if love.graphics.isActive() then
-				love.graphics.clear(0, 0, 0, 0, false, false)
-				love.graphics.origin()
-				love.draw()
+		DWORD GetLastError();
+	]]
 
-				love.graphics.present()
-			end
-		end
+	local win = ffi.C.GetActiveWindow()
 
-		if love.timer then
-			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) -
-							                 (love.timer.getTime() - start_time))
+	if win == nil then
+		print('Error finding window!!! idiot!!!!')
+		print('cool code: '..tostring(ffi.C.GetLastError()))
+	end
+	if ffi.C.SetWindowLongA(win, -20, 0x00080000) == 0 then
+		print('error setting window to be layed WTF DFOES THAT EVBEN MEAN LMAOOO!!! IM NOT NO NERD!')
+		print('cool code: '..tostring(ffi.C.GetLastError()))
+	end
+	if ffi.C.SetLayeredWindowAttributes(win, 0x00000000, 0, 0x00000001) == 0 then
+		print('error setting color key or whatever')
+		print('cool code: '..tostring(ffi.C.GetLastError()))
+	end]=]
+
+	elapsed = love.timer.step()
+	if not love.step(true, true) then
+		while not love.step(not gamePaused, not gamePaused) do
+			elapsed = love.timer.step()
+			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or love.fpsCap) - elapsed)
 		end
 	end
 end
@@ -178,12 +211,16 @@ function love.load()
 	push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
 
 	local w, h, flags = love.window.getMode()
-	love.fpsCap = math.max(flags.refreshrate, 120)
+	love.fpsCap = math.max(flags.refreshrate, 90)
 	love.pausedFpsCap = 8
 
 	love.graphics.setFont(paths.getFont("vcr.ttf", 18))
 
 	switchState(TitleState(), false)
+end
+
+function love.quit()
+	
 end
 
 function love.resize(width, height)
@@ -217,6 +254,7 @@ function love.draw()
 	end
 
 	push.finish()
+	love.graphics.printf("FPS: " .. tostring(math.truncate(1 / elapsed, 0)), 8, 8, 300, "left", 0)
 end
 
 function love.focus(f)

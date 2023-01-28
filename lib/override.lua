@@ -1,61 +1,39 @@
 -- LUA 5.2-LUA 5.3 REIMPLEMENTATIONS
-function string.split(self, sep)
-	if sep == "" then return {self:match((self:gsub(".", "(.)")))} end
-	if sep == nil then sep = "%s" end
-	local t = {}
-	for str in string.gmatch(self, "([^" .. sep .. "]+)") do table.insert(t, str) end
+function string.split(self, sep, t)
+	t = t or {}
+	for s in self:gmatch((not sep or sep == '') and '(.)' or '([^'..sep..']+)') do table.insert(t, s) end
 	return t
 end
 
-function string.replace(self, pattern, rep)
-	local s = string.gsub(self, "%" .. pattern, rep)
-	return s
+function string.replace(self, pattern, rep) -- note: you could just do gsub instead of replace
+	return self:gsub('%'..pattern, rep)
 end
 
-function table.find(table, v)
-	for i, v2 in next, table do if v2 == v then return i end end
+function table.find(table, value)
+	for i, v in next, table do if v == value then return i end end
 end
 
-function table.clear(t, includeKeys)
-	if (includeKeys) then
-		for i, _ in pairs(t) do rawset(t, i, nil) end
-		return
-	end
-	while #t ~= 0 do rawset(t, #t, nil) end
+function table.clear(table, includeKeys)
+	for i in includeKeys and next or iter, table, not includeKeys and 0 or nil do rawset(table, i, nil) end
 end
 
 function math.clamp(x, min, max) return math.max(min, math.min(x, max)) end
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
-bit32 = bit
+bit32, iter = bit, ipairs(math)
 
 -- EXTRA FUNCTIONS
-function table.keys(t, keys, includeI)
-	if (type(keys) == "boolean") then
-		local v = includeI
-		includeI = keys;
-		keys = v
-	end
-	keys = type(keys) == "table" and keys or {}
-	for i in pairs(t) do
-		if (type(i) ~= "number" or includeI) then table.insert(keys, i) end
-	end
+function table.keys(table, includeIndices, keys)
+	keys = keys or {}
+	for i in includeIndices and iter or next, table, includeIndices and 0 or nil do table.insert(keys, i) end
 	return keys
 end
 
-function string.duplicate(s, i)
-	local str = ""
-	for i = 1, i do str = str .. s end
-	return str
-end
-
-string.dupe = string.duplicate
-
-function string.ext(self) return self:sub(1 - (self:reverse():find("%.") or 1)) end
+function string.ext(self) return self:sub(1 - (self:reverse():find('%.') or 1)) end
 
 function string.withoutExt(self)
-	return self:sub(0, -1 - (self:reverse():find("%.") or 1))
+	return self:sub(0, -1 - (self:reverse():find('%.') or 1))
 end
 
 function string.startsWith(self, prefix) return self:find(prefix, 1, true) == 1 end
@@ -73,39 +51,55 @@ function string.isSpace(self, pos)
 end
 
 function string.ltrim(self)
-	local i = #self
-	local r = 1
+	local i, r = #self, 1
 	while (r <= i and self:isSpace(r)) do r = r + 1 end
-	return r > 1 and self:sub(r, i) or self
+	return self:sub(r)
 end
 
 function string.rtrim(self)
 	local i = #self
-	local r = 1
-	while (r <= i and self:isSpace(i - r + 1)) do r = r + 1 end
-	return r > 1 and self:sub(0, i - r + 1) or self
+	local r = i - 1
+	while (r > 0 and self:isSpace(r)) do r = r - 1 end
+	return self:sub(1, r)
 end
 
-function string.trim(self) return string.ltrim(self:rtrim()) end
+function string.trim(self) return self:ltrim():rtrim() end
 
-function math.odd(self) return math.fmod(self, 2) == 0 end -- 2, 4, etc
+function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
 
-function math.even(self) return not math.even(self) end -- 1, 3, etc
+function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
-function math.lerp(from, to, i) return from + (to - from) * i end
+function math.lerp(x, y, i) return x + (y - x) * i end
 
 function math.truncate(x, precision, round)
-	if (precision == 0) then return math.floor(x) end
-
-	precision = type(precision) == "number" and precision or 2
-
-	x = x * math.pow(10, precision);
-	return (round and math.floor(x + .5) or math.floor(x)) /
-					       math.pow(10, precision)
+	round = round and math.round or math.floor
+	if not precision or precision > 0 then
+		precision = 10 ^ (precision or 2)
+		return round(precision * x) / precision
+	end
+	return round(x)
 end
 
-function math.remap(value, start1, stop1, start2, stop2)
-	return start2 + (value - start1) * ((stop2 - start2) / (stop1 - start1))
+function math.remap(x, start1, stop1, start2, stop2)
+	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
 end
 
 math.noise = require "lib.noise"
+ffi = require "ffi"
+
+pcall(function()
+	ffi.cdef[[
+		void Sleep(int ms);
+		int poll(struct pollfd *fds, unsigned long nfds, int timeout);
+	]]
+
+	if ffi.os == "Windows" then
+		function love.timer.sleep(s)
+			ffi.C.Sleep(math.max(s*1000, 0))
+		end
+	else
+		function love.timer.sleep(s)
+			ffi.C.poll(nil, 0, math.max(s*1000, 0))
+		end
+	end
+end)

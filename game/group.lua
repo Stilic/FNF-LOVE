@@ -53,14 +53,13 @@ end
 
 function Group:draw(...)
 	for _, o in pairs(self.members) do
-		local resetCam = false
-		if self.camera and not o.camera then
-			resetCam = true
-			o.camera = self.camera
-		end
 		local f = o.draw
-		if f then f(o, ...) end
-		if resetCam then o.camera = nil end
+		if f then
+			local resetCam = self.camera and not o.camera
+			if resetCam then o.camera = self.camera end
+			f(o, ...)
+			if resetCam then o.camera = nil end
+		end
 	end
 end
 

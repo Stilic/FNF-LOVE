@@ -2,7 +2,7 @@ local dimensions = require "dimensions"
 
 function love.conf(t)
 	t.identity = "funkin"
-	-- t.console = true
+	-- t.console = true || lovec .
 
 	t.window.title = "Friday Night Funkin'"
 	t.window.icon = "art/icon.png"
@@ -11,7 +11,7 @@ function love.conf(t)
 	t.window.minwidth = 200
 	t.window.minheight = 0
 	t.window.resizable = true
-	t.window.vsync = 0
+	t.window.vsync = false
 
 	t.modules.physics = false
 	t.modules.touch = false

@@ -15,6 +15,8 @@ function Stage:new(name)
 	self.gfCam = {x = 0, y = 0}
 	self.dadCam = {x = 0, y = 0}
 
+	self.front = Group()
+
 	local path = "stages/" .. name
 	self.script = Script(path)
 	self.script.variables["self"] = self

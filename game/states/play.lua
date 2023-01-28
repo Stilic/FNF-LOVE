@@ -9,9 +9,9 @@ PlayState.controlDirs = {
 
 PlayState.ratings = {
 	{name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true},
- {name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
- {name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
- {name = "shit", time = 180, score = 50, mod = 0, splash = false}
+	{name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
+	{name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
+	{name = "shit", time = 180, score = 50, mod = 0, splash = false}
 }
 
 PlayState.downscroll = false
@@ -21,7 +21,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "circadian-rhythm"
+	local song = "plum"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -36,8 +36,7 @@ function PlayState:enter()
 		mustHits = {}
 	}
 
-	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
-					chart.bpm)
+	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(chart.bpm)
 	if chart.needsVoices then
 		self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices", "stream")
 	end
@@ -91,27 +90,23 @@ function PlayState:enter()
 				end
 
 				local note = Note(daStrumTime, daNoteData, oldNote)
+				local fixedSus = math.round(n[3] / music.stepCrochet)
 				note.mustPress = gottaHitNote
 				if n[3] ~= nil and n[3] > 0 then
-					note.sustainLength = math.round(n[3] / music.stepCrochet) *
-									                     music.stepCrochet
+					note.sustainLength = fixedSus * music.stepCrochet
 				end
 				note.altNote = n[4]
 				note:setScrollFactor(0)
 				table.insert(self.unspawnNotes, note)
 
-				if note.sustainLength > 0 then
-					local susLength = note.sustainLength / music.stepCrochet
-					if susLength > 0 then
-						for susNote = 0, math.max(math.round(susLength), 2) do
-							oldNote = self.unspawnNotes[#self.unspawnNotes]
+				if fixedSus > 0 then
+					for susNote = 0, math.floor(math.max(fixedSus, 1)) do
+						oldNote = self.unspawnNotes[#self.unspawnNotes]
 
-							local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-							                     daNoteData, oldNote, true)
-							sustain.mustPress = gottaHitNote
-							sustain:setScrollFactor(0)
-							table.insert(self.unspawnNotes, sustain)
-						end
+						local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1), daNoteData, oldNote, true)
+						sustain.mustPress = gottaHitNote
+						sustain:setScrollFactor(0)
+						table.insert(self.unspawnNotes, sustain)
 					end
 				end
 			end
@@ -141,6 +136,8 @@ function PlayState:enter()
 	self:add(self.gf)
 	self:add(self.boyfriend)
 	self:add(self.dad)
+
+	self:add(self.stage.front)
 
 	self.judgeSpr = Sprite()
 	self:add(self.judgeSpr)
@@ -210,23 +207,22 @@ function PlayState:update(dt)
 	if self.unspawnNotes[1] then
 		local time = 2000
 		if PlayState.song.speed < 1 then time = time / PlayState.song.speed end
-		while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-						PlayState.songPosition < time do
+		while #self.unspawnNotes > 0 and self.unspawnNotes[1].time - PlayState.songPosition < time do
 			local n = table.remove(self.unspawnNotes, 1)
-			self.allNotes:add(n)
 			local grp = n.isSustain and self.sustainsGroup or self.notesGroup
+			self.allNotes:add(n)
 			grp:add(n)
-			grp:sort(PlayState.sortByShit)
 		end
 	end
 
 	local ogCrochet = (60 / PlayState.song.bpm) * 1000
 	local ogStepCrochet = ogCrochet / 4
 	for i, n in ipairs(self.allNotes.members) do
+		-- i swear to god STILIC STOP RUINING THE FORMATTING
 		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
-						not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
-						(not n.mustPress and
-										((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
+			not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
+			(not n.mustPress and ((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition))
+		then
 			self:goodNoteHit(n)
 		end
 
@@ -235,31 +231,27 @@ function PlayState:update(dt)
 			time = time - ogStepCrochet + ogStepCrochet / PlayState.song.speed
 		end
 
-		local r =
-						(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-										1]
+		local r = (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data + 1]
 		local sy = r.y + n.scrollOffset.y
 
 		n.x = r.x + n.scrollOffset.x
-		n.y = sy - (PlayState.songPosition - time) * (0.45 * PlayState.song.speed) *
-						      (PlayState.downscroll and -1 or 1)
+		n.y = sy - (PlayState.songPosition - time) * (0.45 * PlayState.song.speed) * (PlayState.downscroll and -1 or 1)
 
 		if n.isSustain then
 			n.flipY = PlayState.downscroll
 			if n.flipY then
 				if n.isSustainEnd then
 					n.y = n.y + (n.height / 4.1) * (ogCrochet / 400) * 1.5 *
-									      PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
-									      (1 - ogCrochet / 600) * PlayState.song.speed
+						PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
+						(1 - ogCrochet / 600) * PlayState.song.speed
 				end
 				n.y = n.y + Note.swagWidth / 2 - 60.5 * (PlayState.song.speed - 1) + 27.5 *
-								      (PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
+					(PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
 			else
 				n.y = n.y + Note.swagWidth / 10
 			end
 
-			if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-							(self.keysPressed[n.data] or not n.mustPress) then
+			if (n.wasGoodHit or n.prevNote.wasGoodHit) and (not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
 				local center = sy + Note.swagWidth / 2
 				local vert = center - n.y
 				if PlayState.downscroll then
@@ -409,13 +401,11 @@ function PlayState:goodNoteHit(n)
 				self.judgeSpr.x = (w - self.judgeSpr.width) * 0.35 + 40
 				self.judgeSpr.y = self.judgeSpr.y - 60
 
-				self.judgeSprTimer:tween(0.65, self.judgeSpr, {y = self.judgeSpr.y - 25},
-				                         "out-circ")
-				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000,
-				                         function()
-					self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr,
-					                         {alpha = 0}, "linear",
-					                         function() self.judgeSpr:destroy() end)
+				self.judgeSprTimer:tween(0.65, self.judgeSpr, {y = self.judgeSpr.y - 25}, "out-circ")
+				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000, function()
+					self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr, {alpha = 0}, "linear", function()
+						self.judgeSpr:destroy()
+					end)
 				end)
 			end
 
@@ -440,7 +430,7 @@ function PlayState:resync()
 end
 
 function PlayState:beat(b)
-	if math.abs(music.time - PlayState.songPosition) > 2 then self:resync() end
+	if math.abs(music.time - PlayState.songPosition) > 6 then self:resync() end
 
 	if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
 		self.camGame.zoom = self.camGame.zoom + 0.015
