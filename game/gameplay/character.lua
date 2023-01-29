@@ -67,16 +67,14 @@ end
 function Character:beat(b)
 	self.script:call("beat", b)
 
-	if b % self.danceSpeed == 0 then
-		if self.lastHit > 0 then
-			if self.lastHit + music.stepCrochet * self.singDuration <=
-							PlayState.songPosition then
-				self:dance()
-				self.lastHit = 0
-			end
-		else
+	if self.lastHit > 0 then
+		if b % math.max(self.danceSpeed, 2) == 0 and self.lastHit + music.stepCrochet *
+						self.singDuration <= PlayState.songPosition then
 			self:dance()
+			self.lastHit = 0
 		end
+	elseif b % self.danceSpeed == 0 then
+		self:dance()
 	end
 
 	self.script:call("postBeat", b)

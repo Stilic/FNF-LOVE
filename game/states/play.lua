@@ -9,9 +9,9 @@ PlayState.controlDirs = {
 
 PlayState.ratings = {
 	{name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true},
-	{name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
-	{name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
-	{name = "shit", time = 180, score = 50, mod = 0, splash = false}
+ {name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
+ {name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
+ {name = "shit", time = 180, score = 50, mod = 0, splash = false}
 }
 
 PlayState.downscroll = false
@@ -36,7 +36,8 @@ function PlayState:enter()
 		mustHits = {}
 	}
 
-	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(chart.bpm)
+	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
+					chart.bpm)
 	if chart.needsVoices then
 		self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices", "stream")
 	end
@@ -103,7 +104,8 @@ function PlayState:enter()
 					for susNote = 0, math.floor(math.max(fixedSus, 1)) do
 						oldNote = self.unspawnNotes[#self.unspawnNotes]
 
-						local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1), daNoteData, oldNote, true)
+						local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
+						                     daNoteData, oldNote, true)
 						sustain.mustPress = gottaHitNote
 						sustain:setScrollFactor(0)
 						table.insert(self.unspawnNotes, sustain)
@@ -213,7 +215,8 @@ function PlayState:update(dt)
 	if self.unspawnNotes[1] then
 		local time = 2000
 		if PlayState.song.speed < 1 then time = time / PlayState.song.speed end
-		while #self.unspawnNotes > 0 and self.unspawnNotes[1].time - PlayState.songPosition < time do
+		while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
+						PlayState.songPosition < time do
 			local n = table.remove(self.unspawnNotes, 1)
 			local grp = n.isSustain and self.sustainsGroup or self.notesGroup
 			self.allNotes:add(n)
@@ -226,9 +229,9 @@ function PlayState:update(dt)
 	for i, n in ipairs(self.allNotes.members) do
 		-- i swear to god STILIC STOP RUINING THE FORMATTING
 		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
-			not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
-			(not n.mustPress and ((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition))
-		then
+						not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
+						(not n.mustPress and
+										((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
 			self:goodNoteHit(n)
 		end
 
@@ -237,27 +240,31 @@ function PlayState:update(dt)
 			time = time - ogStepCrochet + ogStepCrochet / PlayState.song.speed
 		end
 
-		local r = (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data + 1]
+		local r =
+						(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
+										1]
 		local sy = r.y + n.scrollOffset.y
 
 		n.x = r.x + n.scrollOffset.x
-		n.y = sy - (PlayState.songPosition - time) * (0.45 * PlayState.song.speed) * (PlayState.downscroll and -1 or 1)
+		n.y = sy - (PlayState.songPosition - time) * (0.45 * PlayState.song.speed) *
+						      (PlayState.downscroll and -1 or 1)
 
 		if n.isSustain then
 			n.flipY = PlayState.downscroll
 			if n.flipY then
 				if n.isSustainEnd then
 					n.y = n.y + (n.height / 4.1) * (ogCrochet / 400) * 1.5 *
-						PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
-						(1 - ogCrochet / 600) * PlayState.song.speed
+									      PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
+									      (1 - ogCrochet / 600) * PlayState.song.speed
 				end
 				n.y = n.y + Note.swagWidth / 2 - 60.5 * (PlayState.song.speed - 1) + 27.5 *
-					(PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
+								      (PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
 			else
 				n.y = n.y + Note.swagWidth / 10
 			end
 
-			if (n.wasGoodHit or n.prevNote.wasGoodHit) and (not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
+			if (n.wasGoodHit or n.prevNote.wasGoodHit) and
+							(not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
 				local center = sy + Note.swagWidth / 2
 				local vert = center - n.y
 				if PlayState.downscroll then
@@ -306,7 +313,8 @@ function PlayState:inputPress(key)
 	self.keysPressed[key] = true
 
 	local prevSongPos = PlayState.songPosition
-	PlayState.songPosition = (music.instance and music.instance:tell() * 1000) or music.time or prevSongPos
+	PlayState.songPosition = (music.instance and music.instance:tell() * 1000) or
+					                         music.time or prevSongPos
 
 	local noteList = {}
 
@@ -411,11 +419,13 @@ function PlayState:goodNoteHit(n)
 				self.judgeSpr.x = (w - self.judgeSpr.width) * 0.35 + 40
 				self.judgeSpr.y = self.judgeSpr.y - 60
 
-				self.judgeSprTimer:tween(0.65, self.judgeSpr, {y = self.judgeSpr.y - 25}, "out-circ")
-				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000, function()
-					self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr, {alpha = 0}, "linear", function()
-						self.judgeSpr:destroy()
-					end)
+				self.judgeSprTimer:tween(0.65, self.judgeSpr, {y = self.judgeSpr.y - 25},
+				                         "out-circ")
+				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000,
+				                         function()
+					self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr,
+					                         {alpha = 0}, "linear",
+					                         function() self.judgeSpr:destroy() end)
 				end)
 			end
 
@@ -436,7 +446,9 @@ end
 
 function PlayState:beat(b)
 	local time = music.instance:tell()
-	if self.vocals and math.abs(self.vocals.instance:tell() - time) * 1000 > 6 then self.vocals:seek(time) end
+	if self.vocals and math.abs(self.vocals.instance:tell() - time) * 1000 > 6 then
+		self.vocals:seek(time)
+	end
 
 	if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
 		self.camGame.zoom = self.camGame.zoom + 0.015

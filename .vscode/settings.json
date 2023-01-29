@@ -3,10 +3,11 @@
   "Lua.workspace.library": ["${3rd}/love2d/library"],
   "Lua.workspace.checkThirdParty": false,
   "Lua.diagnostics.disable": [
-    "lowercase-global",
-    "undefined-global",
-    "redundant-parameter",
-    "deprecated"
-  ],
+	"lowercase-global",
+	"undefined-global",
+	"redundant-parameter",
+	"deprecated",
+	"undefined-field"
+],
   "vscode-lua-format.configPath": "./.vscode/lua-format.yaml"
 }

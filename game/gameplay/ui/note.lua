@@ -75,8 +75,9 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-	return self.time > PlayState.songPosition - safeZoneOffset * self.lateHitMult and
-		self.time < PlayState.songPosition + safeZoneOffset * self.earlyHitMult
+	return
+					self.time > PlayState.songPosition - safeZoneOffset * self.lateHitMult and
+									self.time < PlayState.songPosition + safeZoneOffset * self.earlyHitMult
 end
 
 function Note:update(dt)

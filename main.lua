@@ -28,8 +28,6 @@ State = require "game.state"
 TitleState = require "game.states.title"
 PlayState = require "game.states.play"
 
-local gamePaused = false
-
 local function onBeat(b) Gamestate.beat(b) end
 
 function setMusic(source)
@@ -121,64 +119,67 @@ function switchState(state, transition)
 	end
 end
 
-function love.step(update, draw)
-	love.event.pump()
-	for name, a, b, c, d, e, f in love.event.poll() do
-		if name == "quit" and not love.quit() then
-			return true
-		end
-		love.handlers[name](a, b, c, d, e, f)
-	end
-
-	if update then
-		love.update(elapsed)
-		love.steps = love.steps + 1
-	end
-
-	if draw and love.graphics.isActive() then
-		love.graphics.clear(0, 0, 0, 0, false, false)
-		love.graphics.origin()
-		love.draw()
-
-		local stats = love.graphics.getStats()
-		love.graphics.setFont(paths.getFont("vcr.ttf", 14))
-		love.graphics.printf(
-			"FPS: " .. tostring(math.truncate(1 / (elapsed or 0), 0)) ..
-			"\nGC MEM: " .. math.countbytes(collectgarbage("count")) ..
-			"\nTEX MEM: " .. math.countbytes(stats.texturememory) ..
-			"\nDRAWS: " .. stats.drawcalls,
-		6, 6, 300, "left", 0)
-
-		love.graphics.present()
-	end
-end
-
 function love.run()
+	local w, h, flags = love.window.getMode()
+	love.FPScap = math.max(flags.refreshrate, 90)
+	love.pausedFPScap = 8
+
 	love.graphics.clear(0, 0, 0, 0, false, false)
 	love.graphics.present()
-	love.event.pump()
-	love.steps = 0	
 
 	if love.math then love.math.setRandomSeed(os.time()) end
 	if love.load then love.load(arg) end
 
-	collectgarbage(); collectgarbage("stop")
+	collectgarbage()
+	collectgarbage("stop")
 
-	elapsed = love.timer.step()
-	if not love.step(true, true) then
-		local gc_debounce = 0
-		while not love.step(not gamePaused, not gamePaused) do
-			focused, elapsed = love.window.hasFocus(), love.timer.step()
-			love.timer.sleep(1 / (gamePaused and love.pausedFpsCap or focused and love.fpsCap or love.unfocusedFpsCap) - elapsed)
-
-			if gamePaused or not focused then
-				if gc_debounce == 0 then collectgarbage() end
-				gc_debounce = gc_debounce + 1 % 8
-			else
-				collectgarbage("step")
-				gc_debounce = 0
+	local firstTime, fullGC = true, true
+	return function()
+		if love.event then
+			love.event.pump()
+			for name, a, b, c, d, e, f in love.event.poll() do
+				if name == "quit" and (not love.quit or not love.quit()) then
+					return a or 0
+				end
+				love.handlers[name](a, b, c, d, e, f)
 			end
 		end
+
+		local dt, focused = love.timer and love.timer.step() or 0,
+		                    firstTime or not love.window or love.window.hasFocus()
+
+		if focused then
+			if love.update then love.update(dt) end
+
+			if love.graphics and love.graphics.isActive() then
+				love.graphics.origin()
+				love.graphics.clear(love.graphics.getBackgroundColor())
+				if love.draw then love.draw() end
+
+				local stats = love.graphics.getStats()
+				love.graphics.printf(
+								"FPS: " .. math.min(love.timer.getFPS(), love.FPScap) .. "\nGC MEM: " ..
+												math.countbytes(collectgarbage("count")) .. "\nTEX MEM: " ..
+												math.countbytes(stats.texturememory) .. "\nDRAWS: " ..
+												stats.drawcalls, 6, 6, 300, "left", 0)
+
+				love.graphics.present()
+			end
+		end
+
+		if love.timer then
+			love.timer.sleep(1 / (focused and love.FPScap or love.pausedFPScap) - dt)
+		end
+
+		if focused then
+			collectgarbage("step")
+			fullGC = true
+		elseif fullGC then
+			collectgarbage()
+			fullGC = false
+		end
+
+		firstTime = false
 	end
 end
 
@@ -191,16 +192,7 @@ function love.load()
 	local dimensions = require "dimensions"
 	push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
 
-	local w, h, flags = love.window.getMode()
-	love.fpsCap = math.max(flags.refreshrate, 90)
-	love.unfocusedFpsCap = 8
-	love.pausedFpsCap = 4
-
 	switchState(TitleState(), false)
-end
-
-function love.quit()
-	
 end
 
 function love.resize(width, height)
@@ -226,21 +218,17 @@ end
 
 function love.draw()
 	push.start()
-
 	Gamestate.draw()
-
 	if fade then
 		love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(), fade.height)
 	end
-
 	push.finish()
 end
 
 function love.focus(f)
-	gamePaused = not f
 	for _, o in pairs(paths.cache) do
 		if o.type == "source" then
-			if gamePaused then
+			if not f then
 				o.lastPause = o.object:isPaused()
 				o.object:pause()
 			else
