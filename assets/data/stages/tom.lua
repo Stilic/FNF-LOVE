@@ -10,7 +10,8 @@ function create()
 	bg:setScrollFactor(1)
 	self:add(bg)
 
-	local gb = Sprite(-500, -140):load(paths.getImage(SCRIPT_PATH .. "gamebananaL"))
+	local gb =
+					Sprite(-500, -140):load(paths.getImage(SCRIPT_PATH .. "gamebananaL"))
 	gb.antialiasing = true
 	gb:setScrollFactor(.9)
 	gb.scale.x, gb.scale.y = 0.8, 0.8
