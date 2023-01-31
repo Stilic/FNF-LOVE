@@ -4,10 +4,10 @@ local stencilInfo
 local function stencil()
 	if stencilInfo then
 		love.graphics.push()
-		love.graphics.translate(stencilInfo.x + stencilInfo.width / 2,
-		                        stencilInfo.y + stencilInfo.height / 2)
+		love.graphics.translate(stencilInfo.x + stencilInfo.width * 0.5,
+		                        stencilInfo.y + stencilInfo.height * 0.5)
 		love.graphics.rotate(stencilInfo.angle)
-		love.graphics.translate(-stencilInfo.width / 2, -stencilInfo.height / 2)
+		love.graphics.translate(-stencilInfo.width * 0.5, -stencilInfo.height * 0.5)
 		love.graphics.rectangle("fill", 0, 0, stencilInfo.width, stencilInfo.height)
 		love.graphics.pop()
 	end
