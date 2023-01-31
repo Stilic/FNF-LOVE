@@ -6,6 +6,12 @@ local function isFile(path)
 	return info and info.type == "file"
 end
 
+local function readFile(key)
+	local path = paths.getPath(key)
+	if isFile(path) then return love.filesystem.read(path) end
+	return nil
+end
+
 local paths = {
 	cache = {},
 	fonts = {},
@@ -38,13 +44,9 @@ end
 
 function paths.getPath(key) return "assets/" .. key end
 
-function paths.getText(key)
-	local path = paths.getPath(key)
-	if isFile(path) then return love.filesystem.read(path) end
-	return nil
-end
+function paths.getText(key) return readFile("data/" .. key .. ".txt") end
 
-function paths.getJSON(key) return decodeJson(paths.getText(key .. ".json")) end
+function paths.getJSON(key) return decodeJson(readFile(key .. ".json")) end
 
 function paths.getFont(key, size)
 	if size == nil then size = 12 end
@@ -120,14 +122,14 @@ function paths.getSparrowFrames(key, cache)
 		local obj = paths.cache[path]
 		if not obj and img and isFile(path) then
 			obj = {
-				object = Sprite.getFramesFromSparrow(img, paths.getText(xmlKey)),
+				object = Sprite.getFramesFromSparrow(img, readFile(xmlKey)),
 				type = "frames"
 			}
 			paths.cache[path] = obj
 		end
 		if obj then return obj.object end
 	elseif img and isFile(path) then
-		return Sprite.getFramesFromSparrow(img, paths.getText(xmlKey))
+		return Sprite.getFramesFromSparrow(img, readFile(xmlKey))
 	end
 
 	return nil

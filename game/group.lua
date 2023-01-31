@@ -32,13 +32,12 @@ function Group:recycle(class, factory, revive)
 			break
 		end
 	end
-	if not newObject then
-		newObject = factory()
-		self:add(newObject)
-	else
+	if newObject then
 		self:remove(newObject)
-		self:add(newObject)
+	else
+		newObject = factory()
 	end
+	self:add(newObject)
 
 	if revive then newObject:revive() end
 	return newObject

@@ -15,5 +15,4 @@ function create()
 	self.x = self.x + 20
 	self.y = self.y + 230
 	self.cameraPosition = {x = -50, y = 0}
-	self.singDuration = 4
 end

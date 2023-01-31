@@ -136,9 +136,9 @@ function PlayState:enter()
 	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad,
 	                     false)
 
-	self:add(self.gf)
-	self:add(self.boyfriend)
-	self:add(self.dad)
+	self.stage:add(self.gf)
+	self.stage:add(self.boyfriend)
+	self.stage:add(self.dad)
 
 	self:add(self.stage.front)
 

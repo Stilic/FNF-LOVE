@@ -63,9 +63,10 @@ function Note:new(time, data, prevNote, sustain)
 			prevNote:play(Note.colors[prevNote.data + 1] .. "hold")
 			prevNote.isSustainEnd = false
 
-			prevNote.scale.y = prevNote.scale.y * music.stepCrochet / 100 * 1.5 *
-							                   PlayState.song.speed
+			prevNote.scale.y = (music.stepCrochet * (0.45 * PlayState.song.speed)) /
+							                   prevNote:getFrameHeight()
 			prevNote:updateHitbox()
+			prevNote.scale.y = prevNote.scale.y + 3 / prevNote:getFrameHeight()
 		end
 	else
 		self.childNotes = {}

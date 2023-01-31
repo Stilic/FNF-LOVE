@@ -48,6 +48,9 @@ function Script:callReturn(func, ...)
 	end
 end
 
-function Script:close() self.closed = true end
+function Script:close()
+	self.closed = true
+	self.variables = nil
+end
 
 return Script

@@ -14,6 +14,5 @@ function create()
 	self:addOffset("singDOWN", -20, -51)
 
 	self.flipX = true
-
 	self.y = self.y + 350
 end

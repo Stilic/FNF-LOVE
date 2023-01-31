@@ -28,18 +28,21 @@ end
 function Stage:update(dt)
 	self.script:call("update", dt)
 	Stage.super.update(self, dt)
+	self.front:update(dt)
 	self.script:call("postUpdate", dt)
 end
 
 function Stage:draw()
 	self.script:call("draw")
 	Stage.super.draw(self)
+	self.front:draw()
 	self.script:call("postDraw")
 end
 
 function Stage:beat(b)
 	self.script:call("beat", b)
 	Stage.super.beat(self, b)
+	self.front:beat(b)
 	self.script:call("postBeat", b)
 end
 
