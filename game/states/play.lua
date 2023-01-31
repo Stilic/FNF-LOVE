@@ -268,15 +268,15 @@ function PlayState:update(dt)
 				local center = sy + Note.swagWidth / 2
 				local vert = center - n.y
 				if PlayState.downscroll then
-					if n.y - n.offset.y + n.height >= center then
+					if n.y - n.offset.y + n:getFrameHeight() * n.scale.y >= center then
 						if not n.clipRect then n.clipRect = {} end
 						n.clipRect.x, n.clipRect.y = 0, 0
-						n.clipRect.width, n.clipRect.height = n.width, vert
+						n.clipRect.width, n.clipRect.height = n:getFrameWidth() * n.scale.x, vert
 					end
 				elseif n.y + n.offset.y <= center then
 					if not n.clipRect then n.clipRect = {} end
 					n.clipRect.x, n.clipRect.y = 0, vert
-					n.clipRect.width, n.clipRect.height = n.width, n.height - vert
+					n.clipRect.width, n.clipRect.height = n:getFrameWidth() * n.scale.x, n:getFrameHeight() * n.scale.y - vert
 				end
 			end
 		end
