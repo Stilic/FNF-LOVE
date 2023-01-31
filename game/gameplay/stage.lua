@@ -7,13 +7,13 @@ function Stage:new(name)
 
 	self.camZoom = 1.05
 
-	self.boyfriendPos = {x = 770, y = 100}
-	self.gfPos = {x = 400, y = 130}
-	self.dadPos = {x = 100, y = 100}
+	self.boyfriendPos = { x = 770, y = 100 }
+	self.gfPos = { x = 400, y = 130 }
+	self.dadPos = { x = 100, y = 100 }
 
-	self.boyfriendCam = {x = 0, y = 0}
-	self.gfCam = {x = 0, y = 0}
-	self.dadCam = {x = 0, y = 0}
+	self.boyfriendCam = { x = 0, y = 0 }
+	self.gfCam = { x = 0, y = 0 }
+	self.dadCam = { x = 0, y = 0 }
 
 	self.front = Group()
 

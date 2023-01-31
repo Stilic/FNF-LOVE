@@ -16,7 +16,7 @@ function Character:new(x, y, char, isPlayer)
 	self.danceSpeed = 2
 	self.danced = false
 
-	self.cameraPosition = {x = 0, y = 0}
+	self.cameraPosition = { x = 0, y = 0 }
 
 	self.script = Script("characters/" .. char)
 	if (self.script.closed) then self.script = Script("characters/bf") end
@@ -69,7 +69,7 @@ function Character:beat(b)
 
 	if self.lastHit > 0 then
 		if b % math.max(self.danceSpeed, 2) == 0 and self.lastHit + music.stepCrochet *
-						self.singDuration <= PlayState.songPosition then
+			self.singDuration <= PlayState.songPosition then
 			self:dance()
 			self.lastHit = 0
 		end
@@ -111,7 +111,7 @@ end
 function Character:addOffset(anim, x, y)
 	if x == nil then x = 0 end
 	if y == nil then y = 0 end
-	self.animOffsets[anim] = {x = x, y = y}
+	self.animOffsets[anim] = { x = x, y = y }
 end
 
 return Character

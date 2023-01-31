@@ -15,7 +15,7 @@ end
 local paths = {
 	cache = {},
 	fonts = {},
-	persistantAssets = {"music/freakyMenu.ogg"}
+	persistantAssets = { "music/freakyMenu.ogg" }
 }
 
 function paths.isPersistant(path)
@@ -68,7 +68,7 @@ function paths.getImage(key, cache)
 	if cache then
 		local obj = paths.cache[path]
 		if not obj and isFile(path) then
-			obj = {object = love.graphics.newImage(path), type = "image"}
+			obj = { object = love.graphics.newImage(path), type = "image" }
 			paths.cache[path] = obj
 		end
 		if obj then return obj.object end
@@ -87,7 +87,7 @@ function paths.getAudioSource(key, type, cache)
 	if cache then
 		local obj = paths.cache[path]
 		if not obj and isFile(path) then
-			obj = {object = audio:newSource(path, type), type = "source"}
+			obj = { object = audio:newSource(path, type), type = "source" }
 			paths.cache[path] = obj
 		end
 		if obj then return obj.object end

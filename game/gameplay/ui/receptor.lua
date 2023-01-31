@@ -30,7 +30,7 @@ end
 function Receptor:init()
 	self:play("static")
 	self.x = self.x + 50 + Note.swagWidth * self.data + (push.getWidth() / 2) *
-					         self.player
+		self.player
 end
 
 function Receptor:play(anim, force)

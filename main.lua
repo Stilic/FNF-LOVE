@@ -41,22 +41,22 @@ end
 
 controls = (require "lib.baton").new({
 	controls = {
-		ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},
-		ui_down = {"key:down", "key:s", "axis:lefty+", "button:dpdown"},
-		ui_up = {"key:up", "key:w", "axis:lefty-", "button:dpup"},
-		ui_right = {"key:right", "key:d", "axis:leftx+", "button:dpright"},
+		ui_left = { "key:left", "key:a", "axis:leftx-", "button:dpleft" },
+		ui_down = { "key:down", "key:s", "axis:lefty+", "button:dpdown" },
+		ui_up = { "key:up", "key:w", "axis:lefty-", "button:dpup" },
+		ui_right = { "key:right", "key:d", "axis:leftx+", "button:dpright" },
 
-		note_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft", "button:x"},
-		note_down = {"key:down", "key:s", "axis:lefty+", "button:dpdown", "button:a"},
-		note_up = {"key:up", "key:l", "axis:lefty-", "button:dpup", "button:y"},
+		note_left = { "key:left", "key:a", "axis:leftx-", "button:dpleft", "button:x" },
+		note_down = { "key:down", "key:s", "axis:lefty+", "button:dpdown", "button:a" },
+		note_up = { "key:up", "key:l", "axis:lefty-", "button:dpup", "button:y" },
 		note_right = {
 			"key:right", "key:p", "axis:leftx+", "button:dpright", "button:b"
 		},
 
-		accept = {"key:space", "key:return", "button:a", "button:start"},
-		back = {"key:backspace", "key:escape", "button:b"},
-		pause = {"key:return", "key:escape", "button:start"},
-		reset = {"key:r", "button:leftstick"}
+		accept = { "key:space", "key:return", "button:a", "button:start" },
+		back = { "key:backspace", "key:escape", "button:b" },
+		pause = { "key:return", "key:escape", "button:start" },
+		reset = { "key:r", "button:leftstick" }
 	},
 	joystick = love.joystick.getJoysticks()[1]
 })
@@ -67,10 +67,10 @@ function fadeOut(time, callback)
 
 	fade = {
 		height = push.getHeight() * 2,
-		texture = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0}, {0, 0, 0, 0})
+		texture = util.newGradient("vertical", { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0, 0 })
 	}
 	fade.y = -fade.height
-	fadeTimer = Timer.tween(time, fade, {y = 0}, "linear", function()
+	fadeTimer = Timer.tween(time, fade, { y = 0 }, "linear", function()
 		fade.texture:release()
 		fade = nil
 		if callback then callback() end
@@ -82,10 +82,10 @@ function fadeIn(time, callback)
 
 	fade = {
 		height = push.getHeight() * 2,
-		texture = util.newGradient("vertical", {0, 0, 0, 0}, {0, 0, 0}, {0, 0, 0})
+		texture = util.newGradient("vertical", { 0, 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 })
 	}
 	fade.y = -fade.height / 2
-	fadeTimer = Timer.tween(time * 2, fade, {y = fade.height}, "linear", function()
+	fadeTimer = Timer.tween(time * 2, fade, { y = fade.height }, "linear", function()
 		fade.texture:release()
 		fade = nil
 		if callback then callback() end
@@ -146,7 +146,7 @@ function love.run()
 		end
 
 		local dt, focused = love.timer and love.timer.step() or 0,
-		                    firstTime or not love.window or love.window.hasFocus()
+			firstTime or not love.window or love.window.hasFocus()
 
 		if focused then
 			if love.update then love.update(dt) end
@@ -158,10 +158,10 @@ function love.run()
 
 				local stats = love.graphics.getStats()
 				love.graphics.printf(
-								"FPS: " .. math.min(love.timer.getFPS(), love.FPScap) .. "\nGC MEM: " ..
-												math.countbytes(collectgarbage("count")) .. "\nTEX MEM: " ..
-												math.countbytes(stats.texturememory) .. "\nDRAWS: " ..
-												stats.drawcalls, 6, 6, 300, "left", 0)
+					"FPS: " .. math.min(love.timer.getFPS(), love.FPScap) .. "\nGC MEM: " ..
+					math.countbytes(collectgarbage("count")) .. "\nTEX MEM: " ..
+					math.countbytes(stats.texturememory) .. "\nDRAWS: " ..
+					stats.drawcalls, 6, 6, 300, "left", 0)
 
 				love.graphics.present()
 			end
@@ -190,7 +190,7 @@ function love.load()
 	if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
 
 	local dimensions = require "dimensions"
-	push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
+	push.setupScreen(dimensions.width, dimensions.height, { upscale = "normal" })
 
 	switchState(TitleState(), false)
 end

@@ -8,10 +8,10 @@ PlayState.controlDirs = {
 }
 
 PlayState.ratings = {
-	{name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true},
- {name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false},
- {name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false},
- {name = "shit", time = 180, score = 50, mod = 0, splash = false}
+	{ name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true },
+	{ name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false },
+	{ name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false },
+	{ name = "shit", time = 180, score = 50, mod = 0, splash = false }
 }
 
 PlayState.downscroll = false
@@ -32,12 +32,12 @@ function PlayState:enter()
 		boyfriend = chart.player1 == nil and "bf" or chart.player1,
 		dad = chart.player2 == nil and "dad" or chart.player2,
 		girlfriend = chart.gfVersion == nil and
-						(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
+			(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
 		mustHits = {}
 	}
 
 	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
-					chart.bpm)
+		chart.bpm)
 	if chart.needsVoices then
 		self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices", "stream")
 	end
@@ -45,7 +45,7 @@ function PlayState:enter()
 	PlayState.songPosition = -music.crochet * 5
 
 	self.camGame = Camera()
-	self.camGame.target = {x = 0, y = 0}
+	self.camGame.target = { x = 0, y = 0 }
 	self.camHUD = Camera()
 
 	Sprite.defaultCamera = self.camGame
@@ -105,7 +105,7 @@ function PlayState:enter()
 						oldNote = self.unspawnNotes[#self.unspawnNotes]
 
 						local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-						                     daNoteData, oldNote, true)
+							daNoteData, oldNote, true)
 						sustain.mustPress = gottaHitNote
 						sustain:setScrollFactor(0)
 						table.insert(self.unspawnNotes, sustain)
@@ -122,19 +122,19 @@ function PlayState:enter()
 	self.stage = Stage(PlayState.song.stage)
 	self:add(self.stage)
 
-	self.camFollow = {x = 0, y = 0}
+	self.camFollow = { x = 0, y = 0 }
 	self.camZooming = false
 
 	self.camGame.zoom = self.stage.camZoom
 
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-	                    self.song.girlfriend, false)
+		self.song.girlfriend, false)
 	self.gf:setScrollFactor(0.95)
 
 	self.boyfriend = Character(self.stage.boyfriendPos.x,
-	                           self.stage.boyfriendPos.y, self.song.boyfriend, true)
+		self.stage.boyfriendPos.y, self.song.boyfriend, true)
 	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad,
-	                     false)
+		false)
 
 	self.stage:add(self.gf)
 	self.stage:add(self.boyfriend)
@@ -174,24 +174,24 @@ function PlayState:update(dt)
 
 	local lerpVal = 0.04 * 60 * dt
 	self.camGame.target.x = math.lerp(self.camGame.target.x, self.camFollow.x,
-	                                  lerpVal)
+		lerpVal)
 	self.camGame.target.y = math.lerp(self.camGame.target.y, self.camFollow.y,
-	                                  lerpVal)
+		lerpVal)
 
 	local mustHit = self:getCurrentMustHit()
 	if mustHit ~= nil then
 		if mustHit then
 			local midpoint = self.boyfriend:getMidpoint()
 			self.camFollow.x = midpoint.x - 100 - self.boyfriend.cameraPosition.x -
-							                   self.stage.boyfriendCam.x
+				self.stage.boyfriendCam.x
 			self.camFollow.y = midpoint.y - 100 + self.boyfriend.cameraPosition.y +
-							                   self.stage.boyfriendCam.y
+				self.stage.boyfriendCam.y
 		else
 			local midpoint = self.dad:getMidpoint()
 			self.camFollow.x = midpoint.x + 150 + self.dad.cameraPosition.x +
-							                   self.stage.dadCam.x
+				self.stage.dadCam.x
 			self.camFollow.y = midpoint.y - 100 + self.dad.cameraPosition.y +
-							                   self.stage.dadCam.y
+				self.stage.dadCam.y
 		end
 	end
 
@@ -216,7 +216,7 @@ function PlayState:update(dt)
 		local time = 2000
 		if PlayState.song.speed < 1 then time = time / PlayState.song.speed end
 		while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-						PlayState.songPosition < time do
+			PlayState.songPosition < time do
 			local n = table.remove(self.unspawnNotes, 1)
 			local grp = n.isSustain and self.sustainsGroup or self.notesGroup
 			self.allNotes:add(n)
@@ -229,9 +229,9 @@ function PlayState:update(dt)
 	for i, n in ipairs(self.allNotes.members) do
 		-- i swear to god STILIC STOP RUINING THE FORMATTING
 		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
-						not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
-						(not n.mustPress and
-										((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
+			not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
+			(not n.mustPress and
+				((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
 			self:goodNoteHit(n)
 		end
 
@@ -241,30 +241,30 @@ function PlayState:update(dt)
 		end
 
 		local r =
-						(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-										1]
+		(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
+			1]
 		local sy = r.y + n.scrollOffset.y
 
 		n.x = r.x + n.scrollOffset.x
 		n.y = sy - (PlayState.songPosition - time) * (0.45 * PlayState.song.speed) *
-						      (PlayState.downscroll and -1 or 1)
+			(PlayState.downscroll and -1 or 1)
 
 		if n.isSustain then
 			n.flipY = PlayState.downscroll
 			if n.flipY then
 				if n.isSustainEnd then
 					n.y = n.y + (n.height / 4.1) * (ogCrochet / 400) * 1.5 *
-									      PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
-									      (1 - ogCrochet / 600) * PlayState.song.speed
+						PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
+						(1 - ogCrochet / 600) * PlayState.song.speed
 				end
 				n.y = n.y + Note.swagWidth / 2 - 60.5 * (PlayState.song.speed - 1) + 27.5 *
-								      (PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
+					(PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
 			else
 				n.y = n.y + Note.swagWidth / 10
 			end
 
 			if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-							(not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
+				(not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
 				local center = sy + Note.swagWidth / 2
 				local vert = center - n.y
 				if PlayState.downscroll then
@@ -303,7 +303,7 @@ end
 
 function PlayState:strumPlayAnim(dad, dir, time)
 	local r =
-					(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
+	(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
 	if not r then return end
 	r:play("confirm", true)
 	if time > 0 then r.confirmTimer = time end
@@ -314,7 +314,7 @@ function PlayState:inputPress(key)
 
 	local prevSongPos = PlayState.songPosition
 	PlayState.songPosition = (music.instance and music.instance:tell() * 1000) or
-					                         music.time or prevSongPos
+		music.time or prevSongPos
 
 	local noteList = {}
 
@@ -419,14 +419,14 @@ function PlayState:goodNoteHit(n)
 				self.judgeSpr.x = (w - self.judgeSpr.width) * 0.35 + 40
 				self.judgeSpr.y = self.judgeSpr.y - 60
 
-				self.judgeSprTimer:tween(0.65, self.judgeSpr, {y = self.judgeSpr.y - 25},
-				                         "out-circ")
+				self.judgeSprTimer:tween(0.65, self.judgeSpr, { y = self.judgeSpr.y - 25 },
+					"out-circ")
 				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000,
-				                         function()
-					self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr,
-					                         {alpha = 0}, "linear",
-					                         function() self.judgeSpr:destroy() end)
-				end)
+					function()
+						self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr,
+							{ alpha = 0 }, "linear",
+							function() self.judgeSpr:destroy() end)
+					end)
 			end
 
 			self:removeNote(n)

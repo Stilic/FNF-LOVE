@@ -1,8 +1,8 @@
 local Note = Sprite:extend()
 
 Note.swagWidth = 160 * 0.7
-Note.colors = {"purple", "blue", "green", "red"}
-Note.directions = {"left", "down", "up", "right"}
+Note.colors = { "purple", "blue", "green", "red" }
+Note.directions = { "left", "down", "up", "right" }
 
 function Note:new(time, data, prevNote, sustain)
 	Note.super.new(self, 0, -2000)
@@ -13,15 +13,15 @@ function Note:new(time, data, prevNote, sustain)
 	self.prevNote = prevNote
 	if sustain == nil then sustain = false end
 	self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
-					sustain, false, false, 0
+	sustain, false, false, 0
 	self.parentNote, self.childNotes = nil, nil
 	self.mustPress = false
 	self.canBeHit, self.wasGoodHit, self.tooLate, self.hasMissed = false, false,
-	                                                               false, false
+		false, false
 	self.earlyHitMult, self.lateHitMult = 1, 1
 	self.altNote = false
 
-	self.scrollOffset = {x = 0, y = 0}
+	self.scrollOffset = { x = 0, y = 0 }
 
 	local color = Note.colors[data + 1]
 	if sustain then
@@ -64,7 +64,7 @@ function Note:new(time, data, prevNote, sustain)
 			prevNote.isSustainEnd = false
 
 			prevNote.scale.y = (music.stepCrochet * (0.45 * PlayState.song.speed)) /
-							                   prevNote:getFrameHeight()
+				prevNote:getFrameHeight()
 			prevNote:updateHitbox()
 			prevNote.scale.y = prevNote.scale.y + 1 / prevNote:getFrameHeight()
 		end
@@ -76,9 +76,8 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-	return
-					self.time > PlayState.songPosition - safeZoneOffset * self.lateHitMult and
-									self.time < PlayState.songPosition + safeZoneOffset * self.earlyHitMult
+	return self.time > PlayState.songPosition - safeZoneOffset * self.lateHitMult and
+		self.time < PlayState.songPosition + safeZoneOffset * self.earlyHitMult
 end
 
 function Note:update(dt)
