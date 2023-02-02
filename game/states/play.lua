@@ -21,7 +21,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "plum"
+	local song = "sunshine-encore"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -36,39 +36,10 @@ function PlayState:enter()
 		mustHits = {}
 	}
 
-	setMusic(paths.getAudioSource("songs/" .. song .. "/Inst", "stream")):setBPM(
+	setMusic(paths.getAudio("songs/" .. song .. "/Inst", "stream")):setBPM(
 		chart.bpm)
 	if chart.needsVoices then
-		self.vocals = paths.getAudioSource("songs/" .. song .. "/Voices", "stream")
-	end
-
-	PlayState.songPosition = -music.crochet * 5
-
-	self.camGame = Camera()
-	self.camGame.target = { x = 0, y = 0 }
-	self.camHUD = Camera()
-
-	Sprite.defaultCamera = self.camGame
-
-	self.receptors = Group()
-	self.playerReceptors = Group()
-	self.enemyReceptors = Group()
-
-	local rx, ry = 36, 50
-	if PlayState.downscroll then ry = push.getHeight() - 100 - ry end
-	for i = 0, 3 do
-		local rep = Receptor(rx, ry, i, 0)
-		rep:init()
-		rep:setScrollFactor(0)
-		self.receptors:add(rep)
-		self.enemyReceptors:add(rep)
-	end
-	for i = 0, 3 do
-		local rep = Receptor(rx, ry, i, 1)
-		rep:init()
-		rep:setScrollFactor(0)
-		self.receptors:add(rep)
-		self.playerReceptors:add(rep)
+		self.vocals = paths.getAudio("songs/" .. song .. "/Voices", "stream")
 	end
 
 	self.unspawnNotes = {}
@@ -118,6 +89,35 @@ function PlayState:enter()
 	end
 
 	table.sort(self.unspawnNotes, PlayState.sortByShit)
+
+	PlayState.songPosition = -music.crochet * 5
+
+	self.camGame = Camera()
+	self.camGame.target = { x = 0, y = 0 }
+	self.camHUD = Camera()
+
+	Sprite.defaultCamera = self.camGame
+
+	self.receptors = Group()
+	self.playerReceptors = Group()
+	self.enemyReceptors = Group()
+
+	local rx, ry = 36, 50
+	if PlayState.downscroll then ry = push.getHeight() - 100 - ry end
+	for i = 0, 3 do
+		local rep = Receptor(rx, ry, i, 0)
+		rep:init()
+		rep:setScrollFactor(0)
+		self.receptors:add(rep)
+		self.enemyReceptors:add(rep)
+	end
+	for i = 0, 3 do
+		local rep = Receptor(rx, ry, i, 1)
+		rep:init()
+		rep:setScrollFactor(0)
+		self.receptors:add(rep)
+		self.playerReceptors:add(rep)
+	end
 
 	self.stage = Stage(PlayState.song.stage)
 	self:add(self.stage)
