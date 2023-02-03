@@ -38,7 +38,7 @@ function Script:call(func, ...)
 end
 
 function Script:callReturn(func, ...)
-	if self.closed then return end
+	if self.closed then return true end
 
 	local r = self:call(func, ...)
 	if r ~= nil and pcall(function() return type(r) end) then
