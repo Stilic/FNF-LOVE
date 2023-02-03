@@ -121,8 +121,7 @@ end
 
 function love.run()
 	local w, h, flags = love.window.getMode()
-	love.FPScap = math.max(flags.refreshrate, 90)
-	love.pausedFPScap = 8
+	love.FPScap, love.unfocusedFPScap = 120, 8
 
 	love.graphics.clear(0, 0, 0, 0, false, false)
 	love.graphics.present()
@@ -168,7 +167,7 @@ function love.run()
 		end
 
 		if love.timer then
-			love.timer.sleep(1 / (focused and love.FPScap or love.pausedFPScap) - dt)
+			love.timer.sleep(1 / (focused and love.FPScap or love.unfocusedFPScap) - dt)
 		end
 
 		if focused then
@@ -207,8 +206,8 @@ function love.keyreleased(...) controls:onKeyRelease(...) end
 function love.update(dt)
 	dt = math.min(dt, 1 / 30)
 
-	for _, o in pairs(paths.cache) do
-		if o.object.update then o.object:update(dt) end
+	for _, o in pairs(paths.audio) do
+		o:update(dt)
 	end
 
 	controls:update()
@@ -226,15 +225,13 @@ function love.draw()
 end
 
 function love.focus(f)
-	for _, o in pairs(paths.cache) do
-		if o.type == "source" then
-			if not f then
-				o.lastPause = o.object:isPaused()
-				o.object:pause()
-			else
-				if not o.lastPause and not o.object:isFinished() then o.object:resume() end
-				o.lastPause = nil
-			end
+	for _, o in pairs(paths.audio) do
+		if not f then
+			o.lastPause = o:isPaused()
+			o:pause()
+		else
+			if not o.lastPause and not o:isFinished() then o:resume() end
+			o.lastPause = nil
 		end
 	end
 end
