@@ -41,13 +41,13 @@ function Receptor:play(anim, force)
 
 	if anim == "confirm" then
 		if self.data == 0 then
-			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 2
+			self.offset.x, self.offset.y = self.offset.x - 0.85, self.offset.y - 3
 		elseif self.data == 1 then
-			self.offset.x, self.offset.y = self.offset.x - 2.5, self.offset.y - 2
+			self.offset.x, self.offset.y = self.offset.x - 2, self.offset.y - 2
 		elseif self.data == 2 then
-			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 1.5
+			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 0.5
 		elseif self.data == 3 then
-			self.offset.x = self.offset.x - 1.5
+			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 0
 		end
 	end
 end

@@ -166,11 +166,22 @@ function PlayState:enter()
 end
 
 function PlayState:update(dt)
-	PlayState.super.update(self, dt)
-
 	if not isSwitchingState and self.startedSong and music:isFinished() then
 		switchState(TitleState())
 	end
+
+	if self.startedSong then
+		PlayState.songPosition = music.time
+	elseif self.startingSong then
+		PlayState.songPosition = PlayState.songPosition + 1000 * dt
+		if PlayState.songPosition >= 0 then
+			self.startedSong = true
+			music:play()
+			if self.vocals then self.vocals:play() end
+		end
+	end
+
+	PlayState.super.update(self, dt)
 
 	local lerpVal = 0.04 * 60 * dt
 	self.camGame.target.x = math.lerp(self.camGame.target.x, self.camFollow.x,
@@ -199,17 +210,6 @@ function PlayState:update(dt)
 		local ratio = 0.05 * 60 * dt
 		self.camGame.zoom = math.lerp(self.camGame.zoom, self.stage.camZoom, ratio)
 		self.camHUD.zoom = math.lerp(self.camHUD.zoom, 1, ratio)
-	end
-
-	if self.startedSong then
-		PlayState.songPosition = music.time
-	elseif self.startingSong then
-		PlayState.songPosition = PlayState.songPosition + 1000 * dt
-		if PlayState.songPosition >= 0 then
-			self.startedSong = true
-			music:play()
-			if self.vocals then self.vocals:play() end
-		end
 	end
 
 	if self.unspawnNotes[1] then
