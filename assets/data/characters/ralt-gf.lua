@@ -10,5 +10,8 @@ function create()
 
 	self.x = self.x + 68
 	self.y = self.y + 228
+
 	self.danceSpeed = 1
+
+	close()
 end

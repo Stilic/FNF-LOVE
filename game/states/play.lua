@@ -21,7 +21,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "sunshine-encore"
+	local song = "hedge"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -227,7 +227,6 @@ function PlayState:update(dt)
 	local ogCrochet = (60 / PlayState.song.bpm) * 1000
 	local ogStepCrochet = ogCrochet / 4
 	for i, n in ipairs(self.allNotes.members) do
-		-- i swear to god STILIC STOP RUINING THE FORMATTING
 		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
 			not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
 			(not n.mustPress and
@@ -384,7 +383,10 @@ function PlayState:goodNoteHit(n)
 
 		local time = 0
 		if not n.mustPress then
-			time = (n.isSustain and not n.curAnim.name:endsWith("end")) and 0.30 or 0.15
+			time = 0.175
+			if n.isSustain and not n.curAnim.name:endsWith("end") then
+				time = time * 2
+			end
 		end
 		self:strumPlayAnim(not n.mustPress, n.data, time)
 

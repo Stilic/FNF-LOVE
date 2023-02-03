@@ -12,4 +12,6 @@ function create()
 	self:addOffset("danceRight", 0, -9)
 
 	self.danceSpeed = 1
+
+	close()
 end

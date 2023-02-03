@@ -1,12 +1,12 @@
 -- LUA 5.2-LUA 5.3 REIMPLEMENTATIONS
 function string.split(self, sep, t)
 	t = t or {}
-	for s in self:gmatch((not sep or sep == '') and '(.)' or '([^'..sep..']+)') do table.insert(t, s) end
+	for s in self:gmatch((not sep or sep == '') and '(.)' or '([^' .. sep .. ']+)') do table.insert(t, s) end
 	return t
 end
 
 function string.replace(self, pattern, rep) -- note: you could just do gsub instead of replace
-	return self:gsub('%'..pattern, rep)
+	return self:gsub('%' .. pattern, rep)
 end
 
 function table.find(table, value)
@@ -84,10 +84,12 @@ function math.remap(x, start1, stop1, start2, stop2)
 	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
 end
 
-local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
+local intervals = { 'B', 'KB', 'MB', 'GB', 'TB' }
 function math.countbytes(x)
 	local i = 1
-	while x >= 0x400 and i < 5 do x = x / 0x400; i = i + 1 end
+	while x >= 0x400 and i < 5 do x = x / 0x400;
+	i = i + 1
+	end
 	return math.truncate(x, 2, true) .. " " .. intervals[i]
 end
 
