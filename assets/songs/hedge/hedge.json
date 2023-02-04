@@ -7670,12 +7670,12 @@
 				"mustHitSection": true
 			}
 		],
-		"player2": "hog",
+		"player2": "dad",
 		"player3": null,
 		"initialSpeed": 1.305,
 		"sliderVelocities": null,
 		"song": "hedge",
-		"stage": "hog",
+		"stage": "stage",
 		"validScore": true,
 		"needsVoices": true,
 		"speed": 2.9,
