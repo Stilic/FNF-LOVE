@@ -1,4 +1,10 @@
-local util = {}
+local util = {
+	dt = 0
+}
+
+function util.coolLerp(x, y, i)
+	return math.lerp(x, y, i * 60 * util.dt)
+end
 
 function util.newGradient(dir, ...)
 	local isHorizontal = true

@@ -183,11 +183,9 @@ function PlayState:update(dt)
 
 	PlayState.super.update(self, dt)
 
-	local lerpVal = 0.04 * 60 * dt
-	self.camGame.target.x = math.lerp(self.camGame.target.x, self.camFollow.x,
-		lerpVal)
-	self.camGame.target.y = math.lerp(self.camGame.target.y, self.camFollow.y,
-		lerpVal)
+	self.camGame.target.x, self.camGame.target.y = util.coolLerp(self.camGame.target.x, self.camFollow.x,
+		0.04), util.coolLerp(self.camGame.target.y, self.camFollow.y,
+		0.04)
 
 	local mustHit = self:getCurrentMustHit()
 	if mustHit ~= nil then
@@ -207,9 +205,8 @@ function PlayState:update(dt)
 	end
 
 	if self.camZooming then
-		local ratio = 0.05 * 60 * dt
-		self.camGame.zoom = math.lerp(self.camGame.zoom, self.stage.camZoom, ratio)
-		self.camHUD.zoom = math.lerp(self.camHUD.zoom, 1, ratio)
+		self.camGame.zoom = util.coolLerp(self.camGame.zoom, self.stage.camZoom, 0.0475)
+		self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
 	end
 
 	if self.unspawnNotes[1] then

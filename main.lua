@@ -205,6 +205,8 @@ function love.keyreleased(...) controls:onKeyRelease(...) end
 function love.update(dt)
 	dt = math.min(dt, 1 / 30)
 
+	util.dt = dt
+
 	for _, o in pairs(paths.audio) do
 		o:update(dt)
 	end
