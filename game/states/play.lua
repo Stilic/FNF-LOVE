@@ -21,7 +21,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "hedge"
+	local song = "triple-trouble"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -51,35 +51,40 @@ function PlayState:enter()
 		if s and s.sectionNotes then
 			table.insert(PlayState.song.mustHits, s.mustHitSection)
 			for _, n in ipairs(s.sectionNotes) do
-				local daStrumTime = n[1]
-				local daNoteData = n[2] % 4
-				local gottaHitNote = s.mustHitSection
-				if n[2] > 3 then gottaHitNote = not gottaHitNote end
+				local daStrumTime = tonumber(n[1])
+				local daNoteData = tonumber(n[2])
+				if daStrumTime ~= nil and daNoteData ~= nil then
+					daNoteData = daNoteData % 4
+					local gottaHitNote = s.mustHitSection
+					if n[2] > 3 then gottaHitNote = not gottaHitNote end
 
-				local oldNote
-				if #self.unspawnNotes > 0 then
-					oldNote = self.unspawnNotes[#self.unspawnNotes]
-				end
-
-				local note = Note(daStrumTime, daNoteData, oldNote)
-				local fixedSus = math.round(n[3] / music.stepCrochet)
-				note.mustPress = gottaHitNote
-				if n[3] ~= nil and n[3] > 0 then
-					note.sustainLength = fixedSus * music.stepCrochet
-				end
-				note.altNote = n[4]
-				note:setScrollFactor(0)
-				table.insert(self.unspawnNotes, note)
-
-				if fixedSus > 0 then
-					for susNote = 0, math.floor(math.max(fixedSus, 1)) do
+					local oldNote
+					if #self.unspawnNotes > 0 then
 						oldNote = self.unspawnNotes[#self.unspawnNotes]
+					end
 
-						local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-							daNoteData, oldNote, true)
-						sustain.mustPress = gottaHitNote
-						sustain:setScrollFactor(0)
-						table.insert(self.unspawnNotes, sustain)
+					local note = Note(daStrumTime, daNoteData, oldNote)
+					note.mustPress = gottaHitNote
+					note.altNote = n[4]
+					note:setScrollFactor(0)
+					table.insert(self.unspawnNotes, note)
+
+					if n[3] ~= nil then
+						local fixedSus = tonumber(n[3])
+						if fixedSus ~= nil and fixedSus > 0 then
+							fixedSus = math.round(n[3] / music.stepCrochet)
+							note.sustainLength = fixedSus * music.stepCrochet
+
+							for susNote = 0, math.floor(math.max(fixedSus, 1)) do
+								oldNote = self.unspawnNotes[#self.unspawnNotes]
+
+								local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
+									daNoteData, oldNote, true)
+								sustain.mustPress = gottaHitNote
+								sustain:setScrollFactor(0)
+								table.insert(self.unspawnNotes, sustain)
+							end
+						end
 					end
 				end
 			end
