@@ -8,20 +8,20 @@ PlayState.controlDirs = {
 }
 
 PlayState.ratings = {
-	{ name = "sick", time = 45, score = 350, fc = "MFC", mod = 1, splash = true },
-	{ name = "good", time = 90, score = 200, fc = "GFC", mod = 0.7, splash = false },
-	{ name = "bad", time = 135, score = 100, fc = "FC", mod = 0.4, splash = false },
-	{ name = "shit", time = 180, score = 50, mod = 0, splash = false }
+	{ name = "sick", time = 45,  score = 350, fc = "MFC", mod = 1,       splash = true },
+	{ name = "good", time = 90,  score = 200, fc = "GFC", mod = 0.7,     splash = false },
+	{ name = "bad",  time = 135, score = 100, fc = "FC",  mod = 0.4,     splash = false },
+	{ name = "shit", time = 180, score = 50,  mod = 0,    splash = false }
 }
 
-PlayState.downscroll = false
+PlayState.downscroll = true
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "triple-trouble"
+	local song = "hedge"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -32,7 +32,7 @@ function PlayState:enter()
 		boyfriend = chart.player1 == nil and "bf" or chart.player1,
 		dad = chart.player2 == nil and "dad" or chart.player2,
 		girlfriend = chart.gfVersion == nil and
-			(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
+		(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
 		mustHits = {}
 	}
 
@@ -79,7 +79,7 @@ function PlayState:enter()
 								oldNote = self.unspawnNotes[#self.unspawnNotes]
 
 								local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-									daNoteData, oldNote, true)
+										daNoteData, oldNote, true)
 								sustain.mustPress = gottaHitNote
 								sustain:setScrollFactor(0)
 								table.insert(self.unspawnNotes, sustain)
@@ -133,13 +133,13 @@ function PlayState:enter()
 	self.camGame.zoom = self.stage.camZoom
 
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-		self.song.girlfriend, false)
+			self.song.girlfriend, false)
 	self.gf:setScrollFactor(0.95)
 
 	self.boyfriend = Character(self.stage.boyfriendPos.x,
-		self.stage.boyfriendPos.y, self.song.boyfriend, true)
+			self.stage.boyfriendPos.y, self.song.boyfriend, true)
 	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad,
-		false)
+			false)
 
 	self.stage:add(self.gf)
 	self.stage:add(self.boyfriend)
@@ -189,8 +189,8 @@ function PlayState:update(dt)
 	PlayState.super.update(self, dt)
 
 	self.camGame.target.x, self.camGame.target.y = util.coolLerp(self.camGame.target.x, self.camFollow.x,
-		0.04), util.coolLerp(self.camGame.target.y, self.camFollow.y,
-		0.04)
+			0.04), util.coolLerp(self.camGame.target.y, self.camFollow.y,
+			0.04)
 
 	local mustHit = self:getCurrentMustHit()
 	if mustHit ~= nil then
@@ -232,7 +232,7 @@ function PlayState:update(dt)
 		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
 			not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
 			(not n.mustPress and
-				((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
+			((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
 			self:goodNoteHit(n)
 		end
 
@@ -242,7 +242,7 @@ function PlayState:update(dt)
 		end
 
 		local r =
-		(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
+			(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
 			1]
 		local sy = r.y + n.scrollOffset.y
 
@@ -277,7 +277,8 @@ function PlayState:update(dt)
 				elseif n.y + n.offset.y <= center then
 					if not n.clipRect then n.clipRect = {} end
 					n.clipRect.x, n.clipRect.y = 0, vert
-					n.clipRect.width, n.clipRect.height = n:getFrameWidth() * n.scale.x, n:getFrameHeight() * n.scale.y - vert
+					n.clipRect.width, n.clipRect.height = n:getFrameWidth() * n.scale.x,
+						n:getFrameHeight() * n.scale.y - vert
 				end
 			end
 		end
@@ -304,7 +305,7 @@ end
 
 function PlayState:strumPlayAnim(dad, dir, time)
 	local r =
-	(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
+		(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
 	if not r then return end
 	r:play("confirm", true)
 	if time > 0 then r.confirmTimer = time end
