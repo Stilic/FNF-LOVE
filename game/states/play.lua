@@ -21,7 +21,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "hedge"
+	local song = "triple-trouble"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -79,7 +79,7 @@ function PlayState:enter()
 								oldNote = self.unspawnNotes[#self.unspawnNotes]
 
 								local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-										daNoteData, oldNote, true)
+									daNoteData, oldNote, true)
 								sustain.mustPress = gottaHitNote
 								sustain:setScrollFactor(0)
 								table.insert(self.unspawnNotes, sustain)
@@ -133,13 +133,13 @@ function PlayState:enter()
 	self.camGame.zoom = self.stage.camZoom
 
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-			self.song.girlfriend, false)
+		self.song.girlfriend, false)
 	self.gf:setScrollFactor(0.95)
 
 	self.boyfriend = Character(self.stage.boyfriendPos.x,
-			self.stage.boyfriendPos.y, self.song.boyfriend, true)
+		self.stage.boyfriendPos.y, self.song.boyfriend, true)
 	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y, self.song.dad,
-			false)
+		false)
 
 	self.stage:add(self.gf)
 	self.stage:add(self.boyfriend)
@@ -252,17 +252,7 @@ function PlayState:update(dt)
 
 		if n.isSustain then
 			n.flipY = PlayState.downscroll
-			if n.flipY then
-				if n.isSustainEnd then
-					n.y = n.y + (n.height / 4.1) * (ogCrochet / 400) * 1.5 *
-						PlayState.song.speed + 46 * (PlayState.song.speed - 1) - 46 *
-						(1 - ogCrochet / 600) * PlayState.song.speed
-				end
-				n.y = n.y + Note.swagWidth / 2 - 60.5 * (PlayState.song.speed - 1) + 27.5 *
-					(PlayState.song.bpm / 100 - 1) * (PlayState.song.speed - 1)
-			else
-				n.y = n.y + Note.swagWidth / 10
-			end
+			n.y = n.y + Note.swagWidth / (n.flipY and 2 or 12)
 
 			if (n.wasGoodHit or n.prevNote.wasGoodHit) and
 				(not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
@@ -301,14 +291,6 @@ function PlayState:getKeyFromEvent(controls)
 		if PlayState.controlDirs[control] then return PlayState.controlDirs[control] end
 	end
 	return -1
-end
-
-function PlayState:strumPlayAnim(dad, dir, time)
-	local r =
-		(dad and self.enemyReceptors or self.playerReceptors).members[dir + 1]
-	if not r then return end
-	r:play("confirm", true)
-	if time > 0 then r.confirmTimer = time end
 end
 
 function PlayState:inputPress(key)
@@ -384,21 +366,17 @@ function PlayState:goodNoteHit(n)
 	if not n.wasGoodHit then
 		n.wasGoodHit = true
 
-		local time = 0
-		if not n.mustPress then
-			time = 0.175
-			if n.isSustain and not n.curAnim.name:endsWith("end") then
-				time = time * 2
-			end
-		end
-		self:strumPlayAnim(not n.mustPress, n.data, time)
-
 		local char = n.mustPress and self.boyfriend or self.dad
 		char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]), true)
 		char.lastHit = PlayState.songPosition
 		char.holding = n.isSustain and not n.isSustainEnd
 
-		if not n.mustPress then self.camZooming = true end
+		if n.mustPress then
+			(dad and self.enemyReceptors or self.playerReceptors).members[n.data + 1]:play("confirm",
+				true)
+		else
+			self.camZooming = true
+		end
 
 		if not n.isSustain then
 			if n.mustPress then

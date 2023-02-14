@@ -13,7 +13,7 @@ function Note:new(time, data, prevNote, sustain)
 	self.prevNote = prevNote
 	if sustain == nil then sustain = false end
 	self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
-	sustain, false, false, 0
+		sustain, false, false, 0
 	self.parentNote, self.childNotes = nil, nil
 	self.mustPress = false
 	self.canBeHit, self.wasGoodHit, self.tooLate, self.hasMissed = false, false,
@@ -92,6 +92,17 @@ function Note:update(dt)
 	if self.tooLate and self.alpha > 0.3 then self.alpha = 0.3 end
 
 	Note.super.update(self, dt)
+end
+
+function Note:draw()
+	local negativeScroll = self.isSustain and not self.isSustainEnd and PlayState.downscroll
+	if negativeScroll then
+		self.offset.y = -self.offset.y
+	end
+	Note.super.draw(self)
+	if negativeScroll then
+		self.offset.y = -self.offset.y
+	end
 end
 
 return Note

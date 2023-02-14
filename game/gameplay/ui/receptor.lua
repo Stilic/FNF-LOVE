@@ -6,7 +6,6 @@ function Receptor:new(x, y, data, player)
 
 	self.data = data
 	self.player = player
-	self.confirmTimer = 0
 
 	self:setGraphicSize(math.floor(self.width * 0.7))
 
@@ -16,15 +15,6 @@ function Receptor:new(x, y, data, player)
 	self:addAnimByPrefix("confirm", dir .. " confirm", 24, false)
 
 	self:updateHitbox()
-end
-
-function Receptor:update(dt)
-	if self.confirmTimer > 0 then
-		self.confirmTimer = self.confirmTimer - dt
-		if self.confirmTimer <= 0 then self:play("static") end
-	end
-
-	Receptor.super.update(self, dt)
 end
 
 function Receptor:init()
