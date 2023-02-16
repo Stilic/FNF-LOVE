@@ -1,7 +1,6 @@
 io.stdout:setvbuf("no")
 
 require "lib.override"
-require "lib.autobatch"
 
 Object = require "lib.classic"
 push = require "lib.push"
@@ -120,7 +119,8 @@ function switchState(state, transition)
 end
 
 function love.run()
-	love.FPScap, love.unfocusedFPScap = 120, 8
+	local w, h, flags = love.window.getMode()
+	love.FPScap, love.unfocusedFPScap = math.max(flags.refreshrate, 120), 8
 
 	love.graphics.clear(0, 0, 0, 0, false, false)
 	love.graphics.present()
