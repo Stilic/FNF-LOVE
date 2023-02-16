@@ -1,5 +1,5 @@
 function create()
-	self:setFrames(paths.getSparrowFrames("characters/GF_assets"))
+	self:setFrames(paths.getSparrowAtlas("characters/GF_assets"))
 
 	self:addAnimByIndices("danceLeft", "GF Dancing Beat", {
 		30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14

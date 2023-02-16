@@ -22,7 +22,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "top-loader"
+	local song = "x-mas"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -108,21 +108,19 @@ function PlayState:enter()
 	self.playerReceptors = Group()
 	self.enemyReceptors = Group()
 
-	local rx, ry = 36, 50
+	local rx, ry = push.getWidth() / 2, 50
 	if PlayState.downscroll then ry = push.getHeight() - 100 - ry end
-	for i = 0, 3 do
-		local rep = Receptor(rx, ry, i, 0)
-		rep:init()
-		rep:setScrollFactor(0)
-		self.receptors:add(rep)
-		self.enemyReceptors:add(rep)
-	end
-	for i = 0, 3 do
-		local rep = Receptor(rx, ry, i, 1)
-		rep:init()
-		rep:setScrollFactor(0)
-		self.receptors:add(rep)
-		self.playerReceptors:add(rep)
+	for i = 0, 1 do
+		for j = 0, 3 do
+			local rep = Receptor(rx + (push.getWidth() / 4) * (i == 1 and 1 or -1), ry, j, i)
+			rep:groupInit()
+			self.receptors:add(rep)
+			if i == 1 then
+				self.playerReceptors:add(rep)
+			else
+				self.enemyReceptors:add(rep)
+			end
+		end
 	end
 
 	self.stage = Stage(PlayState.song.stage)
@@ -372,12 +370,15 @@ function PlayState:goodNoteHit(n)
 		char.lastHit = PlayState.songPosition
 		char.holding = n.isSustain and not n.isSustainEnd
 
-		if n.mustPress then
-			(dad and self.enemyReceptors or self.playerReceptors).members[n.data + 1]:play("confirm",
-				true)
-		else
+		local time = 0
+		if not n.mustPress then
 			self.camZooming = true
+			time = 0.17
+			if n.isSustain and not n.isSustainEnd then
+				time = time * 2
+			end
 		end
+		(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data + 1]:confirm(time)
 
 		if not n.isSustain then
 			if n.mustPress then

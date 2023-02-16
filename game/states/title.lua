@@ -9,7 +9,7 @@ function TitleState:enter()
 	self.confirmed = false
 
 	self.gfDance = Sprite(512, 40)
-	self.gfDance:setFrames(paths.getSparrowFrames("menus/title/gfDanceTitle"))
+	self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
 	self.gfDance:addAnimByIndices("danceLeft", "gfDance", {
 		30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 	}, 24, false)
@@ -19,14 +19,14 @@ function TitleState:enter()
 	self:add(self.gfDance)
 
 	self.logoBl = Sprite(-150, -100)
-	self.logoBl:setFrames(paths.getSparrowFrames("menus/title/logoBumpin"))
+	self.logoBl:setFrames(paths.getSparrowAtlas("menus/title/logoBumpin"))
 	self.logoBl:addAnimByPrefix("bump", "logo bumpin", 24, false)
 	self.logoBl:play("bump")
 	self.logoBl:updateHitbox()
 	self:add(self.logoBl)
 
 	self.titleText = Sprite(100, 576)
-	self.titleText:setFrames(paths.getSparrowFrames("menus/title/titleEnter"))
+	self.titleText:setFrames(paths.getSparrowAtlas("menus/title/titleEnter"))
 	self.titleText:addAnimByPrefix("idle", "Press Enter to Begin", 24)
 	self.titleText:addAnimByPrefix("press", "ENTER PRESSED", 24)
 	self.titleText:play("idle")

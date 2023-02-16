@@ -1,5 +1,5 @@
 function create()
-	self:setFrames(paths.getSparrowFrames("characters/DADDY_DEAREST"))
+	self:setFrames(paths.getSparrowAtlas("characters/DADDY_DEAREST"))
 
 	self:addAnimByPrefix("idle", "Dad idle dance", 24, false)
 	self:addAnimByPrefix("singUP", "Dad Sing Note UP", 24, false)

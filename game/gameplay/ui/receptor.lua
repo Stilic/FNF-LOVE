@@ -2,10 +2,12 @@ local Receptor = Sprite:extend()
 
 function Receptor:new(x, y, data, player)
 	Receptor.super.new(self, x, y)
-	self:setFrames(paths.getSparrowFrames("skins/normal/NOTE_assets"))
+	self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
 
 	self.data = data
 	self.player = player
+
+	self.__timer = 0
 
 	self:setGraphicSize(math.floor(self.width * 0.7))
 
@@ -17,10 +19,21 @@ function Receptor:new(x, y, data, player)
 	self:updateHitbox()
 end
 
-function Receptor:init()
+function Receptor:groupInit()
+	self.x = self.x - Note.swagWidth * 2 + Note.swagWidth * self.data
+	self:setScrollFactor(0)
 	self:play("static")
-	self.x = self.x + 50 + Note.swagWidth * self.data + (push.getWidth() / 2) *
-		self.player
+end
+
+function Receptor:update(dt)
+	if self.__timer > 0 then
+		self.__timer = self.__timer - dt
+		if self.__timer <= 0 then
+			self.__timer = 0
+			self:play("static")
+		end
+	end
+	Receptor.super.update(self, dt)
 end
 
 function Receptor:play(anim, force)
@@ -40,6 +53,11 @@ function Receptor:play(anim, force)
 			self.offset.x = self.offset.x - 1.5
 		end
 	end
+end
+
+function Receptor:confirm(time)
+	self:play("confirm", true)
+	self.__timer = time
 end
 
 return Receptor

@@ -143,7 +143,7 @@ function paths.playSound(key, cache)
 	return sound
 end
 
-function paths.getSparrowFrames(key, cache)
+function paths.getSparrowAtlas(key, cache)
 	if cache == nil then cache = true end
 
 	local imgPath, xmlPath = key, paths.getPath("images/" .. key .. ".xml")

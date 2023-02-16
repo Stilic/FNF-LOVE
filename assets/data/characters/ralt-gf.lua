@@ -1,5 +1,5 @@
 function create()
-	self:setFrames(paths.getSparrowFrames("characters/ralt-gf"))
+	self:setFrames(paths.getSparrowAtlas("characters/ralt-gf"))
 
 	self:addAnimByIndices("danceLeft", "ralt idle",
 		{ 30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, 24, false)
