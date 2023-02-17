@@ -6,14 +6,12 @@ PlayState.controlDirs = {
 	note_up = 2,
 	note_right = 3
 }
-
 PlayState.ratings = {
-	{ name = "sick", time = 45,  score = 350, fc = "MFC", mod = 1,       splash = true },
-	{ name = "good", time = 90,  score = 200, fc = "GFC", mod = 0.7,     splash = false },
-	{ name = "bad",  time = 135, score = 100, fc = "FC",  mod = 0.4,     splash = false },
-	{ name = "shit", time = 180, score = 50,  mod = 0,    splash = false }
+	{ name = "sick", time = 45,  score = 350, splash = true },
+	{ name = "good", time = 90,  score = 200, splash = false },
+	{ name = "bad",  time = 125, score = 100, splash = false },
+	{ name = "shit", time = 150, score = 50,  splash = false }
 }
-
 -- TODO: fix downscroll sustains clipping
 PlayState.downscroll = false
 
@@ -310,23 +308,15 @@ function PlayState:inputPress(key)
 
 	if #noteList > 0 then
 		table.sort(noteList, PlayState.sortByShit)
-		local pressNotes, notesStopped = {}, false
+		local coolNote = table.remove(noteList, 1)
 
-		for _, epicNote in next, noteList do
-			for _, doubleNote in next, pressNotes do
-				if math.abs(doubleNote.time - epicNote.time) > 3 then
-					notesStopped = true
-					break
-				end
-			end
-
-			if not notesStopped then
-				table.insert(pressNotes, epicNote)
-				self:goodNoteHit(epicNote)
-			else
-				break
+		for _, n in next, noteList do
+			if n.time - coolNote.time < 2 then
+				self:removeNote(n)
 			end
 		end
+
+		self:goodNoteHit(coolNote)
 	end
 
 	PlayState.songPosition = prevSongPos
@@ -382,16 +372,14 @@ function PlayState:goodNoteHit(n)
 
 		if not n.isSustain then
 			if n.mustPress then
-				local diff = math.abs(n.time - PlayState.songPosition)
-				local rating
-				for i = 1, #PlayState.ratings - 1 do
-					local r = PlayState.ratings[i]
+				local diff, rating = math.abs(n.time - PlayState.songPosition), PlayState.ratings
+					[#PlayState.ratings - 1]
+				for _, r in next, PlayState.ratings do
 					if diff <= r.time then
 						rating = r
 						break
 					end
 				end
-				if not rating then rating = PlayState.ratings[#PlayState.ratings - 1] end
 
 				self.judgeSprTimer:clear()
 				self.judgeSpr:revive()
