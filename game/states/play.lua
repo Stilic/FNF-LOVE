@@ -392,7 +392,7 @@ function PlayState:goodNoteHit(n)
 				self.judgeSpr.x = (w - self.judgeSpr.width) * 0.35 + 40
 				self.judgeSpr.y = self.judgeSpr.y - 60
 
-				self.judgeSprTimer:tween(0.65, self.judgeSpr, { y = self.judgeSpr.y - 25 },
+				self.judgeSprTimer:tween(0.85, self.judgeSpr, { y = self.judgeSpr.y - 25 },
 					"out-circ")
 				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000,
 					function()

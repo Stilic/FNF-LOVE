@@ -94,23 +94,3 @@ function math.countbytes(x)
 end
 
 math.noise = require "lib.noise"
-ffi = require "ffi"
-
---[=[ no need to, there is already love.timer.sleep which are equilevant to SDL Sleep function
-pcall(function()
-	ffi.cdef[[
-		void Sleep(int ms);
-		int poll(struct pollfd *fds, unsigned long nfds, int timeout);
-	]]
-
-	if ffi.os == "Windows" then
-		function love.timer.sleep(s)
-			ffi.C.Sleep(math.max(s*1000, 0))
-		end
-	else
-		function love.timer.sleep(s)
-			ffi.C.poll(nil, 0, math.max(s*1000, 0))
-		end
-	end
-end)
-]=]
