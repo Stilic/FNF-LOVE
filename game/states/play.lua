@@ -12,6 +12,7 @@ PlayState.ratings = {
 	{ name = "bad",  time = 125, score = 100, splash = false },
 	{ name = "shit", time = 150, score = 50,  splash = false }
 }
+-- TODO: fix downscroll clipping
 PlayState.downscroll = false
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
