@@ -12,7 +12,6 @@ function Character:new(x, y, char, isPlayer)
 	self.singDuration = 4
 	self.lastHit = 0
 	self.holding = false
-	self.__lastHolding = false
 
 	self.danceSpeed = 2
 	self.danced = false
@@ -51,16 +50,9 @@ end
 function Character:update(dt)
 	self.script:call("update", dt)
 	Character.super.update(self, dt)
-	if #self.curAnim.frames > 2 then
-		if self.holding then
-			if self.curFrame > 2 then
-				self.curFrame = 1
-			end
-		elseif self.__lastHolding and self.curFrame <= 2 then
-			self.curFrame = 3
-		end
+	if self.holding and #self.curAnim.frames > 2 and self.curFrame > 2 then
+		self.curFrame = 1
 	end
-	self.__lastHolding = self.holding
 	self.script:call("postUpdate", dt)
 end
 

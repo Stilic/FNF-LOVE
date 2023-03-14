@@ -1,14 +1,18 @@
 local parseXml = require "lib.xmlParser"
 
-local stencilInfo
+local stencilSprite, stencilX, stencilY = {}, 0, 0
 local function stencil()
-	if stencilInfo then
+	if stencilSprite then
 		love.graphics.push()
-		love.graphics.translate(stencilInfo.x + stencilInfo.width * 0.5,
-			stencilInfo.y + stencilInfo.height * 0.5)
-		love.graphics.rotate(stencilInfo.angle)
-		love.graphics.translate(-stencilInfo.width * 0.5, -stencilInfo.height * 0.5)
-		love.graphics.rectangle("fill", 0, 0, stencilInfo.width, stencilInfo.height)
+		love.graphics.translate(
+			stencilX + stencilSprite.clipRect.x +
+			stencilSprite.clipRect.width * 0.5,
+			stencilY + stencilSprite.clipRect.y +
+			stencilSprite.clipRect.height * 0.5)
+		love.graphics.rotate(stencilSprite.angle)
+		love.graphics.translate(-stencilSprite.clipRect.width * 0.5, -stencilSprite.clipRect.height * 0.5)
+		love.graphics.rectangle("fill", -stencilSprite.width * 0.5, -stencilSprite.height * 0.5,
+			stencilSprite.clipRect.width, stencilSprite.clipRect.height)
 		love.graphics.pop()
 	end
 end
@@ -337,31 +341,27 @@ function Sprite:draw()
 		if self.flipX then sx = -sx end
 		if self.flipY then sy = -sy end
 
+		x, y = x + ox - self.offset.x, y + oy - self.offset.y
+
+		if f then
+			ox, oy = ox + f.offset.x, oy + f.offset.y
+		end
+
 		if self.clipRect then
-			stencilInfo = {
-				x = x + self.clipRect.x,
-				y = y + self.clipRect.y,
-				width = self.clipRect.width,
-				height = self.clipRect.height,
-				angle = r
-			}
+			stencilSprite, stencilX, stencilY = self, x, y
 			love.graphics.stencil(stencil, "replace", 1)
 			love.graphics.setStencilTest("greater", 0)
 		end
 
-		x, y = x - (self.offset.x - ox), y - (self.offset.y - oy)
-
 		if not f then
 			love.graphics.draw(self.texture, x, y, r, sx, sy, ox, oy, kx, ky)
 		else
-			ox, oy = ox + f.offset.x, oy + f.offset.y
 			love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy, kx, ky)
 		end
 
 		if cam then cam:detach() end
 
 		if self.clipRect then
-			stencilInfo = nil
 			love.graphics.setStencilTest()
 		end
 

@@ -12,7 +12,6 @@ PlayState.ratings = {
 	{ name = "bad",  time = 125, score = 100, splash = false },
 	{ name = "shit", time = 150, score = 50,  splash = false }
 }
--- TODO: fix downscroll sustains clipping
 PlayState.downscroll = false
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
@@ -20,7 +19,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "hitstun"
+	local song = "jumpman"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -31,7 +30,7 @@ function PlayState:enter()
 		boyfriend = chart.player1 == nil and "bf" or chart.player1,
 		dad = chart.player2 == nil and "dad" or chart.player2,
 		girlfriend = chart.gfVersion == nil and
-		(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
+			(chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
 		mustHits = {}
 	}
 
@@ -186,8 +185,8 @@ function PlayState:update(dt)
 	PlayState.super.update(self, dt)
 
 	self.camGame.target.x, self.camGame.target.y = util.coolLerp(self.camGame.target.x, self.camFollow.x,
-			0.04), util.coolLerp(self.camGame.target.y, self.camFollow.y,
-			0.04)
+		0.04), util.coolLerp(self.camGame.target.y, self.camFollow.y,
+		0.04)
 
 	local mustHit = self:getCurrentMustHit()
 	if mustHit ~= nil then
@@ -363,7 +362,7 @@ function PlayState:goodNoteHit(n)
 		local time = 0
 		if not n.mustPress then
 			self.camZooming = true
-			time = 0.17
+			time = 0.15
 			if n.isSustain and not n.isSustainEnd then
 				time = time * 2
 			end
