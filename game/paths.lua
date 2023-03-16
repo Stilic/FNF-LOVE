@@ -20,7 +20,7 @@ local paths = {
 }
 
 function paths.isPersistant(path)
-	for _, k in ipairs(paths.persistantAssets) do
+	for _, k in pairs(paths.persistantAssets) do
 		if path:startsWith(k) then return true end
 	end
 	return false
