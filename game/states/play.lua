@@ -19,7 +19,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState:enter()
 	self.keysPressed = {}
 
-	local song = "jumpman"
+	local song = "expression"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
