@@ -94,15 +94,4 @@ function Note:update(dt)
 	Note.super.update(self, dt)
 end
 
-function Note:draw()
-	local negativeScroll = self.isSustain and not self.isSustainEnd and PlayState.downscroll
-	if negativeScroll then
-		self.offset.y = -self.offset.y
-	end
-	Note.super.draw(self)
-	if negativeScroll then
-		self.offset.y = -self.offset.y
-	end
-end
-
 return Note
