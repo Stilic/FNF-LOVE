@@ -45,11 +45,11 @@ controls = (require "lib.baton").new({
 		ui_up = { "key:up", "key:w", "axis:lefty-", "button:dpup" },
 		ui_right = { "key:right", "key:d", "axis:leftx+", "button:dpright" },
 
-		note_left = { "key:left", "key:a", "axis:leftx-", "button:dpleft", "button:x" },
-		note_down = { "key:down", "key:s", "axis:lefty+", "button:dpdown", "button:a" },
-		note_up = { "key:up", "key:l", "axis:lefty-", "button:dpup", "button:y" },
+		note_left = { "key:left", "key:d", "axis:leftx-", "button:dpleft", "button:x" },
+		note_down = { "key:down", "key:f", "axis:lefty+", "button:dpdown", "button:a" },
+		note_up = { "key:up", "key:j", "axis:lefty-", "button:dpup", "button:y" },
 		note_right = {
-			"key:right", "key:p", "axis:leftx+", "button:dpright", "button:b"
+			"key:right", "key:k", "axis:leftx+", "button:dpright", "button:b"
 		},
 
 		accept = { "key:space", "key:return", "button:a", "button:start" },
