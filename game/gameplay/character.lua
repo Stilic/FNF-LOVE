@@ -11,6 +11,7 @@ function Character:new(x, y, char, isPlayer)
 
 	self.singDuration = 4
 	self.lastHit = 0
+	self.lastSing = nil
 
 	self.danceSpeed = 2
 	self.danced = false
@@ -94,6 +95,7 @@ end
 
 function Character:dance(force)
 	if self.__animations and self.script:callReturn("dance") then
+		self.lastSing = nil
 		if self.__animations["danceLeft"] and self.__animations["danceRight"] then
 			self.danced = not self.danced
 

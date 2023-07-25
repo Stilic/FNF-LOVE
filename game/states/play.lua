@@ -24,7 +24,7 @@ function PlayState:enter()
 
 	self.keysPressed = {}
 
-	local song = "third-party"
+	local song = "round-a-bout"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -389,7 +389,11 @@ function PlayState:goodNoteHit(n)
 		n.wasGoodHit = true
 
 		local char = n.mustPress and self.boyfriend or self.dad
-		char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]), true)
+		if not n.isSustain or char.lastSing ~= n.data or char.lastSing == nil then
+			char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]),
+				true)
+		end
+		char.lastSing = n.data
 		char.lastHit = PlayState.songPosition
 
 		local time = 0
