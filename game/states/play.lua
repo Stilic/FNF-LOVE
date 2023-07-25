@@ -353,8 +353,6 @@ function PlayState:onKeyRelease(key, type)
 			r:play("static")
 			r.confirmTimer = 0
 		end
-
-		if self.boyfriend.holding then self.boyfriend.holding = false end
 	end
 end
 
@@ -365,7 +363,6 @@ function PlayState:goodNoteHit(n)
 		local char = n.mustPress and self.boyfriend or self.dad
 		char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]), true)
 		char.lastHit = PlayState.songPosition
-		char.holding = n.isSustain and not n.isSustainEnd
 
 		local time = 0
 		if not n.mustPress then

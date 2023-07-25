@@ -11,7 +11,6 @@ function Character:new(x, y, char, isPlayer)
 
 	self.singDuration = 4
 	self.lastHit = 0
-	self.holding = false
 
 	self.danceSpeed = 2
 	self.danced = false
@@ -50,9 +49,6 @@ end
 function Character:update(dt)
 	self.script:call("update", dt)
 	Character.super.update(self, dt)
-	if self.holding and #self.curAnim.frames > 2 and self.curFrame > 2 then
-		self.curFrame = 1
-	end
 	self.script:call("postUpdate", dt)
 end
 
@@ -91,7 +87,6 @@ end
 
 function Character:dance(force)
 	if self.__animations and self.script:callReturn("dance") then
-		self.holding = false
 		if self.__animations["danceLeft"] and self.__animations["danceRight"] then
 			self.danced = not self.danced
 
