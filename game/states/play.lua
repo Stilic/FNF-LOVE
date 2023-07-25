@@ -82,7 +82,7 @@ function PlayState:enter()
 								oldNote = self.unspawnNotes[#self.unspawnNotes]
 
 								local sustain = Note(daStrumTime + music.stepCrochet * (susNote + 1),
-									daNoteData, oldNote, true)
+									daNoteData, oldNote, true, note)
 								sustain.mustPress = gottaHitNote
 								sustain:setScrollFactor(0)
 								table.insert(self.unspawnNotes, sustain)
@@ -239,7 +239,7 @@ function PlayState:update(dt)
 	local ogStepCrochet = ogCrochet / 4
 	for i, n in ipairs(self.allNotes.members) do
 		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
-				not n.parentNote.hasMissed and n.parentNote.wasGoodHit and n.canBeHit) or
+				not n.parentNote.missed and n.parentNote.wasGoodHit and n.canBeHit) or
 			(not n.mustPress and
 				((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
 			self:goodNoteHit(n)
@@ -295,6 +295,18 @@ function PlayState:update(dt)
 		end
 
 		if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
+			if not n.missed and n.mustPress and (n.tooLate or not n.wasGoodHit) and not music:isFinished() then
+				self.vocals:setVolume(0)
+
+				if not n.isSustain or not n.parentNote.missed then
+					-- miss score shit here
+				end
+
+				self.boyfriend:sing(n.data, true, n.isSustain)
+			end
+
+			n.missed = true
+
 			self:removeNote(n)
 		end
 	end
@@ -387,14 +399,10 @@ end
 function PlayState:goodNoteHit(n)
 	if not n.wasGoodHit then
 		n.wasGoodHit = true
+		self.vocals:setVolume(1)
 
-		local char = n.mustPress and self.boyfriend or self.dad
-		if not n.isSustain or char.lastSing ~= n.data or char.lastSing == nil then
-			char:playAnim("sing" .. string.upper(Note.directions[n.data + 1]),
-				true)
-		end
-		char.lastSing = n.data
-		char.lastHit = PlayState.songPosition
+		local char = (n.mustPress and self.boyfriend or self.dad)
+		char:sing(n.data, false, n.isSustain)
 
 		local time = 0
 		if not n.mustPress then

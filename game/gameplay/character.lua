@@ -93,6 +93,18 @@ function Character:playAnim(anim, force)
 	end
 end
 
+function Character:sing(dir, miss, hold)
+	if not hold or self.lastSing ~= dir or self.lastSing == nil then
+		local anim = "sing" .. string.upper(Note.directions[dir + 1])
+		if miss then
+			anim = anim .. "miss"
+		end
+		self:playAnim(anim, true)
+	end
+	self.lastSing = dir
+	self.lastHit = PlayState.songPosition
+end
+
 function Character:dance(force)
 	if self.__animations and self.script:callReturn("dance") then
 		self.lastSing = nil

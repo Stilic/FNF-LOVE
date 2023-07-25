@@ -4,7 +4,7 @@ Note.swagWidth = 160 * 0.7
 Note.colors = { "purple", "blue", "green", "red" }
 Note.directions = { "left", "down", "up", "right" }
 
-function Note:new(time, data, prevNote, sustain)
+function Note:new(time, data, prevNote, sustain, parentNote)
 	Note.super.new(self, 0, -2000)
 	self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
 
@@ -14,9 +14,9 @@ function Note:new(time, data, prevNote, sustain)
 	if sustain == nil then sustain = false end
 	self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
 		sustain, false, false, 0
-	self.parentNote, self.childNotes = nil, nil
+	self.parentNote = parentNote
 	self.mustPress = false
-	self.canBeHit, self.wasGoodHit, self.tooLate, self.hasMissed = false, false,
+	self.canBeHit, self.wasGoodHit, self.tooLate, self.missed = false, false,
 		false, false
 	self.earlyHitMult, self.lateHitMult = 1, 1
 	self.altNote = false
@@ -52,14 +52,7 @@ function Note:new(time, data, prevNote, sustain)
 
 		self.scrollOffset.x = self.scrollOffset.x - self.width / 2
 
-		self.parentNote = prevNote
-		while self.parentNote.isSustain and self.parentNote.prevNote do
-			self.parentNote = self.parentNote.prevNote
-		end
-
 		if prevNote.isSustain then
-			table.insert(self.parentNote.childNotes, self)
-
 			prevNote:play(Note.colors[prevNote.data + 1] .. "hold")
 			prevNote.isSustainEnd = false
 
@@ -68,8 +61,6 @@ function Note:new(time, data, prevNote, sustain)
 			prevNote:updateHitbox()
 			prevNote.scale.y = prevNote.scale.y + 1 / prevNote:getFrameHeight()
 		end
-	else
-		self.childNotes = {}
 	end
 end
 
