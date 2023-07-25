@@ -2,6 +2,15 @@ local Script = Object:extend()
 
 local chunkMt = { __index = _G }
 
+function Script.loadScriptsFromDirectory(dir)
+	local scripts = {}
+
+	for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath("data/" .. dir))) do
+		table.insert(scripts, Script(dir .. "/" .. util.removeExtension(file)))
+	end
+	return scripts
+end
+
 function Script:new(path)
 	self.path = path
 	self.variables = {}

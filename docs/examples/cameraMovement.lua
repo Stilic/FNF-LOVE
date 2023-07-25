@@ -1,4 +1,4 @@
-local anims, add = { l = { -1, 0 }, r = { 1, 0 }, u = { 0, -1 }, d = { 0, 1 } }, 25
+local anims, add = { l = { -1, 0 }, r = { 1, 0 }, u = { 0, -1 }, d = { 0, 1 } }, 15
 
 function postUpdate()
 	local mustHit = state:getCurrentMustHit()

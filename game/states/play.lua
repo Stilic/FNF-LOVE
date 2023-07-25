@@ -17,9 +17,14 @@ PlayState.downscroll = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
+	self.scripts = Script.loadScriptsFromDirectory("scripts")
+	for _, script in ipairs(self.scripts) do
+		script:call("create")
+	end
+
 	self.keysPressed = {}
 
-	local song = "glitcher"
+	local song = "third-party"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -164,9 +169,17 @@ function PlayState:enter()
 	controls:bindRelease(self.bindedKeyRelease)
 
 	self.startingSong = true
+
+	for _, script in ipairs(self.scripts) do
+		script:call("postCreate")
+	end
 end
 
 function PlayState:update(dt)
+	for _, script in ipairs(self.scripts) do
+		script:call("update", dt)
+	end
+
 	if not isSwitchingState and self.startedSong and music:isFinished() then
 		switchState(TitleState())
 	end
@@ -287,6 +300,21 @@ function PlayState:update(dt)
 	end
 
 	self.judgeSprTimer:update(dt)
+
+	for _, script in ipairs(self.scripts) do
+		script:call("postUpdate", dt)
+	end
+end
+
+local ogDraw = PlayState.draw
+function PlayState:draw()
+	for _, script in ipairs(self.scripts) do
+		script:call("draw")
+	end
+	ogDraw(self)
+	for _, script in ipairs(self.scripts) do
+		script:call("postDraw")
+	end
 end
 
 -- CAN RETURN NIL!!
@@ -422,6 +450,10 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:beat(b)
+	for _, script in ipairs(self.scripts) do
+		script:call("beat", b)
+	end
+
 	local time = music.instance:tell()
 	if self.vocals and math.abs(self.vocals.instance:tell() - time) * 1000 > 6 then
 		self.vocals:seek(time)
@@ -433,15 +465,27 @@ function PlayState:beat(b)
 	end
 
 	PlayState.super.beat(self, b)
+
+	for _, script in ipairs(self.scripts) do
+		script:call("postBeat", b)
+	end
 end
 
 function PlayState:leave()
+	for _, script in ipairs(self.scripts) do
+		script:call("leave")
+	end
+
 	PlayState.songPosition = nil
 
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)
 
 	PlayState.super.leave(self)
+
+	for _, script in ipairs(self.scripts) do
+		script:call("postLeave")
+	end
 end
 
 return PlayState

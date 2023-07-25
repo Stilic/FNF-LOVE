@@ -40,4 +40,13 @@ function util.newGradient(dir, ...)
 	return love.graphics.newMesh(meshData, "strip", "static")
 end
 
+function util.removeExtension(filename)
+	local nameWithoutExt = filename:match("(.+)%..+$")
+	if nameWithoutExt then
+		return nameWithoutExt
+	else
+		return filename
+	end
+end
+
 return util

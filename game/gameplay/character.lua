@@ -38,12 +38,18 @@ end
 
 function Character:switchAnim(oldAnim, newAnim)
 	local leftAnim = self.__animations[oldAnim]
-	self.__animations[oldAnim] = self.__animations[newAnim]
-	self.__animations[newAnim] = leftAnim
+	if leftAnim and self.__animations[newAnim] then
+		leftAnim.name = newAnim
+		self.__animations[oldAnim] = self.__animations[newAnim]
+		self.__animations[oldAnim].name = oldAnim
+		self.__animations[newAnim] = leftAnim
+	end
 
 	local leftOffsets = self.animOffsets[oldAnim]
-	self.animOffsets[oldAnim] = self.animOffsets[newAnim]
-	self.animOffsets[newAnim] = leftOffsets
+	if leftOffsets and self.animOffsets[newAnim] then
+		self.animOffsets[oldAnim] = self.animOffsets[newAnim]
+		self.animOffsets[newAnim] = leftOffsets
+	end
 end
 
 function Character:update(dt)
@@ -62,14 +68,15 @@ end
 
 function Character:beat(b)
 	self.script:call("beat", b)
+
 	if self.lastHit > 0 then
-		if b % math.max(self.danceSpeed, 2) == 0 and self.lastHit + music.stepCrochet *
+		if self.lastHit + music.stepCrochet *
 			self.singDuration <= PlayState.songPosition then
 			self:dance()
 			self.lastHit = 0
 		end
 	elseif b % self.danceSpeed == 0 then
-		self:dance()
+		self:dance(self.danceSpeed < 2)
 	end
 	self.script:call("postBeat", b)
 end
