@@ -17,14 +17,14 @@ PlayState.downscroll = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
-	self.scripts = Script.loadScriptsFromDirectory("scripts")
+	self.scripts = Script.loadScriptsFromDirectory("scripts/play")
 	for _, script in ipairs(self.scripts) do
 		script:call("create")
 	end
 
 	self.keysPressed = {}
 
-	local song = "round-a-bout"
+	local song = "swap-chase"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -238,7 +238,7 @@ function PlayState:update(dt)
 	local ogCrochet = (60 / PlayState.song.bpm) * 1000
 	local ogStepCrochet = ogCrochet / 4
 	for i, n in ipairs(self.allNotes.members) do
-		if (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
+		if not n.missed and (n.mustPress and n.isSustain and self.keysPressed[n.data] and n.parentNote and
 				not n.parentNote.missed and n.parentNote.wasGoodHit and n.canBeHit) or
 			(not n.mustPress and
 				((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition)) then
@@ -295,17 +295,19 @@ function PlayState:update(dt)
 		end
 
 		if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
-			if not n.missed and n.mustPress and (n.tooLate or not n.wasGoodHit) and not music:isFinished() then
+			if n.mustPress and (n.tooLate or not n.wasGoodHit) and not music:isFinished() then
 				self.vocals:setVolume(0)
 
-				if not n.isSustain or not n.parentNote.missed then
-					-- miss score shit here
+				if not n.missed and not n.isSustain or not n.parentNote.missed then
+					if n.isSustain then
+						for _, no in ipairs(n.parentNote.children) do
+							no.missed = true
+						end
+					end
 				end
 
 				self.boyfriend:sing(n.data, true, n.isSustain)
 			end
-
-			n.missed = true
 
 			self:removeNote(n)
 		end
@@ -355,7 +357,7 @@ function PlayState:onKeyPress(key, type)
 		local noteList = {}
 
 		for _, n in ipairs(self.notesGroup.members) do
-			if n.mustPress and not n.isSustain and not n.tooLate and not n.wasGoodHit then
+			if not n.missed and n.mustPress and not n.isSustain and not n.tooLate and not n.wasGoodHit then
 				if not n.canBeHit and n:checkDiff(PlayState.songPosition) then n:update(0) end
 				if n.canBeHit and n.data == key then table.insert(noteList, n) end
 			end

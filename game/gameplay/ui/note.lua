@@ -14,7 +14,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 	if sustain == nil then sustain = false end
 	self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
 		sustain, false, false, 0
-	self.parentNote = parentNote
+	self.parentNote, children = parentNote, false
 	self.mustPress = false
 	self.canBeHit, self.wasGoodHit, self.tooLate, self.missed = false, false,
 		false, false
@@ -41,6 +41,8 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 	self:play(color .. "Scroll")
 
 	if sustain and prevNote then
+		table.insert(parentNote.children, self)
+
 		self.alpha = 0.6
 		self.earlyHitMult = 0.5
 		self.scrollOffset.x = self.scrollOffset.x + self.width / 2
@@ -61,6 +63,8 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 			prevNote:updateHitbox()
 			prevNote.scale.y = prevNote.scale.y + 1 / prevNote:getFrameHeight()
 		end
+	else
+		self.children = {};
 	end
 end
 
