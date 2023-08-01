@@ -158,7 +158,7 @@ function PlayState:enter()
 	self:add(self.notesGroup)
 
 	for _, o in ipairs({
-		self.receptors, self.notesGroup, self.sustainsGroup
+		self.receptors, self.notesGroup, self.sustainsGroup, judgeSpritesGroup
 	}) do o.camera = self.camHUD end
 
 	self.bindedKeyPress = function(...) self:onKeyPress(...) end
