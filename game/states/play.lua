@@ -156,6 +156,7 @@ function PlayState:enter()
 	self:add(self.receptors)
 	self:add(self.sustainsGroup)
 	self:add(self.notesGroup)
+	self:add(judgeSpritesGroup)
 
 	for _, o in ipairs({
 		self.receptors, self.notesGroup, self.sustainsGroup, judgeSpritesGroup
@@ -329,10 +330,6 @@ function PlayState:draw()
 	for _, script in ipairs(self.scripts) do
 		script:call("postDraw")
 	end
-
-	for _, judgeSpr in ipairs(judgeSpritesGroup.members) do
-		judgeSpr:draw()
-	end
 end
 
 -- CAN RETURN NIL!!
@@ -476,7 +473,6 @@ function PlayState:popUpScore(rating)
 	local judgeSpr = Sprite()
 	judgeSpr:load(paths.getImage("skins/normal/" .. rating.name))
 	judgeSpr.alpha = 1
-	--	judgeSpr.camera = self.camHUD
 	judgeSpr:setGraphicSize(math.floor(judgeSpr.width * 0.7))
 	judgeSpr:updateHitbox()
 	judgeSpr:screenCenter("y")
@@ -512,19 +508,15 @@ function PlayState:popUpScore(rating)
 			local digit = tonumber(comboStr:sub(i, i)) or 0
 			local numScore = Sprite()
 			numScore:load(paths.getImage("skins/normal/num" .. digit))
-			numScore:setGraphicSize(math.floor(numScore.width * 0.7))
+			numScore:setGraphicSize(math.floor(numScore.width * 0.5))
 			numScore:updateHitbox()
-			numScore.x = (i - 1) * numScore.width + 326
+			numScore.x = (i - 1) * numScore.width + 400
 			numScore.y = yPosition + 150
 			numScore.alpha = 1
 			numScore:setScrollFactor(0)
 
 			local accelY = love.math.random(200, 300) / 10
 			local velocY = love.math.random(140, 160) / 5
-		
-			--[[numScore.acceleration.y = FlxG.random.int(200, 300);
-				numScore.velocity.y -= FlxG.random.int(140, 160);
-				numScore.velocity.x = FlxG.random.float(-5, 5);]]
 
 			self.judgeSprTimer:tween(.30*1.5, numScore, {y = numScore.y - accelY * 1.5}, "out-circ")
 			Timer.after(.35*1.5, function()
