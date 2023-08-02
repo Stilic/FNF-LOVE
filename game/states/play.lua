@@ -502,7 +502,7 @@ function PlayState:popUpScore(rating)
 	if self.combo >= 10 or self.combo == 0 then
 		for i = 1, #comboStr do
 			local digit = tonumber(comboStr:sub(i, i)) or 0
-			local numScore = Sprite()
+			local numScore = self.judgeSpritesGroup:recycle()
 			numScore:load(paths.getImage("skins/normal/num" .. digit))
 			numScore:setGraphicSize(math.floor(numScore.width * 0.5))
 			numScore:updateHitbox()
@@ -522,11 +522,8 @@ function PlayState:popUpScore(rating)
 				self.judgeSprTimer:tween(.28 * 1.5, numScore, { y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
 			Timer.after(.75 * 1.5, function()
-				self.judgeSpritesGroup:remove(numScore)
-				numScore:destroy()
+				numScore:kill()
 			end)
-
-			self.judgeSpritesGroup:add(numScore)
 		end
 	end
 end
