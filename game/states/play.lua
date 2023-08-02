@@ -522,11 +522,11 @@ function PlayState:popUpScore(rating)
 				self.judgeSprTimer:tween(.28 * 1.5, numScore, { y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
 			Timer.after(.75 * 1.5, function()
-				judgeSpritesGroup:remove(numScore)
+				self.judgeSpritesGroup:remove(numScore)
 				numScore:destroy()
 			end)
 
-			judgeSpritesGroup:add(numScore)
+			self.judgeSpritesGroup:add(numScore)
 		end
 	end
 end
