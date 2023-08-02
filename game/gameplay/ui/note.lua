@@ -61,10 +61,9 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 			prevNote.scale.y = (prevNote.width / prevNote:getFrameWidth()) * ((music.stepCrochet / 100) * (1.05 / 0.7)) *
 				PlayState.song.speed
 			prevNote:updateHitbox()
-			prevNote.scale.y = prevNote.scale.y + 1 / prevNote:getFrameHeight()
 		end
 	else
-		self.children = {};
+		self.children = {}
 	end
 end
 

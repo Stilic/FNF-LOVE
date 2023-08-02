@@ -505,7 +505,7 @@ function PlayState:popUpScore(rating)
 			numScore:setGraphicSize(math.floor(numScore.width * 0.5))
 			numScore:updateHitbox()
 			numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
-			numScore.y = judgeSpr.y + 105
+			numScore.y = judgeSpr.y + 115
 			numScore.alpha = 1
 
 			local accelY = love.math.random(200, 300) / 10
