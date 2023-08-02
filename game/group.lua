@@ -22,6 +22,9 @@ function Group:clear() for i in ipairs(self.members) do self.members[i] = nil en
 function Group:sort(func) return table.sort(self.members, func) end
 
 function Group:recycle(class, factory, revive)
+	if class == nil then
+		class = Sprite
+	end
 	if factory == nil then factory = class end
 	if revive == nil then revive = true end
 

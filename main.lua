@@ -119,7 +119,7 @@ function switchState(state, transition)
 end
 
 function love.run()
-	local w, h, flags = love.window.getMode()
+	local _, _, flags = love.window.getMode()
 	love.FPScap, love.unfocusedFPScap = math.max(flags.refreshrate, 120), 8
 
 	love.graphics.clear(0, 0, 0, 0, false, false)
