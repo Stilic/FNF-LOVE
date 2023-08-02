@@ -1,4 +1,5 @@
 local PlayState = State:extend()
+local judgeSpritesGroup
 
 PlayState.controlDirs = {
 	note_left = 0,
@@ -13,6 +14,7 @@ PlayState.ratings = {
 	{ name = "shit", time = 150, score = 50,  splash = false }
 }
 PlayState.downscroll = false
+PlayState.combo = 0
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
@@ -109,6 +111,7 @@ function PlayState:enter()
 	self.receptors = Group()
 	self.playerReceptors = Group()
 	self.enemyReceptors = Group()
+	judgeSpritesGroup = Group()
 
 	local rx, ry = push.getWidth() / 2, 50
 	if PlayState.downscroll then ry = push.getHeight() - 100 - ry end
@@ -148,18 +151,15 @@ function PlayState:enter()
 
 	self:add(self.stage.front)
 
-	self.judgeSpr = Sprite()
-	self:add(self.judgeSpr)
-
-	self.judgeSpr:setScrollFactor(0)
 	self.judgeSprTimer = Timer.new()
 
 	self:add(self.receptors)
 	self:add(self.sustainsGroup)
 	self:add(self.notesGroup)
+	self:add(judgeSpritesGroup)
 
 	for _, o in ipairs({
-		self.judgeSpr, self.receptors, self.notesGroup, self.sustainsGroup
+		self.receptors, self.notesGroup, self.sustainsGroup, judgeSpritesGroup
 	}) do o.camera = self.camHUD end
 
 	self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -297,6 +297,7 @@ function PlayState:update(dt)
 		if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
 			if n.mustPress and (n.tooLate or not n.wasGoodHit) and not music:isFinished() then
 				self.vocals:setVolume(0)
+				PlayState.combo = 0
 
 				if not n.missed and not n.isSustain or not n.parentNote.missed then
 					if n.isSustain then
@@ -427,25 +428,8 @@ function PlayState:goodNoteHit(n)
 					end
 				end
 
-				self.judgeSprTimer:clear()
-				self.judgeSpr:revive()
-				self.judgeSpr:load(paths.getImage("skins/normal/" .. rating.name))
-				self.judgeSpr.alpha = 1
-				self.judgeSpr:setGraphicSize(math.floor(self.judgeSpr.width * 0.7))
-				self.judgeSpr:updateHitbox()
-				self.judgeSpr:screenCenter("y")
-				local w = push.getWidth()
-				self.judgeSpr.x = (w - self.judgeSpr.width) * 0.35 + 40
-				self.judgeSpr.y = self.judgeSpr.y - 60
-
-				self.judgeSprTimer:tween(0.85, self.judgeSpr, { y = self.judgeSpr.y - 25 },
-					"out-circ")
-				self.judgeSprTimer:after((music.crochet + music.stepCrochet * 2) / 1000,
-					function()
-						self.judgeSprTimer:tween(music.stepCrochet / 1000, self.judgeSpr,
-							{ alpha = 0 }, "linear",
-							function() self.judgeSpr:destroy() end)
-					end)
+				PlayState.combo = PlayState.combo + 1
+				self:popUpScore(rating)
 			end
 
 			self:removeNote(n)
@@ -482,6 +466,73 @@ function PlayState:beat(b)
 
 	for _, script in ipairs(self.scripts) do
 		script:call("postBeat", b)
+	end
+end
+
+function PlayState:popUpScore(rating)
+	local judgeSpr = Sprite()
+	judgeSpr:load(paths.getImage("skins/normal/" .. rating.name))
+	judgeSpr.alpha = 1
+	judgeSpr:setGraphicSize(math.floor(judgeSpr.width * 0.7))
+	judgeSpr:updateHitbox()
+	judgeSpr:screenCenter("y")
+	local w = push.getWidth()
+	judgeSpr.x = (w - judgeSpr.width) * 0.35 + 40
+	judgeSpr.y = judgeSpr.y - 60
+	judgeSpr:setScrollFactor(0)
+
+	judgeSpritesGroup:add(judgeSpr)
+
+	self.judgeSprTimer:tween(.3,
+		judgeSpr, {y = judgeSpr.y - 20}, "out-circ")
+
+	Timer.after(.3, function()
+		self.judgeSprTimer:tween(.2,
+		judgeSpr, {alpha = judgeSpr.alpha - 1}, "linear")
+	end)
+	Timer.after(.28, function()
+		self.judgeSprTimer:tween(.30,
+		judgeSpr, {y = judgeSpr.y + 20}, "in-circ")
+	end)
+	Timer.after(.75, function()
+		judgeSpritesGroup:remove(judgeSpr)
+		judgeSpr:destroy()
+	end)
+
+	local comboStr = string.format("%03d", PlayState.combo)
+	local yPosition = judgeSpr.y + judgeSpr.height / 2
+
+	if PlayState.combo >= 10 or PlayState.combo == 0 then
+
+		for i = 1, #comboStr do
+			local digit = tonumber(comboStr:sub(i, i)) or 0
+			local numScore = Sprite()
+			numScore:load(paths.getImage("skins/normal/num" .. digit))
+			numScore:setGraphicSize(math.floor(numScore.width * 0.5))
+			numScore:updateHitbox()
+			numScore.x = (i - 1) * numScore.width + 400
+			numScore.y = yPosition + 150
+			numScore.alpha = 1
+			numScore:setScrollFactor(0)
+
+			local accelY = love.math.random(200, 300) / 10
+			local velocY = love.math.random(140, 160) / 5
+
+			self.judgeSprTimer:tween(.30*1.5, numScore, {y = numScore.y - accelY * 1.5}, "out-circ")
+			Timer.after(.35*1.5, function()
+				self.judgeSprTimer:tween(.2*1.5, numScore, {alpha = numScore.alpha - 1}, "linear")
+			end)
+			Timer.after(.29*1.5, function()
+				self.judgeSprTimer:tween(.28*1.5, numScore, {y = numScore.y + accelY * 1.8}, "in-circ")
+			end)
+			Timer.after(.75*1.5, function()
+				judgeSpritesGroup:remove(numScore)
+				numScore:destroy()
+			end)
+
+			judgeSpritesGroup:add(numScore)
+		end
+
 	end
 end
 
