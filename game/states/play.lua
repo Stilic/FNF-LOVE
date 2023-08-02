@@ -24,7 +24,7 @@ function PlayState:enter()
 
 	self.keysPressed = {}
 
-	local song = "swap-chase"
+	local song = "ow"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,
@@ -148,6 +148,7 @@ function PlayState:enter()
 	self.stage:add(self.gf)
 	self.stage:add(self.boyfriend)
 	self.stage:add(self.dad)
+	self.stage:add(self.judgeSpritesGroup)
 
 	self:add(self.stage.front)
 
@@ -156,10 +157,9 @@ function PlayState:enter()
 	self:add(self.receptors)
 	self:add(self.sustainsGroup)
 	self:add(self.notesGroup)
-	self:add(self.judgeSpritesGroup)
 
 	for _, o in ipairs({
-		self.receptors, self.notesGroup, self.sustainsGroup, self.judgeSpritesGroup
+		self.receptors, self.notesGroup, self.sustainsGroup
 	}) do o.camera = self.camHUD end
 
 	self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -472,58 +472,55 @@ end
 function PlayState:popUpScore(rating)
 	local judgeSpr = self.judgeSpritesGroup:recycle()
 	judgeSpr:load(paths.getImage("skins/normal/" .. rating.name))
-	judgeSpr.alpha = 1
 	judgeSpr:setGraphicSize(math.floor(judgeSpr.width * 0.7))
 	judgeSpr:updateHitbox()
-	judgeSpr:screenCenter("y")
-	local w = push.getWidth()
-	judgeSpr.x = (w - judgeSpr.width) * 0.35 + 40
-	judgeSpr.y = judgeSpr.y - 60
-	judgeSpr:setScrollFactor(0)
+	judgeSpr:screenCenter()
+	-- use fixed values to display at the same position on a different resolution
+	judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
+	judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
+	judgeSpr.alpha = 1
 
-	self.judgeSprTimer:tween(.3,
+	self.judgeSprTimer:tween(0.3,
 		judgeSpr, { y = judgeSpr.y - 20 }, "out-circ")
 
 	Timer.after(.3, function()
-		self.judgeSprTimer:tween(.2,
+		self.judgeSprTimer:tween(0.2,
 			judgeSpr, { alpha = judgeSpr.alpha - 1 }, "linear")
 	end)
 	Timer.after(.28, function()
-		self.judgeSprTimer:tween(.30,
+		self.judgeSprTimer:tween(0.3,
 			judgeSpr, { y = judgeSpr.y + 20 }, "in-circ")
 	end)
 	Timer.after(.75, function()
 		judgeSpr:kill()
 	end)
 
-	local comboStr = string.format("%03d", self.combo)
-	local yPosition = judgeSpr.y + judgeSpr.height / 2
-
-	if self.combo >= 10 or self.combo == 0 then
+	if self.combo >= 10 then
+		local lastSpr
+		local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
 		for i = 1, #comboStr do
 			local digit = tonumber(comboStr:sub(i, i)) or 0
 			local numScore = self.judgeSpritesGroup:recycle()
 			numScore:load(paths.getImage("skins/normal/num" .. digit))
 			numScore:setGraphicSize(math.floor(numScore.width * 0.5))
 			numScore:updateHitbox()
-			numScore.x = (i - 1) * numScore.width + 400
-			numScore.y = yPosition + 150
+			numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
+			numScore.y = judgeSpr.y + 105
 			numScore.alpha = 1
-			numScore:setScrollFactor(0)
 
 			local accelY = love.math.random(200, 300) / 10
-			-- local velocY = love.math.random(140, 160) / 5
-
 			self.judgeSprTimer:tween(.30 * 1.5, numScore, { y = numScore.y - accelY * 1.5 }, "out-circ")
-			Timer.after(.35 * 1.5, function()
+			Timer.after(0.35 * 1.5, function()
 				self.judgeSprTimer:tween(.2 * 1.5, numScore, { alpha = numScore.alpha - 1 }, "linear")
 			end)
-			Timer.after(.29 * 1.5, function()
+			Timer.after(0.29 * 1.5, function()
 				self.judgeSprTimer:tween(.28 * 1.5, numScore, { y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
-			Timer.after(.75 * 1.5, function()
+			Timer.after(0.75 * 1.5, function()
 				numScore:kill()
 			end)
+
+			lastSpr = numScore
 		end
 	end
 end

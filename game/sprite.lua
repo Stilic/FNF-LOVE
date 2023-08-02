@@ -320,17 +320,22 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
+	local cam = self.camera or Sprite.defaultCamera
+	local alpha = self.alpha
+	if cam then
+		alpha = alpha * cam.alpha
+	end
 	if self.exists and self.alive and self.texture and
-		(self.alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
-		local cam = self.camera or Sprite.defaultCamera
+		(alpha > 0 or self.scale.x > 0 or self.scale.y > 0) then
 		local x, y = self:getScreenPosition(cam)
-		local f, r, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(), self.angle,
+		local f, rad, sx, sy, ox, oy, kx, ky = self:getCurrentFrame(), self.angle,
 			self.scale.x, self.scale.y,
 			self.origin.x, self.origin.y,
 			self.shear.x, self.shear.y
 
+		local r, g, b, a = love.graphics.getColor()
 		love.graphics
-			.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+			.setColor(self.color[1], self.color[2], self.color[3], alpha)
 
 		local min, mag, anisotropy = self.texture:getFilter()
 		local mode = self.antialiasing and "linear" or "nearest"
@@ -354,9 +359,9 @@ function Sprite:draw()
 		end
 
 		if not f then
-			love.graphics.draw(self.texture, x, y, r, sx, sy, ox, oy, kx, ky)
+			love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy, kx, ky)
 		else
-			love.graphics.draw(self.texture, f.quad, x, y, r, sx, sy, ox, oy, kx, ky)
+			love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy, kx, ky)
 		end
 
 		if cam then cam:detach() end
@@ -365,7 +370,7 @@ function Sprite:draw()
 			love.graphics.setStencilTest()
 		end
 
-		love.graphics.setColor(1, 1, 1)
+		love.graphics.setColor(r, g, b, a)
 
 		self.texture:setFilter(min, mag, anisotropy)
 	end

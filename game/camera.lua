@@ -12,6 +12,7 @@ function Camera:new(x, y, width, height)
 	self.target = nil
 	self.width = width
 	self.height = height
+	self.alpha = 1
 	self.angle = 0
 	self.zoom = 1
 end
