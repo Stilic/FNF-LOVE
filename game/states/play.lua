@@ -552,7 +552,7 @@ function PlayState:popUpScore(rating)
 			self.judgeSprTimer:tween(accel * 1.5, numScore, {
 				y = numScore.y - accelY * 1.5 }, "out-circ")
 
-			Time.after(accel * 1.5, function()
+			Timer.after(accel * 1.5, function()
 				self.judgeSprTimer:tween(accel * 1.5, numScore, {
 				y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
