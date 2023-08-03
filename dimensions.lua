@@ -1,1 +1,1 @@
-return { width = 1280, height = 720 }
+return {width = 1280, height = 720}
