@@ -15,6 +15,7 @@ Script = require "game.script"
 Camera = require "game.camera"
 
 Sprite = require "game.sprite"
+Bar = require "game.bar"
 Group = require "game.group"
 
 Note = require "game.gameplay.ui.note"
