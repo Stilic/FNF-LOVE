@@ -17,14 +17,14 @@ PlayState.downscroll = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
-	self.scripts = Script.loadScriptsFromDirectory("scripts/play")
+	self.scripts = Script.loadScriptsFromDirectory("scripts/charts")
 	for _, script in ipairs(self.scripts) do
 		script:call("create")
 	end
 
 	self.keysPressed = {}
 
-	local song = "ow"
+	local song = "evacuate"
 	local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
 	PlayState.song = {
 		name = chart.name,

@@ -16,6 +16,10 @@ function create()
 	self:addOffset("singRIGHT", -49, -6)
 	self:addOffset("singLEFT", 3, -7)
 	self:addOffset("singDOWN", -20, -51)
+	self:addOffset("singUPmiss", -43, 26)
+	self:addOffset("singRIGHTmiss", -44, 22)
+	self:addOffset("singLEFTmiss", 1, 20)
+	self:addOffset("singDOWNmiss", -20, -21)
 
 	self.flipX = true
 	self.y = self.y + 350
