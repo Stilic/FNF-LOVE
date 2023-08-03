@@ -12,7 +12,7 @@ PlayState.ratings = {
 	{ name = "bad",  time = 125, score = 100, splash = false },
 	{ name = "shit", time = 150, score = 50,  splash = false }
 }
-PlayState.downscroll = true
+PlayState.downscroll = false
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
@@ -521,7 +521,7 @@ function PlayState:popUpScore(rating)
 	self.judgeSprTimer:tween(accel * 1.05,
 		judgeSpr, { y = judgeSpr.y - 20 }, "out-circ")
 
-	self.judgeSprTimer:after(accel * 1.05, function()
+	Timer.after(accel * 1.05, function()
 		self.judgeSprTimer:tween(accel * 1.05,
 		judgeSpr, { y = judgeSpr.y + 20 }, "in-circ")
 	end)
@@ -552,7 +552,7 @@ function PlayState:popUpScore(rating)
 			self.judgeSprTimer:tween(accel * 1.5, numScore, {
 				y = numScore.y - accelY * 1.5 }, "out-circ")
 
-			self.judgeSprTimer:after(accel * 1.5, function()
+			Time.after(accel * 1.5, function()
 				self.judgeSprTimer:tween(accel * 1.5, numScore, {
 				y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
