@@ -504,7 +504,7 @@ function PlayState:beat(b)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = 0.3 -- this is supposed to be beat based but its broking tweens
+	local accel = 0.31 -- this is supposed to be beat based but its broking tweens
 
 	local judgeSpr = self.judgeSpritesGroup:recycle()
 
