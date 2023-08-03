@@ -12,7 +12,7 @@ PlayState.ratings = {
 	{ name = "bad",  time = 125, score = 100, splash = false },
 	{ name = "shit", time = 150, score = 50,  splash = false }
 }
-PlayState.downscroll = false
+PlayState.downscroll = true
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
@@ -101,6 +101,7 @@ function PlayState:enter()
 	PlayState.songPosition = -music.crochet * 5
 
 	self.combo = 0
+	self.health = 1
 
 	self.camGame = Camera()
 	self.camGame.target = { x = 0, y = 0 }
@@ -151,6 +152,25 @@ function PlayState:enter()
 	self.stage:add(self.judgeSpritesGroup)
 
 	self:add(self.stage.front)
+
+	self.healthBarBG = Sprite()
+	self.healthBarBG:load(paths.getImage("skins/normal/healthBar"))
+	self.healthBarBG.camera = self.camHUD
+	self.healthBarBG:updateHitbox()
+	self.healthBarBG:screenCenter('x')
+	self.healthBarBG.y = (PlayState.downscroll and push.getHeight()*0.1
+		or push.getHeight()*0.9)
+	self:add(self.healthBarBG)
+	self.healthBarBG:setScrollFactor(0)
+
+	self.healthBar = Bar(self.healthBarBG.x + 4,
+		self.healthBarBG.y + 4,
+		math.floor(self.healthBarBG.width - 8),
+		math.floor(self.healthBarBG.height - 8), 2, nil, true)
+
+	self.healthBar.camera = self.camHUD
+	self:add(self.healthBar)
+	self.healthBar:setValue(self.health)
 
 	self.judgeSprTimer = Timer.new()
 
@@ -299,6 +319,13 @@ function PlayState:update(dt)
 				self.vocals:setVolume(0)
 				self.combo = 0
 
+				if self.health < 0 then
+					self.health = 0
+				end
+
+				self.health = self.health - 0.0475
+				self.healthBar:setValue(self.health)
+
 				if not n.missed and not n.isSustain or not n.parentNote.missed then
 					if n.isSustain then
 						for _, no in ipairs(n.parentNote.children) do
@@ -430,6 +457,13 @@ function PlayState:goodNoteHit(n)
 
 				self.combo = self.combo + 1
 				self:popUpScore(rating)
+
+				if self.health > 2 then
+					self.health = 2
+				end
+
+				self.health = self.health + 0.023
+				self.healthBar:setValue(self.health)
 			end
 
 			self:removeNote(n)
@@ -470,8 +504,12 @@ function PlayState:beat(b)
 end
 
 function PlayState:popUpScore(rating)
+	local accel = 0.15 --this is supposed to be beat based but its broking tweens
+
 	local judgeSpr = self.judgeSpritesGroup:recycle()
+
 	judgeSpr:load(paths.getImage("skins/normal/" .. rating.name))
+	judgeSpr.alpha = 1
 	judgeSpr:setGraphicSize(math.floor(judgeSpr.width * 0.7))
 	judgeSpr:updateHitbox()
 	judgeSpr:screenCenter()
@@ -480,19 +518,21 @@ function PlayState:popUpScore(rating)
 	judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
 	judgeSpr.alpha = 1
 
-	self.judgeSprTimer:tween(0.3,
+	self.judgeSprTimer:tween(accel * 1.05,
 		judgeSpr, { y = judgeSpr.y - 20 }, "out-circ")
 
-	Timer.after(.3, function()
-		self.judgeSprTimer:tween(0.2,
+	self.judgeSprTimer:after(accel * 1.05, function()
+		self.judgeSprTimer:tween(accel * 1.05,
+		judgeSpr, { y = judgeSpr.y + 20 }, "in-circ")
+	end)
+
+	Timer.after(accel * 1, function()
+		self.judgeSprTimer:tween(accel * 0.7,
 			judgeSpr, { alpha = judgeSpr.alpha - 1 }, "linear")
 	end)
-	Timer.after(.28, function()
-		self.judgeSprTimer:tween(0.3,
-			judgeSpr, { y = judgeSpr.y + 20 }, "in-circ")
-	end)
-	Timer.after(.75, function()
-		judgeSpr:kill()
+
+	Timer.after(accel * 2, function()
+			judgeSpr:kill()
 	end)
 
 	if self.combo >= 10 then
@@ -509,14 +549,20 @@ function PlayState:popUpScore(rating)
 			numScore.alpha = 1
 
 			local accelY = love.math.random(200, 300) / 10
-			self.judgeSprTimer:tween(.30 * 1.5, numScore, { y = numScore.y - accelY * 1.5 }, "out-circ")
-			Timer.after(0.35 * 1.5, function()
-				self.judgeSprTimer:tween(.2 * 1.5, numScore, { alpha = numScore.alpha - 1 }, "linear")
+			self.judgeSprTimer:tween(accel * 1.5, numScore, {
+				y = numScore.y - accelY * 1.5 }, "out-circ")
+
+			self.judgeSprTimer:after(accel * 1.5, function()
+				self.judgeSprTimer:tween(accel * 1.5, numScore, {
+				y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
-			Timer.after(0.29 * 1.5, function()
-				self.judgeSprTimer:tween(.28 * 1.5, numScore, { y = numScore.y + accelY * 1.8 }, "in-circ")
+
+			Timer.after(accel * (accel * 2), function()
+				self.judgeSprTimer:tween(accel * 1.5, numScore, {
+				alpha = numScore.alpha - 1 }, "linear")
 			end)
-			Timer.after(0.75 * 1.5, function()
+
+			Timer.after(accel * (accel * 2) + accel * 1.5, function()
 				numScore:kill()
 			end)
 
