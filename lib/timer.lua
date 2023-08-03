@@ -22,7 +22,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-]] --
+]]
+   --
 local Timer = {}
 Timer.__index = Timer
 
@@ -93,6 +94,18 @@ end
 
 function Timer:cancel(handle) self.functions[handle] = nil end
 
+function Timer:cancelTweensOf(subject)
+    -- same as for the update function
+    local to_check = {}
+    for handle in pairs(self.functions) do to_check[handle] = handle end
+
+    for handle in pairs(to_check) do
+        if self.functions[handle] and handle.subject == subject then
+            self:cancel(handle)
+        end
+    end
+end
+
 function Timer:clear() self.functions = {} end
 
 function Timer:script(f)
@@ -119,24 +132,23 @@ local function func_tween(tween, self, len, subject, target, method, after,
             getter = subject['get' .. k]
         end
         assert(setter and getter,
-               "key's value in subject is nil with no set/getter")
+            "key's value in subject is nil with no set/getter")
 
         if to_func_tween[subject] == nil then to_func_tween[subject] = {} end
 
-        ref = {getter(subject)}
-        to_func_tween[subject][k] = {ref, setter}
-        if type(v) == 'number' or #ref == 1 then v = {v} end
+        ref = { getter(subject) }
+        to_func_tween[subject][k] = { ref, setter }
+        if type(v) == 'number' or #ref == 1 then v = { v } end
         return ref, v
     end
 
     local function tween_collect_payload(subject, target, out)
         for k, v in pairs(target) do
-
             -- this might not be the smoothest way to do this
             local ref = subject[k]
             if ref == nil then ref, v = set_and_get(subject, k, v) end
             assert(type(v) == type(ref), 'Type mismatch in field "' .. k ..
-                       '". ' .. type(v) .. ' vs ' .. type(ref))
+                '". ' .. type(v) .. ' vs ' .. type(ref))
             if type(v) == 'table' then
                 tween_collect_payload(ref, v, out)
             else
@@ -144,8 +156,8 @@ local function func_tween(tween, self, len, subject, target, method, after,
                     return (v - ref) * 1
                 end)
                 assert(ok, 'Field "' .. k ..
-                           '" does not support arithmetic operations')
-                out[#out + 1] = {subject, k, delta}
+                    '" does not support arithmetic operations')
+                out[#out + 1] = { subject, k, delta }
             end
         end
         return out
@@ -153,10 +165,10 @@ local function func_tween(tween, self, len, subject, target, method, after,
 
     method = tween[method or 'linear'] -- see __index
     local payload, t, args = tween_collect_payload(subject, target, {}), 0,
-                             {...}
+        { ... }
 
     local last_s = 0
-    return self:during(len, function(dt)
+    local handle = self:during(len, function(dt)
         t = t + dt
         local s = method(math.min(1, t / len), unpack(args))
         local ds = s - last_s
@@ -169,11 +181,15 @@ local function func_tween(tween, self, len, subject, target, method, after,
             for key, value in pairs(t) do
                 local setter_args, setter = unpack(value)
                 if not pcall(function()
-                    setter(ref, unpack(setter_args))
-                end) then setter(unpack(setter_args)) end
+                        setter(ref, unpack(setter_args))
+                    end) then
+                    setter(unpack(setter_args))
+                end
             end
         end
     end, after)
+    handle.subject = subject
+    return handle
 end
 
 local function plain_tween(tween, self, len, subject, target, method, after, ...)
@@ -190,7 +206,7 @@ local function def_tween(func)
         chain = function(f1, f2) -- concatenates two functions
             return function(s, ...)
                 return (s < .5 and f1(2 * s, ...) or 1 + f2(2 * s - 1, ...)) *
-                           .5
+                    .5
             end
         end,
 
@@ -212,16 +228,16 @@ local function def_tween(func)
         bounce = function(s) -- magic numbers ahead
             local a, b = 7.5625, 1 / 2.75
             return math.min(a * s ^ 2, a * (s - 1.5 * b) ^ 2 + .75,
-                            a * (s - 2.25 * b) ^ 2 + .9375,
-                            a * (s - 2.625 * b) ^ 2 + .984375)
+                a * (s - 2.25 * b) ^ 2 + .9375,
+                a * (s - 2.625 * b) ^ 2 + .984375)
         end,
 
         elastic = function(s, amp, period)
             amp, period = amp and math.max(1, amp) or 1, period or .3
             return (-amp *
-                       math.sin(
-                           2 * math.pi / period * (s - 1) - math.asin(1 / amp))) *
-                       2 ^ (10 * (s - 1))
+                    math.sin(
+                        2 * math.pi / period * (s - 1) - math.asin(1 / amp))) *
+                2 ^ (10 * (s - 1))
         end
 
     }, {
@@ -244,16 +260,16 @@ local function def_tween(func)
 
             local out, chain = rawget(tweens, 'out'), rawget(tweens, 'chain')
             return construct('^in%-([^-]+)$', function(...)
-                return ...
-            end) or construct('^out%-([^-]+)$', out) or
-                       construct('^in%-out%-([^-]+)$',
-                                 function(f)
-                    return chain(f, out(f))
-                end) or
-                       construct('^out%-in%-([^-]+)$',
-                                 function(f)
-                    return chain(out(f), f)
-                end) or error('Unknown interpolation method: ' .. key)
+                    return ...
+                end) or construct('^out%-([^-]+)$', out) or
+                construct('^in%-out%-([^-]+)$',
+                    function(f)
+                        return chain(f, out(f))
+                    end) or
+                construct('^out%-in%-([^-]+)$',
+                    function(f)
+                        return chain(out(f), f)
+                    end) or error('Unknown interpolation method: ' .. key)
         end
     })
 end
@@ -263,7 +279,7 @@ Timer.func_tween = def_tween(func_tween)
 
 -- Timer instancing
 function Timer.new()
-    return setmetatable({functions = {}, tween = Timer.tween}, Timer)
+    return setmetatable({ functions = {}, tween = Timer.tween }, Timer)
 end
 
 -- default instance
@@ -282,4 +298,4 @@ module.tween = setmetatable({}, {
     __call = function(t, ...) return default:tween(...) end
 })
 
-return setmetatable(module, {__call = Timer.new})
+return setmetatable(module, { __call = Timer.new })

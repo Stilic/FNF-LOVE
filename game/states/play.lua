@@ -158,8 +158,8 @@ function PlayState:enter()
 	self.healthBarBG.camera = self.camHUD
 	self.healthBarBG:updateHitbox()
 	self.healthBarBG:screenCenter('x')
-	self.healthBarBG.y = (PlayState.downscroll and push.getHeight()*0.1
-		or push.getHeight()*0.9)
+	self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1
+		or push.getHeight() * 0.9)
 	self:add(self.healthBarBG)
 	self.healthBarBG:setScrollFactor(0)
 
@@ -504,7 +504,7 @@ function PlayState:beat(b)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = 0.15 --this is supposed to be beat based but its broking tweens
+	local accel = 0.3 -- this is supposed to be beat based but its broking tweens
 
 	local judgeSpr = self.judgeSpritesGroup:recycle()
 
@@ -523,16 +523,17 @@ function PlayState:popUpScore(rating)
 
 	Timer.after(accel * 1.05, function()
 		self.judgeSprTimer:tween(accel * 1.05,
-		judgeSpr, { y = judgeSpr.y + 20 }, "in-circ")
+			judgeSpr, { y = judgeSpr.y + 20 }, "in-circ")
 	end)
 
-	Timer.after(accel * 1, function()
+	Timer.after(accel, function()
 		self.judgeSprTimer:tween(accel * 0.7,
 			judgeSpr, { alpha = judgeSpr.alpha - 1 }, "linear")
 	end)
 
 	Timer.after(accel * 2, function()
-			judgeSpr:kill()
+		self.judgeSprTimer:cancelTweensOf(judgeSpr)
+		judgeSpr:kill()
 	end)
 
 	if self.combo >= 10 then
@@ -554,15 +555,16 @@ function PlayState:popUpScore(rating)
 
 			Timer.after(accel * 1.5, function()
 				self.judgeSprTimer:tween(accel * 1.5, numScore, {
-				y = numScore.y + accelY * 1.8 }, "in-circ")
+					y = numScore.y + accelY * 1.8 }, "in-circ")
 			end)
 
 			Timer.after(accel * (accel * 2), function()
 				self.judgeSprTimer:tween(accel * 1.5, numScore, {
-				alpha = numScore.alpha - 1 }, "linear")
+					alpha = numScore.alpha - 1 }, "linear")
 			end)
 
 			Timer.after(accel * (accel * 2) + accel * 1.5, function()
+				self.judgeSprTimer:cancelTweensOf(numScore)
 				numScore:kill()
 			end)
 
