@@ -12,6 +12,7 @@ function Character:new(x, y, char, isPlayer)
     self.singDuration = 4
     self.lastHit = 0
     self.lastSing = nil
+    self.staticHoldAnimation = false
 
     self.danceSpeed = 2
     self.danced = false
@@ -94,8 +95,8 @@ function Character:playAnim(anim, force)
 end
 
 function Character:sing(dir, miss, hold)
-    if not hold or self.lastSing ~= dir or self.lastSing == nil or self.lastMiss ~=
-        miss or self.lastMiss == nil then
+    if not self.staticHoldAnimation or not hold or self.lastSing ~= dir or
+        self.lastSing == nil or self.lastMiss ~= miss or self.lastMiss == nil then
         local anim = "sing" .. string.upper(Note.directions[dir + 1])
         if miss then anim = anim .. "miss" end
         self:playAnim(anim, true)

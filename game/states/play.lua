@@ -22,7 +22,7 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local song = "checkpoint"
+    local song = "thunderstorm"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
@@ -539,7 +539,8 @@ function PlayState:popUpScore(rating)
 
     Timer.after(accel, function()
         self.judgeSprTimer:tween(accel * 0.7, judgeSpr,
-                                 {alpha = judgeSpr.alpha - 1}, "linear", function()
+                                 {alpha = judgeSpr.alpha - 1}, "linear",
+                                 function()
             self.judgeSprTimer:cancelTweensOf(judgeSpr)
             judgeSpr:kill()
         end)
@@ -560,7 +561,8 @@ function PlayState:popUpScore(rating)
 
             local accelY = love.math.random(200, 300) / 10
             self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                     {y = numScore.y - accelY * 1.5}, "out-circ", function()
+                                     {y = numScore.y - accelY * 1.5},
+                                     "out-circ", function()
                 self.judgeSprTimer:tween(accel * 1.5, numScore,
                                          {y = numScore.y + accelY * 1.8},
                                          "in-circ")
@@ -568,7 +570,8 @@ function PlayState:popUpScore(rating)
 
             Timer.after(accel * (accel * 2), function()
                 self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                         {alpha = numScore.alpha - 1}, "linear", function()
+                                         {alpha = numScore.alpha - 1}, "linear",
+                                         function()
                     self.judgeSprTimer:cancelTweensOf(numScore)
                     numScore:kill()
                 end)

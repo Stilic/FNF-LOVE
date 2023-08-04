@@ -1,3 +1,6 @@
+local p = .65
+local l = 0.04 * (1 / p + 1) * p
+
 local realCamScX = 0
 local realCamScY = 0
 
@@ -20,8 +23,6 @@ end
 function postUpdate()
     realCamScX = state.camGame.target.x
     realCamScY = state.camGame.target.y
-
-    local l = 0.04 * (1 / .65 + 1)
 
     camScX = math.lerp(camScX, realCamScX, l)
     camScY = math.lerp(camScY, realCamScY, l)
