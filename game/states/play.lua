@@ -497,6 +497,7 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:beat(b)
+    -- TODO: rewrite the entire conductor stuff
     local section = self:getCurrentSection()
     if section and section.bpm ~= nil and music.bpm ~= section.bpm then
         print("bpm change! OLD BPM: " .. music.bpm .. ", NEW BPM: " .. section.bpm)
