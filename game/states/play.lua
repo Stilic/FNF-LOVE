@@ -532,21 +532,17 @@ function PlayState:popUpScore(rating)
     judgeSpr.alpha = 1
 
     self.judgeSprTimer:tween(accel * 1.05, judgeSpr, {y = judgeSpr.y - 20},
-                             "out-circ")
-
-    Timer.after(accel * 1.05, function()
+                             "out-circ", function()
         self.judgeSprTimer:tween(accel * 1.05, judgeSpr, {y = judgeSpr.y + 20},
                                  "in-circ")
     end)
 
     Timer.after(accel, function()
         self.judgeSprTimer:tween(accel * 0.7, judgeSpr,
-                                 {alpha = judgeSpr.alpha - 1}, "linear")
-    end)
-
-    Timer.after(accel * 2, function()
-        self.judgeSprTimer:cancelTweensOf(judgeSpr)
-        judgeSpr:kill()
+                                 {alpha = judgeSpr.alpha - 1}, "linear", function()
+            self.judgeSprTimer:cancelTweensOf(judgeSpr)
+            judgeSpr:kill()
+        end)
     end)
 
     if self.combo >= 10 then
@@ -564,9 +560,7 @@ function PlayState:popUpScore(rating)
 
             local accelY = love.math.random(200, 300) / 10
             self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                     {y = numScore.y - accelY * 1.5}, "out-circ")
-
-            Timer.after(accel * 1.5, function()
+                                     {y = numScore.y - accelY * 1.5}, "out-circ", function()
                 self.judgeSprTimer:tween(accel * 1.5, numScore,
                                          {y = numScore.y + accelY * 1.8},
                                          "in-circ")
@@ -574,12 +568,10 @@ function PlayState:popUpScore(rating)
 
             Timer.after(accel * (accel * 2), function()
                 self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                         {alpha = numScore.alpha - 1}, "linear")
-            end)
-
-            Timer.after(accel * (accel * 2) + accel * 1.5, function()
-                self.judgeSprTimer:cancelTweensOf(numScore)
-                numScore:kill()
+                                         {alpha = numScore.alpha - 1}, "linear", function()
+                    self.judgeSprTimer:cancelTweensOf(numScore)
+                    numScore:kill()
+                end)
             end)
 
             lastSpr = numScore
