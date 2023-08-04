@@ -498,7 +498,9 @@ function waveObject:updateBeat()
 	self.beat = _beat
 	self.step = math.floor(self.stepTime)
 
-	if self.onBeat then for i = 1, _elapsedBeats do self.onBeat(_beat) end end
+	if self.onBeat and (self.lastBPM == nil or self.bpm == self.lastBPM) then for _ = 1, _elapsedBeats do self.onBeat(_beat) end end
+
+	self.lastBPM = self.bpm
 
 	return self
 end

@@ -22,7 +22,7 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local song = "thunderstorm"
+    local song = "milk"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
@@ -34,7 +34,7 @@ function PlayState:enter()
         dad = chart.player2 == nil and "dad" or chart.player2,
         girlfriend = chart.gfVersion == nil and
             (chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
-        mustHits = {}
+        sections = {}
     }
 
     setMusic(paths.getAudio("songs/" .. song .. "/Inst", "stream")):setBPM(
@@ -50,7 +50,10 @@ function PlayState:enter()
 
     for _, s in ipairs(chart.notes) do
         if s and s.sectionNotes then
-            table.insert(PlayState.song.mustHits, s.mustHitSection)
+            table.insert(PlayState.song.sections, {
+                mustHit = s.mustHitSection,
+                bpm = s.changeBPM and s.bpm or nil
+            })
             for _, n in ipairs(s.sectionNotes) do
                 local daStrumTime = tonumber(n[1])
                 local daNoteData = tonumber(n[2])
@@ -95,7 +98,7 @@ function PlayState:enter()
                 end
             end
         else
-            table.insert(PlayState.song.mustHits, nil)
+            table.insert(PlayState.song.sections, nil)
         end
     end
 
@@ -221,7 +224,7 @@ function PlayState:update(dt)
         util.coolLerp(self.camGame.target.x, self.camFollow.x, 0.04),
         util.coolLerp(self.camGame.target.y, self.camFollow.y, 0.04)
 
-    local mustHit = self:getCurrentMustHit()
+    local mustHit = self:getCurrentSection().mustHit
     if mustHit ~= nil then
         if mustHit then
             local midpoint = self.boyfriend:getMidpoint()
@@ -336,13 +339,9 @@ function PlayState:update(dt)
                 self.vocals:setVolume(0)
                 self.combo = 0
 
-                if n.isSustain then
-                    n.parentNote.tooLate = true
-                else
-                    n.tooLate = true
-                end
-                for _, no in ipairs(n.isSustain and n.parentNote.children or
-                                        n.children) do
+                local np = n.isSustain and n.parentNote or n
+                np.tooLate = true
+                for _, no in ipairs(np.children) do
                     no.tooLate = true
                 end
 
@@ -363,16 +362,15 @@ function PlayState:update(dt)
     for _, script in ipairs(self.scripts) do script:call("postUpdate", dt) end
 end
 
-local ogDraw = PlayState.draw
 function PlayState:draw()
     for _, script in ipairs(self.scripts) do script:call("draw") end
-    ogDraw(self)
+    PlayState.super.draw(self)
     for _, script in ipairs(self.scripts) do script:call("postDraw") end
 end
 
 -- CAN RETURN NIL!!
-function PlayState:getCurrentMustHit()
-    return PlayState.song.mustHits[math.floor(music.step / 16) + 1]
+function PlayState:getCurrentSection()
+    return PlayState.song.sections[math.floor(music.step / 16) + 1]
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -499,6 +497,12 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:beat(b)
+    local section = self:getCurrentSection()
+    if section and section.bpm ~= nil and music.bpm ~= section.bpm then
+        print("bpm change! OLD BPM: " .. music.bpm .. ", NEW BPM: " .. section.bpm)
+        music:setBPM(section.bpm)
+    end
+
     for _, script in ipairs(self.scripts) do script:call("beat", b) end
 
     local time = music.instance:tell()
