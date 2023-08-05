@@ -1,4 +1,3 @@
-local wave = require "lib.wave"
 local decodeJson = (require "lib.json").decode
 
 local function isFile(path)
@@ -112,7 +111,7 @@ function paths.getAudio(key, type, cache)
         if obj then return obj end
     end
     if isFile(key) then
-        local obj = wave:newSource(key, type)
+        local obj = love.audio.newSource(key, type)
         if cache then paths.audio[key] = obj end
         return obj
     end

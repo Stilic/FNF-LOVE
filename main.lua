@@ -11,6 +11,7 @@ paths = require "game.paths"
 util = require "game.util"
 
 Script = require "game.script"
+Conductor = require "game.conductor"
 
 Camera = require "game.camera"
 
@@ -28,16 +29,16 @@ State = require "game.state"
 TitleState = require "game.states.title"
 PlayState = require "game.states.play"
 
-local function onBeat(b) Gamestate.beat(b) end
+-- local function onBeat(b) Gamestate.beat(b) end
 
-function setMusic(source)
-    music = source:onBeat(onBeat)
-    return source
-end
+-- function setMusic(source)
+--     music = source:onBeat(onBeat)
+--     return source
+-- end
 
-function resetMusic()
-    setMusic(paths.getMusic("freakyMenu")):setBPM(102).looping = true
-end
+-- function resetMusic()
+--     setMusic(paths.getMusic("freakyMenu")):setBPM(102).looping = true
+-- end
 
 controls = (require "lib.baton").new({
     controls = {
@@ -218,7 +219,7 @@ function love.keyreleased(...) controls:onKeyRelease(...) end
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
-    for _, o in pairs(paths.audio) do o:update(dt) end
+    -- for _, o in pairs(paths.audio) do o:update(dt) end
 
     controls:update()
     Timer.update(dt)
@@ -235,14 +236,14 @@ function love.draw()
     push.finish()
 end
 
-function love.focus(f)
-    for _, o in pairs(paths.audio) do
-        if not f then
-            o.lastPause = o:isPaused()
-            o:pause()
-        else
-            if not o.lastPause and not o:isFinished() then o:resume() end
-            o.lastPause = nil
-        end
-    end
-end
+-- function love.focus(f)
+--     for _, o in pairs(paths.audio) do
+--         if not f then
+--             o.lastPause = o:isPaused()
+--             o:pause()
+--         else
+--             if not o.lastPause and not o:isFinished() then o:resume() end
+--             o.lastPause = nil
+--         end
+--     end
+-- end

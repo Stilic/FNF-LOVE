@@ -1,9 +1,20 @@
 local TitleState = State:extend()
 
-local PlayState = require "game.states.play"
-
 function TitleState:enter()
-    resetMusic()
+    local source = paths.getMusic("freakyMenu")
+    source:setLooping(true)
+    self.music = Conductor(source, 102)
+    self.music.onBeat = function()
+        self.logoBl:play("bump", true)
+
+        self.danceLeft = not self.danceLeft
+        if self.danceLeft then
+            self.gfDance:play("danceLeft")
+        else
+            self.gfDance:play("danceRight")
+        end
+    end
+    self:add(self.music)
 
     self.danceLeft = false
     self.confirmed = false
@@ -33,7 +44,7 @@ function TitleState:enter()
     self.titleText:updateHitbox()
     self:add(self.titleText)
 
-    music:play()
+    self.music:play()
 end
 
 function TitleState:update(dt)
@@ -42,23 +53,11 @@ function TitleState:update(dt)
         self.titleText:play("press")
         paths.playSound("confirmMenu")
         Timer.after(1.5, function()
-            music:stop()
+            self.music:destroy()
             switchState(PlayState())
         end)
     end
     TitleState.super.update(self, dt)
-end
-
-function TitleState:beat(n)
-    self.logoBl:play("bump", true)
-
-    self.danceLeft = not self.danceLeft
-    if self.danceLeft then
-        self.gfDance:play("danceLeft")
-    else
-        self.gfDance:play("danceRight")
-    end
-    TitleState.super.beat(self, n)
 end
 
 return TitleState
