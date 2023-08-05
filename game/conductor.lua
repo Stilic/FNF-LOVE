@@ -13,7 +13,7 @@ end
 function Conductor:setBPM(bpm)
     self.bpm = bpm
 
-    self.crochet = (60 / bpm)
+    self.crochet = (60 / bpm) * 1000
     self.stepCrochet = self.crochet / 4
 
     self:updateTime()
@@ -22,7 +22,7 @@ function Conductor:setBPM(bpm)
 end
 
 function Conductor:updateTime()
-    self.time = math.clamp(self.source:tell() - self.offset, 0,
+    self.time = math.clamp(self.source:tell() * 1000 - self.offset, 0,
                            self.source:getDuration())
 end
 
@@ -50,10 +50,6 @@ end
 
 function Conductor:play()
     self.source:play()
-    -- if self.time <= 0 then
-    --     if self.onStep then self.onStep(self.currentStep) end
-    --     if self.onBeat then self.onBeat(self.currentBeat) end
-    -- end
 end
 
 function Conductor:pause()
