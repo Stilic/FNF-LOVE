@@ -14,12 +14,6 @@ function table.find(table, value)
     for i, v in next, table do if v == value then return i end end
 end
 
-function table.clear(table, includeKeys)
-    for i in includeKeys and next or iter, table, not includeKeys and 0 or nil do
-        rawset(table, i, nil)
-    end
-end
-
 function math.clamp(x, min, max) return math.max(min, math.min(x, max)) end
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end

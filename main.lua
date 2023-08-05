@@ -219,7 +219,7 @@ function love.keyreleased(...) controls:onKeyRelease(...) end
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
-    -- for _, o in pairs(paths.audio) do o:update(dt) end
+    for _, o in pairs(Conductor.instances) do o:update(dt) end
 
     controls:update()
     Timer.update(dt)
@@ -236,14 +236,14 @@ function love.draw()
     push.finish()
 end
 
--- function love.focus(f)
---     for _, o in pairs(paths.audio) do
---         if not f then
---             o.lastPause = o:isPaused()
---             o:pause()
---         else
---             if not o.lastPause and not o:isFinished() then o:resume() end
---             o.lastPause = nil
---         end
---     end
--- end
+function love.focus(f)
+    for _, o in pairs(Conductor.instances) do
+        if not f then
+            o.lastPause = o:isPaused()
+            o:pause()
+        else
+            if not o.lastPause and not o:isFinished() then o:play() end
+            o.lastPause = nil
+        end
+    end
+end

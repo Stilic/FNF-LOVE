@@ -1,14 +1,16 @@
 local Conductor = Object:extend()
 
+Conductor.instances = {}
+
 function Conductor:new(source, bpm)
-    self.source = source
+    self.__source = source
     self.__paused = false
+    self.__stepsDone = {}
     self.offset = 0
-    self.stepsDone = {}
 
     self:setBPM(bpm)
 
-    self:__updateTime()
+    table.insert(Conductor.instances, self)
 end
 
 function Conductor:setBPM(bpm)
@@ -19,11 +21,10 @@ function Conductor:setBPM(bpm)
 
     self:__updateTime()
     self:__updateBeat()
-    self.lastTime = self.time
 end
 
 function Conductor:__updateTime()
-    self.time = self.source:tell() * 1000 - self.offset
+    self.time = self.__source:tell() * 1000 - self.offset
 
     self.currentStepFloat = self.time / self.stepCrochet
     self.currentStep = math.floor(self.currentStepFloat)
@@ -35,43 +36,48 @@ function Conductor:__updateBeat()
 end
 
 function Conductor:update()
-    if self.source:isPlaying() then
-        local oldStep = self.currentStep
+    if self.__source:isPlaying() then
+        local oldCurStep = self.currentStep
 
         self:__updateTime()
 
-        if self.lastTime > self.time then
-            self.lastTime = self.time
-            self:__step()
+        -- borrowed from forever engine -stilic
+        local trueDecStep, trueStep = self.currentStepFloat, self.currentStep
+
+        for i, s in ipairs(self.__stepsDone) do
+            if s < oldCurStep then table.remove(self.__stepsDone, i) end
         end
 
-        local t = self.lastTime + self.stepCrochet
-        if self.time > t then
-            self.lastTime = t
+        for i = oldCurStep, trueStep do
+            if i > 0 and not table.find(self.__stepsDone, i) then
+                self.currentStepFloat = i
+                self.currentStep = i
 
-            -- borrowed from forever engine -stilic
-            local trueDecStep, trueStep = self.currentStepFloat,
-                                          self.currentStep
-            for i, s in ipairs(self.stepsDone) do
-                if s < oldStep then
-                    table.remove(self.stepsDone, i)
-                end
-            end
-            for i = oldStep, trueStep do
-                if i > 0 and not table.find(self.stepsDone, i) then
-                    self.currentStepFloat = i
-                    self.currentStep = i
-                    self:__updateBeat()
-                    self:__step()
-                end
-            end
-            self.currentStepFloat = trueDecStep
-            self.currentStep = trueStep
-            self:__updateBeat()
-
-            if oldStep ~= trueStep and trueStep > 0 and
-                not table.find(self.stepsDone, trueStep) then
+                self:__updateBeat()
                 self:__step()
+
+                table.insert(self.__stepsDone, i)
+            end
+        end
+
+        self.currentStepFloat = trueDecStep
+        self.currentStep = trueStep
+        self:__updateBeat()
+
+        -- music looped
+        if self.time < self.__lastTime then
+            for _ = 1, self.currentBeat % 2 == 0 and 1 or 2 do
+                self:__step()
+            end
+        end
+        self.__lastTime = self.time
+
+        if self.onStep and oldCurStep ~= trueStep and trueStep > 0 and
+            not table.find(self.__stepsDone, trueStep) then
+            self:__step()
+
+            if not table.find(self.stepsDone, trueStep) then
+                table.insert(self.stepsDone, trueStep)
             end
         end
     end
@@ -82,30 +88,37 @@ function Conductor:__step()
     if self.onBeat and self.currentStep % 4 == 0 then
         self.onBeat(self.currentBeat)
     end
-
-    if not table.find(self.stepsDone, self.currentStep) then
-        table.insert(self.stepsDone, self.currentStep)
-    end
 end
 
 function Conductor:play()
-    self.source:play()
-
-    self.lastTime = self.time
-    if not self.__paused then for _ = 1, 2 do self:__step() end end
-
+    self.__source:play()
     self.__paused = false
-end
-
-function Conductor:pause()
-    self.__paused = true
-
-    self.source:pause()
 
     self:__updateTime()
     self:__updateBeat()
+    self.__lastTime = self.time
 end
 
-function Conductor:destroy() self.source:stop() end
+function Conductor:pause()
+    self.__source:pause()
+    self.__paused = true
+end
+
+function Conductor:isPaused() return self.__paused end
+
+function Conductor:isFinished()
+    return not self.__source:isPlaying() and not self:isPaused()
+end
+
+function Conductor:setLooping(state) self.__source:setLooping(state) end
+
+function Conductor:isLooping() return self.__source:isLooping() end
+
+function Conductor:release()
+    table.remove(Conductor.instances, table.find(self))
+    self.__source:stop()
+    self.__source:release()
+    self.__source = nil
+end
 
 return Conductor

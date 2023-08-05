@@ -1,9 +1,11 @@
 local TitleState = State:extend()
 
 function TitleState:enter()
-    local source = paths.getMusic("freakyMenu")
-    source:setLooping(true)
-    self.music = Conductor(source, 102)
+    self.danceLeft = false
+    self.confirmed = false
+
+    self.music = Conductor(paths.getMusic("freakyMenu"), 102)
+    self.music:setLooping(true)
     self.music.onBeat = function()
         self.logoBl:play("bump", true)
 
@@ -14,10 +16,6 @@ function TitleState:enter()
             self.gfDance:play("danceRight")
         end
     end
-    self:add(self.music)
-
-    self.danceLeft = false
-    self.confirmed = false
 
     self.gfDance = Sprite(512, 40)
     self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
@@ -27,6 +25,7 @@ function TitleState:enter()
     self.gfDance:addAnimByIndices("danceRight", "gfDance", {
         15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
     }, 24, false)
+    self.gfDance:play("danceRight")
     self:add(self.gfDance)
 
     self.logoBl = Sprite(-150, -100)
