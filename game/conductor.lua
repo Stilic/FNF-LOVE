@@ -48,9 +48,7 @@ function Conductor:update(dt)
     end
 end
 
-function Conductor:play()
-    self.source:play()
-end
+function Conductor:play() self.source:play() end
 
 function Conductor:pause()
     self.source:pause()
