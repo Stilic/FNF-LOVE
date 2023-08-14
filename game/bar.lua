@@ -13,6 +13,7 @@ function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)
     self.filledBar = filledBar or false
     self.camera = nil
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
+    self.percent = (self.value / self.maxValue) * 100
 end
 
 function Bar:setValue(value)
@@ -32,6 +33,7 @@ function Bar:draw()
     if self.camera then self.camera:attach() end
 
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
+    self.percent = (self.value / self.maxValue) * 100
 
     if self.filledBar then
         love.graphics.setColor(self.flipX and self.color or self.opColor)
