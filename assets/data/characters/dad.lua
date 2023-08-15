@@ -13,6 +13,7 @@ function create()
 	self:addOffset("singDOWN", 0, -30)
 
 	self.singDuration = 6.1
+	self.icon = "dad"
 
 	close()
 end
