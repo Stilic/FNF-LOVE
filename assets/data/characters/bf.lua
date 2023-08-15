@@ -23,6 +23,7 @@ function create()
 
 	self.flipX = true
 	self.y = self.y + 350
+	self.icon = "bf"
 
 	close()
 end
