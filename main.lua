@@ -16,11 +16,13 @@ Conductor = require "game.conductor"
 Camera = require "game.camera"
 
 Sprite = require "game.sprite"
+Text = require "game.text"
 Bar = require "game.bar"
 Group = require "game.group"
 
 Note = require "game.gameplay.ui.note"
 Receptor = require "game.gameplay.ui.receptor"
+HealthIcon = require "game.gameplay.ui.healthicon"
 
 Stage = require "game.gameplay.stage"
 Character = require "game.gameplay.character"
