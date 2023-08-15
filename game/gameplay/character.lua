@@ -17,6 +17,8 @@ function Character:new(x, y, char, isPlayer)
     self.danceSpeed = 2
     self.danced = false
 
+    self.icon = "face"
+
     self.cameraPosition = {x = 0, y = 0}
 
     self.script = Script("characters/" .. char)
