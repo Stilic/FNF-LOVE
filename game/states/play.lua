@@ -106,7 +106,9 @@ function PlayState:enter()
 
     PlayState.songPosition = -music.crochet * 5
 
+    self.score = 0
     self.combo = 0
+    self.misses = 0
     self.health = 1
 
     self.camGame = Camera()
@@ -168,7 +170,6 @@ function PlayState:enter()
     self.healthBarBG:screenCenter('x')
     self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1 or
                              push.getHeight() * 0.9)
-    self:add(self.healthBarBG)
     self.healthBarBG:setScrollFactor(0)
 
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
@@ -176,8 +177,29 @@ function PlayState:enter()
                          math.floor(self.healthBarBG.height - 8), 2, nil, true)
 
     self.healthBar.camera = self.camHUD
-    self:add(self.healthBar)
     self.healthBar:setValue(self.health)
+
+    self.iconP1 = HealthIcon(self.boyfriend.icon, true)
+    self.iconP1.y = self.healthBar.y - 150
+    self.iconP1.camera = self.camHUD
+    self.iconP1:setScrollFactor(0)
+
+    self.iconP2 = HealthIcon(self.dad.icon, false)
+    self.iconP2.y = self.healthBar.y - 150
+    self.iconP2.camera = self.camHUD
+    self.iconP2:setScrollFactor(0)
+
+    self.scoreTxt = Text(0, self.healthBarBG.y + 30, "", paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
+    self.scoreTxt.outWidth = 1
+    self.scoreTxt.camera = self.camHUD
+    self:updateScore()
+    self.scoreTxt:screenCenter('x')
+
+    self:add(self.healthBarBG)
+    self:add(self.healthBar)
+    self:add(self.iconP1)
+    self:add(self.iconP2)
+    self:add(self.scoreTxt)
 
     self.judgeSprTimer = Timer.new()
 
@@ -223,6 +245,18 @@ function PlayState:update(dt)
     self.camGame.target.x, self.camGame.target.y =
         util.coolLerp(self.camGame.target.x, self.camFollow.x, 0.04),
         util.coolLerp(self.camGame.target.y, self.camFollow.y, 0.04)
+
+    local iconOffset = 26
+    self.iconP1.x = push.getWidth() - self.healthBar.x - self.iconP1.width + iconOffset - (
+            self.healthBar.width * (self.healthBar.percent * 0.01) - iconOffset) -- wtf
+    self.iconP2.x = self.iconP1.x - iconOffset + 75
+
+    local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
+    self.iconP1.scale = {x = mult, y = mult}
+    self.iconP2.scale = {x = mult, y = mult}
+
+    self.iconP1:swap((self.health < .2 and 2 or 1))
+    self.iconP2:swap((self.health > 1.8 and 2 or 1))
 
     local mustHit = self:getCurrentSection().mustHit
     if mustHit ~= nil then
@@ -338,6 +372,9 @@ function PlayState:update(dt)
                 not music:isFinished() then
                 self.vocals:setVolume(0)
                 self.combo = 0
+                self.score = self.score - 100
+                self.misses = self.misses + 1
+                self:updateScore()
 
                 local np = n.isSustain and n.parentNote or n
                 np.tooLate = true
@@ -473,7 +510,9 @@ function PlayState:goodNoteHit(n)
                 end
 
                 self.combo = self.combo + 1
+                self.score = self.score + rating.score
                 self:popUpScore(rating)
+                self:updateScore()
 
                 if self.health > 2 then self.health = 2 end
 
@@ -516,13 +555,16 @@ function PlayState:beat(b)
         self.camHUD.zoom = self.camHUD.zoom + 0.03
     end
 
+    self.iconP1.scale = {x = 1.3, y = 1.3}
+    self.iconP2.scale = {x = 1.3, y = 1.3}
+
     PlayState.super.beat(self, b)
 
     for _, script in ipairs(self.scripts) do script:call("postBeat", b) end
 end
 
 function PlayState:popUpScore(rating)
-    local accel = 0.3125 -- this is supposed to be beat based but its broking tweens
+    local accel = 0.3125
 
     local judgeSpr = self.judgeSpritesGroup:recycle()
 
@@ -585,6 +627,11 @@ function PlayState:popUpScore(rating)
             lastSpr = numScore
         end
     end
+end
+
+function PlayState:updateScore(score)
+    self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " .. self.misses)
+    self.scoreTxt:screenCenter('x')
 end
 
 function PlayState:leave()
