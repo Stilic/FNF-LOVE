@@ -10,8 +10,7 @@ function postUpdate()
             char = state.boyfriend
         end
         local idx
-        if char.curAnim and #char.curAnim.name > 4 and
-            not char.curAnim.name:endsWith("miss") then
+        if char.curAnim and #char.curAnim.name > 4 then
             idx = string.sub(char.curAnim.name, 5, 5)
         end
         if idx ~= nil then

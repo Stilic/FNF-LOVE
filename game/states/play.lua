@@ -22,7 +22,7 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local song = "milk"
+    local song = "2swag"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
@@ -245,8 +245,10 @@ function PlayState:update(dt)
     PlayState.super.update(self, dt)
 
     self.camGame.target.x, self.camGame.target.y =
-        util.coolLerp(self.camGame.target.x, self.camFollow.x, 0.04),
-        util.coolLerp(self.camGame.target.y, self.camFollow.y, 0.04)
+        util.coolLerp(self.camGame.target.x, self.camFollow.x,
+                      0.04 * self.stage.camSpeed),
+        util.coolLerp(self.camGame.target.y, self.camFollow.y,
+                      0.04 * self.stage.camSpeed)
 
     local iconOffset = 26
     self.iconP1.x = push.getWidth() - self.healthBar.x - self.iconP1.width +
@@ -642,7 +644,9 @@ function PlayState:updateScore()
     self.scoreTxt:screenCenter('x')
 end
 
-function PlayState:focus(f) love.audioFocus(f, PlayState.vocals) end
+function PlayState:focus(f)
+    if PlayState.vocals then love.audioFocus(f, PlayState.vocals) end
+end
 
 function PlayState:leave()
     for _, script in ipairs(self.scripts) do script:call("leave") end
