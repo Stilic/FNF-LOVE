@@ -58,8 +58,8 @@ function Note:new(time, data, prevNote, sustain, parentNote)
             prevNote.isSustainEnd = false
 
             prevNote.scale.y = (prevNote.width / prevNote:getFrameWidth()) *
-                                   ((music.stepCrochet / 100) * (1.05 / 0.7)) *
-                                   PlayState.song.speed
+                                   ((PlayState.inst.stepCrochet / 100) *
+                                       (1.05 / 0.7)) * PlayState.song.speed
             prevNote:updateHitbox()
         end
     else

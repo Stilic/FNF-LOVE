@@ -37,10 +37,12 @@ function PlayState:enter()
         sections = {}
     }
 
-    setMusic(paths.getAudio("songs/" .. song .. "/Inst", "stream")):setBPM(
-        chart.bpm)
+    PlayState.inst = Conductor(paths.getAudio("songs/" .. song .. "/Inst",
+                                              "stream"), chart.bpm)
+    PlayState.inst.onBeat = function(b) self:beat(b) end
     if chart.needsVoices then
-        self.vocals = paths.getAudio("songs/" .. song .. "/Voices", "stream")
+        PlayState.vocals = paths.getAudio("songs/" .. song .. "/Voices",
+                                          "stream")
     end
 
     self.unspawnNotes = {}
@@ -78,14 +80,17 @@ function PlayState:enter()
                     if n[3] ~= nil then
                         local fixedSus = tonumber(n[3])
                         if fixedSus ~= nil and fixedSus > 0 then
-                            fixedSus = math.round(n[3] / music.stepCrochet)
-                            note.sustainLength = fixedSus * music.stepCrochet
+                            fixedSus = math.round(n[3] /
+                                                      PlayState.inst.stepCrochet)
+                            note.sustainLength = fixedSus *
+                                                     PlayState.inst.stepCrochet
 
                             for susNote = 0, math.floor(math.max(fixedSus, 1)) do
                                 oldNote = self.unspawnNotes[#self.unspawnNotes]
 
                                 local sustain = Note(daStrumTime +
-                                                         music.stepCrochet *
+                                                         PlayState.inst
+                                                             .stepCrochet *
                                                          (susNote + 1),
                                                      daNoteData, oldNote, true,
                                                      note)
@@ -104,7 +109,7 @@ function PlayState:enter()
 
     table.sort(self.unspawnNotes, PlayState.sortByShit)
 
-    PlayState.songPosition = -music.crochet * 5
+    PlayState.songPosition = -PlayState.inst.crochet * 5
 
     self.score = 0
     self.combo = 0
@@ -189,7 +194,8 @@ function PlayState:enter()
     self.iconP2.camera = self.camHUD
     self.iconP2:setScrollFactor(0)
 
-    self.scoreTxt = Text(0, self.healthBarBG.y + 30, "", paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
+    self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
+                         paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
     self.scoreTxt.camera = self.camHUD
     self:updateScore()
@@ -225,19 +231,15 @@ end
 function PlayState:update(dt)
     for _, script in ipairs(self.scripts) do script:call("update", dt) end
 
-    if not isSwitchingState and self.startedSong and music:isFinished() then
-        switchState(TitleState())
-    end
+    if not isSwitchingState and not self.startingSong and
+        PlayState.inst:isFinished() then switchState(TitleState()) end
 
-    if self.startedSong then
-        PlayState.songPosition = music.time
-    elseif self.startingSong then
-        PlayState.songPosition = PlayState.songPosition + 1000 * dt
-        if PlayState.songPosition >= 0 then
-            self.startedSong = true
-            music:play()
-            if self.vocals then self.vocals:play() end
-        end
+    PlayState.songPosition = PlayState.songPosition + 1000 * dt
+    if self.startingSong and PlayState.songPosition >= 0 then
+        self.startingSong = false
+        PlayState.inst:play()
+        if PlayState.vocals then PlayState.vocals:play() end
+        PlayState.songPosition = PlayState.inst.time
     end
 
     PlayState.super.update(self, dt)
@@ -247,8 +249,10 @@ function PlayState:update(dt)
         util.coolLerp(self.camGame.target.y, self.camFollow.y, 0.04)
 
     local iconOffset = 26
-    self.iconP1.x = push.getWidth() - self.healthBar.x - self.iconP1.width + iconOffset - (
-            self.healthBar.width * (self.healthBar.percent * 0.01) - iconOffset) -- wtf
+    self.iconP1.x = push.getWidth() - self.healthBar.x - self.iconP1.width +
+                        iconOffset -
+                        (self.healthBar.width * (self.healthBar.percent * 0.01) -
+                            iconOffset) -- wtf
     self.iconP2.x = self.iconP1.x - iconOffset + 75
 
     local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
@@ -328,7 +332,7 @@ function PlayState:update(dt)
                 if n.flipY then
                     if n.isSustainEnd then
                         n.y = n.y + (43.5 * 0.7) *
-                                  (music.stepCrochet / 100 * 1.5 *
+                                  (PlayState.inst.stepCrochet / 100 * 1.5 *
                                       PlayState.song.speed) - n.height
                     end
                     n.y = n.y + Note.swagWidth / 2 - 60.5 *
@@ -369,8 +373,8 @@ function PlayState:update(dt)
         if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) and
-                not music:isFinished() then
-                self.vocals:setVolume(0)
+                not PlayState.inst:isFinished() then
+                PlayState.vocals:setVolume(0)
                 self.combo = 0
                 self.score = self.score - 100
                 self.misses = self.misses + 1
@@ -407,7 +411,8 @@ end
 
 -- CAN RETURN NIL!!
 function PlayState:getCurrentSection()
-    return PlayState.song.sections[math.floor(music.step / 16) + 1]
+    return PlayState.song.sections[math.floor(PlayState.inst.currentStep / 16) +
+               1]
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -427,8 +432,7 @@ function PlayState:onKeyPress(key, type)
         self.keysPressed[key] = true
 
         local prevSongPos = PlayState.songPosition
-        PlayState.songPosition = (music.instance and music.instance:tell() *
-                                     1000) or music.time or prevSongPos
+        PlayState.songPosition = PlayState.inst.time
 
         local noteList = {}
 
@@ -482,7 +486,7 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        self.vocals:setVolume(1)
+        PlayState.vocals:setVolume(1)
 
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false, n.isSustain)
@@ -536,18 +540,18 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:beat(b)
-    -- TODO: rewrite the entire conductor stuff
     local section = self:getCurrentSection()
-    if section and section.bpm ~= nil and music.bpm ~= section.bpm then
-        print("bpm change! OLD BPM: " .. music.bpm .. ", NEW BPM: " .. section.bpm)
-        music:setBPM(section.bpm)
+    if section and section.bpm ~= nil and PlayState.inst.bpm ~= section.bpm then
+        print("bpm change! OLD BPM: " .. PlayState.inst.bpm .. ", NEW BPM: " ..
+                  section.bpm)
+        PlayState.inst:setBPM(section.bpm)
     end
 
     for _, script in ipairs(self.scripts) do script:call("beat", b) end
 
-    local time = music.instance:tell()
-    if self.vocals and math.abs(self.vocals.instance:tell() - time) * 1000 > 6 then
-        self.vocals:seek(time)
+    local time = PlayState.inst.__source:tell()
+    if PlayState.vocals and math.abs(PlayState.vocals:tell() - time) * 1000 > 6 then
+        PlayState.vocals:seek(time)
     end
 
     if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
@@ -555,8 +559,11 @@ function PlayState:beat(b)
         self.camHUD.zoom = self.camHUD.zoom + 0.03
     end
 
-    self.iconP1.scale = {x = 1.3, y = 1.3}
-    self.iconP2.scale = {x = 1.3, y = 1.3}
+    local scaleNum = 1.2
+    self.iconP1.scale.x = scaleNum
+    self.iconP1.scale.y = scaleNum
+    self.iconP2.scale.x = scaleNum
+    self.iconP2.scale.y = scaleNum
 
     PlayState.super.beat(self, b)
 
@@ -629,14 +636,19 @@ function PlayState:popUpScore(rating)
     end
 end
 
-function PlayState:updateScore(score)
-    self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " .. self.misses)
+function PlayState:updateScore()
+    self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " ..
+                                 self.misses)
     self.scoreTxt:screenCenter('x')
 end
+
+function PlayState:focus(f) love.audioFocus(f, PlayState.vocals) end
 
 function PlayState:leave()
     for _, script in ipairs(self.scripts) do script:call("leave") end
 
+    PlayState.inst = nil
+    PlayState.vocals = nil
     PlayState.songPosition = nil
 
     controls:unbindPress(self.bindedKeyPress)

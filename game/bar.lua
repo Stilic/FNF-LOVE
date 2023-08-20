@@ -32,6 +32,8 @@ end
 function Bar:draw()
     if self.camera then self.camera:attach() end
 
+    local r, g, b, a = love.graphics.getColor()
+
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
     self.percent = (self.value / self.maxValue) * 100
 
@@ -44,7 +46,8 @@ function Bar:draw()
     love.graphics.rectangle("fill", self.x, self.y, self.fillWidth, self.height)
 
     if self.camera then self.camera:detach() end
-    love.graphics.setColor(1, 1, 1)
+
+    love.graphics.setColor(r, g, b, a)
 end
 
 return Bar

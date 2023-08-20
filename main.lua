@@ -31,17 +31,6 @@ State = require "game.state"
 TitleState = require "game.states.title"
 PlayState = require "game.states.play"
 
--- local function onBeat(b) Gamestate.beat(b) end
-
--- function setMusic(source)
---     music = source:onBeat(onBeat)
---     return source
--- end
-
--- function resetMusic()
---     setMusic(paths.getMusic("freakyMenu")):setBPM(102).looping = true
--- end
-
 controls = (require "lib.baton").new({
     controls = {
         ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},
@@ -111,7 +100,9 @@ function switchState(state, transition)
     local function switch()
         Timer.clear()
         for _, o in pairs(Gamestate.current()) do
-            if type(o) == "table" and o.destroy then o:destroy() end
+            if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then
+                o:destroy()
+            end
         end
         paths.clearCache()
         Gamestate.switch(state)
@@ -238,14 +229,25 @@ function love.draw()
     push.finish()
 end
 
-function love.focus(f)
-    for _, o in pairs(Conductor.instances) do
-        if not f then
-            o.lastPause = o:isPaused()
-            o:pause()
+local audioPauses = {}
+
+function love.audioFocus(f, o)
+    if not f then
+        if o.isPaused then
+            audioPauses[o] = o:isPaused()
         else
-            if not o.lastPause and not o:isFinished() then o:play() end
-            o.lastPause = nil
+            audioPauses[o] = not o:isPlaying()
         end
+        o:pause()
+    else
+        if not audioPauses[o] and (not o.isFinished or not o:isFinished()) then
+            o:play()
+        end
+        audioPauses[o] = nil
     end
+end
+
+function love.focus(f)
+    for _, o in pairs(Conductor.instances) do love.audioFocus(f, o) end
+    Gamestate.focus(f)
 end

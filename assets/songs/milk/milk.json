@@ -4310,11 +4310,10 @@
 				"mustHitSection": true
 			}
 		],
-		"player2": "sunky",
+		"player2": "dad",
 		"player3": "gf",
-		"splashSkin": "milkSplashes",
 		"song": "milk",
-		"stage": "sunkStage",
+		"stage": "stage",
 		"arrowSkin": "",
 		"needsVoices": true,
 		"validScore": true,

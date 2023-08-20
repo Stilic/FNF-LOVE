@@ -114,10 +114,9 @@ function Conductor:setLooping(state) self.__source:setLooping(state) end
 
 function Conductor:isLooping() return self.__source:isLooping() end
 
-function Conductor:release()
-    table.remove(Conductor.instances, table.find(self))
+function Conductor:destroy()
+    table.remove(Conductor.instances, table.find(Conductor.instances, self))
     self.__source:stop()
-    self.__source:release()
     self.__source = nil
 end
 
