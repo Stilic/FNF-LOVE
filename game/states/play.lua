@@ -22,7 +22,7 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local song = "2swag"
+    local song = "triple-b-trouble"
     local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
     PlayState.song = {
         name = chart.name,
