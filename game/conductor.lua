@@ -64,14 +64,6 @@ function Conductor:update()
         self.currentStep = trueStep
         self:__updateBeat()
 
-        -- music looped
-        if self.time < self.__lastTime then
-            for _ = 1, self.currentBeat % 2 == 0 and 1 or 2 do
-                self:__step()
-            end
-        end
-        self.__lastTime = self.time
-
         if self.onStep and oldCurStep ~= trueStep and trueStep > 0 and
             not table.find(self.__stepsDone, trueStep) then
             self:__step()
@@ -96,7 +88,6 @@ function Conductor:play()
 
     self:__updateTime()
     self:__updateBeat()
-    self.__lastTime = self.time
 end
 
 function Conductor:pause()
