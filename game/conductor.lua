@@ -61,8 +61,8 @@ function Conductor:update()
             end
         end
 
-        if self.time < self.__lastTime then
-            self.__lastTime = self.time
+        -- music looped
+        if self.currentStep < oldCurStep then
             self:__step()
         end
 
