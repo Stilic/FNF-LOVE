@@ -6,6 +6,7 @@ function Conductor:new(source, bpm)
     self.__source = source
     self.__paused = false
     self.__stepsDone = {}
+    self.__lastTime = 0
     self.offset = 0
 
     self:setBPM(bpm)
@@ -40,6 +41,7 @@ function Conductor:update()
         local oldCurStep = self.currentStep
 
         self:__updateTime()
+        self:__updateBeat()
 
         -- borrowed from forever engine -stilic
         local trueDecStep, trueStep = self.currentStepFloat, self.currentStep
@@ -53,16 +55,19 @@ function Conductor:update()
                 self.currentStepFloat = i
                 self.currentStep = i
 
-                self:__updateBeat()
                 self:__step()
 
                 table.insert(self.__stepsDone, i)
             end
         end
 
+        if self.time < self.__lastTime then
+            self.__lastTime = self.time
+            self:__step()
+        end
+
         self.currentStepFloat = trueDecStep
         self.currentStep = trueStep
-        self:__updateBeat()
 
         if self.onStep and oldCurStep ~= trueStep and trueStep > 0 and
             not table.find(self.__stepsDone, trueStep) then
