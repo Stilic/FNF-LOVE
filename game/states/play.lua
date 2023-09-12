@@ -229,18 +229,18 @@ function PlayState:enter()
 end
 
 function PlayState:update(dt)
-    for _, script in ipairs(self.scripts) do script:call("update", dt) end
-
-    if not isSwitchingState and not self.startingSong and
-        PlayState.inst:isFinished() then switchState(TitleState()) end
-
     PlayState.songPosition = PlayState.songPosition + 1000 * dt
     if self.startingSong and PlayState.songPosition >= 0 then
         self.startingSong = false
         PlayState.inst:play()
-        if PlayState.vocals then PlayState.vocals:play() end
-        PlayState.songPosition = PlayState.inst.time
+        PlayState.inst:__updateTime()
+        PlayState:resync()
     end
+
+    for _, script in ipairs(self.scripts) do script:call("update", dt) end
+
+    if not isSwitchingState and not self.startingSong and
+        PlayState.inst:isFinished() then switchState(TitleState()) end
 
     PlayState.super.update(self, dt)
 
@@ -541,6 +541,32 @@ function PlayState:removeNote(n)
     end
 end
 
+function PlayState:resync()
+    PlayState.songPosition = PlayState.inst.time
+    if self.vocals then
+        PlayState.vocals:pause()
+        if PlayState.songPosition <= self.vocals:getDuration() * 1000 then
+            self.vocals:seek(PlayState.songPosition / 1000)
+        end
+        PlayState.vocals:play()
+    end
+end
+
+function PlayState:step(s)
+    for _, script in ipairs(self.scripts) do script:call("step", s) end
+
+    if math.abs(PlayState.inst.time - (PlayState.songPosition - music.offset)) >
+        20 or
+        (PlayState.vocals and
+            math.abs(PlayState.vocals:tell() * 1000 - music.offset -
+                         (PlayState.songPosition - music.offset)) > 20) then
+        print("WRONG!!")
+        self:resync()
+    end
+
+    for _, script in ipairs(self.scripts) do script:call("postStep", s) end
+end
+
 function PlayState:beat(b)
     local section = self:getCurrentSection()
     if section and section.bpm ~= nil and PlayState.inst.bpm ~= section.bpm then
@@ -550,11 +576,6 @@ function PlayState:beat(b)
     end
 
     for _, script in ipairs(self.scripts) do script:call("beat", b) end
-
-    local time = PlayState.inst.__source:tell()
-    if PlayState.vocals and math.abs(PlayState.vocals:tell() - time) * 1000 > 6 then
-        PlayState.vocals:seek(time)
-    end
 
     if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
         self.camGame.zoom = self.camGame.zoom + 0.015
@@ -645,7 +666,10 @@ function PlayState:updateScore()
 end
 
 function PlayState:focus(f)
-    if PlayState.vocals then love.audioFocus(f, PlayState.vocals) end
+    if PlayState.vocals then
+        love.audioFocus(f, PlayState.vocals)
+        if f then self:resync() end
+    end
 end
 
 function PlayState:leave()

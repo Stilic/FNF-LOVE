@@ -21,17 +21,17 @@ function Conductor:setBPM(bpm)
     self.stepCrochet = self.crochet / 4
 
     self:__updateTime()
-    self:__updateBeat()
+    self:__updateStep()
 end
 
 function Conductor:__updateTime()
     self.time = self.__source:tell() * 1000 - self.offset
-
-    self.currentStepFloat = self.time / self.stepCrochet
-    self.currentStep = math.floor(self.currentStepFloat)
 end
 
-function Conductor:__updateBeat()
+function Conductor:__updateStep()
+    self.currentStepFloat = self.time / self.stepCrochet
+    self.currentStep = math.floor(self.currentStepFloat)
+
     self.currentBeatFloat = self.currentStepFloat / 4
     self.currentBeat = math.floor(self.currentBeatFloat)
 end
@@ -41,7 +41,7 @@ function Conductor:update()
         local oldCurStep = self.currentStep
 
         self:__updateTime()
-        self:__updateBeat()
+        self:__updateStep()
 
         -- borrowed from forever engine -stilic
         local trueDecStep, trueStep = self.currentStepFloat, self.currentStep
@@ -62,9 +62,7 @@ function Conductor:update()
         end
 
         -- music looped
-        if self.currentStep < oldCurStep then
-            self:__step()
-        end
+        if self.currentStep < oldCurStep then self:__step() end
 
         self.currentStepFloat = trueDecStep
         self.currentStep = trueStep
@@ -92,7 +90,7 @@ function Conductor:play()
     self.__paused = false
 
     self:__updateTime()
-    self:__updateBeat()
+    self:__updateStep()
 end
 
 function Conductor:pause()
@@ -109,6 +107,14 @@ end
 function Conductor:setLooping(state) self.__source:setLooping(state) end
 
 function Conductor:isLooping() return self.__source:isLooping() end
+
+function Conductor:seek(position, unit)
+    local playing = self.__source:isPlaying()
+    if playing then self.__source:pause() end
+    self.__source:seek(position, unit)
+    self:__updateTime()
+    if playing then self.__source:play() end
+end
 
 function Conductor:destroy()
     table.remove(Conductor.instances, table.find(Conductor.instances, self))
