@@ -7,27 +7,29 @@ push = require "lib.push"
 Timer = require "lib.timer"
 Gamestate = require "lib.gamestate"
 
-paths = require "game.paths"
-util = require "game.util"
-
-Script = require "game.script"
-Conductor = require "game.conductor"
-
 Camera = require "game.camera"
-
 Sprite = require "game.sprite"
 Text = require "game.text"
 Bar = require "game.bar"
 Group = require "game.group"
+SpriteGroup = require 'game.spritegroup'
+State = require "game.state"
+SubState = require "game.substate"
 
+paths = require "game.paths"
+util = require "game.util"
+
+Script = require "game.script"
+
+Conductor = require "game.conductor"
 Note = require "game.gameplay.ui.note"
 Receptor = require "game.gameplay.ui.receptor"
 HealthIcon = require "game.gameplay.ui.healthicon"
-
 Stage = require "game.gameplay.stage"
 Character = require "game.gameplay.character"
 
-State = require "game.state"
+Alphabet = require "game.alphabet"
+
 TitleState = require "game.states.title"
 PlayState = require "game.states.play"
 
