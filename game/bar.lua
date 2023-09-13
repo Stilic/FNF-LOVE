@@ -11,7 +11,7 @@ function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)
     self.opColor = opColor or {0, 255, 0}
     self.flipX = false
     self.filledBar = filledBar or false
-    self.cameras = nil
+    self.camera = nil
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
     self.percent = (self.value / self.maxValue) * 100
 end
@@ -30,25 +30,20 @@ end
 function Bar:draw()
     local r, g, b, a = love.graphics.getColor()
 
-    for _, cam in ipairs(self.cameras or Camera.defaultCameras) do
-        cam:attach()
+    if self.camera then self.camera:attach() end
 
-        self.fillWidth = self.width -
-                             ((self.value / self.maxValue) * self.width)
-        self.percent = (self.value / self.maxValue) * 100
+    self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
+    self.percent = (self.value / self.maxValue) * 100
 
-        if self.filledBar then
-            love.graphics.setColor(self.flipX and self.color or self.opColor)
-            love.graphics.rectangle("fill", self.x, self.y, self.width,
-                                    self.height)
-        end
-
-        love.graphics.setColor(self.flipX and self.opColor or self.color)
-        love.graphics.rectangle("fill", self.x, self.y, self.fillWidth,
-                                self.height)
-
-        cam:detach()
+    if self.filledBar then
+        love.graphics.setColor(self.flipX and self.color or self.opColor)
+        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
     end
+
+    love.graphics.setColor(self.flipX and self.opColor or self.color)
+    love.graphics.rectangle("fill", self.x, self.y, self.fillWidth, self.height)
+
+    if self.camera then self.camera:detach() end
 
     love.graphics.setColor(r, g, b, a)
 end

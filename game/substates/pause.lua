@@ -16,7 +16,8 @@ function PauseSubState:new()
     self:add(self.grpShitMenu)
 
     for i = 0, #self.menuItems - 1 do
-        local item = Alphabet(0, 70 * i + 30, self.menuItems[i + 1], true, false)
+        local item =
+            Alphabet(0, 70 * i + 30, self.menuItems[i + 1], true, false)
         item.isMenuItem = true
         item.targetY = i
         self.grpShitMenu:add(item)
@@ -31,25 +32,19 @@ function PauseSubState:update(dt)
     end
     PauseSubState.super.update(self, dt)
 
-    if controls:pressed('ui_up') then
-        self:changeSelection(-1)
-    end
-    if controls:pressed('ui_down') then
-        self:changeSelection(1)
-    end
+    if controls:pressed('ui_up') then self:changeSelection(-1) end
+    if controls:pressed('ui_down') then self:changeSelection(1) end
 
     if controls:pressed('accept') then
         local daChoice = self.menuItems[self.curSelected]
 
         switch(daChoice, {
-            ["Resume"]=function()
-                self:close()
-            end,
-            ["Restart Song"]=function ()
+            ["Resume"] = function() self:close() end,
+            ["Restart Song"] = function()
                 -- PlayState.instance.paused = true
                 switchState(PlayState())
             end,
-            ["Exit to menu"]=function()
+            ["Exit to menu"] = function()
                 -- TitleState.music:setTime()
                 -- TitleState.music:play()
                 switchState(TitleState())
@@ -64,8 +59,11 @@ function PauseSubState:changeSelection(huh)
     paths.playSound('scrollMenu')
     self.curSelected = self.curSelected + huh
 
-    if self.curSelected > #self.menuItems then self.curSelected = 1
-    elseif self.curSelected < 1 then self.curSelected = #self.menuItems end
+    if self.curSelected > #self.menuItems then
+        self.curSelected = 1
+    elseif self.curSelected < 1 then
+        self.curSelected = #self.menuItems
+    end
 
     local bullShit = 0
 
@@ -75,9 +73,7 @@ function PauseSubState:changeSelection(huh)
 
         item.alpha = 0.6
 
-        if item.targetY == 0 then
-            item.alpha = 1
-        end
+        if item.targetY == 0 then item.alpha = 1 end
     end
 end
 

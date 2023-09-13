@@ -118,11 +118,11 @@ function PlayState:enter()
     self.misses = 0
     self.health = 1
 
-    self.camGame = self.cameras[1]
+    self.camGame = Camera()
     self.camGame.target = {x = 0, y = 0}
-    self.camHUD = Camera()
+    Camera.defaultCamera = self.camGame
 
-    Sprite.defaultCamera = self.camGame
+    self.camHUD = Camera()
 
     self.receptors = Group()
     self.playerReceptors = Group()
@@ -212,7 +212,7 @@ function PlayState:enter()
     for _, o in ipairs({
         self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
         self.healthBar, self.iconP1, self.iconP2, self.scoreTxt
-    }) do o.cameras = {self.camHUD} end
+    }) do o.camera = self.camHUD end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
     controls:bindPress(self.bindedKeyPress)
@@ -226,18 +226,18 @@ function PlayState:enter()
 end
 
 function PlayState:update(dt)
-    PlayState.songPosition = PlayState.songPosition + 1000 * dt
-    if self.startingSong and PlayState.songPosition >= 0 then
-        self.startingSong = false
-        PlayState.inst:play()
-        PlayState.inst:__updateTime()
-        PlayState:resync()
-    end
-
     for _, script in ipairs(self.scripts) do script:call("update", dt) end
 
     if not isSwitchingState and not self.startingSong and
         PlayState.inst:isFinished() then switchState(TitleState()) end
+
+    PlayState.songPosition = PlayState.songPosition + 1000 * dt
+    if self.startingSong and PlayState.songPosition >= 0 then
+        self.startingSong = false
+        PlayState.inst:play()
+        if PlayState.vocals then PlayState.vocals:play() end
+        PlayState.songPosition = PlayState.inst.time
+    end
 
     PlayState.super.update(self, dt)
 
@@ -418,7 +418,11 @@ end
 
 function PlayState:closeSubState()
     PlayState.super.closeSubState(self)
-    if PlayState.inst and not self.startingSong then self:resync() end
+    if PlayState.inst and not self.startingSong then
+        PlayState.vocals:seek(PlayState.inst.__source:tell())
+    end
+    PlayState.inst:play()
+    PlayState.vocals:play()
 end
 
 -- CAN RETURN NIL!!
@@ -557,30 +561,17 @@ function PlayState:removeNote(n)
     end
 end
 
-function PlayState:resync()
-    PlayState.songPosition = PlayState.inst.time
-    if self.vocals then
-        PlayState.vocals:pause()
-        if PlayState.songPosition <= self.vocals:getDuration() * 1000 then
-            self.vocals:seek(PlayState.songPosition / 1000)
-        end
-        PlayState.vocals:play()
-    end
-end
-
 function PlayState:step(s)
-    for _, script in ipairs(self.scripts) do script:call("step", s) end
-
-    if math.abs(PlayState.inst.time - (PlayState.songPosition - music.offset)) >
-        20 or
-        (PlayState.vocals and
-            math.abs(PlayState.vocals:tell() * 1000 - music.offset -
-                         (PlayState.songPosition - music.offset)) > 20) then
-        print("WRONG!!")
-        self:resync()
+    local time = PlayState.inst.__source:tell()
+    if PlayState.vocals and math.abs(PlayState.vocals:tell() - time) * 1000 > 10 then
+        PlayState.vocals:seek(time)
+    end
+    time = time * 1000
+    if math.abs(time - PlayState.songPosition) > 10 then
+        PlayState.songPosition = time
     end
 
-    for _, script in ipairs(self.scripts) do script:call("postStep", s) end
+    PlayState.super.step(self, s)
 end
 
 function PlayState:beat(b)
@@ -593,7 +584,7 @@ function PlayState:beat(b)
 
     for _, script in ipairs(self.scripts) do script:call("beat", b) end
 
-    if self.camZooming and b % 4 == 0 and self.camGame.zoom < 1.35 then
+    if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
         self.camGame.zoom = self.camGame.zoom + 0.015
         self.camHUD.zoom = self.camHUD.zoom + 0.03
     end
@@ -682,10 +673,7 @@ function PlayState:updateScore()
 end
 
 function PlayState:focus(f)
-    if PlayState.vocals then
-        love.audioFocus(f, PlayState.vocals)
-        if f then self:resync() end
-    end
+    if PlayState.vocals then love.audioFocus(f, PlayState.vocals) end
 end
 
 function PlayState:leave()

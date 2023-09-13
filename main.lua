@@ -219,7 +219,7 @@ function love.update(dt)
 
     controls:update()
     Timer.update(dt)
-    Gamestate.update(dt)
+    if not isSwitchingState then Gamestate.update(dt) end
 end
 
 function love.draw()

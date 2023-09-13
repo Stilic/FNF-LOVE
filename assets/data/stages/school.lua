@@ -32,32 +32,34 @@ function create()
 
     local widShit = math.floor(bgSky.width * 6)
     -- if not ClientPrefs.data.lowQuality then
-        local fgTrees = Sprite(repositionShit + 170, 130)
-        fgTrees:load(paths.getImage(SCRIPT_PATH .. 'weebTreesBack'))
-        fgTrees:setGraphicSize(math.floor(widShit * 0.8))
-        fgTrees:updateHitbox()
-        self:add(fgTrees)
-        fgTrees.antialiasing = false
+    local fgTrees = Sprite(repositionShit + 170, 130)
+    fgTrees:load(paths.getImage(SCRIPT_PATH .. 'weebTreesBack'))
+    fgTrees:setGraphicSize(math.floor(widShit * 0.8))
+    fgTrees:updateHitbox()
+    self:add(fgTrees)
+    fgTrees.antialiasing = false
     -- end
 
     local bgTrees = Sprite(repositionShit - 380, -800)
     bgTrees:setFrames(paths.getPackerAtlas(SCRIPT_PATH .. 'weebTrees'))
-    bgTrees:addAnim('treeLoop', {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}, 12)
+    bgTrees:addAnim('treeLoop', {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
+    }, 12)
     bgTrees:play('treeLoop')
     bgTrees:setScrollFactor(0.85, 0.85)
     self:add(bgTrees)
     bgTrees.antialiasing = false
 
     -- if not ClientPrefs.data.lowQuality then
-        local treeLeaves = Sprite(repositionShit, -40)
-        treeLeaves:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'petals'))
-        treeLeaves:setScrollFactor(0.85, 0.85)
-        treeLeaves:addAnimByPrefix('PETALS ALL', 'PETALS ALL', 24, true)
-        treeLeaves:play('PETALS ALL')
-        treeLeaves:setGraphicSize(widShit)
-        treeLeaves:updateHitbox()
-        self:add(treeLeaves)
-        treeLeaves.antialiasing = false
+    local treeLeaves = Sprite(repositionShit, -40)
+    treeLeaves:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'petals'))
+    treeLeaves:setScrollFactor(0.85, 0.85)
+    treeLeaves:addAnimByPrefix('PETALS ALL', 'PETALS ALL', 24, true)
+    treeLeaves:play('PETALS ALL')
+    treeLeaves:setGraphicSize(widShit)
+    treeLeaves:updateHitbox()
+    self:add(treeLeaves)
+    treeLeaves.antialiasing = false
     -- end
 
     bgSky:setGraphicSize(widShit)
@@ -71,31 +73,25 @@ function create()
     bgTrees:updateHitbox()
 
     -- if not ClientPrefs.data.lowQuality then
-        bgGirls = BackgroundGirls(-100, 190)
-        bgGirls:setScrollFactor(0.9, 0.9)
+    bgGirls = BackgroundGirls(-100, 190)
+    bgGirls:setScrollFactor(0.9, 0.9)
 
-        bgGirls:setGraphicSize(math.floor(bgGirls.width * 6))
-        bgGirls:updateHitbox()
-        bgGirls.antialiasing = false
-        self:add(bgGirls)
+    bgGirls:setGraphicSize(math.floor(bgGirls.width * 6))
+    bgGirls:updateHitbox()
+    bgGirls.antialiasing = false
+    self:add(bgGirls)
     -- end
 
     switch(paths.formatToSongPath(state.song.song), {
-        ['roses']=function()
+        ['roses'] = function()
             bgGirls:swapDanceType()
-            --paths.playSound('gameplay/ANGRY_TEXT_BOX')
+            -- paths.playSound('gameplay/ANGRY_TEXT_BOX')
         end
     })
 end
 
-function countdownTick(swagCounter)
-    bgGirls:dance()
-end
+function countdownTick(swagCounter) bgGirls:dance() end
 
-function beatHit()
-    bgGirls:dance()
-end
+function beatHit() bgGirls:dance() end
 
-function destroy()
-    close()
-end
+function destroy() close() end

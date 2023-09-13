@@ -7,7 +7,6 @@ function Conductor:new(source, bpm)
     self.__paused = false
     self.__stepsDone = {}
     self.__lastTime = 0
-    self.offset = 0
 
     self:setBPM(bpm)
 
@@ -24,7 +23,7 @@ function Conductor:setBPM(bpm)
 end
 
 function Conductor:__updateTime()
-    self.time = self.__source:tell() * 1000 - self.offset
+    self.time = self.__source:tell() * 1000
 
     self.currentStepFloat = self.time / self.stepCrochet
     self.currentStep = math.floor(self.currentStepFloat)

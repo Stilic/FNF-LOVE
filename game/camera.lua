@@ -1,5 +1,7 @@
 local Camera = Object:extend()
 
+Camera.defaultCamera = nil
+
 function Camera:new(x, y, width, height)
     if x == nil then x = 0 end
     if y == nil then y = 0 end

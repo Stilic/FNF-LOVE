@@ -55,13 +55,20 @@ function Group:draw(...)
     for _, o in pairs(self.members) do
         local f = o.draw
         if f then
-            local resetCam = not o.cameras
+            local resetCam = not o.camera
             if resetCam then
-                o.cameras = self.cameras or Camera.defaultCameras
+                o.camera = self.camera or Camera.defaultCamera
             end
             f(o, ...)
-            if resetCam then o.cameras = nil end
+            if resetCam then o.camera = nil end
         end
+    end
+end
+
+function Group:step(s, ...)
+    for _, o in pairs(self.members) do
+        local f = o.step
+        if f then f(o, s, ...) end
     end
 end
 

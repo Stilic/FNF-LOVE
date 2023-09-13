@@ -6,7 +6,6 @@ function State:new()
     self.persistentUpdate = false
     self.persistentDraw = true
     self.bgColor = {0, 0, 0, 0}
-    self.cameras = {Camera()}
 end
 
 function State:update(dt) State.super.update(self, dt) end
@@ -30,11 +29,14 @@ end
 function State:openSubState(subState)
     self.subState = subState
     subState.__parentState = self
+    self.__defaultCamera = Camera.defaultCamera
+    Camera.defaultCamera = Camera()
     Gamestate.push(subState)
 end
 
 function State:closeSubState()
     if self.subState then
+        Camera.defaultCamera = self.__defaultCamera
         Gamestate.pop(table.find(Gamestate.stack, self.subState))
     end
 end
