@@ -11,7 +11,7 @@ function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)
     self.opColor = opColor or {0, 255, 0}
     self.flipX = false
     self.filledBar = filledBar or false
-    self.camera = nil
+    self.cameras = nil
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
     self.percent = (self.value / self.maxValue) * 100
 end
@@ -19,8 +19,6 @@ end
 function Bar:setValue(value)
     self.value = math.min(math.max(value, 0), self.maxValue)
 end
-
-function Bar:setCamera(camera) self.camera = camera end
 
 function Bar:screenCenter(axes)
     if axes == nil then axes = "xy" end
@@ -30,22 +28,27 @@ function Bar:screenCenter(axes)
 end
 
 function Bar:draw()
-    if self.camera then self.camera:attach() end
-
     local r, g, b, a = love.graphics.getColor()
 
-    self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
-    self.percent = (self.value / self.maxValue) * 100
+    for _, cam in ipairs(self.cameras or Camera.defaultCameras) do
+        cam:attach()
 
-    if self.filledBar then
-        love.graphics.setColor(self.flipX and self.color or self.opColor)
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+        self.fillWidth = self.width -
+                             ((self.value / self.maxValue) * self.width)
+        self.percent = (self.value / self.maxValue) * 100
+
+        if self.filledBar then
+            love.graphics.setColor(self.flipX and self.color or self.opColor)
+            love.graphics.rectangle("fill", self.x, self.y, self.width,
+                                    self.height)
+        end
+
+        love.graphics.setColor(self.flipX and self.opColor or self.color)
+        love.graphics.rectangle("fill", self.x, self.y, self.fillWidth,
+                                self.height)
+
+        cam:detach()
     end
-
-    love.graphics.setColor(self.flipX and self.opColor or self.color)
-    love.graphics.rectangle("fill", self.x, self.y, self.fillWidth, self.height)
-
-    if self.camera then self.camera:detach() end
 
     love.graphics.setColor(r, g, b, a)
 end

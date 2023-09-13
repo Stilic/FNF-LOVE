@@ -21,14 +21,11 @@ function Conductor:setBPM(bpm)
     self.stepCrochet = self.crochet / 4
 
     self:__updateTime()
-    self:__updateStep()
 end
 
 function Conductor:__updateTime()
     self.time = self.__source:tell() * 1000 - self.offset
-end
 
-function Conductor:__updateStep()
     self.currentStepFloat = self.time / self.stepCrochet
     self.currentStep = math.floor(self.currentStepFloat)
 
@@ -41,7 +38,6 @@ function Conductor:update()
         local oldCurStep = self.currentStep
 
         self:__updateTime()
-        self:__updateStep()
 
         -- borrowed from forever engine -stilic
         local trueDecStep, trueStep = self.currentStepFloat, self.currentStep
@@ -90,7 +86,6 @@ function Conductor:play()
     self.__paused = false
 
     self:__updateTime()
-    self:__updateStep()
 end
 
 function Conductor:pause()

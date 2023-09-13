@@ -1,3 +1,5 @@
+local PauseSubState = require "game.substates.pause"
+
 local PlayState = State:extend()
 
 PlayState.controlDirs = {
@@ -116,7 +118,7 @@ function PlayState:enter()
     self.misses = 0
     self.health = 1
 
-    self.camGame = Camera()
+    self.camGame = self.cameras[1]
     self.camGame.target = {x = 0, y = 0}
     self.camHUD = Camera()
 
@@ -170,7 +172,6 @@ function PlayState:enter()
 
     self.healthBarBG = Sprite()
     self.healthBarBG:load(paths.getImage("skins/normal/healthBar"))
-    self.healthBarBG.camera = self.camHUD
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter('x')
     self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1 or
@@ -180,24 +181,19 @@ function PlayState:enter()
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
                          math.floor(self.healthBarBG.width - 8),
                          math.floor(self.healthBarBG.height - 8), 2, nil, true)
-
-    self.healthBar.camera = self.camHUD
     self.healthBar:setValue(self.health)
 
     self.iconP1 = HealthIcon(self.boyfriend.icon, true)
     self.iconP1.y = self.healthBar.y - 150
-    self.iconP1.camera = self.camHUD
     self.iconP1:setScrollFactor(0)
 
     self.iconP2 = HealthIcon(self.dad.icon, false)
     self.iconP2.y = self.healthBar.y - 150
-    self.iconP2.camera = self.camHUD
     self.iconP2:setScrollFactor(0)
 
     self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
                          paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
-    self.scoreTxt.camera = self.camHUD
     self:updateScore()
     self.scoreTxt:screenCenter('x')
 
@@ -213,9 +209,10 @@ function PlayState:enter()
     self:add(self.sustainsGroup)
     self:add(self.notesGroup)
 
-    for _, o in ipairs({self.receptors, self.notesGroup, self.sustainsGroup}) do
-        o.camera = self.camHUD
-    end
+    for _, o in ipairs({
+        self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
+        self.healthBar, self.iconP1, self.iconP2, self.scoreTxt
+    }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
     controls:bindPress(self.bindedKeyPress)
@@ -287,6 +284,14 @@ function PlayState:update(dt)
         self.camGame.zoom = util.coolLerp(self.camGame.zoom, self.stage.camZoom,
                                           0.0475)
         self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
+    end
+
+    if controls:pressed('pause') then
+        PlayState.inst:pause()
+        PlayState.vocals:pause()
+        -- PauseSubState.camera = self.camOther
+        self.paused = true
+        self:openSubState(PauseSubState())
     end
 
     if self.unspawnNotes[1] then
@@ -411,6 +416,11 @@ function PlayState:draw()
     for _, script in ipairs(self.scripts) do script:call("postDraw") end
 end
 
+function PlayState:closeSubState()
+    PlayState.super.closeSubState(self)
+    if PlayState.inst and not self.startingSong then self:resync() end
+end
+
 -- CAN RETURN NIL!!
 function PlayState:getCurrentSection()
     return PlayState.song.sections[math.floor(PlayState.inst.currentStep / 16) +
@@ -427,60 +437,66 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type)
-    local controls = controls:getControlsFromSource(type .. ':' .. key)
-    if not controls then return end
-    key = self:getKeyFromEvent(controls)
-    if key >= 0 then
-        self.keysPressed[key] = true
+    if not self.subState or self.persistentUpdate then
+        local controls = controls:getControlsFromSource(type .. ':' .. key)
+        if not controls then return end
+        key = self:getKeyFromEvent(controls)
+        if key >= 0 then
+            self.keysPressed[key] = true
 
-        local prevSongPos = PlayState.songPosition
-        PlayState.songPosition = PlayState.inst.time
+            local prevSongPos = PlayState.songPosition
+            PlayState.songPosition = PlayState.inst.time
 
-        local noteList = {}
+            local noteList = {}
 
-        for _, n in ipairs(self.notesGroup.members) do
-            if n.mustPress and not n.isSustain and not n.tooLate and
-                not n.wasGoodHit then
-                if not n.canBeHit and n:checkDiff(PlayState.songPosition) then
-                    n:update(0)
-                end
-                if n.canBeHit and n.data == key then
-                    table.insert(noteList, n)
-                end
-            end
-        end
-
-        if #noteList > 0 then
-            table.sort(noteList, PlayState.sortByShit)
-            local coolNote = table.remove(noteList, 1)
-
-            for _, n in next, noteList do
-                if n.time - coolNote.time < 2 then
-                    self:removeNote(n)
+            for _, n in ipairs(self.notesGroup.members) do
+                if n.mustPress and not n.isSustain and not n.tooLate and
+                    not n.wasGoodHit then
+                    if not n.canBeHit and n:checkDiff(PlayState.songPosition) then
+                        n:update(0)
+                    end
+                    if n.canBeHit and n.data == key then
+                        table.insert(noteList, n)
+                    end
                 end
             end
 
-            self:goodNoteHit(coolNote)
+            if #noteList > 0 then
+                table.sort(noteList, PlayState.sortByShit)
+                local coolNote = table.remove(noteList, 1)
+
+                for _, n in next, noteList do
+                    if n.time - coolNote.time < 2 then
+                        self:removeNote(n)
+                    end
+                end
+
+                self:goodNoteHit(coolNote)
+            end
+
+            PlayState.songPosition = prevSongPos
+
+            local r = self.playerReceptors.members[key + 1]
+            if r and r.curAnim.name ~= "confirm" then
+                r:play("pressed")
+            end
         end
-
-        PlayState.songPosition = prevSongPos
-
-        local r = self.playerReceptors.members[key + 1]
-        if r and r.curAnim.name ~= "confirm" then r:play("pressed") end
     end
 end
 
 function PlayState:onKeyRelease(key, type)
-    local controls = controls:getControlsFromSource(type .. ':' .. key)
-    if not controls then return end
-    key = self:getKeyFromEvent(controls)
-    if key >= 0 then
-        self.keysPressed[key] = false
+    if not self.subState or self.persistentUpdate then
+        local controls = controls:getControlsFromSource(type .. ':' .. key)
+        if not controls then return end
+        key = self:getKeyFromEvent(controls)
+        if key >= 0 then
+            self.keysPressed[key] = false
 
-        local r = self.playerReceptors.members[key + 1]
-        if r then
-            r:play("static")
-            r.confirmTimer = 0
+            local r = self.playerReceptors.members[key + 1]
+            if r then
+                r:play("static")
+                r.confirmTimer = 0
+            end
         end
     end
 end
@@ -577,7 +593,7 @@ function PlayState:beat(b)
 
     for _, script in ipairs(self.scripts) do script:call("beat", b) end
 
-    if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
+    if self.camZooming and b % 4 == 0 and self.camGame.zoom < 1.35 then
         self.camGame.zoom = self.camGame.zoom + 0.015
         self.camHUD.zoom = self.camHUD.zoom + 0.03
     end

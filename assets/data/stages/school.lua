@@ -31,14 +31,14 @@ function create()
     bgStreet.antialiasing = false
 
     local widShit = math.floor(bgSky.width * 6)
-    if not ClientPrefs.data.lowQuality then
+    -- if not ClientPrefs.data.lowQuality then
         local fgTrees = Sprite(repositionShit + 170, 130)
         fgTrees:load(paths.getImage(SCRIPT_PATH .. 'weebTreesBack'))
         fgTrees:setGraphicSize(math.floor(widShit * 0.8))
         fgTrees:updateHitbox()
         self:add(fgTrees)
         fgTrees.antialiasing = false
-    end
+    -- end
 
     local bgTrees = Sprite(repositionShit - 380, -800)
     bgTrees:setFrames(paths.getPackerAtlas(SCRIPT_PATH .. 'weebTrees'))
@@ -70,7 +70,7 @@ function create()
     bgStreet:updateHitbox()
     bgTrees:updateHitbox()
 
-    if not ClientPrefs.data.lowQuality then
+    -- if not ClientPrefs.data.lowQuality then
         bgGirls = BackgroundGirls(-100, 190)
         bgGirls:setScrollFactor(0.9, 0.9)
 
@@ -78,7 +78,7 @@ function create()
         bgGirls:updateHitbox()
         bgGirls.antialiasing = false
         self:add(bgGirls)
-    end
+    -- end
 
     switch(paths.formatToSongPath(state.song.song), {
         ['roses']=function()

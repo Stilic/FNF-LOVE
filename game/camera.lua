@@ -24,14 +24,12 @@ end
 
 function Camera:attach()
     love.graphics.push()
-
-    local w2, h2 = self.width * 0.5, self.height * 0.5
-    love.graphics.scale(self.zoom)
-    love.graphics.translate(w2 / self.zoom - w2, h2 / self.zoom - h2)
-    love.graphics.translate(-self.x, -self.y)
-    love.graphics.translate(w2, h2)
     love.graphics.rotate(-self.angle)
-    love.graphics.translate(-w2, -h2)
+    local w = self.width / 2
+    local h = self.height / 2
+    love.graphics.translate(w - self.x, h - self.y)
+    love.graphics.scale(self.zoom, self.zoom)
+    love.graphics.translate(-w, -h)
 end
 
 function Camera:detach() love.graphics.pop() end

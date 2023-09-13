@@ -100,6 +100,7 @@ function switchState(state, transition)
     isSwitchingState = true
 
     local function switch()
+        Camera.defaultCamera = nil
         Timer.clear()
         for _, o in pairs(Gamestate.current()) do
             if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then

@@ -18,9 +18,30 @@ function math.clamp(x, min, max) return math.max(min, math.min(x, max)) end
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
+function math.bound(value, min, max) return math.max(min, math.min(max, value)) end
+
 bit32, iter = bit, ipairs(math)
 
 -- EXTRA FUNCTIONS
+function switch(value, cases)
+    local caseFunction = cases[value]
+    if caseFunction then
+        if type(caseFunction) == "function" then
+            caseFunction()
+        else
+            error("Case value must be a function.")
+        end
+    elseif cases.default then
+        if type(cases.default) == "function" then
+            cases.default()
+        else
+            error("Default value must be a function.")
+        end
+    else
+        return
+    end
+end
+
 function table.keys(table, includeIndices, keys)
     keys = keys or {}
     for i in includeIndices and iter or next, table, includeIndices and 0 or nil do
@@ -64,7 +85,33 @@ end
 
 function string.trim(self) return self:ltrim():rtrim() end
 
+function table.splice(tbl, start, count, ...)
+    local removedItems = {}
+    if start < 0 then
+        start = #tbl + start + 1
+    end
+    count = count or 0
+    for i = 1, count do
+        if tbl[start] then
+            table.insert(removedItems, tbl[start])
+            table.remove(tbl, start)
+        else
+            break
+        end
+    end
+    local args = { ... }
+    for i = #args, 1, -1 do
+        table.insert(tbl, start, args[i])
+    end
+    return removedItems
+end
+
 function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
+
+function math.roundDecimal(number, decimals)
+    local multiplier = 10 ^ (decimals or 0)
+    return math.floor(number * multiplier + 0.5) / multiplier
+end
 
 function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
@@ -79,7 +126,7 @@ function math.truncate(x, precision, round)
     return round(x)
 end
 
-function math.remap(x, start1, stop1, start2, stop2)
+function math.remapToRange(x, start1, stop1, start2, stop2)
     return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
 end
 
@@ -92,5 +139,8 @@ function math.countbytes(x)
     end
     return math.truncate(x, 2, true) .. " " .. intervals[i]
 end
+
+math.positive_infinity = math.huge
+math.negative_infinity = -math.huge
 
 math.noise = require "lib.noise"

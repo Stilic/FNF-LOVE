@@ -1,21 +1,25 @@
 local SubState = State:extend()
 
-SubState.__parentState = nil
-SubState.__entered = false
-
-function SubState:new() SubState.super.new(self) end
-
-function SubState:draw() SubState.super.draw(self) end
-
-function SubState:destroy()
-    SubState.super.destroy(self)
-    self.__parentState = nil
+function SubState:new()
+    SubState.super.new(self)
 end
 
-function SubState:close()
-    if self.__parentState ~= nil and self.__parentState.subState == self then
-        self.__parentState:closeSubState()
-    end
+function SubState:update(dt)
+    if self.__parentState.persistentUpdate then self.__parentState:update(dt) end
+
+    SubState.super.update(self, dt)
+end
+
+function SubState:draw()
+    if self.__parentState.persistentDraw then self.__parentState:draw() end
+
+    SubState.super.draw(self)
+end
+
+function SubState:close() self.__parentState:closeSubState() end
+
+function SubState:leave()
+    self.__parentState.subState = nil
 end
 
 return SubState

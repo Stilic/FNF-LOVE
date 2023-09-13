@@ -8,13 +8,13 @@ AlphaCharacter.textSize = 1
 
 function AlphaCharacter:new(x, y, textSize)
     AlphaCharacter.super.new(self, x, y)
-    local tex = paths.getSparrowAtlas('alphabet')
+    local tex = paths.getSparrowAtlas('menus/alphabet')
     self:setFrames(tex)
 
     self:setGraphicSize(math.floor(self.width * textSize))
     self:updateHitbox()
     self.textSize = textSize
-    self.antialiasing = ClientPrefs.data.globalAntialiasing
+    self.antialiasing = true
 end
 
 function AlphaCharacter:createBoldLetter(letter)

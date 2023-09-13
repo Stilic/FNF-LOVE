@@ -55,12 +55,12 @@ function Group:draw(...)
     for _, o in pairs(self.members) do
         local f = o.draw
         if f then
-            local resetCam = not o.camera
+            local resetCam = not o.cameras
             if resetCam then
-                o.camera = self.camera or Sprite.defaultCamera
+                o.cameras = self.cameras or Camera.defaultCameras
             end
             f(o, ...)
-            if resetCam then o.camera = nil end
+            if resetCam then o.cameras = nil end
         end
     end
 end
