@@ -75,7 +75,6 @@ function Sprite:new(x, y, texture)
     self.origin = {x = 0, y = 0}
     self.offset = {x = 0, y = 0}
     self.scale = {x = 1, y = 1}
-    self.shear = {x = 0, y = 0}
     self.scrollFactor = {x = 1, y = 1}
     self.clipRect = nil
     self.flipX = false
@@ -192,15 +191,6 @@ end
 
 function Sprite:setScrollFactor(value)
     self.scrollFactor.x, self.scrollFactor.y = value, value
-end
-
-function Sprite:getScreenPosition(camera)
-    local tx, ty = 0, 0
-    if camera then
-        tx, ty = camera:getPosition(0, 0)
-        tx, ty = tx * self.scrollFactor.x, ty * self.scrollFactor.y
-    end
-    return self.x + tx, self.y + ty
 end
 
 function Sprite:getMidpoint()
@@ -345,27 +335,32 @@ function Sprite:draw()
 
         if self.clipRect then love.graphics.setStencilTest("greater", 0) end
 
+        local cam = self.camera or Camera.defaultCamera
         local alpha = self.alpha
-        if self.camera then alpha = alpha * self.camera.alpha end
+        if cam then alpha = alpha * cam.alpha end
         if alpha > 0 then
-            if self.camera then self.camera:attach() end
+            if cam then cam:attach() end
 
-            local x, y = self:getScreenPosition(self.camera)
-            local rad, sx, sy, ox, oy, kx, ky = self.angle, self.scale.x,
-                                                self.scale.y, self.origin.x,
-                                                self.origin.y, self.shear.x,
-                                                self.shear.y
+            local x, y, rad, sx, sy, ox, oy = self.x, self.y,
+                                              math.rad(self.angle),
+                                              self.scale.x, self.scale.y,
+                                              self.origin.x, self.origin.y
+
+            if self.flipX then sx = -sx end
+            if self.flipY then sy = -sy end
 
             local r, g, b, a = love.graphics.getColor()
             love.graphics.setColor(self.color[1], self.color[2], self.color[3],
                                    alpha)
 
-            if self.flipX then sx = -sx end
-            if self.flipY then sy = -sy end
-
             x, y = x + ox - self.offset.x, y + oy - self.offset.y
 
             if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
+
+            if cam then
+                x = x - (cam.scroll.x * self.scrollFactor.x)
+                y = y - (cam.scroll.y * self.scrollFactor.y)
+            end
 
             if self.clipRect then
                 stencilSprite, stencilX, stencilY = self, x, y
@@ -373,16 +368,15 @@ function Sprite:draw()
             end
 
             if not f then
-                love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy, kx,
-                                   ky)
+                love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
             else
                 love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox,
-                                   oy, kx, ky)
+                                   oy)
             end
 
             love.graphics.setColor(r, g, b, a)
 
-            if self.camera then self.camera:detach() end
+            if cam then cam:detach() end
         end
 
         self.texture:setFilter(min, mag, anisotropy)
