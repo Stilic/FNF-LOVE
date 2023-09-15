@@ -20,6 +20,7 @@ PlayState.pixelStage = false
 
 -- hmmmmmmmmm
 PlayState.curSong = 'test'
+PlayState.songPosition = 0
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
@@ -298,7 +299,7 @@ function PlayState:update(dt)
 
     if controls:pressed('pause') then
         PlayState.inst:pause()
-        PlayState.vocals:pause()
+        if PlayState.vocals then PlayState.vocals:pause() end
         self.paused = true
         self:openSubState(PauseSubState())
     end
@@ -390,7 +391,7 @@ function PlayState:update(dt)
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) and
                 not PlayState.inst:isFinished() then
-                PlayState.vocals:setVolume(0)
+                if PlayState.vocals then PlayState.vocals:setVolume(0) end
                 self.combo = 0
                 self.score = self.score - 100
                 self.misses = self.misses + 1
@@ -427,11 +428,11 @@ end
 
 function PlayState:closeSubState()
     PlayState.super.closeSubState(self)
-    if PlayState.inst and not self.startingSong then
+    if PlayState.vocals and not self.startingSong then
         PlayState.vocals:seek(PlayState.inst.__source:tell())
     end
     PlayState.inst:play()
-    PlayState.vocals:play()
+    if PlayState.vocals then PlayState.vocals:play() end
 end
 
 -- CAN RETURN NIL!!
@@ -517,7 +518,7 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        PlayState.vocals:setVolume(1)
+        if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false, n.isSustain)
@@ -690,7 +691,6 @@ function PlayState:leave()
 
     PlayState.inst = nil
     PlayState.vocals = nil
-    PlayState.songPosition = nil
 
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)

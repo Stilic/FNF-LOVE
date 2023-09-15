@@ -51,6 +51,7 @@ function TitleState:update(dt)
         self.confirmed = true
         self.titleText:play("press")
         paths.playSound("confirmMenu")
+        self.music:destroy()
         Timer.after(1.5, function()
             switchState(MainMenuState())
         end)
