@@ -583,10 +583,10 @@ function PlayState:step(s)
     -- now it works -fellix
     local time = PlayState.inst.__source:tell()
     if PlayState.vocals and
-        math.abs((PlayState.vocals:tell() * 1000) - (time * 1000)) > 10 then
+        math.abs((PlayState.vocals:tell() * 1000) - (time * 1000)) > 20 then
         PlayState.vocals:seek(time)
     end
-    if math.abs((time * 1000) - PlayState.songPosition) > 10 then
+    if math.abs((time * 1000) - PlayState.songPosition) > 20 then
         PlayState.songPosition = time * 1000
     end
 
