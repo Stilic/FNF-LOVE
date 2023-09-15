@@ -41,4 +41,7 @@ function State:closeSubState()
     end
 end
 
+-- ??
+function State:leave() end
+
 return State

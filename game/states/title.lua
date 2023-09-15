@@ -4,9 +4,9 @@ function TitleState:enter()
     self.danceLeft = false
     self.confirmed = false
 
-    self.music = Conductor(paths.getMusic("freakyMenu"), 102)
-    self.music:setLooping(true)
-    self.music.onBeat = function()
+    TitleState.music = Conductor(paths.getMusic("freakyMenu"), 102)
+    TitleState.music:setLooping(true)
+    TitleState.music.onBeat = function()
         self.logoBl:play("bump", true)
 
         self.danceLeft = not self.danceLeft
@@ -43,7 +43,7 @@ function TitleState:enter()
     self.titleText:updateHitbox()
     self:add(self.titleText)
 
-    self.music:play()
+    TitleState.music:play()
 end
 
 function TitleState:update(dt)
@@ -52,8 +52,8 @@ function TitleState:update(dt)
         self.titleText:play("press")
         paths.playSound("confirmMenu")
         Timer.after(1.5, function()
-            self.music:destroy()
-            switchState(PlayState())
+            TitleState.music:destroy()
+            switchState(MainMenuState())
         end)
     end
     TitleState.super.update(self, dt)

@@ -13,6 +13,8 @@ function Text:new(x, y, content, font, color, align, outlined, limit)
 
     self.outColor = {0, 0, 0}
     self.outWidth = 0
+
+    self.font:setFilter("nearest", "nearest")
 end
 
 function Text:setPosition(x, y)
