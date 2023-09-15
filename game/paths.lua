@@ -45,12 +45,6 @@ function paths.clearCache()
             paths.atlases[k] = nil
         end
     end
-    for k, o in pairs(paths.fonts) do
-        if not paths.isPersistant(k) then
-            o:release()
-            paths.fonts[k] = nil
-        end
-    end
     collectgarbage()
 end
 

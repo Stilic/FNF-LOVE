@@ -3,8 +3,6 @@ local MainMenuState = State:extend()
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
-    paths.clearCache()
-
     self.optionShit = {
         'story_mode',
         'freeplay',
