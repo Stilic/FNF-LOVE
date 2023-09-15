@@ -30,7 +30,8 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local chart = paths.getJSON("songs/" .. PlayState.curSong .. "/" .. PlayState.curSong).song
+    local chart = paths.getJSON("songs/" .. PlayState.curSong .. "/" ..
+                                    PlayState.curSong).song
     PlayState.song = {
         name = chart.name or chart.song,
         bpm = chart.bpm,
@@ -44,12 +45,15 @@ function PlayState:enter()
         sections = {}
     }
 
-    PlayState.inst = Conductor(paths.getAudio("songs/" .. PlayState.curSong .. "/Inst",
-                                              "stream"), chart.bpm)
+    PlayState.inst = Conductor(paths.getAudio(
+                                   "songs/" .. PlayState.curSong .. "/Inst",
+                                   "stream"), chart.bpm)
     PlayState.inst.onBeat = function(b) self:beat(b) end
+    PlayState.inst.onStep = function(s) self:step(s) end
     if chart.needsVoices then
-        PlayState.vocals = paths.getAudio("songs/" .. PlayState.curSong .. "/Voices",
-                                          "stream")
+        PlayState.vocals = paths.getAudio(
+                               "songs/" .. PlayState.curSong .. "/Voices",
+                               "stream")
     end
 
     self.unspawnNotes = {}
@@ -278,16 +282,18 @@ function PlayState:update(dt)
             local midpoint = self.boyfriend:getMidpoint()
             self.camFollow.x = midpoint.x - 100 -
                                    (self.boyfriend.cameraPosition.x -
-                                   self.stage.boyfriendCam.x)
+                                       self.stage.boyfriendCam.x)
             self.camFollow.y = midpoint.y - 100 +
                                    (self.boyfriend.cameraPosition.y +
-                                   self.stage.boyfriendCam.y)
+                                       self.stage.boyfriendCam.y)
         else
             local midpoint = self.dad:getMidpoint()
-            self.camFollow.x = midpoint.x + 150 + (self.dad.cameraPosition.x +
-                                   self.stage.dadCam.x)
-            self.camFollow.y = midpoint.y - 100 + (self.dad.cameraPosition.y +
-                                   self.stage.dadCam.y)
+            self.camFollow.x = midpoint.x + 150 +
+                                   (self.dad.cameraPosition.x +
+                                       self.stage.dadCam.x)
+            self.camFollow.y = midpoint.y - 100 +
+                                   (self.dad.cameraPosition.y +
+                                       self.stage.dadCam.y)
         end
     end
 
@@ -391,7 +397,9 @@ function PlayState:update(dt)
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) and
                 not PlayState.inst:isFinished() then
-                if PlayState.vocals then PlayState.vocals:setVolume(0) end
+                if PlayState.vocals then
+                    PlayState.vocals:setVolume(0)
+                end
                 self.combo = 0
                 self.score = self.score - 100
                 self.misses = self.misses + 1
@@ -574,7 +582,8 @@ end
 function PlayState:step(s)
     -- now it works -fellix
     local time = PlayState.inst.__source:tell()
-    if PlayState.vocals and math.abs((PlayState.vocals:tell() * 1000) - (time * 1000)) > 10 then
+    if PlayState.vocals and
+        math.abs((PlayState.vocals:tell() * 1000) - (time * 1000)) > 10 then
         PlayState.vocals:seek(time)
     end
     if math.abs((time * 1000) - PlayState.songPosition) > 10 then
