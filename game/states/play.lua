@@ -276,24 +276,27 @@ function PlayState:update(dt)
     self.iconP1:swap((self.health < .2 and 2 or 1))
     self.iconP2:swap((self.health > 1.8 and 2 or 1))
 
-    local mustHit = self:getCurrentSection().mustHit
+    local mustHit = self:getCurrentSection()
     if mustHit ~= nil then
-        if mustHit then
-            local midpoint = self.boyfriend:getMidpoint()
-            self.camFollow.x = midpoint.x - 100 -
-                                   (self.boyfriend.cameraPosition.x -
-                                       self.stage.boyfriendCam.x)
-            self.camFollow.y = midpoint.y - 100 +
-                                   (self.boyfriend.cameraPosition.y +
-                                       self.stage.boyfriendCam.y)
-        else
-            local midpoint = self.dad:getMidpoint()
-            self.camFollow.x = midpoint.x + 150 +
-                                   (self.dad.cameraPosition.x +
-                                       self.stage.dadCam.x)
-            self.camFollow.y = midpoint.y - 100 +
-                                   (self.dad.cameraPosition.y +
-                                       self.stage.dadCam.y)
+        mustHit = mustHit.mustHit
+        if mustHit ~= nil then
+            if mustHit then
+                local midpoint = self.boyfriend:getMidpoint()
+                self.camFollow.x = midpoint.x - 100 -
+                                       (self.boyfriend.cameraPosition.x -
+                                           self.stage.boyfriendCam.x)
+                self.camFollow.y = midpoint.y - 100 +
+                                       (self.boyfriend.cameraPosition.y +
+                                           self.stage.boyfriendCam.y)
+            else
+                local midpoint = self.dad:getMidpoint()
+                self.camFollow.x = midpoint.x + 150 +
+                                       (self.dad.cameraPosition.x +
+                                           self.stage.dadCam.x)
+                self.camFollow.y = midpoint.y - 100 +
+                                       (self.dad.cameraPosition.y +
+                                           self.stage.dadCam.y)
+            end
         end
     end
 
