@@ -578,7 +578,7 @@ function PlayState:step(s)
         PlayState.vocals:seek(time)
     end
     if math.abs((time * 1000) - PlayState.songPosition) > 10 then
-        PlayState.songPosition = time
+        PlayState.songPosition = time * 1000
     end
 
     PlayState.super.step(self, s)
