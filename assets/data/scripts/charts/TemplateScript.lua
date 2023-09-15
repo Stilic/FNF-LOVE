@@ -39,5 +39,14 @@ end
 --- gets called every beatHit AFTER beat.super()
 ---@param curBeat integer
 function postBeat(curBeat)
+end
+
+-- Called before destroying Inst/Vocals 
+function leave()
+
+end
+
+--- Called after leaving state completely
+function postLeave()
 
 end
