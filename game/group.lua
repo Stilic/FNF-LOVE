@@ -11,7 +11,7 @@ function Group:remove(obj)
     for i, o in pairs(self.members) do
         if o == obj then
             table.remove(self.members, i)
-            return obj
+            break
         end
     end
     return obj

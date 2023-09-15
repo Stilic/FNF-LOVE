@@ -33,6 +33,11 @@ Alphabet = require "game.alphabet"
 TitleState = require "game.states.title"
 PlayState = require "game.states.play"
 
+game = {
+    cameras = require "game.cameramanager",
+    sound = require "game.soundmanager"
+}
+
 controls = (require "lib.baton").new({
     controls = {
         ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},

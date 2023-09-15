@@ -14,6 +14,17 @@ function table.find(table, value)
     for i, v in next, table do if v == value then return i end end
 end
 
+function table.delete(self, object)
+    if object then
+        local index = self:find(object)
+        if index then
+            self:remove(index)
+            return true
+        end
+    end
+    return false
+end
+
 function math.clamp(x, min, max) return math.max(min, math.min(x, max)) end
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
@@ -87,9 +98,7 @@ function string.trim(self) return self:ltrim():rtrim() end
 
 function table.splice(tbl, start, count, ...)
     local removedItems = {}
-    if start < 0 then
-        start = #tbl + start + 1
-    end
+    if start < 0 then start = #tbl + start + 1 end
     count = count or 0
     for i = 1, count do
         if tbl[start] then
@@ -99,10 +108,8 @@ function table.splice(tbl, start, count, ...)
             break
         end
     end
-    local args = { ... }
-    for i = #args, 1, -1 do
-        table.insert(tbl, start, args[i])
-    end
+    local args = {...}
+    for i = #args, 1, -1 do table.insert(tbl, start, args[i]) end
     return removedItems
 end
 

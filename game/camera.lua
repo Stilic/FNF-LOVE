@@ -38,13 +38,4 @@ end
 
 function Camera:detach() love.graphics.pop() end
 
-
--- Camera Manager
-
-local CameraManager = {}
-
-function CameraManager:add(camera)
-    
-end
-
 return Camera

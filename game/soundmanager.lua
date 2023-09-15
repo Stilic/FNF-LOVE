@@ -1,4 +1,3 @@
 local SoundManager = {}
 
-
 return SoundManager
