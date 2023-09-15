@@ -30,6 +30,18 @@ function postDraw()
 
 end
 
+--- gets called every stepHit
+---@param curStep integer
+function step(curStep)
+
+end
+
+--- gets called every stepHit AFTER beat.super()
+---@param curStep integer
+function postStep(curStep)
+
+end
+
 --- gets called every beatHit
 ---@param curBeat integer
 function beat(curBeat)
@@ -39,6 +51,7 @@ end
 --- gets called every beatHit AFTER beat.super()
 ---@param curBeat integer
 function postBeat(curBeat)
+
 end
 
 -- Called before destroying Inst/Vocals 
