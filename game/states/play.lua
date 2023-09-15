@@ -583,14 +583,16 @@ function PlayState:step(s)
     -- now it works -fellix
     local time = PlayState.inst.__source:tell()
     if PlayState.vocals and
-        math.abs((PlayState.vocals:tell() * 1000) - (time * 1000)) > 20 then
+        math.abs(PlayState.vocals:tell() * 1000 - time * 1000) > 20 then
         PlayState.vocals:seek(time)
     end
-    if math.abs((time * 1000) - PlayState.songPosition) > 20 then
+    if math.abs(time * 1000 - PlayState.songPosition) > 20 then
         PlayState.songPosition = time * 1000
     end
 
+    for _, script in ipairs(self.scripts) do script:call("step", s) end
     PlayState.super.step(self, s)
+    for _, script in ipairs(self.scripts) do script:call("postStep", s) end
 end
 
 function PlayState:beat(b)
@@ -615,7 +617,6 @@ function PlayState:beat(b)
     self.iconP2.scale.y = scaleNum
 
     PlayState.super.beat(self, b)
-
     for _, script in ipairs(self.scripts) do script:call("postBeat", b) end
 end
 
