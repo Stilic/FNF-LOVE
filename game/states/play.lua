@@ -705,8 +705,6 @@ function PlayState:leave()
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)
 
-    PlayState.super.leave(self)
-
     for _, script in ipairs(self.scripts) do script:call("postLeave") end
 end
 

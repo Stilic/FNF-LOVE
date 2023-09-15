@@ -51,6 +51,7 @@ end
 function GS.switch(to, ...)
 	assert(to, "Missing argument: Gamestate to switch to")
 	assert(to ~= GS, "Can't call switch with colon operator")
+	while #stack > 1 do GS.pop() end
 	;(stack[#stack].leave or __NULL__)(stack[#stack])
 	return change_state(0, to, ...)
 end
