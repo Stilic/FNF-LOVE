@@ -529,6 +529,8 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
+        for _, script in ipairs(self.scripts) do script:call("goodNoteHit", n) end
+
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
@@ -568,6 +570,8 @@ function PlayState:goodNoteHit(n)
             end
 
             self:removeNote(n)
+
+            for _, script in ipairs(self.scripts) do script:call("postGoodNoteHit", n) end
         end
     end
 end

@@ -34,6 +34,14 @@ function beat(curBeat) end
 ---@param curBeat integer
 function postBeat(curBeat) end
 
+--- gets called every noteHit
+---@param note table
+function goodNoteHit(note) end
+
+--- gets called every noteHit AFTER the note is removed
+---@param note table
+function postGoodNoteHit(note) end
+
 -- Called before destroying Inst/Vocals 
 function leave() end
 
