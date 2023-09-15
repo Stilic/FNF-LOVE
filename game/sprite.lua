@@ -57,6 +57,77 @@ function Sprite.getFramesFromSparrow(texture, description)
     return frames
 end
 
+function Sprite.getFramesFromPacker(texture, description)
+    if type(texture) == "string" then
+        texture = love.graphics.newImage(texture)
+    end
+
+    local frames = {texture = texture, frames = {}}
+    local sw, sh = texture:getDimensions()
+
+    local pack = description:trim()
+    local lines = pack:split("\n")
+    for i = 1, #lines do
+        local currImageData = lines[i]:split("=")
+        local name = currImageData[1]:trim()
+        local currImageRegion = currImageData[2]:split(" ")
+
+        table.insert(frames.frames,
+                     Sprite.newFrame(name,
+                     tonumber(currImageRegion[1]),
+                     tonumber(currImageRegion[2]),
+                     tonumber(currImageRegion[3]),
+                     tonumber(currImageRegion[4]), sw, sh
+        ))
+    end
+
+    return frames
+end
+
+function Sprite.getTilesfromTexture(texture, tileSize, region, tileSpacing)
+    if region == nil then
+        region = {x = 0, y = 0, width = texture:getWidth(), height = texture:getHeight()}
+    else
+        if region.width == 0 then
+            region.width = texture:getWidth() - region.x
+        end
+        if region.height == 0 then
+            region.height = texture:getHeight() - region.y
+        end
+    end
+
+    tileSpacing = (tileSpacing ~= nil) and tileSpacing or {x = 0, y = 0}
+
+    local tileFrames = {}
+
+    region = {x = math.floor(region.x), y = math.floor(region.y), width = math.floor(region.width), height = math.floor(region.height)}
+    tileSpacing = {x = math.floor(tileSpacing.x), y = math.floor(tileSpacing.y)}
+    tileSize = {x = math.floor(tileSize.x), y = math.floor(tileSize.y)}
+
+    local spacedWidth = tileSize.x + tileSpacing.x
+    local spacedHeight = tileSize.y + tileSpacing.y
+
+    local numRows = (tileSize.y == 0) and 1 or math.floor((region.height + tileSpacing.y) / spacedHeight)
+    local numCols = (tileSize.x == 0) and 1 or math.floor((region.width + tileSpacing.x) / spacedWidth)
+
+    local sw, sh = texture:getDimensions()
+    local totalFrame = 0
+    for j = 0, numRows - 1 do
+        for i = 0, numCols - 1 do
+            table.insert(tileFrames,
+                         Sprite.newFrame(tostring(totalFrame),
+                         region.x + i * spacedWidth,
+                         region.y + j * spacedHeight,
+                         tileSize.x,
+                         tileSize.y, sw, sh
+            ))
+            totalFrame = totalFrame + 1
+        end
+    end
+
+    return tileFrames
+end
+
 function Sprite:new(x, y, texture)
     if x == nil then x = 0 end
     if y == nil then y = 0 end
@@ -80,9 +151,12 @@ function Sprite:new(x, y, texture)
     self.flipX = false
     self.flipY = false
 
+    self.visible = true
     self.color = {1, 1, 1}
     self.alpha = 1
     self.angle = 0
+
+    self.shader = nil
 
     self.__frames = nil
     self.__animations = nil
@@ -95,20 +169,39 @@ function Sprite:new(x, y, texture)
     if texture then self:load(texture) end
 end
 
-function Sprite:load(texture, width, height)
+function Sprite:load(texture, animated, framewidth, frameheight)
+    if animated == nil then animated = false end
+
     if type(texture) == "string" then
-        texture = love.graphics.newImage(texture)
+        texture = love.graphics.newImage(texture) or defaultTexture
     end
     self.texture = texture
-
-    self.width = width
-    if self.width == nil then self.width = self.texture:getWidth() end
-    self.height = height
-    if self.height == nil then self.height = self.texture:getHeight() end
 
     self.curAnim = nil
     self.curFrame = nil
     self.animFinished = nil
+
+    if framewidth == nil then framewidth = 0 end
+    if framewidth == 0 then
+        framewidth = animated and self.texture:getHeight() or self.texture:getWidth()
+        framewidth = (framewidth > self.texture:getWidth()) or self.texture:getWidth() or framewidth
+    elseif framewidth > self.texture:getWidth() then
+        print('frameWidth:'..framewidth..' is larger than the graphic\'s width:'..self.texture:getWidth())
+    end
+    self.width = framewidth
+
+    if frameheight == nil then frameheight = 0 end
+    if frameheight == 0 then
+        frameheight = animated and framewidth or self.texture:getHeight()
+        frameheight = (frameheight > self.texture:getHeight()) or self.texture:getHeight() or frameheight
+    elseif frameheight > self.texture:getHeight() then
+        print('frameHeight:'..frameheight..' is larger than the graphic\'s height:'..self.texture:getHeight())
+    end
+    self.height = frameheight
+
+    if animated then
+        self.__frames = Sprite.getTilesfromTexture(texture, {x = framewidth, y = frameheight})
+    end
 
     return self
 end
@@ -189,8 +282,9 @@ function Sprite:centerOrigin()
                                    self:getFrameHeight() * 0.5
 end
 
-function Sprite:setScrollFactor(value)
-    self.scrollFactor.x, self.scrollFactor.y = value, value
+function Sprite:setScrollFactor(x, y)
+    if x == nil then x = 0 end if y == nil then y = 0 end
+    self.scrollFactor.x, self.scrollFactor.y = x, y
 end
 
 function Sprite:getMidpoint()
@@ -209,6 +303,24 @@ function Sprite:screenCenter(axes)
     if axes:find("x") then self.x = (push.getWidth() - self.width) * 0.5 end
     if axes:find("y") then self.y = (push.getHeight() - self.height) * 0.5 end
     return self
+end
+
+function Sprite:addAnim(name, frames, framerate, looped)
+    if framerate == nil then framerate = 30 end
+    if looped == nil then looped = true end
+
+    local anim = {
+        name = name,
+        framerate = framerate,
+        looped = looped,
+        frames = {}
+    }
+    for _, i in pairs(frames) do
+        table.insert(anim.frames, self.__frames[i+1])
+    end
+
+    if not self.__animations then self.__animations = {} end
+    self.__animations[name] = anim
 end
 
 function Sprite:addAnimByPrefix(name, prefix, framerate, looped)
@@ -333,12 +445,14 @@ function Sprite:draw()
 
         local f = self:getCurrentFrame()
 
+        if self.shader then love.graphics.setShader(self.shader) end
+
         if self.clipRect then love.graphics.setStencilTest("greater", 0) end
 
         local cam = self.camera or Camera.defaultCamera
         local alpha = self.alpha
         if cam then alpha = alpha * cam.alpha end
-        if alpha > 0 then
+        if self.visible and alpha > 0 then
             if cam then cam:attach() end
 
             local x, y, rad, sx, sy, ox, oy = self.x, self.y,
@@ -382,6 +496,8 @@ function Sprite:draw()
         self.texture:setFilter(min, mag, anisotropy)
 
         if self.clipRect then love.graphics.setStencilTest() end
+
+        if self.shader then love.graphics.setShader() end
     end
 end
 

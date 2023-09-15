@@ -16,6 +16,11 @@ PlayState.ratings = {
 }
 PlayState.downscroll = false
 
+PlayState.pixelStage = false
+
+-- hmmmmmmmmm
+PlayState.curSong = 'test'
+
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
@@ -24,10 +29,9 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local song = "triple-b-trouble"
-    local chart = paths.getJSON("songs/" .. song .. "/" .. song).song
+    local chart = paths.getJSON("songs/" .. PlayState.curSong .. "/" .. PlayState.curSong).song
     PlayState.song = {
-        name = chart.name,
+        name = chart.name or chart.song,
         bpm = chart.bpm,
         speed = chart.speed,
         needsVoices = chart.needsVoices,
@@ -39,11 +43,11 @@ function PlayState:enter()
         sections = {}
     }
 
-    PlayState.inst = Conductor(paths.getAudio("songs/" .. song .. "/Inst",
+    PlayState.inst = Conductor(paths.getAudio("songs/" .. PlayState.curSong .. "/Inst",
                                               "stream"), chart.bpm)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     if chart.needsVoices then
-        PlayState.vocals = paths.getAudio("songs/" .. song .. "/Voices",
+        PlayState.vocals = paths.getAudio("songs/" .. PlayState.curSong .. "/Voices",
                                           "stream")
     end
 
@@ -51,6 +55,15 @@ function PlayState:enter()
     self.allNotes = Group()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
+
+    -- reset ui stage
+    PlayState.pixelStage = false
+
+    -- i moved the stage here, cuz i changed the pixelStage variable in the stage file
+    -- if it is not moved, the notes and receptors will not change to pixel skin
+    -- fellix
+    self.stage = Stage(PlayState.song.stage)
+    self:add(self.stage)
 
     for _, s in ipairs(chart.notes) do
         if s and s.sectionNotes then
@@ -76,7 +89,7 @@ function PlayState:enter()
                     local note = Note(daStrumTime, daNoteData, oldNote)
                     note.mustPress = gottaHitNote
                     note.altNote = n[4]
-                    note:setScrollFactor(0)
+                    note:setScrollFactor()
                     table.insert(self.unspawnNotes, note)
 
                     if n[3] ~= nil then
@@ -97,7 +110,7 @@ function PlayState:enter()
                                                      daNoteData, oldNote, true,
                                                      note)
                                 sustain.mustPress = gottaHitNote
-                                sustain:setScrollFactor(0)
+                                sustain:setScrollFactor()
                                 table.insert(self.unspawnNotes, sustain)
                             end
                         end
@@ -145,9 +158,6 @@ function PlayState:enter()
         end
     end
 
-    self.stage = Stage(PlayState.song.stage)
-    self:add(self.stage)
-
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
 
@@ -155,7 +165,7 @@ function PlayState:enter()
 
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
                         self.song.girlfriend, false)
-    self.gf:setScrollFactor(0.95)
+    self.gf:setScrollFactor(0.95, 0.95)
 
     self.boyfriend = Character(self.stage.boyfriendPos.x,
                                self.stage.boyfriendPos.y, self.song.boyfriend,
@@ -176,7 +186,7 @@ function PlayState:enter()
     self.healthBarBG:screenCenter('x')
     self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1 or
                              push.getHeight() * 0.9)
-    self.healthBarBG:setScrollFactor(0)
+    self.healthBarBG:setScrollFactor()
 
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
                          math.floor(self.healthBarBG.width - 8),
@@ -185,11 +195,11 @@ function PlayState:enter()
 
     self.iconP1 = HealthIcon(self.boyfriend.icon, true)
     self.iconP1.y = self.healthBar.y - 150
-    self.iconP1:setScrollFactor(0)
+    self.iconP1:setScrollFactor()
 
     self.iconP2 = HealthIcon(self.dad.icon, false)
     self.iconP2.y = self.healthBar.y - 150
-    self.iconP2:setScrollFactor(0)
+    self.iconP2:setScrollFactor()
 
     self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
                          paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
@@ -266,17 +276,17 @@ function PlayState:update(dt)
         if mustHit then
             local midpoint = self.boyfriend:getMidpoint()
             self.camFollow.x = midpoint.x - 100 -
-                                   self.boyfriend.cameraPosition.x -
-                                   self.stage.boyfriendCam.x
+                                   (self.boyfriend.cameraPosition.x -
+                                   self.stage.boyfriendCam.x)
             self.camFollow.y = midpoint.y - 100 +
-                                   self.boyfriend.cameraPosition.y +
-                                   self.stage.boyfriendCam.y
+                                   (self.boyfriend.cameraPosition.y +
+                                   self.stage.boyfriendCam.y)
         else
             local midpoint = self.dad:getMidpoint()
-            self.camFollow.x = midpoint.x + 150 + self.dad.cameraPosition.x +
-                                   self.stage.dadCam.x
-            self.camFollow.y = midpoint.y - 100 + self.dad.cameraPosition.y +
-                                   self.stage.dadCam.y
+            self.camFollow.x = midpoint.x + 150 + (self.dad.cameraPosition.x +
+                                   self.stage.dadCam.x)
+            self.camFollow.y = midpoint.y - 100 + (self.dad.cameraPosition.y +
+                                   self.stage.dadCam.y)
         end
     end
 
@@ -289,7 +299,6 @@ function PlayState:update(dt)
     if controls:pressed('pause') then
         PlayState.inst:pause()
         PlayState.vocals:pause()
-        -- PauseSubState.camera = self.camOther
         self.paused = true
         self:openSubState(PauseSubState())
     end
@@ -562,12 +571,12 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:step(s)
+    -- now it works -fellix
     local time = PlayState.inst.__source:tell()
-    if PlayState.vocals and math.abs(PlayState.vocals:tell() - time) * 1000 > 10 then
+    if PlayState.vocals and math.abs((PlayState.vocals:tell() * 1000) - (time * 1000)) > 10 then
         PlayState.vocals:seek(time)
     end
-    time = time * 1000
-    if math.abs(time - PlayState.songPosition) > 10 then
+    if math.abs((time * 1000) - PlayState.songPosition) > 10 then
         PlayState.songPosition = time
     end
 

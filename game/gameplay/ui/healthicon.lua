@@ -16,6 +16,8 @@ function HealthIcon:new(icon, flip)
     if self.width < 300 then f1 = f0 end
     -- not sure that's the way to do it but it's working for now - Vi
 
+    if icon:endsWith('-pixel') then self.antialiasing = false end
+
     if flip then self.flipX = true end
 
     self.frames = {f0, f1}

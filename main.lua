@@ -15,6 +15,7 @@ Group = require "game.group"
 SpriteGroup = require 'game.spritegroup'
 State = require "game.state"
 SubState = require "game.substate"
+Flicker = require "game.flicker"
 
 paths = require "game.paths"
 util = require "game.util"
@@ -29,8 +30,11 @@ Stage = require "game.gameplay.stage"
 Character = require "game.gameplay.character"
 
 Alphabet = require "game.alphabet"
+BackgroundGirls = require "game.gameplay.backgroundgirls"
 
 TitleState = require "game.states.title"
+MainMenuState = require "game.states.menu"
+FreeplayState = require "game.states.freeplay"
 PlayState = require "game.states.play"
 
 controls = (require "lib.baton").new({
@@ -216,6 +220,7 @@ function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
     for _, o in pairs(Conductor.instances) do o:update(dt) end
+    for _, o in pairs(Flicker.handler) do o:update(dt) end
 
     controls:update()
     Timer.update(dt)

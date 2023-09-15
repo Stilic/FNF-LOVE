@@ -108,7 +108,7 @@ function paths.getAudio(key, type, cache)
     key = paths.getPath(key .. ".ogg")
     if cache then
         local obj = paths.audio[key]
-        if obj then return obj end
+        if obj then return obj:clone() end
     end
     if isFile(key) then
         local obj = love.audio.newSource(key, type)
@@ -146,6 +146,25 @@ function paths.getSparrowAtlas(key, cache)
     local img = paths.getImage(imgPath, cache)
     if img and isFile(xmlPath) then
         local obj = Sprite.getFramesFromSparrow(img, readFile(xmlPath))
+        if cache then paths.atlases[key] = obj end
+        return obj
+    end
+
+    return nil
+end
+
+function paths.getPackerAtlas(key, cache)
+    if cache == nil then cache = true end
+
+    local imgPath, txtPath = key, paths.getPath("images/" .. key .. ".txt")
+    key = paths.getPath("images/" .. key)
+    if cache then
+        local obj = paths.atlases[key]
+        if obj then return obj end
+    end
+    local img = paths.getImage(imgPath, cache)
+    if img and isFile(txtPath) then
+        local obj = Sprite.getFramesFromPacker(img, readFile(txtPath))
         if cache then paths.atlases[key] = obj end
         return obj
     end

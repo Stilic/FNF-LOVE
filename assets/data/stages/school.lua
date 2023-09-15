@@ -10,6 +10,30 @@ function create()
     self.gfCam = {x = 0, y = 0}
     self.dadCam = {x = 0, y = 0}
 
+    PlayState.pixelStage = true
+
+    if state.song.name:lower() == 'thorns' then
+        createSchoolEvilStage()
+    else
+        createSchoolStage()
+    end
+end
+
+function createSchoolEvilStage()
+    local posX = 400
+    local posY = 200
+
+    local bg = Sprite(posX, posY)
+    bg:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'animatedEvilSchool'))
+    bg:setScrollFactor(0.8, 0.9)
+    bg.scale = {x = 6, y = 6}
+    bg:addAnimByPrefix('background 2', 'background 2', 24, true)
+    bg:play('background 2')
+    bg.antialiasing = false
+    self:add(bg)
+end
+
+function createSchoolStage()
     local bgSky = Sprite()
     bgSky:load(paths.getImage(SCRIPT_PATH .. 'weebSky'))
     bgSky:setScrollFactor(0.1, 0.1)
@@ -31,14 +55,13 @@ function create()
     bgStreet.antialiasing = false
 
     local widShit = math.floor(bgSky.width * 6)
-    -- if not ClientPrefs.data.lowQuality then
+
     local fgTrees = Sprite(repositionShit + 170, 130)
     fgTrees:load(paths.getImage(SCRIPT_PATH .. 'weebTreesBack'))
     fgTrees:setGraphicSize(math.floor(widShit * 0.8))
     fgTrees:updateHitbox()
     self:add(fgTrees)
     fgTrees.antialiasing = false
-    -- end
 
     local bgTrees = Sprite(repositionShit - 380, -800)
     bgTrees:setFrames(paths.getPackerAtlas(SCRIPT_PATH .. 'weebTrees'))
@@ -50,7 +73,6 @@ function create()
     self:add(bgTrees)
     bgTrees.antialiasing = false
 
-    -- if not ClientPrefs.data.lowQuality then
     local treeLeaves = Sprite(repositionShit, -40)
     treeLeaves:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'petals'))
     treeLeaves:setScrollFactor(0.85, 0.85)
@@ -60,7 +82,6 @@ function create()
     treeLeaves:updateHitbox()
     self:add(treeLeaves)
     treeLeaves.antialiasing = false
-    -- end
 
     bgSky:setGraphicSize(widShit)
     bgSchool:setGraphicSize(widShit)
@@ -72,7 +93,6 @@ function create()
     bgStreet:updateHitbox()
     bgTrees:updateHitbox()
 
-    -- if not ClientPrefs.data.lowQuality then
     bgGirls = BackgroundGirls(-100, 190)
     bgGirls:setScrollFactor(0.9, 0.9)
 
@@ -80,18 +100,15 @@ function create()
     bgGirls:updateHitbox()
     bgGirls.antialiasing = false
     self:add(bgGirls)
-    -- end
 
-    switch(paths.formatToSongPath(state.song.song), {
+    switch(state.song.name:lower(), {
         ['roses'] = function()
             bgGirls:swapDanceType()
-            -- paths.playSound('gameplay/ANGRY_TEXT_BOX')
+            paths.playSound('gameplay/ANGRY_TEXT_BOX')
         end
     })
 end
 
-function countdownTick(swagCounter) bgGirls:dance() end
-
-function beatHit() bgGirls:dance() end
+function beat(b) if state.song.name:lower() ~= 'thorns' then bgGirls:dance() end end
 
 function destroy() close() end
