@@ -632,15 +632,23 @@ function PlayState:popUpScore(rating)
 
     local judgeSpr = self.judgeSpritesGroup:recycle()
 
-    judgeSpr:load(paths.getImage("skins/normal/" .. rating.name))
+    local uiStage = 'normal'
+    local antialias = true
+    if PlayState.pixelStage then
+        uiStage = 'pixel'
+        antialias = false
+    end
+
+    judgeSpr:load(paths.getImage("skins/"..uiStage.."/" .. rating.name))
     judgeSpr.alpha = 1
-    judgeSpr:setGraphicSize(math.floor(judgeSpr.width * 0.7))
+    judgeSpr:setGraphicSize(math.floor(judgeSpr.width * (PlayState.pixelStage and 4.7 or 0.7)))
     judgeSpr:updateHitbox()
     judgeSpr:screenCenter()
     -- use fixed values to display at the same position on a different resolution
     judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
     judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
     judgeSpr.alpha = 1
+    judgeSpr.antialiasing = antialias
 
     self.judgeSprTimer:tween(accel * 1.05, judgeSpr, {y = judgeSpr.y - 20},
                              "out-circ", function()
@@ -663,12 +671,13 @@ function PlayState:popUpScore(rating)
         for i = 1, #comboStr do
             local digit = tonumber(comboStr:sub(i, i)) or 0
             local numScore = self.judgeSpritesGroup:recycle()
-            numScore:load(paths.getImage("skins/normal/num" .. digit))
-            numScore:setGraphicSize(math.floor(numScore.width * 0.5))
+            numScore:load(paths.getImage("skins/"..uiStage.."/num" .. digit))
+            numScore:setGraphicSize(math.floor(numScore.width * (PlayState.pixelStage and 4.5 or 0.5)))
             numScore:updateHitbox()
             numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
             numScore.y = judgeSpr.y + 115
             numScore.alpha = 1
+            numScore.antialiasing = antialias
 
             local accelY = love.math.random(200, 300) / 10
             self.judgeSprTimer:tween(accel * 1.5, numScore,
