@@ -251,7 +251,6 @@ function PlayState:update(dt)
         PlayState.inst:play()
         if PlayState.vocals then PlayState.vocals:play() end
         PlayState.songPosition = PlayState.inst.time
-
         for _, script in ipairs(self.scripts) do script:call("songStart") end
     end
 
