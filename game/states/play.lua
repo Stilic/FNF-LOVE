@@ -474,37 +474,40 @@ function PlayState:onKeyPress(key, type)
         if key >= 0 then
             self.keysPressed[key] = true
 
-            local prevSongPos = PlayState.songPosition
-            PlayState.songPosition = PlayState.inst.time
+            if not self.startingSong then
+                local prevSongPos = PlayState.songPosition
+                PlayState.songPosition = PlayState.inst.time
 
-            local noteList = {}
+                local noteList = {}
 
-            for _, n in ipairs(self.notesGroup.members) do
-                if n.mustPress and not n.isSustain and not n.tooLate and
-                    not n.wasGoodHit then
-                    if not n.canBeHit and n:checkDiff(PlayState.songPosition) then
-                        n:update(0)
-                    end
-                    if n.canBeHit and n.data == key then
-                        table.insert(noteList, n)
-                    end
-                end
-            end
-
-            if #noteList > 0 then
-                table.sort(noteList, PlayState.sortByShit)
-                local coolNote = table.remove(noteList, 1)
-
-                for _, n in next, noteList do
-                    if n.time - coolNote.time < 2 then
-                        self:removeNote(n)
+                for _, n in ipairs(self.notesGroup.members) do
+                    if n.mustPress and not n.isSustain and not n.tooLate and
+                        not n.wasGoodHit then
+                        if not n.canBeHit and
+                            n:checkDiff(PlayState.songPosition) then
+                            n:update(0)
+                        end
+                        if n.canBeHit and n.data == key then
+                            table.insert(noteList, n)
+                        end
                     end
                 end
 
-                self:goodNoteHit(coolNote)
-            end
+                if #noteList > 0 then
+                    table.sort(noteList, PlayState.sortByShit)
+                    local coolNote = table.remove(noteList, 1)
 
-            PlayState.songPosition = prevSongPos
+                    for _, n in next, noteList do
+                        if n.time - coolNote.time < 2 then
+                            self:removeNote(n)
+                        end
+                    end
+
+                    self:goodNoteHit(coolNote)
+                end
+
+                PlayState.songPosition = prevSongPos
+            end
 
             local r = self.playerReceptors.members[key + 1]
             if r and r.curAnim.name ~= "confirm" then
