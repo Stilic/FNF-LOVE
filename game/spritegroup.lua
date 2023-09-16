@@ -17,7 +17,7 @@ local function colorTransform(sprite, color) sprite.color = color end
 local function visibleTransform(sprite, visible) sprite.visible = visible end
 local function aliveTransform(sprite, alive) sprite.alive = alive end
 local function existsTransform(sprite, exists) sprite.exists = exists end
-local function cameraTransform(sprite, camera) sprite.camera = camera end
+local function camerasTransform(sprite, cameras) sprite.cameras = cameras end
 local function offsetTransform(sprite, offset) sprite.offset = offset end
 local function originTransform(sprite, origin) sprite.origin = origin end
 local function scaleTransform(sprite, scale) sprite.scale = scale end
@@ -45,7 +45,7 @@ function SpriteGroup:new(x, y)
     self.__x = self.x
     self.__y = self.y
 
-    self.__camera = self.camera
+    self.__cameras = self.cameras
 
     self.__alive = self.alive
     self.__exists = self.exists
@@ -68,9 +68,9 @@ function SpriteGroup:new(x, y)
 end
 
 function SpriteGroup:update(dt)
-    if self.__camera ~= self.camera then
-        tranformChildren(self, cameraTransform, self.camera)
-        self.__camera = self.camera
+    if self.__cameras ~= self.cameras then
+        tranformChildren(self, camerasTransform, self.cameras)
+        self.__cameras = self.cameras
     end
     if self.__exists ~= self.exists then
         tranformChildren(self, existsTransform, self.exists)
@@ -177,7 +177,7 @@ function SpriteGroup:preAdd(sprite)
     spr.y = spr.y + self.y
     spr.alpha = spr.alpha * self.alpha
     spr.scrollFactor = self.scrollFactor
-    spr.camera = self.camera
+    spr.cameras = self.cameras
 
     if self.clipRect ~= nil then clipRectTransform(spr, self.clipRect, self) end
 end
@@ -190,7 +190,7 @@ function SpriteGroup:remove(sprite)
     local spr = sprite
     spr.x = spr.x - self.x
     spr.y = spr.y - self.y
-    spr.camera = nil
+    spr.cameras = nil
     return self.group:remove(sprite)
 end
 

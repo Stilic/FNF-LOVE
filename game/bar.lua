@@ -11,7 +11,7 @@ function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)
     self.opColor = opColor or {0, 255, 0}
     self.flipX = false
     self.filledBar = filledBar or false
-    self.camera = nil
+    self.cameras = nil
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
     self.percent = (self.value / self.maxValue) * 100
 end
@@ -27,23 +27,31 @@ function Bar:screenCenter(axes)
     return self
 end
 
+function Bar:update()
+    self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
+    self.percent = (self.value / self.maxValue) * 100
+end
+
 function Bar:draw()
     local r, g, b, a = love.graphics.getColor()
 
-    if self.camera then self.camera:attach() end
+    local cameras = self.cameras or Camera.__defaultCameras
+    for _, cam in ipairs(cameras) do
+        cam:attach()
 
-    self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
-    self.percent = (self.value / self.maxValue) * 100
+        if self.filledBar then
+            love.graphics.setColor(self.flipX and self.color or self.opColor)
+            love.graphics.rectangle("fill", self.x, self.y, self.width,
+                                    self.height)
+        end
 
-    if self.filledBar then
-        love.graphics.setColor(self.flipX and self.color or self.opColor)
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+        love.graphics.setColor(self.flipX and self.opColor or self.color)
+        love.graphics.rectangle("fill", self.x - cam.scroll.x,
+                                self.y - cam.scroll.y, self.fillWidth,
+                                self.height)
+
+        cam:detach()
     end
-
-    love.graphics.setColor(self.flipX and self.opColor or self.color)
-    love.graphics.rectangle("fill", self.x, self.y, self.fillWidth, self.height)
-
-    if self.camera then self.camera:detach() end
 
     love.graphics.setColor(r, g, b, a)
 end

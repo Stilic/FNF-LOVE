@@ -16,9 +16,9 @@ end
 
 function table.delete(self, object)
     if object then
-        local index = self:find(object)
+        local index = table.find(self, object)
         if index then
-            self:remove(index)
+            table.remove(self, index)
             return true
         end
     end

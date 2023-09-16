@@ -1,6 +1,9 @@
 local Group = Object:extend()
 
-function Group:new() self.members = {} end
+function Group:new()
+    self.members = {}
+    self.cameras = nil
+end
 
 function Group:add(obj)
     table.insert(self.members, obj)
@@ -52,17 +55,15 @@ function Group:update(dt, ...)
 end
 
 function Group:draw(...)
+    local oldDefaultCameras = Camera.__defaultCameras
+    if self.cameras then Camera.__defaultCameras = self.cameras end
+
     for _, o in pairs(self.members) do
         local f = o.draw
-        if f then
-            local resetCam = not o.camera
-            if resetCam then
-                o.camera = self.camera or Camera.defaultCamera
-            end
-            f(o, ...)
-            if resetCam then o.camera = nil end
-        end
+        if f then f(o, ...) end
     end
+
+    Camera.__defaultCameras = oldDefaultCameras
 end
 
 function Group:step(s, ...)

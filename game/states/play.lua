@@ -138,9 +138,10 @@ function PlayState:enter()
 
     self.camGame = Camera()
     self.camGame.target = {x = 0, y = 0}
-    Camera.defaultCamera = self.camGame
-
     self.camHUD = Camera()
+
+    game.cameras.reset(self.camGame)
+    game.cameras.add(self.camHUD, false)
 
     self.receptors = Group()
     self.playerReceptors = Group()
@@ -227,7 +228,7 @@ function PlayState:enter()
     for _, o in ipairs({
         self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
         self.healthBar, self.iconP1, self.iconP2, self.scoreTxt
-    }) do o.camera = self.camHUD end
+    }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
     controls:bindPress(self.bindedKeyPress)
@@ -439,11 +440,13 @@ end
 
 function PlayState:closeSubState()
     PlayState.super.closeSubState(self)
-    if PlayState.vocals and not self.startingSong then
-        PlayState.vocals:seek(PlayState.inst.__source:tell())
+    if not self.startingSong then
+        if PlayState.vocals and not self.startingSong then
+            PlayState.vocals:seek(PlayState.inst.__source:tell())
+        end
+        PlayState.inst:play()
+        if PlayState.vocals then PlayState.vocals:play() end
     end
-    PlayState.inst:play()
-    if PlayState.vocals then PlayState.vocals:play() end
 end
 
 -- CAN RETURN NIL!!
@@ -529,7 +532,9 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        for _, script in ipairs(self.scripts) do script:call("goodNoteHit", n) end
+        for _, script in ipairs(self.scripts) do
+            script:call("goodNoteHit", n)
+        end
 
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
@@ -571,7 +576,9 @@ function PlayState:goodNoteHit(n)
 
             self:removeNote(n)
 
-            for _, script in ipairs(self.scripts) do script:call("postGoodNoteHit", n) end
+            for _, script in ipairs(self.scripts) do
+                script:call("postGoodNoteHit", n)
+            end
         end
     end
 end
@@ -639,9 +646,10 @@ function PlayState:popUpScore(rating)
         antialias = false
     end
 
-    judgeSpr:load(paths.getImage("skins/"..uiStage.."/" .. rating.name))
+    judgeSpr:load(paths.getImage("skins/" .. uiStage .. "/" .. rating.name))
     judgeSpr.alpha = 1
-    judgeSpr:setGraphicSize(math.floor(judgeSpr.width * (PlayState.pixelStage and 4.7 or 0.7)))
+    judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
+                                           (PlayState.pixelStage and 4.7 or 0.7)))
     judgeSpr:updateHitbox()
     judgeSpr:screenCenter()
     -- use fixed values to display at the same position on a different resolution
@@ -671,8 +679,10 @@ function PlayState:popUpScore(rating)
         for i = 1, #comboStr do
             local digit = tonumber(comboStr:sub(i, i)) or 0
             local numScore = self.judgeSpritesGroup:recycle()
-            numScore:load(paths.getImage("skins/"..uiStage.."/num" .. digit))
-            numScore:setGraphicSize(math.floor(numScore.width * (PlayState.pixelStage and 4.5 or 0.5)))
+            numScore:load(paths.getImage("skins/" .. uiStage .. "/num" .. digit))
+            numScore:setGraphicSize(math.floor(numScore.width *
+                                                   (PlayState.pixelStage and 4.5 or
+                                                       0.5)))
             numScore:updateHitbox()
             numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
             numScore.y = judgeSpr.y + 115

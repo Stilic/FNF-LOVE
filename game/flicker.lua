@@ -1,15 +1,15 @@
 local Flicker = Object:extend()
 
-Flicker.handler = {}
+Flicker.instances = {}
 
-function Flicker:new(object, duration, interval, endVisiblitity, forceRestart, completionCallback, progressCallback)
+function Flicker:new(object, duration, interval, endVisiblitity, forceRestart,
+                     completionCallback, progressCallback)
     if object == nil then return end
     if duration == nil then duration = 1 end
     if interval == nil then interval = 1 end
     if endVisiblitity == nil then endVisiblitity = true end
     if completionCallback == nil then completionCallback = nil end
     if progressCallback == nil then progressCallback = nil end
-
 
     self.object = object
     self.duration = duration
@@ -21,7 +21,7 @@ function Flicker:new(object, duration, interval, endVisiblitity, forceRestart, c
     self.flickerTime = 0
     self.timer = 0
 
-    table.insert(Flicker.handler, self)
+    table.insert(Flicker.instances, self)
 end
 
 function Flicker:update(dt)
@@ -39,18 +39,14 @@ function Flicker:update(dt)
 
     if self.timer >= self.duration then
         self.object.visible = self.endVisibility
-
-        if self.completionCallback then
-            self.completionCallback()
-        end
-
+        if self.completionCallback then self.completionCallback() end
         self:destroy()
     end
 
 end
 
 function Flicker:destroy()
-    table.remove(Flicker.handler, table.find(Flicker.handler, self))
+    table.delete(Flicker.instances, self)
 
     self.object = nil
     self.duration = 1

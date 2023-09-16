@@ -38,6 +38,7 @@ FreeplayState = require "game.states.freeplay"
 PlayState = require "game.states.play"
 
 game = {
+    camera = nil,
     cameras = require "game.cameramanager",
     sound = require "game.soundmanager"
 }
@@ -109,16 +110,22 @@ function switchState(state, transition)
     isSwitchingState = true
 
     local function switch()
-        Camera.defaultCamera = nil
         Timer.clear()
-        for _, o in pairs(Gamestate.current()) do
-            if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then
-                o:destroy()
+        game.cameras.reset()
+        for _, s in ipairs(Gamestate.stack) do
+            for _, o in pairs(s) do
+                if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then
+                    o:destroy()
+                end
             end
+            s:closeSubState()
         end
+
         paths.clearCache()
+
         Gamestate.switch(state)
         isSwitchingState = false
+
         collectgarbage()
     end
 
@@ -130,6 +137,9 @@ function switchState(state, transition)
     else
         switch()
     end
+end
+function resetState(transition, ...)
+    switchState(getmetatable(Gamestate.stack[1])(...), transition)
 end
 
 function love.run()
@@ -209,7 +219,9 @@ function love.load()
     local dimensions = require "dimensions"
     push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
 
-    switchState(TitleState(), false)
+    game.cameras.reset()
+
+    Gamestate.switch(TitleState())
 end
 
 function love.resize(width, height)
@@ -225,7 +237,9 @@ function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
     for _, o in pairs(Conductor.instances) do o:update(dt) end
-    for _, o in pairs(Flicker.handler) do o:update(dt) end
+    for _, o in pairs(Flicker.instances) do o:update(dt) end
+
+    game.cameras.update(dt)
 
     controls:update()
     Timer.update(dt)
