@@ -3,12 +3,7 @@ local Note = Sprite:extend()
 Note.swagWidth = 160 * 0.7
 Note.colors = {"purple", "blue", "green", "red"}
 Note.directions = {"left", "down", "up", "right"}
-Note.pixelAnim = {
-    {{4}, {0}},
-    {{5}, {1}},
-    {{6}, {2}},
-    {{7}, {3}}
-}
+Note.pixelAnim = {{{4}, {0}}, {{5}, {1}}, {{6}, {2}}, {{7}, {3}}}
 
 function Note:new(time, data, prevNote, sustain, parentNote)
     Note.super.new(self, 0, -2000)
@@ -17,8 +12,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
     self.data = data
     self.prevNote = prevNote
     if sustain == nil then sustain = false end
-    self.isSustain, self.isSustainEnd, self.isSustainEnd, self.sustainLength =
-        sustain, false, false, 0
+    self.isSustain, self.isSustainEnd, self.isSustainEnd = sustain, false, false
     self.parentNote, children = parentNote, false
     self.mustPress = false
     self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
@@ -33,7 +27,8 @@ function Note:new(time, data, prevNote, sustain, parentNote)
             self:load(paths.getImage('skins/pixel/NOTE_assetsENDS'))
             self.width = self.width / 4
             self.height = self.height / 2
-            self:load(paths.getImage('skins/pixel/NOTE_assetsENDS'), true, math.floor(self.width), math.floor(self.height))
+            self:load(paths.getImage('skins/pixel/NOTE_assetsENDS'), true,
+                      math.floor(self.width), math.floor(self.height))
 
             self:addAnim(color .. 'holdend', Note.pixelAnim[data + 1][1])
             self:addAnim(color .. 'hold', Note.pixelAnim[data + 1][2])
@@ -41,7 +36,8 @@ function Note:new(time, data, prevNote, sustain, parentNote)
             self:load(paths.getImage('skins/pixel/NOTE_assets'))
             self.width = self.width / 4
             self.height = self.height / 5
-            self:load(paths.getImage('skins/pixel/NOTE_assets'), true, math.floor(self.width), math.floor(self.height))
+            self:load(paths.getImage('skins/pixel/NOTE_assets'), true,
+                      math.floor(self.width), math.floor(self.height))
 
             self:addAnim(color .. 'Scroll', Note.pixelAnim[data + 1][1])
         end
@@ -96,7 +92,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 
             if PlayState.pixelStage then
                 prevNote.scale.y = prevNote.scale.y * 5
-				prevNote.scale.y = prevNote.scale.y * (6 / self.height)
+                prevNote.scale.y = prevNote.scale.y * (6 / self.height)
             end
             prevNote:updateHitbox()
         end

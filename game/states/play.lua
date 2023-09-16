@@ -93,14 +93,15 @@ function PlayState:enter()
                     table.insert(self.unspawnNotes, note)
 
                     if n[3] ~= nil then
-                        local fixedSus = tonumber(n[3])
-                        if fixedSus ~= nil and fixedSus > 0 then
-                            fixedSus = math.round(n[3] /
-                                                      PlayState.inst.stepCrochet)
-                            note.sustainLength = fixedSus *
-                                                     PlayState.inst.stepCrochet
+                        local susLength = tonumber(n[3])
+                        if susLength ~= nil and susLength > 0 then
+                            susLength = math.round(n[3] /
+                                                       PlayState.inst
+                                                           .stepCrochet)
+                            -- note.sustainLength = susLength * PlayState.inst.stepCrochet
 
-                            for susNote = 0, math.floor(math.max(fixedSus, 1)) do
+                            for susNote = 0, math.max(math.floor(susLength) - 1,
+                                                      1) do
                                 oldNote = self.unspawnNotes[#self.unspawnNotes]
 
                                 local sustain = Note(daStrumTime +
