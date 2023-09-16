@@ -18,6 +18,9 @@ function draw() end
 --- gets called AFTER drawing all off the sprites onto the screen
 function postDraw() end
 
+--- gets called after the vocals and inst start playing
+function songStart() end
+
 --- gets called every stepHit
 ---@param curStep integer
 function step(curStep) end
