@@ -118,7 +118,10 @@ function switchState(state, transition)
                     o:destroy()
                 end
             end
-            s:closeSubState()
+            if s.subState then
+                Gamestate.pop(table.find(Gamestate.stack, s.subState))
+                s.subState = nil
+            end
         end
 
         paths.clearCache()

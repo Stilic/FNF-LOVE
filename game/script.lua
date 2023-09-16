@@ -7,7 +7,10 @@ function Script.loadScriptsFromDirectory(dir)
 
     for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
                                                                 "data/" .. dir))) do
-        table.insert(scripts, Script(dir .. "/" .. util.removeExtension(file)))
+        if string.endsWith(file, '.lua') then
+            table.insert(scripts,
+                         Script(dir .. "/" .. util.removeExtension(file)))
+        end
     end
 
     return scripts

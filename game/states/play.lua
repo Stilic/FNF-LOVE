@@ -46,15 +46,11 @@ function PlayState:enter()
         sections = {}
     }
 
-    PlayState.inst = Conductor(paths.getAudio(
-                                   "songs/" .. PlayState.curSong .. "/Inst",
-                                   "stream"), chart.bpm)
+    PlayState.inst = Conductor(paths.getInst(PlayState.curSong), chart.bpm)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
     if chart.needsVoices then
-        PlayState.vocals = paths.getAudio(
-                               "songs/" .. PlayState.curSong .. "/Voices",
-                               "stream")
+        PlayState.vocals = paths.getVoices(PlayState.curSong)
     end
 
     self.unspawnNotes = {}
