@@ -15,13 +15,11 @@ PlayState.ratings = {
     {name = "shit", time = 150, score = 50, splash = false}
 }
 PlayState.downscroll = false
+PlayState.songPosition = 0
 
-PlayState.pixelStage = false
-
--- hmmmmmmmmm
 PlayState.storyMode = false
 PlayState.curSong = 'test'
-PlayState.songPosition = 0
+PlayState.pixelStage = false
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
@@ -136,9 +134,11 @@ function PlayState:enter()
     self.camGame = Camera()
     self.camGame.target = {x = 0, y = 0}
     self.camHUD = Camera()
+    self.camOther = Camera()
 
     game.cameras.reset(self.camGame)
     game.cameras.add(self.camHUD, false)
+    game.cameras.add(self.camOther, false)
 
     self.receptors = Group()
     self.playerReceptors = Group()
@@ -307,8 +307,12 @@ function PlayState:update(dt)
     if controls:pressed('pause') then
         PlayState.inst:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
+
         self.paused = true
-        self:openSubState(PauseSubState())
+
+        local pause = PauseSubState()
+        pause.cameras = {self.camOther}
+        self:openSubState(pause)
     end
 
     if self.unspawnNotes[1] then
