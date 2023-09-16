@@ -19,6 +19,7 @@ PlayState.downscroll = false
 PlayState.pixelStage = false
 
 -- hmmmmmmmmm
+PlayState.storyMode = false
 PlayState.curSong = 'test'
 PlayState.songPosition = 0
 
@@ -245,7 +246,7 @@ function PlayState:update(dt)
     for _, script in ipairs(self.scripts) do script:call("update", dt) end
 
     if not isSwitchingState and not self.startingSong and
-        PlayState.inst:isFinished() then switchState(TitleState()) end
+        PlayState.inst:isFinished() then switchState(FreeplayState()) end
 
     PlayState.songPosition = PlayState.songPosition + 1000 * dt
     if self.startingSong and PlayState.songPosition >= 0 then
