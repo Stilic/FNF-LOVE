@@ -9,10 +9,10 @@ PlayState.controlDirs = {
     note_right = 3
 }
 PlayState.ratings = {
-    {name = "sick", time = 45, score = 350, splash = true},
-    {name = "good", time = 90, score = 200, splash = false},
-    {name = "bad", time = 125, score = 100, splash = false},
-    {name = "shit", time = 150, score = 50, splash = false}
+    {name = "sick", time = 45, score = 350, splash = true, mod = 1},
+    {name = "good", time = 90, score = 200, splash = false, mod = 0.7},
+    {name = "bad", time = 125, score = 100, splash = false, mod = 0.4},
+    {name = "shit", time = 150, score = 50, splash = false, mod = 0.2}
 }
 PlayState.downscroll = false
 PlayState.songPosition = 0
@@ -130,7 +130,11 @@ function PlayState:enter()
     self.score = 0
     self.combo = 0
     self.misses = 0
+    self.accuracy = 0
     self.health = 1
+
+    self.totalPlayed = 0
+    self.totalHit = 0.0
 
     self.camGame = Camera()
     self.camGame.target = {x = 0, y = 0}
@@ -211,17 +215,17 @@ function PlayState:enter()
     self:updateScore()
     self.scoreTxt:screenCenter('x')
 
-    self:add(self.healthBarBG)
-    self:add(self.healthBar)
-    self:add(self.iconP1)
-    self:add(self.iconP2)
-    self:add(self.scoreTxt)
-
     self.judgeSprTimer = Timer.new()
 
     self:add(self.receptors)
     self:add(self.sustainsGroup)
     self:add(self.notesGroup)
+
+    self:add(self.healthBarBG)
+    self:add(self.healthBar)
+    self:add(self.iconP1)
+    self:add(self.iconP2)
+    self:add(self.scoreTxt)
 
     for _, o in ipairs({
         self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
@@ -410,7 +414,9 @@ function PlayState:update(dt)
                 self.combo = 0
                 self.score = self.score - 100
                 self.misses = self.misses + 1
-                self:updateScore()
+
+                self.totalPlayed = self.totalPlayed + 1
+                self:recalculateRating()
 
                 local np = n.isSustain and n.parentNote or n
                 np.tooLate = true
@@ -572,7 +578,10 @@ function PlayState:goodNoteHit(n)
                 self.combo = self.combo + 1
                 self.score = self.score + rating.score
                 self:popUpScore(rating)
-                self:updateScore()
+
+                self.totalHit = self.totalHit + rating.mod
+                self.totalPlayed = self.totalPlayed + 1
+                self:recalculateRating()
 
                 if self.health > 2 then self.health = 2 end
 
@@ -718,9 +727,13 @@ function PlayState:popUpScore(rating)
     end
 end
 
-function PlayState:updateScore()
+function PlayState:recalculateRating()
+    if self.totalPlayed > 0 then
+        self.accuracy = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
+    end
+
     self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " ..
-                                 self.misses)
+                                 self.misses .. " // " .. util.floorDecimal(self.accuracy * 100, 2) .. "%")
     self.scoreTxt:screenCenter('x')
 end
 
