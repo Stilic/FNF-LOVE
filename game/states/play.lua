@@ -212,7 +212,7 @@ function PlayState:enter()
     self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
                          paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
-    self:updateScore()
+    self.scoreTxt:setContent("Score: 0 // Misses: 0 // ???%")
     self.scoreTxt:screenCenter('x')
 
     self.judgeSprTimer = Timer.new()
