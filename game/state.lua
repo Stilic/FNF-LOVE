@@ -20,7 +20,6 @@ function State:draw()
     love.graphics.rectangle("fill", 0, 0, push:getWidth(), push:getHeight())
 
     love.graphics.setColor(r, g, b, a)
-
     love.graphics.pop()
 
     State.super.draw(self)
@@ -29,15 +28,13 @@ end
 function State:openSubState(subState)
     self.subState = subState
     subState.__parentState = self
-    self.__defaultCamera = Camera.defaultCamera
-    Camera.defaultCamera = Camera()
     Gamestate.push(subState)
 end
 
 function State:closeSubState()
     if self.subState then
-        Camera.defaultCamera = self.__defaultCamera
         Gamestate.pop(table.find(Gamestate.stack, self.subState))
+        self.subState = nil
     end
 end
 

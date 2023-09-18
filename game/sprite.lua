@@ -138,7 +138,7 @@ function Sprite:new(x, y, texture)
     self.width, self.height = 0, 0
     self.antialiasing = true
 
-    self.camera = nil
+    self.cameras = nil
 
     self.alive = true
     self.exists = true
@@ -366,7 +366,7 @@ function Sprite:addAnimByIndices(name, prefix, indices, framerate, looped)
     self.__animations[name] = anim
 end
 
-function Sprite:play(anim, force)
+function Sprite:play(anim, force, frame)
     if not force and self.curAnim and self.curAnim.name == anim and
         not self.animFinished then
         self.animFinished = false
@@ -375,7 +375,7 @@ function Sprite:play(anim, force)
     end
 
     self.curAnim = self.__animations[anim]
-    self.curFrame = 1
+    self.curFrame = frame or 1
     self.animFinished = false
     self.animPaused = false
 end
@@ -425,11 +425,12 @@ end
 function Sprite:update(dt)
     if self.alive and self.exists and self.curAnim and not self.animFinished and
         not self.animPaused then
-        self.curFrame = self.curFrame + self.curAnim.framerate * dt
+        self.curFrame = self.curFrame + dt * self.curAnim.framerate
         if self.curFrame >= #self.curAnim.frames then
             if self.curAnim.looped then
                 self.curFrame = 1
             else
+                self.curFrame = #self.curAnim.frames
                 self.animFinished = true
             end
         end
@@ -445,59 +446,59 @@ function Sprite:draw()
 
         local f = self:getCurrentFrame()
 
+        local shader = love.graphics.getShader()
         if self.shader then love.graphics.setShader(self.shader) end
 
         if self.clipRect then love.graphics.setStencilTest("greater", 0) end
 
-        local cam = self.camera or Camera.defaultCamera
-        local alpha = self.alpha
-        if cam then alpha = alpha * cam.alpha end
-        if self.visible and alpha > 0 then
-            if cam then cam:attach() end
+        local cameras = self.cameras or Camera.__defaultCameras
+        for _, cam in ipairs(cameras) do
+            local alpha = self.alpha * cam.alpha
+            if self.visible and alpha > 0 then
+                cam:attach()
 
-            local x, y, rad, sx, sy, ox, oy = self.x, self.y,
-                                              math.rad(self.angle),
-                                              self.scale.x, self.scale.y,
-                                              self.origin.x, self.origin.y
+                local x, y, rad, sx, sy, ox, oy = self.x, self.y,
+                                                  math.rad(self.angle),
+                                                  self.scale.x, self.scale.y,
+                                                  self.origin.x, self.origin.y
 
-            if self.flipX then sx = -sx end
-            if self.flipY then sy = -sy end
+                if self.flipX then sx = -sx end
+                if self.flipY then sy = -sy end
 
-            local r, g, b, a = love.graphics.getColor()
-            love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-                                   alpha)
+                local r, g, b, a = love.graphics.getColor()
+                love.graphics.setColor(self.color[1], self.color[2],
+                                       self.color[3], alpha)
 
-            x, y = x + ox - self.offset.x, y + oy - self.offset.y
+                x, y = x + ox - self.offset.x, y + oy - self.offset.y
 
-            if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
+                if f then
+                    ox, oy = ox + f.offset.x, oy + f.offset.y
+                end
 
-            if cam then
-                x = x - (cam.scroll.x * self.scrollFactor.x)
-                y = y - (cam.scroll.y * self.scrollFactor.y)
+                x, y = x - (cam.scroll.x * self.scrollFactor.x),
+                       y - (cam.scroll.y * self.scrollFactor.y)
+
+                if self.clipRect then
+                    stencilSprite, stencilX, stencilY = self, x, y
+                    love.graphics.stencil(stencil, "replace", 1, false)
+                end
+
+                if not f then
+                    love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
+                else
+                    love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy,
+                                       ox, oy)
+                end
+
+                love.graphics.setColor(r, g, b, a)
+
+                cam:detach()
             end
-
-            if self.clipRect then
-                stencilSprite, stencilX, stencilY = self, x, y
-                love.graphics.stencil(stencil, "replace", 1, false)
-            end
-
-            if not f then
-                love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
-            else
-                love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox,
-                                   oy)
-            end
-
-            love.graphics.setColor(r, g, b, a)
-
-            if cam then cam:detach() end
         end
 
         self.texture:setFilter(min, mag, anisotropy)
-
         if self.clipRect then love.graphics.setStencilTest() end
-
-        if self.shader then love.graphics.setShader() end
+        if self.shader then love.graphics.setShader(shader) end
     end
 end
 

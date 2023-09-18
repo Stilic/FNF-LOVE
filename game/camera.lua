@@ -21,6 +21,13 @@ function Camera:new(x, y, width, height)
     self.visible = true
 end
 
+function Camera:update()
+    if self.target then
+        self.scroll.x, self.scroll.y = self.target.x - self.width * 0.5,
+                                       self.target.y - self.height * 0.5
+    end
+end
+
 function Camera:attach()
     love.graphics.push()
     love.graphics.rotate(-self.angle)
@@ -28,12 +35,6 @@ function Camera:attach()
     love.graphics.translate(w - self.x, h - self.y)
     love.graphics.scale(self.zoom, self.zoom)
     love.graphics.translate(-w, -h)
-
-    -- TODO: move this to an update function
-    if self.target then
-        self.scroll.x, self.scroll.y = self.target.x - self.width * 0.5,
-                                       self.target.y - self.height * 0.5
-    end
 end
 
 function Camera:detach() love.graphics.pop() end

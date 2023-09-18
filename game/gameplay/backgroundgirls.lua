@@ -1,28 +1,32 @@
 local BackgroundGirls = Sprite:extend()
 
-BackgroundGirls.isPissed = true
-function BackgroundGirls:new(x, y)
+BackgroundGirls.isPissed = false
+function BackgroundGirls:new(x, y, isPissed)
     BackgroundGirls.super.new(self, x, y)
 
     self:setFrames(paths.getSparrowAtlas('stages/school/bgFreaks'))
+    if isPissed then
+        self:addAnimByIndices('danceLeft', 'BG fangirls dissuaded', {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+        }, 24, false)
+        self:addAnimByIndices('danceRight', 'BG fangirls dissuaded', {
+            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+        }, 24, false)
+    else
+        self:addAnimByIndices('danceLeft', 'BG girls group', {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+        }, 24, false)
+        self:addAnimByIndices('danceRight', 'BG girls group', {
+            15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30
+        }, 24, false)
+    end
 
-    self:swapDanceType()
-
-    self:play('danceLeft')
+    self:dance()
+    self:finish()
 end
 
 BackgroundGirls.danceDir = false
-function BackgroundGirls:swapDanceType()
-    self.isPissed = not self.isPissed
-    if not self.isPissed then
-		self:addAnimByIndices('danceLeft', 'BG girls group', {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}, 24, false)
-		self:addAnimByIndices('danceRight', 'BG girls group', {15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}, 24, false)
-	else
-		self:addAnimByIndices('danceLeft', 'BG fangirls dissuaded', {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}, 24, false)
-		self:addAnimByIndices('danceRight', 'BG fangirls dissuaded', {15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}, 24, false)
-    end
-    self:dance()
-end
+function BackgroundGirls:swapDanceType() end
 
 function BackgroundGirls:dance()
     self.danceDir = not self.danceDir

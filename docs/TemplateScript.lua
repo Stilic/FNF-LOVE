@@ -5,12 +5,12 @@ function create() end
 function postCreate() end
 
 --- gets called every frame
----@param elapsed integer
-function update(elapsed) end
+---@param dt integer
+function update(dt) end
 
 --- gets called every frame AFTER update.super()
----@param elapsed integer
-function postUpdate(elapsed) end
+---@param dt integer
+function postUpdate(dt) end
 
 --- gets called BEFORE drawing all off the sprites onto the screen
 function draw() end
@@ -18,21 +18,24 @@ function draw() end
 --- gets called AFTER drawing all off the sprites onto the screen
 function postDraw() end
 
+--- gets called after the vocals and inst start playing
+function songStart() end
+
 --- gets called every stepHit
----@param curStep integer
-function step(curStep) end
+---@param step integer
+function step(step) end
 
 --- gets called every stepHit AFTER beat.super()
----@param curStep integer
-function postStep(curStep) end
+---@param step integer
+function postStep(step) end
 
 --- gets called every beatHit
----@param curBeat integer
-function beat(curBeat) end
+---@param beat integer
+function beat(beat) end
 
 --- gets called every beatHit AFTER beat.super()
----@param curBeat integer
-function postBeat(curBeat) end
+---@param beat integer
+function postBeat(beat) end
 
 --- gets called every noteHit
 ---@param note table

@@ -49,23 +49,26 @@ function Text:draw()
     love.graphics.setFont(self.font)
     love.graphics.setColor(self.outColor)
 
-    if self.camera then self.camera:attach() end
+    local cameras = self.cameras or Camera.__defaultCameras
+    for _, cam in ipairs(cameras) do
+        cam:attach()
 
-    if self.outWidth > 0 then
-        for dx = -self.outWidth, self.outWidth do
-            for dy = -self.outWidth, self.outWidth do
-                love.graphics.printf(self.content, self.x + dx, self.y + dy,
-                                     (self.limit or self:getWidth()),
-                                     self.alignment)
+        if self.outWidth > 0 then
+            for dx = -self.outWidth, self.outWidth do
+                for dy = -self.outWidth, self.outWidth do
+                    love.graphics.printf(self.content, self.x + dx, self.y + dy,
+                                         (self.limit or self:getWidth()),
+                                         self.alignment)
+                end
             end
         end
+
+        love.graphics.setColor(self.color)
+        love.graphics.printf(self.content, self.x, self.y,
+                             (self.limit or self:getWidth()), self.alignment)
+
+        cam:detach()
     end
-
-    love.graphics.setColor(self.color)
-    love.graphics.printf(self.content, self.x, self.y,
-                         (self.limit or self:getWidth()), self.alignment)
-
-    if self.camera then self.camera:detach() end
 
     love.graphics.setFont(ogFont)
     love.graphics.setColor(r, g, b, a)

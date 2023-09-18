@@ -4,6 +4,19 @@ function util.coolLerp(x, y, i)
     return math.lerp(x, y, i * 60 * love.timer.getDelta())
 end
 
+function util.floorDecimal(value, decimals)
+    if decimals < 1 then
+        return math.floor(value)
+    end
+
+    local tempMult = 1
+    for i = 1, decimals do
+        tempMult = tempMult * 10
+    end
+    local newValue = math.floor(value * tempMult)
+    return newValue / tempMult
+end
+
 function util.newGradient(dir, ...)
     local isHorizontal = true
     if dir == "vertical" then isHorizontal = false end

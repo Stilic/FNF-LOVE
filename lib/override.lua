@@ -16,9 +16,9 @@ end
 
 function table.delete(self, object)
     if object then
-        local index = self:find(object)
+        local index = table.find(self, object)
         if index then
-            self:remove(index)
+            table.remove(self, index)
             return true
         end
     end
@@ -34,22 +34,37 @@ function math.bound(value, min, max) return math.max(min, math.min(max, value)) 
 bit32, iter = bit, ipairs(math)
 
 -- EXTRA FUNCTIONS
-function switch(value, cases)
-    local caseFunction = cases[value]
-    if caseFunction then
-        if type(caseFunction) == "function" then
-            caseFunction()
-        else
-            error("Case value must be a function.")
+function switch(variable, cases)
+    for i = 1, #cases, 2 do
+        local caseValue = cases[i]
+        local action = cases[i + 1]
+        if type(caseValue) == "table" then
+            for j = 1, #caseValue do
+                if variable == caseValue[j] then
+                    if type(action) == "function" then
+                        action()
+                    else
+                        return action
+                    end
+                end
+            end
+        elseif variable == caseValue then
+            if type(action) == "function" then
+                action()
+            else
+                return action
+            end
+        elseif caseValue == "default" then
+            defaultAction = action
         end
-    elseif cases.default then
-        if type(cases.default) == "function" then
-            cases.default()
+    end
+
+    if defaultAction then
+        if type(defaultAction) == "function" then
+            defaultAction()
         else
-            error("Default value must be a function.")
+            return defaultAction
         end
-    else
-        return
     end
 end
 

@@ -57,6 +57,11 @@ function Character:switchAnim(oldAnim, newAnim)
 end
 
 function Character:update(dt)
+    if self.curAnim then
+        if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~= nil then
+            self:playAnim(self.curAnim.name .. '-loop')
+        end
+    end
     self.script:call("update", dt)
     Character.super.update(self, dt)
     self.script:call("postUpdate", dt)
@@ -74,7 +79,7 @@ function Character:beat(b)
     self.script:call("beat", b)
 
     if self.lastHit > 0 then
-        if self.lastHit + PlayState.inst.stepCrochet * self.singDuration <=
+        if self.lastHit + PlayState.inst.stepCrochet * self.singDuration * 1.1 <=
             PlayState.songPosition then
             self:dance()
             self.lastHit = 0
@@ -85,8 +90,8 @@ function Character:beat(b)
     self.script:call("postBeat", b)
 end
 
-function Character:playAnim(anim, force)
-    Character.super.play(self, anim, force)
+function Character:playAnim(anim, force, frame)
+    Character.super.play(self, anim, force, frame)
 
     local offset = self.animOffsets[anim]
     if offset then
@@ -121,7 +126,7 @@ function Character:dance(force)
             else
                 self:playAnim("danceLeft", force)
             end
-        else
+        elseif self.__animations["idle"] then
             self:playAnim("idle", force)
         end
     end

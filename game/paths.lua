@@ -122,6 +122,14 @@ function paths.getSound(key, cache)
     return paths.getAudio("sounds/" .. key, "static", cache)
 end
 
+function paths.getInst(song, cache)
+    return paths.getAudio("songs/" .. song .. "/Inst", "stream", cache)
+end
+
+function paths.getVoices(song, cache)
+    return paths.getAudio("songs/" .. song .. "/Voices", "stream", cache)
+end
+
 function paths.playSound(key, cache)
     local sound = paths.getSound(key, cache)
     if sound then sound:play() end
@@ -173,6 +181,14 @@ function paths.getLua(key)
         return chunk
     end
     return nil
+end
+
+local invalidChars = '[~&\\;:<>#]'
+local hideChars = '[.,\'"%?!]'
+function paths.formatToSongPath(path)
+    return string.lower(string.gsub(string.gsub(path:gsub(' ', '-'),
+                                                invalidChars, '-'), hideChars,
+                                    ''))
 end
 
 return paths

@@ -39,11 +39,11 @@ function PauseSubState:update(dt)
         local daChoice = self.menuItems[self.curSelected]
 
         switch(daChoice, {
-            ["Resume"] = function() self:close() end,
-            ["Restart Song"] = function()
+            "Resume", function() self:close() end,
+            "Restart Song", function()
                 switchState(PlayState())
             end,
-            ["Exit to menu"] = function()
+            "Exit to menu", function()
                 switchState(FreeplayState())
             end
         })
