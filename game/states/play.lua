@@ -37,10 +37,9 @@ function PlayState:enter()
         speed = chart.speed,
         needsVoices = chart.needsVoices,
         stage = chart.stage,
-        boyfriend = chart.player1 == nil and "bf" or chart.player1,
-        dad = chart.player2 == nil and "dad" or chart.player2,
-        girlfriend = chart.gfVersion == nil and
-            (chart.player3 == nil and "gf" or chart.player3) or chart.gfVersion,
+        boyfriend = chart.player1,
+        dad = chart.player2,
+        girlfriend = chart.player3 or chart.gfVersion,
         sections = {}
     }
 
@@ -56,19 +55,19 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
+    local songName = paths.formatToSongPath(PlayState.song.name)
+
+    local curStage = PlayState.song.stage
     if PlayState.song.stage == nil then
-        switch(chart.song,{
-            {"Senpai", "Roses", "Thorns"}, function()
-                PlayState.song.stage = 'school'
-            end,
-            {"Ugh", "Guns", "Stress"}, function()
-                PlayState.song.stage = 'tank'
-            end,
-            'default', function()
-                PlayState.song.stage = 'stage'
-            end
-        })
+        if songName == 'senpai' or songName == 'roses' or songName == 'thorns' then
+            curStage = 'school'
+        elseif songName == 'ugh' or songName == 'guns' or songName == 'stress' then
+            curStage = 'tank'
+        else
+            curStage = 'stage'
+        end
     end
+    PlayState.song.stage = curStage
 
     -- reset ui stage
     PlayState.pixelStage = false
@@ -185,6 +184,22 @@ function PlayState:enter()
 
     self.camGame.zoom = self.stage.camZoom
 
+    local gfVersion = PlayState.song.girlfriend
+    if gfVersion == nil then
+        switch(curStage,{
+            ['school']=function()
+                gfVersion = 'gf-pixel'
+            end,
+            ['tank']=function()
+                gfVersion = 'gf-tankmen'
+            end,
+            default=function()
+                gfVersion = 'gf'
+            end
+        })
+        PlayState.song.girlfriend = gfVersion
+    end
+
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
                         self.song.girlfriend, false)
     self.gf:setScrollFactor(0.95, 0.95)
@@ -195,10 +210,10 @@ function PlayState:enter()
     self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
                          self.song.dad, false)
 
-    self.stage:add(self.gf)
-    self.stage:add(self.boyfriend)
-    self.stage:add(self.dad)
-    self.stage:add(self.judgeSpritesGroup)
+    self:add(self.gf)
+    self:add(self.boyfriend)
+    self:add(self.dad)
+    self:add(self.judgeSpritesGroup)
 
     self:add(self.stage.front)
 

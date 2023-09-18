@@ -34,38 +34,11 @@ function math.bound(value, min, max) return math.max(min, math.min(max, value)) 
 bit32, iter = bit, ipairs(math)
 
 -- EXTRA FUNCTIONS
-function switch(variable, cases)
-    for i = 1, #cases, 2 do
-        local caseValue = cases[i]
-        local action = cases[i + 1]
-        if type(caseValue) == "table" then
-            for j = 1, #caseValue do
-                if variable == caseValue[j] then
-                    if type(action) == "function" then
-                        action()
-                    else
-                        return action
-                    end
-                end
-            end
-        elseif variable == caseValue then
-            if type(action) == "function" then
-                action()
-            else
-                return action
-            end
-        elseif caseValue == "default" then
-            defaultAction = action
-        end
-    end
-
-    if defaultAction then
-        if type(defaultAction) == "function" then
-            defaultAction()
-        else
-            return defaultAction
-        end
-    end
+_G.switch = function(param, case_table)
+    local case = case_table[param]
+    if case then return case() end
+    local def = case_table['default']
+    return def and def() or nil
 end
 
 function table.keys(table, includeIndices, keys)
