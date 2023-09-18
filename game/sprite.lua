@@ -518,11 +518,7 @@ function Sprite:draw()
 
         self.texture:setFilter(min, mag, anisotropy)
         if self.clipRect then love.graphics.setStencilTest() end
-<<<<<<< HEAD
         if self.shader then love.graphics.setShader(shader) end
-=======
-        love.graphics.setShader(shader)
->>>>>>> daaff1afa2faf923d68817a2f3ae4c5b62c57281
     end
 end
 

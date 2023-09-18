@@ -191,8 +191,4 @@ function paths.formatToSongPath(path)
                                     ''))
 end
 
-<<<<<<< HEAD
 return paths
-=======
-return paths
->>>>>>> daaff1afa2faf923d68817a2f3ae4c5b62c57281

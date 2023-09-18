@@ -45,8 +45,4 @@ end
 
 Camera.__defaultCameras = CameraManager.__defaults
 
-<<<<<<< HEAD
 return CameraManager
-=======
-return CameraManager
->>>>>>> daaff1afa2faf923d68817a2f3ae4c5b62c57281
