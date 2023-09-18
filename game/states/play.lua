@@ -107,14 +107,15 @@ function PlayState:enter()
                     table.insert(self.unspawnNotes, note)
 
                     if n[3] ~= nil then
-                        local fixedSus = tonumber(n[3])
-                        if fixedSus ~= nil and fixedSus > 0 then
-                            fixedSus = math.round(n[3] /
-                                                      PlayState.inst.stepCrochet)
-                            note.sustainLength = fixedSus *
-                                                     PlayState.inst.stepCrochet
+                        local susLength = tonumber(n[3])
+                        if susLength ~= nil and susLength > 0 then
+                            susLength = math.round(n[3] /
+                                                       PlayState.inst
+                                                           .stepCrochet)
+                            -- note.sustainLength = susLength * PlayState.inst.stepCrochet
 
-                            for susNote = 0, math.floor(math.max(fixedSus, 1)) do
+                            for susNote = 0, math.max(math.floor(susLength) - 1,
+                                                      1) do
                                 oldNote = self.unspawnNotes[#self.unspawnNotes]
 
                                 local sustain = Note(daStrumTime +
@@ -673,9 +674,10 @@ function PlayState:popUpScore(rating)
         antialias = false
     end
 
-    judgeSpr:load(paths.getImage("skins/"..uiStage.."/" .. rating.name))
+    judgeSpr:load(paths.getImage("skins/" .. uiStage .. "/" .. rating.name))
     judgeSpr.alpha = 1
-    judgeSpr:setGraphicSize(math.floor(judgeSpr.width * (PlayState.pixelStage and 4.7 or 0.7)))
+    judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
+                                           (PlayState.pixelStage and 4.7 or 0.7)))
     judgeSpr:updateHitbox()
     judgeSpr:screenCenter()
     -- use fixed values to display at the same position on a different resolution
@@ -705,8 +707,10 @@ function PlayState:popUpScore(rating)
         for i = 1, #comboStr do
             local digit = tonumber(comboStr:sub(i, i)) or 0
             local numScore = self.judgeSpritesGroup:recycle()
-            numScore:load(paths.getImage("skins/"..uiStage.."/num" .. digit))
-            numScore:setGraphicSize(math.floor(numScore.width * (PlayState.pixelStage and 4.5 or 0.5)))
+            numScore:load(paths.getImage("skins/" .. uiStage .. "/num" .. digit))
+            numScore:setGraphicSize(math.floor(numScore.width *
+                                                   (PlayState.pixelStage and 4.5 or
+                                                       0.5)))
             numScore:updateHitbox()
             numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
             numScore.y = judgeSpr.y + 115

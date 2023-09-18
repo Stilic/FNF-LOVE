@@ -5,7 +5,11 @@ FreeplayState.curSelected = 1
 function FreeplayState:enter()
     self.songs = {
         'Test', 'Tutorial', 'Bopeebo', 'Fresh', 'Dad Battle', 'Senpai', 'Roses',
+<<<<<<< HEAD
         'Thorns', 'Ugh', 'Guns', 'Stress', 'Triple B Trouble', 'Yaro Phantasma'
+=======
+        'Thorns', 'Triple B Trouble', 'Yaro Phantasma'
+>>>>>>> daaff1afa2faf923d68817a2f3ae4c5b62c57281
     }
 
     self.bg = Sprite()

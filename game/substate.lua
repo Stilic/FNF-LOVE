@@ -24,4 +24,8 @@ function SubState:close()
     if self:belongsToParent() then self.__parentState:closeSubState() end
 end
 
+<<<<<<< HEAD
 return SubState
+=======
+return SubState
+>>>>>>> daaff1afa2faf923d68817a2f3ae4c5b62c57281

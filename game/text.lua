@@ -7,7 +7,7 @@ function Text:new(x, y, content, font, color, align, outlined, limit)
     self.font = font or love.graphics.getFont()
     self.size = size or 1
     self.color = color or {1, 1, 1}
-    self.camera = nil
+    self.cameras = nil
     self.alignment = align or "left"
     self.limit = limit
 

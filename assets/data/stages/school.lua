@@ -97,4 +97,8 @@ function create()
     end
 end
 
+<<<<<<< HEAD
 function beat(b) if state.song.name:lower() ~= 'thorns' then bgGirls:dance() end end
+=======
+function beat(b) if state.song.name:lower() ~= 'thorns' then bgGirls:dance() end end
+>>>>>>> daaff1afa2faf923d68817a2f3ae4c5b62c57281
