@@ -1,25 +1,27 @@
 local Text = Object:extend()
 
-function Text:new(x, y, content, font, color, align, outlined, limit)
+function Text:new(x, y, content, font, color, align, limit)
     self.x = x or 0
     self.y = y or 0
-    self.content = content or ""
+
+    self.content = content
     self.font = font or love.graphics.getFont()
-    self.size = size or 1
-    self.color = color or {1, 1, 1}
-    self.cameras = nil
     self.alignment = align or "left"
     self.limit = limit
 
+    self.color = color or {1, 1, 1}
+    self.alpha = 1
+    self.cameras = nil
+    self.visible = true
+
+    self.exists = true
+
+    self.antialiasing = true
+    self.blend = "alpha"
+    self.shader = nil
+
     self.outColor = {0, 0, 0}
     self.outWidth = 0
-
-    self.font:setFilter("nearest", "nearest")
-end
-
-function Text:setPosition(x, y)
-    self.x = x or self.x
-    self.y = y or self.y
 end
 
 function Text:setContent(content) self.content = content or "" end
@@ -43,35 +45,58 @@ function Text:screenCenter(axes)
     end
 end
 
+function Text:destroy()
+    self.exists = false
+    self.content = nil
+    self.outWidth = 0
+end
+
 function Text:draw()
-    local ogFont = love.graphics.getFont()
-    local r, g, b, a = love.graphics.getColor()
-    love.graphics.setFont(self.font)
-    love.graphics.setColor(self.outColor)
+    if self.exists then
+        local font = love.graphics.getFont()
+        local r, g, b, a = love.graphics.getColor()
+        local min, mag, anisotropy = self.font:getFilter()
+        local shader = love.graphics.getShader()
 
-    local cameras = self.cameras or Camera.__defaultCameras
-    for _, cam in ipairs(cameras) do
-        cam:attach()
+        local mode = self.antialiasing and "linear" or "nearest"
+        self.font:setFilter(mode, mode)
+        if self.shader then love.graphics.setShader(self.shader) end
+        love.graphics.setBlendMode(self.blend)
 
-        if self.outWidth > 0 then
-            for dx = -self.outWidth, self.outWidth do
-                for dy = -self.outWidth, self.outWidth do
-                    love.graphics.printf(self.content, self.x + dx, self.y + dy,
-                                         (self.limit or self:getWidth()),
-                                         self.alignment)
+        local cameras = self.cameras or Camera.__defaultCameras
+        for _, cam in ipairs(cameras) do
+            local alpha = self.alpha * cam.alpha
+            if self.visible and alpha > 0 then
+                cam:attach()
+
+                love.graphics.setFont(self.font)
+                love.graphics.setColor(self.outColor[1], self.outColor[2],
+                                       self.outColor[3], alpha)
+
+                if self.outWidth > 0 then
+                    for dx = -self.outWidth, self.outWidth do
+                        for dy = -self.outWidth, self.outWidth do
+                            love.graphics.printf(self.content, self.x + dx, self.y + dy,
+                                                 (self.limit or self:getWidth()),
+                                                 self.alignment)
+                        end
+                    end
                 end
+
+                love.graphics.setColor(self.color[1], self.color [2], self.color[3], alpha)
+                love.graphics.printf(self.content, self.x, self.y,
+                                     (self.limit or self:getWidth()), self.alignment)
+
+                love.graphics.setFont(font)
+                love.graphics.setColor(r, g, b, a)
+                cam:detach()
             end
         end
 
-        love.graphics.setColor(self.color)
-        love.graphics.printf(self.content, self.x, self.y,
-                             (self.limit or self:getWidth()), self.alignment)
-
-        cam:detach()
+        self.font:setFilter(min, mag, anisotropy)
+        love.graphics.setBlendMode("alpha")
+        if self.shader then love.graphics.setShader(shader) end
     end
-
-    love.graphics.setFont(ogFont)
-    love.graphics.setColor(r, g, b, a)
 end
 
 return Text
