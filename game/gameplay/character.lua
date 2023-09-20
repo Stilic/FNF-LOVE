@@ -4,7 +4,7 @@ function Character:new(x, y, char, isPlayer)
     Character.super.new(self, x, y)
 
     self.char = char
-    self.isPlayer = isPlayer
+    self.isPlayer = isPlayer or false
     self.animOffsets = {}
 
     self.__reverseDraw = false

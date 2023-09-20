@@ -47,6 +47,10 @@ function TitleState:enter()
 end
 
 function TitleState:update(dt)
+    if controls:pressed("debug1") then
+        TitleState.music:destroy()
+        switchState(ChartingState(), false)
+    end
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")

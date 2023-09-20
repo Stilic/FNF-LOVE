@@ -137,13 +137,15 @@ function Sprite.getTilesfromTexture(texture, tileSize, region, tileSpacing)
     return tileFrames
 end
 
+local defaultTexture = love.graphics.newImage('art/default.png')
+
 function Sprite:new(x, y, texture)
     if x == nil then x = 0 end
     if y == nil then y = 0 end
     self.x = x
     self.y = y
 
-    self.texture = nil
+    self.texture = defaultTexture
     self.width, self.height = 0, 0
     self.antialiasing = true
 
@@ -174,6 +176,8 @@ function Sprite:new(x, y, texture)
     self.curFrame = nil
     self.animFinished = nil
     self.animPaused = false
+
+    self.__createdGraphic = false
 
     if texture then self:load(texture) end
 end
@@ -223,6 +227,17 @@ function Sprite:load(texture, animated, framewidth, frameheight)
     end
 
     return self
+end
+
+function Sprite:make(width, height, color)
+    if width == nil then width = 10 end
+    if height == nil then height = 10 end
+    if color == nil then color = {255, 255, 255} end
+
+    self:setGraphicSize(width, height)
+    self.color = color
+    self.__createdGraphic = true
+    self:updateHitbox()
 end
 
 function Sprite:setFrames(frames)
@@ -316,6 +331,13 @@ function Sprite:getGraphicMidpoint()
         x = self.x + self:getFrameWidth() * 0.5,
         y = self.y + self:getFrameHeight() * 0.5
     }
+end
+
+function Sprite:setPosition(x, y)
+    if x == nil then x = self.x end
+    if y == nil then y = self.y end
+
+    self.x, self.y = x, y
 end
 
 function Sprite:screenCenter(axes)
@@ -503,7 +525,18 @@ function Sprite:draw()
                     love.graphics.stencil(stencil, "replace", 1, false)
                 end
 
-                if not f then
+                if self.__createdGraphic then
+                    local w, h = self:getFrameDimensions()
+
+                    love.graphics.push()
+                    love.graphics.translate(x, y)
+                    love.graphics.rotate(rad)
+                    love.graphics.rectangle('fill', -(math.abs(self.scale.x) * w)/2,
+                                                    -(math.abs(self.scale.y) * h)/2,
+                                                    math.abs(self.scale.x) * w,
+                                                    math.abs(self.scale.y) * h)
+                    love.graphics.pop()
+                elseif not f then
                     love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
                 else
                     love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy,

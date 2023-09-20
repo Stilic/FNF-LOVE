@@ -45,8 +45,8 @@ function FreeplayState:update(dt)
         switchState(MainMenuState())
     end
     if controls:pressed('accept') then
-        PlayState.curSong = paths.formatToSongPath(
-                                self.songs[FreeplayState.curSelected])
+        local daSong = paths.formatToSongPath(self.songs[FreeplayState.curSelected])
+        PlayState.SONG = paths.getJSON("songs/"..daSong.."/"..daSong).song
         switchState(PlayState())
     end
 

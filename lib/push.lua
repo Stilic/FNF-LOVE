@@ -255,10 +255,8 @@ return {
 		x, y = x - offset.x, y - offset.y
 		normalX, normalY = x / drawWidth, y / drawHeight
 
-		x = (x >= 0 and x <= pushWidth * scale.x) and
-				math.floor(normalX * pushWidth) or false
-		y = (y >= 0 and y <= pushHeight * scale.y) and
-				math.floor(normalY * pushHeight) or false
+		x = math.floor(normalX * pushWidth)
+		y = math.floor(normalY * pushHeight)
 
 		return x, y
 	end,

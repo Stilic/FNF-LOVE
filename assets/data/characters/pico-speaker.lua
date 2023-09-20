@@ -30,7 +30,8 @@ function create()
 end
 
 function loadMappedAnims()
-	local swagShit = paths.getJSON("songs/"..PlayState.curSong.."/picospeaker").song
+	local swagShit = paths.getJSON("songs/"..paths.formatToSongPath(state.SONG.song)
+												.."/picospeaker").song
 
 	local notes = swagShit.notes
 

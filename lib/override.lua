@@ -34,7 +34,7 @@ function math.bound(value, min, max) return math.max(min, math.min(max, value)) 
 bit32, iter = bit, ipairs(math)
 
 -- EXTRA FUNCTIONS
-_G.switch = function(param, case_table)
+_G.switch = function(param, case_table) -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
     local case = case_table[param]
     if case then return case() end
     local def = case_table['default']

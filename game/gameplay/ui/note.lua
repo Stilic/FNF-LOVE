@@ -88,7 +88,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 
             prevNote.scale.y = (prevNote.width / prevNote:getFrameWidth()) *
                                    ((PlayState.inst.stepCrochet / 100) *
-                                       (1.05 / 0.7)) * PlayState.song.speed
+                                       (1.05 / 0.7)) * PlayState.SONG.speed
 
             if PlayState.pixelStage then
                 prevNote.scale.y = prevNote.scale.y * 5

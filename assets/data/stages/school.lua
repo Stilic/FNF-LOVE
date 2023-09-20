@@ -12,7 +12,7 @@ function create()
 
     PlayState.pixelStage = true
 
-    if state.song.name:lower() == 'thorns' then
+    if state.SONG.song:lower() == 'thorns' then
         local posX = 400
         local posY = 200
 
@@ -84,17 +84,17 @@ function create()
         bgStreet:updateHitbox()
         bgTrees:updateHitbox()
 
-        bgGirls = BackgroundGirls(-100, 190, state.song.name:lower() == 'roses')
+        bgGirls = BackgroundGirls(-100, 190, state.SONG.song:lower() == 'roses')
         bgGirls:setScrollFactor(0.9, 0.9)
         bgGirls:setGraphicSize(math.floor(bgGirls.width * 6))
         bgGirls:updateHitbox()
         bgGirls.antialiasing = false
         self:add(bgGirls)
 
-        if PlayState.storyMode and state.song.name:lower() == 'roses' then
+        if PlayState.storyMode and state.SONG.song:lower() == 'roses' then
             paths.playSound('gameplay/ANGRY_TEXT_BOX')
         end
     end
 end
 
-function beat(b) if state.song.name:lower() ~= 'thorns' then bgGirls:dance() end end
+function beat(b) if state.SONG.song:lower() ~= 'thorns' then bgGirls:dance() end end

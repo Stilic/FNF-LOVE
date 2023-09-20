@@ -37,12 +37,27 @@ MainMenuState = require "game.states.menu"
 FreeplayState = require "game.states.freeplay"
 PlayState = require "game.states.play"
 
+ChartingState = require "game.editors.charting"
+
 game = {
     camera = nil,
     cameras = require "game.cameramanager",
     sound = require "game.soundmanager"
 }
 
+ui = {
+    UIButton = require "game.ui.button",
+    UICheckbox = require "game.ui.checkbox",
+    UIDropDown = require "game.ui.dropdown",
+    UIGrid = require "game.ui.grid",
+    UIInputTextBox = require "game.ui.inputtextbox",
+    UINumericStepper = require "game.ui.numericstepper",
+    UITabMenu = require "game.ui.tabmenu",
+    UIText = require "game.ui.text"
+}
+
+Keyboard = require "game.input.keyboard"
+Mouse = require "game.input.mouse"
 controls = (require "lib.baton").new({
     controls = {
         ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},
@@ -64,7 +79,8 @@ controls = (require "lib.baton").new({
         accept = {"key:space", "key:return", "button:a", "button:start"},
         back = {"key:backspace", "key:escape", "button:b"},
         pause = {"key:return", "key:escape", "button:start"},
-        reset = {"key:r", "button:leftstick"}
+        reset = {"key:r", "button:leftstick"},
+        debug1 = {"key:7"}
     },
     joystick = love.joystick.getJoysticks()[1]
 })
@@ -214,6 +230,9 @@ function love.run()
 end
 
 function love.load()
+    Keyboard:init()
+    Mouse:init()
+
     love.mouse.setVisible(false)
 
     local os = love.system.getOS()
@@ -232,9 +251,31 @@ function love.resize(width, height)
     Gamestate.resize(width, height)
 end
 
-function love.keypressed(...) controls:onKeyPress(...) end
+function callUIInput(func, ...)
+    for _, o in ipairs(ui.UIInputTextBox.instances) do
+        if o[func] then o[func](o, ...) end
+    end
+    for _, o in ipairs(ui.UINumericStepper.instances) do
+        if o[func] then o[func](o, ...) end
+    end
+end
 
-function love.keyreleased(...) controls:onKeyRelease(...) end
+function love.keypressed(...)
+    controls:onKeyPress(...)
+    Keyboard.onPressed(...)
+    callUIInput('keypressed', ...)
+end
+function love.keyreleased(...)
+    controls:onKeyRelease(...)
+    Keyboard.onReleased(...)
+    callUIInput('keyreleased', ...)
+end
+function love.textinput(text) callUIInput('textinput', text) end
+
+function love.wheelmoved(x, y) Mouse.wheel = y end
+function love.mousemoved(x, y) Mouse.onMoved(x, y) end
+function love.mousepressed(...) Mouse.onPressed(...) end
+function love.mousereleased(...) Mouse.onReleased(...) end
 
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
@@ -247,6 +288,8 @@ function love.update(dt)
     controls:update()
     Timer.update(dt)
     if not isSwitchingState then Gamestate.update(dt) end
+    Keyboard:update()
+    Mouse:update()
 end
 
 function love.draw()

@@ -17,8 +17,9 @@ PlayState.ratings = {
 PlayState.downscroll = false
 PlayState.songPosition = 0
 
+PlayState.SONG = nil
+
 PlayState.storyMode = false
-PlayState.curSong = 'test'
 PlayState.pixelStage = false
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
@@ -29,25 +30,17 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    local chart = paths.getJSON("songs/" .. PlayState.curSong .. "/" ..
-                                    PlayState.curSong).song
-    PlayState.song = {
-        name = chart.name or chart.song,
-        bpm = chart.bpm,
-        speed = chart.speed,
-        needsVoices = chart.needsVoices,
-        stage = chart.stage,
-        boyfriend = chart.player1,
-        dad = chart.player2,
-        girlfriend = chart.player3 or chart.gfVersion,
-        sections = {}
-    }
+    if PlayState.SONG == nil then
+        PlayState.SONG = paths.getJSON("songs/tutorial/tutorial").song
+    end
 
-    PlayState.inst = Conductor(paths.getInst(PlayState.curSong), chart.bpm)
+    local songName = paths.formatToSongPath(PlayState.SONG.song)
+
+    PlayState.inst = Conductor(paths.getInst(songName), PlayState.SONG.bpm)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
-    if chart.needsVoices then
-        PlayState.vocals = paths.getVoices(PlayState.curSong)
+    if PlayState.SONG.needsVoices then
+        PlayState.vocals = paths.getVoices(songName)
     end
 
     self.unspawnNotes = {}
@@ -55,10 +48,8 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
-    local songName = paths.formatToSongPath(PlayState.song.name)
-
-    local curStage = PlayState.song.stage
-    if PlayState.song.stage == nil then
+    local curStage = PlayState.SONG.stage
+    if PlayState.SONG.stage == nil then
         if songName == 'senpai' or songName == 'roses' or songName == 'thorns' then
             curStage = 'school'
         elseif songName == 'ugh' or songName == 'guns' or songName == 'stress' then
@@ -67,7 +58,7 @@ function PlayState:enter()
             curStage = 'stage'
         end
     end
-    PlayState.song.stage = curStage
+    PlayState.SONG.stage = curStage
 
     -- reset ui stage
     PlayState.pixelStage = false
@@ -75,15 +66,12 @@ function PlayState:enter()
     -- i moved the stage here, cuz i changed the pixelStage variable in the stage file
     -- if it is not moved, the notes and receptors will not change to pixel skin
     -- fellix
-    self.stage = Stage(PlayState.song.stage)
+    self.stage = Stage(PlayState.SONG.stage)
     self:add(self.stage)
 
-    for _, s in ipairs(chart.notes) do
+    local notes = PlayState.SONG.notes
+    for _, s in ipairs(notes) do
         if s and s.sectionNotes then
-            table.insert(PlayState.song.sections, {
-                mustHit = s.mustHitSection,
-                bpm = s.changeBPM and s.bpm or nil
-            })
             for _, n in ipairs(s.sectionNotes) do
                 local daStrumTime = tonumber(n[1])
                 local daNoteData = tonumber(n[2])
@@ -131,8 +119,6 @@ function PlayState:enter()
                     end
                 end
             end
-        else
-            table.insert(PlayState.song.sections, nil)
         end
     end
 
@@ -184,7 +170,7 @@ function PlayState:enter()
 
     self.camGame.zoom = self.stage.camZoom
 
-    local gfVersion = PlayState.song.girlfriend
+    local gfVersion = PlayState.SONG.gfVersion
     if gfVersion == nil then
         switch(curStage,{
             ['school']=function()
@@ -197,18 +183,18 @@ function PlayState:enter()
                 gfVersion = 'gf'
             end
         })
-        PlayState.song.girlfriend = gfVersion
+        PlayState.SONG.gfVersion = gfVersion
     end
 
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-                        self.song.girlfriend, false)
+                        self.SONG.gfVersion, false)
     self.gf:setScrollFactor(0.95, 0.95)
 
     self.boyfriend = Character(self.stage.boyfriendPos.x,
-                               self.stage.boyfriendPos.y, self.song.boyfriend,
+                               self.stage.boyfriendPos.y, self.SONG.player1,
                                true)
     self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
-                         self.song.dad, false)
+                         self.SONG.player2, false)
 
     self:add(self.gf)
     self:add(self.boyfriend)
@@ -310,7 +296,7 @@ function PlayState:update(dt)
 
     local mustHit = self:getCurrentSection()
     if mustHit ~= nil then
-        mustHit = mustHit.mustHit
+        mustHit = mustHit.mustHitSection
         if mustHit ~= nil then
             if mustHit then
                 local midpoint = self.boyfriend:getMidpoint()
@@ -348,11 +334,16 @@ function PlayState:update(dt)
         pause.cameras = {self.camOther}
         self:openSubState(pause)
     end
+    if controls:pressed('debug1') then
+        PlayState.inst:pause()
+        if PlayState.vocals then PlayState.vocals:pause() end
+        switchState(ChartingState())
+    end
 
     if self.unspawnNotes[1] then
         local time = 2000
-        if PlayState.song.speed < 1 then
-            time = time / PlayState.song.speed
+        if PlayState.SONG.speed < 1 then
+            time = time / PlayState.SONG.speed
         end
         while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
             PlayState.songPosition < time do
@@ -363,7 +354,7 @@ function PlayState:update(dt)
         end
     end
 
-    local ogCrochet = (60 / PlayState.song.bpm) * 1000
+    local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
         if not n.tooLate and
@@ -374,8 +365,8 @@ function PlayState:update(dt)
                     PlayState.songPosition)) then self:goodNoteHit(n) end
 
         local time = n.time
-        if n.isSustain and PlayState.song.speed ~= 1 then
-            time = time - ogStepCrochet + ogStepCrochet / PlayState.song.speed
+        if n.isSustain and PlayState.SONG.speed ~= 1 then
+            time = time - ogStepCrochet + ogStepCrochet / PlayState.SONG.speed
         end
 
         local r =
@@ -385,7 +376,7 @@ function PlayState:update(dt)
 
         n.x = r.x + n.scrollOffset.x
         n.y = sy - (PlayState.songPosition - time) *
-                  (0.45 * PlayState.song.speed) *
+                  (0.45 * PlayState.SONG.speed) *
                   (PlayState.downscroll and -1 or 1)
 
         if n.isSustain then
@@ -395,12 +386,12 @@ function PlayState:update(dt)
                     if n.isSustainEnd then
                         n.y = n.y + (43.5 * 0.7) *
                                   (PlayState.inst.stepCrochet / 100 * 1.5 *
-                                      PlayState.song.speed) - n.height
+                                      PlayState.SONG.speed) - n.height
                     end
                     n.y = n.y + Note.swagWidth / 2 - 60.5 *
-                              (PlayState.song.speed - 1) + 27.5 *
-                              (PlayState.song.bpm / 100 - 1) *
-                              (PlayState.song.speed - 1)
+                              (PlayState.SONG.speed - 1) + 27.5 *
+                              (PlayState.SONG.bpm / 100 - 1) *
+                              (PlayState.SONG.speed - 1)
                 else
                     n.y = n.y + Note.swagWidth / 10
                 end
@@ -432,7 +423,7 @@ function PlayState:update(dt)
             end
         end
 
-        if PlayState.songPosition > 350 / PlayState.song.speed + n.time then
+        if PlayState.songPosition > 350 / PlayState.SONG.speed + n.time then
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) and
                 not PlayState.inst:isFinished() then
@@ -488,7 +479,7 @@ end
 
 -- CAN RETURN NIL!!
 function PlayState:getCurrentSection()
-    return PlayState.song.sections[math.floor(PlayState.inst.currentStep / 16) +
+    return PlayState.SONG.notes[math.floor(PlayState.inst.currentStep / 16) +
                1]
 end
 
@@ -654,7 +645,7 @@ end
 
 function PlayState:beat(b)
     local section = self:getCurrentSection()
-    if section and section.bpm ~= nil and PlayState.inst.bpm ~= section.bpm then
+    if section and section.changeBPM then
         print("bpm change! OLD BPM: " .. PlayState.inst.bpm .. ", NEW BPM: " ..
                   section.bpm)
         PlayState.inst:setBPM(section.bpm)

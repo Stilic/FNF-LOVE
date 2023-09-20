@@ -123,11 +123,13 @@ function paths.getSound(key, cache)
 end
 
 function paths.getInst(song, cache)
-    return paths.getAudio("songs/" .. song .. "/Inst", "stream", cache)
+    local daSong = paths.formatToSongPath(song)
+    return paths.getAudio("songs/" .. daSong .. "/Inst", "stream", cache)
 end
 
 function paths.getVoices(song, cache)
-    return paths.getAudio("songs/" .. song .. "/Voices", "stream", cache)
+    local daSong = paths.formatToSongPath(song)
+    return paths.getAudio("songs/" .. daSong .. "/Voices", "stream", cache)
 end
 
 function paths.playSound(key, cache)

@@ -8,6 +8,7 @@
     "redundant-parameter",
     "deprecated",
     "undefined-field",
-    "need-check-nil"
+    "need-check-nil",
+    "param-type-mismatch"
   ]
 }
