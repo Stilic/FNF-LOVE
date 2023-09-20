@@ -10,6 +10,7 @@ function PauseSubState:new()
 
     self.music = paths.getMusic('breakfast')
     self.music:setVolume(0)
+    self.music:setLooping(true)
     self.music:play()
 
     self.grpShitMenu = Group()

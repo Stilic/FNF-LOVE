@@ -15,6 +15,7 @@ PlayState.ratings = {
     {name = "shit", time = 150, score = 50, splash = false, mod = 0.2}
 }
 PlayState.downscroll = false
+PlayState.botPlay = false
 PlayState.songPosition = 0
 
 PlayState.SONG = nil
@@ -358,11 +359,10 @@ function PlayState:update(dt)
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
         if not n.tooLate and
-            (n.mustPress and n.isSustain and self.keysPressed[n.data] and
-                n.parentNote and n.parentNote.wasGoodHit and n.canBeHit) or
-            (not n.mustPress and
-                ((n.isSustain and n.canBeHit) or n.time <=
-                    PlayState.songPosition)) then self:goodNoteHit(n) end
+            ((not n.mustPress or PlayState.botPlay) and ((n.isSustain and n.canBeHit) or n.time <=
+                    PlayState.songPosition) or (n.isSustain and self.keysPressed[n.data] and
+                n.parentNote and n.parentNote.wasGoodHit and n.canBeHit))
+             then self:goodNoteHit(n) end
 
         local time = n.time
         if n.isSustain and PlayState.SONG.speed ~= 1 then
@@ -400,7 +400,7 @@ function PlayState:update(dt)
             end
 
             if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-                (not n.mustPress or self.keysPressed[n.data] or n.isSustainEnd) then
+                (not n.mustPress or PlayState.botPlay or self.keysPressed[n.data] or n.isSustainEnd) then
                 local center = sy + Note.swagWidth / 2
                 local vert = center - n.y
                 if PlayState.downscroll then
@@ -493,7 +493,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type)
-    if not self.subState or self.persistentUpdate then
+    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ':' .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -544,7 +544,7 @@ function PlayState:onKeyPress(key, type)
 end
 
 function PlayState:onKeyRelease(key, type)
-    if not self.subState or self.persistentUpdate then
+    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ':' .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -573,7 +573,7 @@ function PlayState:goodNoteHit(n)
         char:sing(n.data, false, n.isSustain)
 
         local time = 0
-        if not n.mustPress then
+        if not n.mustPress or PlayState.botPlay then
             self.camZooming = true
             time = 0.15
             if n.isSustain and not n.isSustainEnd then

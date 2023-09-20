@@ -168,6 +168,7 @@ function Sprite:new(x, y, texture)
     self.angle = 0
 
     self.shader = nil
+    self.blend = "alpha"
 
     self.__frames = nil
     self.__animations = nil
@@ -490,6 +491,7 @@ function Sprite:draw()
 
         local shader = love.graphics.getShader()
         if self.shader then love.graphics.setShader(self.shader) end
+        love.graphics.setBlendMode(self.blend)
 
         if self.clipRect then love.graphics.setStencilTest("greater", 0) end
 
@@ -552,6 +554,7 @@ function Sprite:draw()
         self.texture:setFilter(min, mag, anisotropy)
         if self.clipRect then love.graphics.setStencilTest() end
         if self.shader then love.graphics.setShader(shader) end
+        love.graphics.setBlendMode("alpha")
     end
 end
 

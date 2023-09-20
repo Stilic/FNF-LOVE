@@ -1,7 +1,7 @@
 local util = {}
 
 function util.coolLerp(x, y, i)
-    return math.lerp(x, y, i * 60 * love.timer.getDelta())
+    return math.lerp(x, y, 1 - 1 / math.exp(i * 60 * love.timer.getDelta()))
 end
 
 function util.floorDecimal(value, decimals)
