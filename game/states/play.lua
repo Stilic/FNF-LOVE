@@ -51,12 +51,12 @@ function PlayState:enter()
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
-        if songName == 'senpai' or songName == 'roses' or songName == 'thorns' then
-            curStage = 'school'
-        elseif songName == 'ugh' or songName == 'guns' or songName == 'stress' then
-            curStage = 'tank'
+        if songName == "senpai" or songName == "roses" or songName == "thorns" then
+            curStage = "school"
+        elseif songName == "ugh" or songName == "guns" or songName == "stress" then
+            curStage = "tank"
         else
-            curStage = 'stage'
+            curStage = "stage"
         end
     end
     PlayState.SONG.stage = curStage
@@ -174,14 +174,14 @@ function PlayState:enter()
     local gfVersion = PlayState.SONG.gfVersion
     if gfVersion == nil then
         switch(curStage,{
-            ['school']=function()
-                gfVersion = 'gf-pixel'
+            ["school"]=function()
+                gfVersion = "gf-pixel"
             end,
-            ['tank']=function()
-                gfVersion = 'gf-tankmen'
+            ["tank"]=function()
+                gfVersion = "gf-tankmen"
             end,
             default=function()
-                gfVersion = 'gf'
+                gfVersion = "gf"
             end
         })
         PlayState.SONG.gfVersion = gfVersion
@@ -207,7 +207,7 @@ function PlayState:enter()
     self.healthBarBG = Sprite()
     self.healthBarBG:load(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
-    self.healthBarBG:screenCenter('x')
+    self.healthBarBG:screenCenter("x")
     self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1 or
                              push.getHeight() * 0.9)
     self.healthBarBG:setScrollFactor()
@@ -227,10 +227,8 @@ function PlayState:enter()
 
     self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
                          paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
-    self.scoreTxt.outWidth = 1
+    self.scoreTxt.outWidth = 2
     self:recalculateRating()
-
-    self.judgeSprTimer = Timer.new()
 
     self:add(self.receptors)
     self:add(self.sustainsGroup)
@@ -255,8 +253,57 @@ function PlayState:enter()
 
     self.startingSong = true
 
+    self:startCountdown()
+
     for _, script in ipairs(self.scripts) do script:call("postCreate") end
 end
+
+function PlayState:startCountdown()
+    local antialias = not PlayState.pixelStage
+    local ui = PlayState.pixelStage and "pixel" or "normal"
+    local countdownData = {
+        {sound = nil, image = nil}, -- state opened
+        {sound = "gameplay/intro3", image = nil},
+        {sound = "gameplay/intro2", image = "skins/" .. ui .. "/ready"},
+        {sound = "gameplay/intro1", image = "skins/" .. ui .. "/set"},
+        {sound = "gameplay/introGo", image = "skins/" .. ui ..
+                                  (ui == "pixel" and "/date" or "/go")},
+        {sound = nil, image = nil}, -- song started
+    }
+
+    self.countdownTimer = Timer.new()
+
+    local crochet = PlayState.inst.crochet / 1000
+    for swagCounter = 1, 6 do
+        self.countdownTimer:after(crochet * (swagCounter - 1), function()
+            local data = countdownData[swagCounter]
+            if data.sound then
+                local countdownSound = paths.getSound(data.sound)
+                countdownSound:play()
+            end
+            if data.image then
+                local countdownSprite = Sprite()
+                countdownSprite:load(paths.getImage(data.image))
+                countdownSprite.cameras = {self.camHUD}
+                if PlayState.pixelStage then countdownSprite.scale = {x = 6, y = 6} end
+                countdownSprite:updateHitbox()
+                countdownSprite.antialiasing = antialias
+                countdownSprite:screenCenter()
+
+                Timer.tween(crochet, countdownSprite, {alpha = 0}, "in-out-cubic", function()
+                    self:remove(countdownSprite)
+                    countdownSprite:destroy()
+                end)
+                self:add(countdownSprite)
+            end
+
+            self.boyfriend:beat(swagCounter)
+            self.gf:beat(swagCounter)
+            self.dad:beat(swagCounter)
+        end)
+    end
+end
+
 
 function PlayState:update(dt)
     for _, script in ipairs(self.scripts) do script:call("update", dt) end
@@ -325,7 +372,7 @@ function PlayState:update(dt)
         self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
     end
 
-    if controls:pressed('pause') then
+    if controls:pressed("pause") then
         PlayState.inst:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
 
@@ -335,7 +382,7 @@ function PlayState:update(dt)
         pause.cameras = {self.camOther}
         self:openSubState(pause)
     end
-    if controls:pressed('debug1') then
+    if controls:pressed("debug1") then
         PlayState.inst:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
         switchState(ChartingState())
@@ -455,7 +502,7 @@ function PlayState:update(dt)
         end
     end
 
-    self.judgeSprTimer:update(dt)
+    self.countdownTimer:update(dt)
 
     for _, script in ipairs(self.scripts) do script:call("postUpdate", dt) end
 end
@@ -494,7 +541,7 @@ end
 
 function PlayState:onKeyPress(key, type)
     if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
-        local controls = controls:getControlsFromSource(type .. ':' .. key)
+        local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
         if key >= 0 then
@@ -545,7 +592,7 @@ end
 
 function PlayState:onKeyRelease(key, type)
     if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
-        local controls = controls:getControlsFromSource(type .. ':' .. key)
+        local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
         if key >= 0 then
@@ -659,10 +706,8 @@ function PlayState:beat(b)
     end
 
     local scaleNum = 1.2
-    self.iconP1.scale.x = scaleNum
-    self.iconP1.scale.y = scaleNum
-    self.iconP2.scale.x = scaleNum
-    self.iconP2.scale.y = scaleNum
+    self.iconP1.scale = {x = scaleNum, y = scaleNum}
+    self.iconP2.scale = {x = scaleNum, y = scaleNum}
 
     PlayState.super.beat(self, b)
     for _, script in ipairs(self.scripts) do script:call("postBeat", b) end
@@ -695,9 +740,8 @@ function PlayState:popUpScore(rating)
     judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
     Timer.after(accel, function()
-        self.judgeSprTimer:tween(0.2, judgeSpr,
-                                 {alpha = 0}, "linear", function()
-            self.judgeSprTimer:cancelTweensOf(judgeSpr)
+        Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
+            Timer.cancelTweensOf(judgeSpr)
             judgeSpr:kill()
         end)
     end)
@@ -725,9 +769,8 @@ function PlayState:popUpScore(rating)
             numScore.velocity.x = math.random(-5.0, 5.0)
 
             Timer.after(accel * 2, function()
-                self.judgeSprTimer:tween(0.2, numScore,
-                                         {alpha = 0}, "linear", function()
-                    self.judgeSprTimer:cancelTweensOf(numScore)
+                Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
+                    Timer.cancelTweensOf(numScore)
                     numScore:kill()
                 end)
             end)
@@ -744,7 +787,7 @@ function PlayState:recalculateRating()
 
     self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " ..
                                  self.misses .. " // " .. util.floorDecimal(self.accuracy * 100, 2) .. "%")
-    self.scoreTxt:screenCenter('x')
+    self.scoreTxt:screenCenter("x")
 end
 
 function PlayState:focus(f)
