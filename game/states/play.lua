@@ -669,7 +669,7 @@ function PlayState:beat(b)
 end
 
 function PlayState:popUpScore(rating)
-    local accel = 0.3125
+    local accel = PlayState.inst.crochet * 0.001
 
     local judgeSpr = self.judgeSpritesGroup:recycle()
 
@@ -689,19 +689,18 @@ function PlayState:popUpScore(rating)
     -- use fixed values to display at the same position on a different resolution
     judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
     judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
+    judgeSpr.velocity.x = 0
+    judgeSpr.velocity.y = 0
     judgeSpr.alpha = 1
     judgeSpr.antialiasing = antialias
 
-    self.judgeSprTimer:tween(accel * 1.05, judgeSpr, {y = judgeSpr.y - 20},
-                             "out-circ", function()
-        self.judgeSprTimer:tween(accel * 1.05, judgeSpr, {y = judgeSpr.y + 20},
-                                 "in-circ")
-    end)
+    judgeSpr.acceleration.y = 550
+    judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
+    judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
     Timer.after(accel, function()
-        self.judgeSprTimer:tween(accel * 0.7, judgeSpr,
-                                 {alpha = judgeSpr.alpha - 1}, "linear",
-                                 function()
+        self.judgeSprTimer:tween(0.2, judgeSpr,
+                                 {alpha = 0}, "linear", function()
             self.judgeSprTimer:cancelTweensOf(judgeSpr)
             judgeSpr:kill()
         end)
@@ -720,22 +719,18 @@ function PlayState:popUpScore(rating)
             numScore:updateHitbox()
             numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
             numScore.y = judgeSpr.y + 115
+            numScore.velocity.y = 0
+            numScore.velocity.x = 0
             numScore.alpha = 1
             numScore.antialiasing = antialias
 
-            local accelY = love.math.random(200, 300) / 10
-            self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                     {y = numScore.y - accelY * 1.5},
-                                     "out-circ", function()
-                self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                         {y = numScore.y + accelY * 1.8},
-                                         "in-circ")
-            end)
+            numScore.acceleration.y = math.random(200, 300)
+            numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
+            numScore.velocity.x = math.random(-5.0, 5.0)
 
-            Timer.after(accel * (accel * 2), function()
-                self.judgeSprTimer:tween(accel * 1.5, numScore,
-                                         {alpha = numScore.alpha - 1}, "linear",
-                                         function()
+            Timer.after(accel * 2, function()
+                self.judgeSprTimer:tween(0.2, numScore,
+                                         {alpha = 0}, "linear", function()
                     self.judgeSprTimer:cancelTweensOf(numScore)
                     numScore:kill()
                 end)
