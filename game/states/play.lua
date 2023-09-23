@@ -673,12 +673,8 @@ function PlayState:popUpScore(rating)
 
     local judgeSpr = self.judgeSpritesGroup:recycle()
 
-    local uiStage = 'normal'
-    local antialias = true
-    if PlayState.pixelStage then
-        uiStage = 'pixel'
-        antialias = false
-    end
+    local antialias = not PlayState.pixelStage
+    local uiStage = PlayState.pixelStage and "pixel" or "normal"
 
     judgeSpr:load(paths.getImage("skins/" .. uiStage .. "/" .. rating.name))
     judgeSpr.alpha = 1
