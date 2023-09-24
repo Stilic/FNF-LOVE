@@ -33,7 +33,7 @@ Alphabet = require "game.alphabet"
 BackgroundGirls = require "game.gameplay.backgroundgirls"
 
 TitleState = require "game.states.title"
-MainMenuState = require "game.states.menu"
+MainMenuState = require "game.states.mainmenu"
 FreeplayState = require "game.states.freeplay"
 PlayState = require "game.states.play"
 
@@ -56,7 +56,6 @@ ui = {
     UIText = require "game.ui.text"
 }
 
-Keyboard = require "game.input.keyboard"
 Mouse = require "game.input.mouse"
 controls = (require "lib.baton").new({
     controls = {
@@ -230,7 +229,6 @@ function love.run()
 end
 
 function love.load()
-    Keyboard:init()
     Mouse:init()
 
     love.mouse.setVisible(false)
@@ -242,6 +240,7 @@ function love.load()
     push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
 
     game.cameras.reset()
+    Mouse:init()
 
     Gamestate.switch(TitleState())
 end
@@ -262,12 +261,10 @@ end
 
 function love.keypressed(...)
     controls:onKeyPress(...)
-    Keyboard.onPressed(...)
     callUIInput('keypressed', ...)
 end
 function love.keyreleased(...)
     controls:onKeyRelease(...)
-    Keyboard.onReleased(...)
     callUIInput('keyreleased', ...)
 end
 function love.textinput(text) callUIInput('textinput', text) end
@@ -283,12 +280,12 @@ function love.update(dt)
     for _, o in pairs(Flicker.instances) do o:update(dt) end
 
     game.cameras.update(dt)
-
-    controls:update()
     Timer.update(dt)
-    if not isSwitchingState then Gamestate.update(dt) end
-    Keyboard:update()
+
     Mouse:update()
+    controls:update()
+
+    if not isSwitchingState then Gamestate.update(dt) end
 end
 
 function love.draw()

@@ -5,7 +5,7 @@ FreeplayState.curSelected = 1
 function FreeplayState:enter()
     self.songs = {
         'Test', 'Tutorial', 'Bopeebo', 'Fresh', 'Dad Battle', 'Senpai', 'Roses',
-        'Thorns', 'Ugh', 'Guns', 'Stress', 'Triple B Trouble', 'Yaro Phantasma'
+        'Thorns', 'Ugh', 'Guns', 'Stress'
     }
 
     self.bg = Sprite()
@@ -45,8 +45,9 @@ function FreeplayState:update(dt)
         switchState(MainMenuState())
     end
     if controls:pressed('accept') then
-        local daSong = paths.formatToSongPath(self.songs[FreeplayState.curSelected])
-        PlayState.SONG = paths.getJSON("songs/"..daSong.."/"..daSong).song
+        local daSong = paths.formatToSongPath(
+                           self.songs[FreeplayState.curSelected])
+        PlayState.SONG = paths.getJSON("songs/" .. daSong .. "/" .. daSong).song
         switchState(PlayState())
     end
 

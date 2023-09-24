@@ -219,7 +219,6 @@ function ChartingState:update(dt)
         and Mouse.x < self.uiGrid.x + self.uiGrid.width
         and Mouse.y > (self.gridSize * 4)
         and Mouse.y < self.uiGrid.y + (self.gridSize * 4 * 4) then
-
         self.dummyArrow.visible = true
         self.dummyArrow.x = math.floor(Mouse.x / self.gridSize) * self.gridSize
         if Keyboard.pressed.SHIFT then

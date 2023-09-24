@@ -1,4 +1,3 @@
-
 local tankWatchtower
 local tankGround
 local tankAngle = love.math.random(-90, 45)
@@ -55,16 +54,19 @@ function create()
     self:add(smokeRight)
 
     tankWatchtower = Sprite(100, 50)
-    tankWatchtower:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tankWatchtower'))
+    tankWatchtower:setFrames(paths.getSparrowAtlas(SCRIPT_PATH ..
+                                                       'tankWatchtower'))
     tankWatchtower:setScrollFactor(0.5, 0.5)
-    tankWatchtower:addAnimByPrefix('watchtower gradient color', 'watchtower gradient color', 24, false)
+    tankWatchtower:addAnimByPrefix('watchtower gradient color',
+                                   'watchtower gradient color', 24, false)
     tankWatchtower:play('watchtower gradient color', true)
     self:add(tankWatchtower)
 
     tankGround = Sprite(300, 300)
     tankGround:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tankRolling'))
     tankGround:setScrollFactor(0.5, 0.5)
-    tankGround:addAnimByPrefix('BG tank w lighting', 'BG tank w lighting', 24, true)
+    tankGround:addAnimByPrefix('BG tank w lighting', 'BG tank w lighting', 24,
+                               true)
     tankGround:play('BG tank w lighting', true)
     self:add(tankGround)
 
