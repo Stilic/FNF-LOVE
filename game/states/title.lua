@@ -47,6 +47,7 @@ function TitleState:enter()
 end
 
 function TitleState:update(dt)
+    TitleState.music:update(dt)
     if controls:pressed("debug1") then
         TitleState.music:destroy()
         switchState(ChartingState(), false)

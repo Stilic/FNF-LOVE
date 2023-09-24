@@ -173,16 +173,10 @@ function PlayState:enter()
 
     local gfVersion = PlayState.SONG.gfVersion
     if gfVersion == nil then
-        switch(curStage,{
-            ["school"]=function()
-                gfVersion = "gf-pixel"
-            end,
-            ["tank"]=function()
-                gfVersion = "gf-tankmen"
-            end,
-            default=function()
-                gfVersion = "gf"
-            end
+        switch(curStage, {
+            ["school"] = function() gfVersion = "gf-pixel" end,
+            ["tank"] = function() gfVersion = "gf-tankmen" end,
+            default = function() gfVersion = "gf" end
         })
         PlayState.SONG.gfVersion = gfVersion
     end
@@ -253,48 +247,47 @@ function PlayState:enter()
 
     self.startingSong = true
 
-    self:startCountdown()
+    self.countdownTimer = Timer.new()
 
-    for _, script in ipairs(self.scripts) do script:call("postCreate") end
-end
-
-function PlayState:startCountdown()
     local antialias = not PlayState.pixelStage
     local ui = PlayState.pixelStage and "pixel" or "normal"
     local countdownData = {
-        {sound = nil, image = nil}, -- state opened
+        nil, -- state opened
         {sound = "gameplay/intro3", image = nil},
         {sound = "gameplay/intro2", image = "skins/" .. ui .. "/ready"},
-        {sound = "gameplay/intro1", image = "skins/" .. ui .. "/set"},
-        {sound = "gameplay/introGo", image = "skins/" .. ui ..
-                                  (ui == "pixel" and "/date" or "/go")},
-        {sound = nil, image = nil}, -- song started
+        {sound = "gameplay/intro1", image = "skins/" .. ui .. "/set"}, {
+            sound = "gameplay/introGo",
+            image = "skins/" .. ui .. (ui == "pixel" and "/date" or "/go")
+        }
     }
-
-    self.countdownTimer = Timer.new()
 
     local crochet = PlayState.inst.crochet / 1000
     for swagCounter = 1, 6 do
         self.countdownTimer:after(crochet * (swagCounter - 1), function()
             local data = countdownData[swagCounter]
-            if data.sound then
-                local countdownSound = paths.getSound(data.sound)
-                countdownSound:play()
-            end
-            if data.image then
-                local countdownSprite = Sprite()
-                countdownSprite:load(paths.getImage(data.image))
-                countdownSprite.cameras = {self.camHUD}
-                if PlayState.pixelStage then countdownSprite.scale = {x = 6, y = 6} end
-                countdownSprite:updateHitbox()
-                countdownSprite.antialiasing = antialias
-                countdownSprite:screenCenter()
+            if data then
+                if data.sound then
+                    local countdownSound = paths.getSound(data.sound)
+                    countdownSound:play()
+                end
+                if data.image then
+                    local countdownSprite = Sprite()
+                    countdownSprite:load(paths.getImage(data.image))
+                    countdownSprite.cameras = {self.camHUD}
+                    if PlayState.pixelStage then
+                        countdownSprite.scale = {x = 6, y = 6}
+                    end
+                    countdownSprite:updateHitbox()
+                    countdownSprite.antialiasing = antialias
+                    countdownSprite:screenCenter()
 
-                Timer.tween(crochet, countdownSprite, {alpha = 0}, "in-out-cubic", function()
-                    self:remove(countdownSprite)
-                    countdownSprite:destroy()
-                end)
-                self:add(countdownSprite)
+                    Timer.tween(crochet, countdownSprite, {alpha = 0},
+                                "in-out-cubic", function()
+                        self:remove(countdownSprite)
+                        countdownSprite:destroy()
+                    end)
+                    self:add(countdownSprite)
+                end
             end
 
             self.boyfriend:beat(swagCounter)
@@ -302,11 +295,14 @@ function PlayState:startCountdown()
             self.dad:beat(swagCounter)
         end)
     end
-end
 
+    for _, script in ipairs(self.scripts) do script:call("postCreate") end
+end
 
 function PlayState:update(dt)
     for _, script in ipairs(self.scripts) do script:call("update", dt) end
+
+    self.countdownTimer:update(dt)
 
     if not isSwitchingState and not self.startingSong and
         PlayState.inst:isFinished() then switchState(FreeplayState()) end
@@ -321,6 +317,8 @@ function PlayState:update(dt)
     end
 
     PlayState.super.update(self, dt)
+
+    PlayState.inst:update()
 
     self.camGame.target.x, self.camGame.target.y =
         util.coolLerp(self.camGame.target.x, self.camFollow.x,
@@ -405,11 +403,12 @@ function PlayState:update(dt)
     local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
-        if not n.tooLate and
-            ((not n.mustPress or PlayState.botPlay) and ((n.isSustain and n.canBeHit) or n.time <=
-                    PlayState.songPosition) or (n.isSustain and self.keysPressed[n.data] and
-                n.parentNote and n.parentNote.wasGoodHit and n.canBeHit))
-             then self:goodNoteHit(n) end
+        if not n.tooLate and ((not n.mustPress or PlayState.botPlay) and
+            ((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition) or
+            (n.isSustain and self.keysPressed[n.data] and n.parentNote and
+                n.parentNote.wasGoodHit and n.canBeHit)) then
+            self:goodNoteHit(n)
+        end
 
         local time = n.time
         if n.isSustain and PlayState.SONG.speed ~= 1 then
@@ -447,7 +446,8 @@ function PlayState:update(dt)
             end
 
             if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-                (not n.mustPress or PlayState.botPlay or self.keysPressed[n.data] or n.isSustainEnd) then
+                (not n.mustPress or PlayState.botPlay or
+                    self.keysPressed[n.data] or n.isSustainEnd) then
                 local center = sy + Note.swagWidth / 2
                 local vert = center - n.y
                 if PlayState.downscroll then
@@ -502,8 +502,6 @@ function PlayState:update(dt)
         end
     end
 
-    self.countdownTimer:update(dt)
-
     for _, script in ipairs(self.scripts) do script:call("postUpdate", dt) end
 end
 
@@ -526,8 +524,7 @@ end
 
 -- CAN RETURN NIL!!
 function PlayState:getCurrentSection()
-    return PlayState.SONG.notes[math.floor(PlayState.inst.currentStep / 16) +
-               1]
+    return PlayState.SONG.notes[math.floor(PlayState.inst.currentStep / 16) + 1]
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -686,7 +683,6 @@ function PlayState:step(s)
     end
 
     for _, script in ipairs(self.scripts) do script:call("step", s) end
-    PlayState.super.step(self, s)
     for _, script in ipairs(self.scripts) do script:call("postStep", s) end
 end
 
@@ -709,7 +705,10 @@ function PlayState:beat(b)
     self.iconP1.scale = {x = scaleNum, y = scaleNum}
     self.iconP2.scale = {x = scaleNum, y = scaleNum}
 
-    PlayState.super.beat(self, b)
+    self.boyfriend:beat(b)
+    self.gf:beat(b)
+    self.dad:beat(b)
+
     for _, script in ipairs(self.scripts) do script:call("postBeat", b) end
 end
 
@@ -782,11 +781,14 @@ end
 
 function PlayState:recalculateRating()
     if self.totalPlayed > 0 then
-        self.accuracy = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
+        self.accuracy = math.min(1,
+                                 math.max(0, self.totalHit / self.totalPlayed))
     end
 
     self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " ..
-                                 self.misses .. " // " .. util.floorDecimal(self.accuracy * 100, 2) .. "%")
+                                 self.misses .. " // " ..
+                                 util.floorDecimal(self.accuracy * 100, 2) ..
+                                 "%")
     self.scoreTxt:screenCenter("x")
 end
 

@@ -66,18 +66,4 @@ function Group:draw(...)
     Camera.__defaultCameras = oldDefaultCameras
 end
 
-function Group:step(s, ...)
-    for _, o in pairs(self.members) do
-        local f = o.step
-        if f then f(o, s, ...) end
-    end
-end
-
-function Group:beat(b, ...)
-    for _, o in pairs(self.members) do
-        local f = o.beat
-        if f then f(o, b, ...) end
-    end
-end
-
 return Group

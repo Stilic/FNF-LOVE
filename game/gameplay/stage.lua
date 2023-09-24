@@ -40,11 +40,4 @@ function Stage:draw()
     self.script:call("postDraw")
 end
 
-function Stage:beat(b)
-    self.script:call("beat", b)
-    Stage.super.beat(self, b)
-    self.front:beat(b)
-    self.script:call("postBeat", b)
-end
-
 return Stage

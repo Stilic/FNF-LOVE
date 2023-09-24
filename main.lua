@@ -280,7 +280,6 @@ function love.mousereleased(...) Mouse.onReleased(...) end
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
-    for _, o in pairs(Conductor.instances) do o:update(dt) end
     for _, o in pairs(Flicker.instances) do o:update(dt) end
 
     game.cameras.update(dt)
