@@ -4,7 +4,7 @@ Conductor.instances = {}
 
 function Conductor:new(source, bpm)
     self.__source = source
-    self.__paused = true
+    self.__paused = false
     self.__stepsDone = {}
     self.__lastTime = 0
 

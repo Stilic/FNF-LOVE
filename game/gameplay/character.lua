@@ -58,9 +58,8 @@ end
 
 function Character:update(dt)
     if self.curAnim then
-        if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~= nil then
-            self:playAnim(self.curAnim.name .. '-loop')
-        end
+        if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~=
+            nil then self:playAnim(self.curAnim.name .. '-loop') end
     end
     self.script:call("update", dt)
     Character.super.update(self, dt)

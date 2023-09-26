@@ -196,7 +196,7 @@ function PlayState:enter()
     self:add(self.dad)
     self:add(self.judgeSpritesGroup)
 
-    self:add(self.stage.front)
+    self:add(self.stage.foreground)
 
     self.healthBarBG = Sprite()
     self.healthBarBG:load(paths.getImage("skins/normal/healthBar"))

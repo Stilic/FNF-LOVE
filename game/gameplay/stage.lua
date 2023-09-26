@@ -16,7 +16,7 @@ function Stage:new(name)
     self.gfCam = {x = 0, y = 0}
     self.dadCam = {x = 0, y = 0}
 
-    self.front = Group()
+    self.foreground = Group()
 
     local path = "stages/" .. name
     self.script = Script(path)
@@ -29,14 +29,14 @@ end
 function Stage:update(dt)
     self.script:call("update", dt)
     Stage.super.update(self, dt)
-    self.front:update(dt)
+    self.foreground:update(dt)
     self.script:call("postUpdate", dt)
 end
 
 function Stage:draw()
     self.script:call("draw")
     Stage.super.draw(self)
-    self.front:draw()
+    self.foreground:draw()
     self.script:call("postDraw")
 end
 

@@ -74,7 +74,7 @@ function create()
     self:add(tankmanRun)
 
     foregroundSprites = Group()
-    self.front:add(foregroundSprites)
+    self.foreground:add(foregroundSprites)
 
     local tankGround = Sprite(-420, -150)
     tankGround:load(paths.getImage(SCRIPT_PATH .. 'tankGround'))
