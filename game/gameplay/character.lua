@@ -78,8 +78,8 @@ function Character:beat(b)
     self.script:call("beat", b)
 
     if self.lastHit > 0 then
-        if self.lastHit + PlayState.inst.stepCrochet * self.singDuration <
-            PlayState.songPosition then
+        if self.lastHit + math.round(self.singDuration) / 2 <=
+            PlayState.inst.currentBeat then
             self:dance()
             self.lastHit = 0
         end
@@ -111,7 +111,7 @@ function Character:sing(dir, miss, hold)
         self.lastMiss = miss
     end
 
-    self.lastHit = PlayState.songPosition
+    self.lastHit = PlayState.inst.currentBeat
 end
 
 function Character:dance(force)
