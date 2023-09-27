@@ -24,19 +24,19 @@ function Note:new(time, data, prevNote, sustain, parentNote)
     local color = Note.colors[data + 1]
     if PlayState.pixelStage then
         if sustain then
-            self:load(paths.getImage('skins/pixel/NOTE_assetsENDS'))
+            self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'))
             self.width = self.width / 4
             self.height = self.height / 2
-            self:load(paths.getImage('skins/pixel/NOTE_assetsENDS'), true,
+            self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'), true,
                       math.floor(self.width), math.floor(self.height))
 
             self:addAnim(color .. 'holdend', Note.pixelAnim[data + 1][1])
             self:addAnim(color .. 'hold', Note.pixelAnim[data + 1][2])
         else
-            self:load(paths.getImage('skins/pixel/NOTE_assets'))
+            self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
             self.width = self.width / 4
             self.height = self.height / 5
-            self:load(paths.getImage('skins/pixel/NOTE_assets'), true,
+            self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true,
                       math.floor(self.width), math.floor(self.height))
 
             self:addAnim(color .. 'Scroll', Note.pixelAnim[data + 1][1])

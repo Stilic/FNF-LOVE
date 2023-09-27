@@ -100,7 +100,6 @@ function PlayState:enter()
                             susLength = math.round(n[3] /
                                                        PlayState.inst
                                                            .stepCrochet)
-                            -- note.sustainLength = susLength * PlayState.inst.stepCrochet
 
                             for susNote = 0, math.max(math.floor(susLength) - 1,
                                                       1) do
@@ -199,7 +198,7 @@ function PlayState:enter()
     self:add(self.stage.foreground)
 
     self.healthBarBG = Sprite()
-    self.healthBarBG:load(paths.getImage("skins/normal/healthBar"))
+    self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter("x")
     self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1 or
@@ -221,7 +220,7 @@ function PlayState:enter()
 
     self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
                          paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
-    self.scoreTxt.outWidth = 2
+    self.scoreTxt.outWidth = 1
     self:recalculateRating()
 
     self:add(self.receptors)
@@ -249,16 +248,13 @@ function PlayState:enter()
 
     self.countdownTimer = Timer.new()
 
-    local antialias = not PlayState.pixelStage
-    local ui = PlayState.pixelStage and "pixel" or "normal"
+    local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
     local countdownData = {
         nil, -- state opened
-        {sound = "gameplay/intro3", image = nil},
-        {sound = "gameplay/intro2", image = "skins/" .. ui .. "/ready"},
-        {sound = "gameplay/intro1", image = "skins/" .. ui .. "/set"}, {
-            sound = "gameplay/introGo",
-            image = "skins/" .. ui .. (ui == "pixel" and "/date" or "/go")
-        }
+        {sound = basePath .. "/intro3", image = nil},
+        {sound = basePath .. "/intro2", image = basePath .. "/ready"},
+        {sound = basePath .. "/intro1", image = basePath .. "/set"},
+        {sound = basePath .. "/introGo", image = basePath .. "/go"}
     }
 
     local crochet = PlayState.inst.crochet / 1000
@@ -272,13 +268,13 @@ function PlayState:enter()
                 end
                 if data.image then
                     local countdownSprite = Sprite()
-                    countdownSprite:load(paths.getImage(data.image))
+                    countdownSprite:loadTexture(paths.getImage(data.image))
                     countdownSprite.cameras = {self.camHUD}
                     if PlayState.pixelStage then
                         countdownSprite.scale = {x = 6, y = 6}
                     end
                     countdownSprite:updateHitbox()
-                    countdownSprite.antialiasing = antialias
+                    countdownSprite.antialiasing = not PlayState.pixelStage
                     countdownSprite:screenCenter()
 
                     Timer.tween(crochet, countdownSprite, {alpha = 0},
@@ -726,7 +722,8 @@ function PlayState:popUpScore(rating)
     local antialias = not PlayState.pixelStage
     local uiStage = PlayState.pixelStage and "pixel" or "normal"
 
-    judgeSpr:load(paths.getImage("skins/" .. uiStage .. "/" .. rating.name))
+    judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
+                                            rating.name))
     judgeSpr.alpha = 1
     judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
                                            (PlayState.pixelStage and 4.7 or 0.7)))
@@ -757,7 +754,8 @@ function PlayState:popUpScore(rating)
         for i = 1, #comboStr do
             local digit = tonumber(comboStr:sub(i, i)) or 0
             local numScore = self.judgeSpritesGroup:recycle()
-            numScore:load(paths.getImage("skins/" .. uiStage .. "/num" .. digit))
+            numScore:loadTexture(paths.getImage(
+                                     "skins/" .. uiStage .. "/num" .. digit))
             numScore:setGraphicSize(math.floor(numScore.width *
                                                    (PlayState.pixelStage and 4.5 or
                                                        0.5)))

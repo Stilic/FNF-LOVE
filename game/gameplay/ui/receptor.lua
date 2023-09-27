@@ -16,10 +16,10 @@ function Receptor:new(x, y, data, player)
     self.__timer = 0
 
     if PlayState.pixelStage then
-        self:load(paths.getImage('skins/pixel/NOTE_assets'))
+        self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
         self.width = self.width / 4
         self.height = self.height / 5
-        self:load(paths.getImage('skins/pixel/NOTE_assets'), true, math.floor(self.width), math.floor(self.height))
+        self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true, math.floor(self.width), math.floor(self.height))
 
         self.antialiasing = false
         self:setGraphicSize(math.floor(self.width * 6))

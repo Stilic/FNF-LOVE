@@ -1,4 +1,3 @@
-
 local Text = Object:extend()
 
 function Text:new(x, y, text, font)

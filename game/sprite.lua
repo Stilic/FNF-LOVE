@@ -183,10 +183,10 @@ function Sprite:new(x, y, texture)
 
     self.__createdGraphic = false
 
-    if texture then self:load(texture) end
+    if texture then self:loadTexture(texture) end
 end
 
-function Sprite:load(texture, animated, framewidth, frameheight)
+function Sprite:loadTexture(texture, animated, framewidth, frameheight)
     if animated == nil then animated = false end
 
     if type(texture) == "string" then
@@ -248,7 +248,7 @@ function Sprite:setFrames(frames)
     self.__frames = frames.frames
     self.texture = frames.texture
 
-    self:load(frames.texture)
+    self:loadTexture(frames.texture)
     self.width, self.height = self:getFrameDimensions()
     self:centerOrigin()
 end

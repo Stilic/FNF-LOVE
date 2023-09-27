@@ -241,7 +241,7 @@ end
 
 -- Not Supported
 
-function SpriteGroup:load() return self end
+function SpriteGroup:loadTexture() return self end
 
 function SpriteGroup:setFrames() return self.__frames end
 

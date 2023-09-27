@@ -9,7 +9,7 @@ function FreeplayState:enter()
     }
 
     self.bg = Sprite()
-    self.bg:load(paths.getImage('menus/mainmenu/menuBGBlue'))
+    self.bg:loadTexture(paths.getImage('menus/mainmenu/menuBGBlue'))
     self:add(self.bg)
     self.bg:screenCenter()
 

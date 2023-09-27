@@ -13,7 +13,7 @@ function MainMenuState:enter()
 
     local yScroll = math.max(0.25 - (0.05 * (#self.optionShit - 4)), 0.1)
     self.menuBg = Sprite()
-    self.menuBg:load(paths.getImage('menus/mainmenu/menuBG'))
+    self.menuBg:loadTexture(paths.getImage('menus/mainmenu/menuBG'))
     self.menuBg:setScrollFactor(0, yScroll)
     self.menuBg:setGraphicSize(math.floor(self.menuBg.width * 1.175))
     self.menuBg:updateHitbox()
@@ -21,7 +21,7 @@ function MainMenuState:enter()
     self:add(self.menuBg)
 
     self.magentaBg = Sprite()
-    self.magentaBg:load(paths.getImage('menus/mainmenu/menuBGMagenta'))
+    self.magentaBg:loadTexture(paths.getImage('menus/mainmenu/menuBGMagenta'))
     self.magentaBg.visible = false
     self.magentaBg:setScrollFactor(0, yScroll)
     self.magentaBg:setGraphicSize(math.floor(self.magentaBg.width * 1.175))

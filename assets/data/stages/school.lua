@@ -26,7 +26,7 @@ function create()
         self:add(bg)
     else
         local bgSky = Sprite()
-        bgSky:load(paths.getImage(SCRIPT_PATH .. 'weebSky'))
+        bgSky:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebSky'))
         bgSky:setScrollFactor(0.1, 0.1)
         self:add(bgSky)
         bgSky.antialiasing = false
@@ -34,13 +34,13 @@ function create()
         local repositionShit = -200
 
         local bgSchool = Sprite(repositionShit, 0)
-        bgSchool:load(paths.getImage(SCRIPT_PATH .. 'weebSchool'))
+        bgSchool:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebSchool'))
         bgSchool:setScrollFactor(0.6, 0.90)
         self:add(bgSchool)
         bgSchool.antialiasing = false
 
         local bgStreet = Sprite(repositionShit, 0)
-        bgStreet:load(paths.getImage(SCRIPT_PATH .. 'weebStreet'))
+        bgStreet:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebStreet'))
         bgStreet:setScrollFactor(0.95, 0.95)
         self:add(bgStreet)
         bgStreet.antialiasing = false
@@ -48,7 +48,7 @@ function create()
         local widShit = math.floor(bgSky.width * 6)
 
         local fgTrees = Sprite(repositionShit + 170, 130)
-        fgTrees:load(paths.getImage(SCRIPT_PATH .. 'weebTreesBack'))
+        fgTrees:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebTreesBack'))
         fgTrees:setGraphicSize(math.floor(widShit * 0.8))
         fgTrees:updateHitbox()
         self:add(fgTrees)

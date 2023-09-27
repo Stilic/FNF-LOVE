@@ -4,7 +4,7 @@ function HealthIcon:new(icon, flip)
     HealthIcon.super.new(self, 0, 0)
 
     self.icon = icon or "face"
-    self:load(paths.getImage("icons/icon-" .. self.icon))
+    self:loadTexture(paths.getImage("icons/icon-" .. self.icon))
 
     local f0 = Sprite.newFrame("0", 0, 0, 150, self.height,
                                (self.width == 300 and 300 or 150), self.height,
