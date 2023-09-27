@@ -78,7 +78,7 @@ function Character:beat(b)
     self.script:call("beat", b)
 
     if self.lastHit > 0 then
-        if self.lastHit + math.max(1, math.floor(math.round(self.singDuration) / 2 - 1)) <= PlayState.inst.currentBeatFloat then
+        if self.lastHit + math.max(1, math.round(self.singDuration) / 2 - 1) <= PlayState.inst.currentBeatFloat then
             self:dance()
             self.lastHit = 0
         end
