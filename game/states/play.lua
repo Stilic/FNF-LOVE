@@ -495,7 +495,7 @@ function PlayState:update(dt)
                 self.health = self.health - 0.0475
                 self.healthBar:setValue(self.health)
 
-                self.boyfriend:sing(n.data, true, n.isSustain)
+                self.boyfriend:sing(n.data, true)
             end
 
             self:removeNote(n)
@@ -614,7 +614,7 @@ function PlayState:goodNoteHit(n)
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
-        char:sing(n.data, false, n.isSustain)
+        char:sing(n.data, false)
 
         local time = 0
         if not n.mustPress or PlayState.botPlay then
@@ -682,8 +682,14 @@ function PlayState:step(s)
         PlayState.songPosition = time * 1000
     end
 
-    for _, script in ipairs(self.scripts) do script:call("step", s) end
-    for _, script in ipairs(self.scripts) do script:call("postStep", s) end
+    self.boyfriend:step(s)
+    self.gf:step(s)
+    self.dad:step(s)
+
+    for _, script in ipairs(self.scripts) do
+        script:call("step", s)
+        script:call("postStep", s)
+    end
 end
 
 function PlayState:beat(b)

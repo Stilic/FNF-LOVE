@@ -12,7 +12,6 @@ function Character:new(x, y, char, isPlayer)
     self.singDuration = 4
     self.lastHit = 0
     self.lastSing = nil
-    self.staticHoldAnimation = false
 
     self.danceSpeed = 2
     self.danced = false
@@ -74,11 +73,17 @@ function Character:draw()
     self.script:call("postDraw")
 end
 
+function Character:step(s)
+    self.script:call("step", s)
+    self.script:call("postStep", s)
+end
+
 function Character:beat(b)
     self.script:call("beat", b)
-
     if self.lastHit > 0 then
-        if self.lastHit + math.max(1, math.round(self.singDuration) / 2 - 1) <= PlayState.inst.currentBeatFloat then
+        if self.lastHit +
+            math.floor(PlayState.inst.stepCrochet * self.singDuration) <
+            PlayState.songPosition then
             self:dance()
             self.lastHit = 0
         end
@@ -99,18 +104,12 @@ function Character:playAnim(anim, force, frame)
     end
 end
 
-function Character:sing(dir, miss, hold)
-    if not self.staticHoldAnimation or not hold or self.lastSing ~= dir or
-        self.lastSing == nil or self.lastMiss ~= miss or self.lastMiss == nil then
-        local anim = "sing" .. string.upper(Note.directions[dir + 1])
-        if miss then anim = anim .. "miss" end
-        self:playAnim(anim, true)
+function Character:sing(dir, miss)
+    local anim = "sing" .. string.upper(Note.directions[dir + 1])
+    if miss then anim = anim .. "miss" end
+    self:playAnim(anim, true)
 
-        self.lastSing = dir
-        self.lastMiss = miss
-    end
-
-    self.lastHit = PlayState.inst.currentBeatFloat
+    self.lastHit = PlayState.songPosition
 end
 
 function Character:dance(force)

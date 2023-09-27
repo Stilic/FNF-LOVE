@@ -45,6 +45,9 @@ game = {
     sound = require "game.soundmanager"
 }
 
+Keyboard = require "game.input.keyboard"
+Mouse = require "game.input.mouse"
+
 ui = {
     UIButton = require "game.ui.button",
     UICheckbox = require "game.ui.checkbox",
@@ -56,7 +59,6 @@ ui = {
     UIText = require "game.ui.text"
 }
 
-Mouse = require "game.input.mouse"
 controls = (require "lib.baton").new({
     controls = {
         ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},
@@ -229,8 +231,6 @@ function love.run()
 end
 
 function love.load()
-    Mouse:init()
-
     love.mouse.setVisible(false)
 
     local os = love.system.getOS()
@@ -240,7 +240,6 @@ function love.load()
     push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
 
     game.cameras.reset()
-    Mouse:init()
 
     Gamestate.switch(TitleState())
 end
@@ -250,7 +249,7 @@ function love.resize(width, height)
     Gamestate.resize(width, height)
 end
 
-function callUIInput(func, ...)
+local function callUIInput(func, ...)
     for _, o in ipairs(ui.UIInputTextBox.instances) do
         if o[func] then o[func](o, ...) end
     end
@@ -258,34 +257,36 @@ function callUIInput(func, ...)
         if o[func] then o[func](o, ...) end
     end
 end
-
 function love.keypressed(...)
     controls:onKeyPress(...)
+    Keyboard.onPressed(...)
     callUIInput('keypressed', ...)
 end
 function love.keyreleased(...)
     controls:onKeyRelease(...)
+    Keyboard.onReleased(...)
     callUIInput('keyreleased', ...)
 end
 function love.textinput(text) callUIInput('textinput', text) end
 
 function love.wheelmoved(x, y) Mouse.wheel = y end
 function love.mousemoved(x, y) Mouse.onMoved(x, y) end
-function love.mousepressed(...) Mouse.onPressed(...) end
-function love.mousereleased(...) Mouse.onReleased(...) end
+function love.mousepressed(x, y, button) Mouse.onPressed(button) end
+function love.mousereleased(x, y, button) Mouse.onReleased(button) end
 
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
     for _, o in pairs(Flicker.instances) do o:update(dt) end
-
     game.cameras.update(dt)
-    Timer.update(dt)
 
-    Mouse:update()
+    Timer.update(dt)
     controls:update()
 
     if not isSwitchingState then Gamestate.update(dt) end
+
+    Keyboard.update()
+    Mouse.update()
 end
 
 function love.draw()

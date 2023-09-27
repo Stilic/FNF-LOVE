@@ -37,8 +37,10 @@ function ChartingState:enter()
     game.cameras.reset(self.camScroll)
 
     self.gridSize = 40
-    self.uiGrid = ui.UIGrid(self.gridSize * 6, 0, 64, 8, self.gridSize, {1,1,1}, {0.7,0.7,0.7})
-    self.uiGrid_highlight = ui.UIGrid(0, 0, 16, 2, self.gridSize * 4, {0, 0, 0, 0}, {0, 0, 0, 0.5})
+    self.uiGrid = ui.UIGrid(self.gridSize * 6, 0, 64, 8, self.gridSize,
+                            {1, 1, 1}, {0.7, 0.7, 0.7})
+    self.uiGrid_highlight = ui.UIGrid(0, 0, 16, 2, self.gridSize * 4,
+                                      {0, 0, 0, 0}, {0, 0, 0, 0.5})
 
     self:add(self.uiGrid)
     self:add(self.uiGrid_highlight)
@@ -50,12 +52,14 @@ function ChartingState:enter()
     self:add(daBlack)
 
     self.iconLeft = HealthIcon('dad')
-    self.iconLeft.x, self.iconLeft.y = self.uiGrid.x + (self.gridSize + 5), self.gridSize - 35
+    self.iconLeft.x, self.iconLeft.y = self.uiGrid.x + (self.gridSize + 5),
+                                       self.gridSize - 35
     self.iconLeft:setScrollFactor()
     self.iconLeft:swap(1)
 
     self.iconRight = HealthIcon('bf')
-    self.iconRight.x, self.iconRight.y = self.uiGrid.x + (self.gridSize * 5) + 5, self.gridSize - 35
+    self.iconRight.x, self.iconRight.y =
+        self.uiGrid.x + (self.gridSize * 5) + 5, self.gridSize - 35
     self.iconRight:setScrollFactor()
     self.iconRight:swap(1)
 
@@ -79,17 +83,12 @@ function ChartingState:enter()
     self.curRenderedNotes = Group()
     self:add(self.curRenderedNotes)
 
-    --updateGrid(self)
+    -- updateGrid(self)
 
-    local tabs = {
-        "Charting",
-        "Events",
-        "Note",
-        "Section",
-        "Song",
-    }
+    local tabs = {"Charting", "Events", "Note", "Section", "Song"}
     self.UI_Box = ui.UITabMenu(890, 40, tabs)
-    self.UI_Box.height = (push.getHeight() - self.UI_Box.tabHeight) - (self.UI_Box.y * 2)
+    self.UI_Box.height = (push.getHeight() - self.UI_Box.tabHeight) -
+                             (self.UI_Box.y * 2)
 
     self:add(self.UI_Box)
     self:add_UI_Song()
@@ -99,11 +98,10 @@ function ChartingState:add_UI_Song()
 
     local input_song = ui.UIInputTextBox(45, 10, 135, 20)
     input_song.text = self.__song.song
-    input_song.onChanged = function(value)
-        self.__song.song = value
-    end
+    input_song.onChanged = function(value) self.__song.song = value end
 
-    local load_audio_button = ui.UIButton(300, 10, 80, 20, 'Load Audio', function()
+    local load_audio_button = ui.UIButton(300, 10, 80, 20, 'Load Audio',
+                                          function()
         loadSong(self, input_song.text)
     end)
 
@@ -121,25 +119,14 @@ function ChartingState:add_UI_Song()
         ChartingState.inst:setBPM(value)
     end
 
-    local speed_stepper = ui.UINumericStepper(10, 160, 0.1, self.__song.speed, 0.1, 10)
-    speed_stepper.onChanged = function(value)
-        self.__song.speed = value
-    end
+    local speed_stepper = ui.UINumericStepper(10, 160, 0.1, self.__song.speed,
+                                              0.1, 10)
+    speed_stepper.onChanged = function(value) self.__song.speed = value end
 
     local optionsChar = {
-        "bf",
-        "dad",
-        "gf",
-        "senpai",
-        "senpai-angry",
-        "spirit",
-        "bf-pixel",
-        "gf-pixel",
-        "tankman",
-        "bf-holding-gf",
-        "gf-tankmen",
-        "pico-speaker",
-        "ralt-gf",
+        "bf", "dad", "gf", "senpai", "senpai-angry", "spirit", "bf-pixel",
+        "gf-pixel", "tankman", "bf-holding-gf", "gf-tankmen", "pico-speaker",
+        "ralt-gf"
     }
     local boyfriend_dropdown = ui.UIDropDown(10, 210, optionsChar)
     boyfriend_dropdown.selectedLabel = self.__song.player1
@@ -161,16 +148,10 @@ function ChartingState:add_UI_Song()
         self.__song.gfVersion = value
     end
 
-    local optionsStage = {
-        "stage",
-        "school",
-        "tank"
-    }
+    local optionsStage = {"stage", "school", "tank"}
     local stage_dropdown = ui.UIDropDown(140, 210, optionsStage)
     stage_dropdown.selectedLabel = self.__song.stage
-    stage_dropdown.onChanged = function(value)
-        self.__song.stage = value
-    end
+    stage_dropdown.onChanged = function(value) self.__song.stage = value end
 
     local tab_song_test = Group()
     tab_song_test.name = "Song"
@@ -203,7 +184,8 @@ end
 function ChartingState:update(dt)
 
     for _, inputObj in ipairs(self.blockInput) do
-        if inputObj.active then self.isTyping = true
+        if inputObj.active then
+            self.isTyping = true
             break
         end
         self.isTyping = false
@@ -215,17 +197,19 @@ function ChartingState:update(dt)
     ChartingState.songPosition = ChartingState.inst.__source:tell() * 1000
     strumLineUpdateY(self)
 
-    if Mouse.x > self.uiGrid.x
-        and Mouse.x < self.uiGrid.x + self.uiGrid.width
-        and Mouse.y > (self.gridSize * 4)
-        and Mouse.y < self.uiGrid.y + (self.gridSize * 4 * 4) then
+    if Mouse.x > self.uiGrid.x and Mouse.x < self.uiGrid.x + self.uiGrid.width and
+        Mouse.y > (self.gridSize * 4) and Mouse.y < self.uiGrid.y +
+        (self.gridSize * 4 * 4) then
         self.dummyArrow.visible = true
         self.dummyArrow.x = math.floor(Mouse.x / self.gridSize) * self.gridSize
         if Keyboard.pressed.SHIFT then
             self.dummyArrow.y = Mouse.y
         else
             local gridmult = self.gridSize / (16 / 16)
-            self.dummyArrow.y = math.floor((Mouse.y + self.camScroll.target.y - (self.gridSize * 9)) / gridmult) * gridmult
+            self.dummyArrow.y = math.floor(
+                                    (Mouse.y + self.camScroll.target.y -
+                                        (self.gridSize * 9)) / gridmult) *
+                                    gridmult
         end
     else
         self.dummyArrow.visible = false
@@ -237,10 +221,9 @@ function ChartingState:update(dt)
             if Mouse.overlaps() then
                 --
             else
-                if Mouse.x > self.uiGrid.x
-                    and Mouse.x < self.uiGrid.x + self.uiGrid.width
-                    and Mouse.y > (self.gridSize * 4)
-                    and Mouse.y < self.uiGrid.y + (self.gridSize * 4 * 4) then
+                if Mouse.x > self.uiGrid.x and Mouse.x < self.uiGrid.x +
+                    self.uiGrid.width and Mouse.y > (self.gridSize * 4) and
+                    Mouse.y < self.uiGrid.y + (self.gridSize * 4 * 4) then
 
                     -- print('added note')
                 end
@@ -250,7 +233,9 @@ function ChartingState:update(dt)
         if Keyboard.justPressed.SPACE then
             if ChartingState.inst.__source:isPlaying() then
                 ChartingState.inst:pause()
-                if ChartingState.vocals then ChartingState.vocals:pause() end
+                if ChartingState.vocals then
+                    ChartingState.vocals:pause()
+                end
             else
                 if ChartingState.vocals then
                     ChartingState.vocals:seek(ChartingState.inst.__source:tell())
@@ -264,20 +249,27 @@ function ChartingState:update(dt)
             ChartingState.inst:pause()
 
             local shiftMult = 1
-            if Keyboard.pressed.CONTROL then shiftMult = 0.25
-            elseif Keyboard.pressed.SHIFT then shiftMult = 4 end
+            if Keyboard.pressed.CONTROL then
+                shiftMult = 0.25
+            elseif Keyboard.pressed.SHIFT then
+                shiftMult = 4
+            end
 
             local daTime = 700 * dt * shiftMult
 
             if Keyboard.pressed.W then
-                local checkTime = ChartingState.inst.__source:tell() - (daTime/1000)
+                local checkTime = ChartingState.inst.__source:tell() -
+                                      (daTime / 1000)
                 if checkTime > 0 then
-                    ChartingState.inst.__source:seek(ChartingState.inst.__source:tell() - (daTime/1000))
+                    ChartingState.inst.__source:seek(
+                        ChartingState.inst.__source:tell() - (daTime / 1000))
                 end
             else
-                local checkLimit = ChartingState.inst.__source:tell() + (daTime/1000)
+                local checkLimit = ChartingState.inst.__source:tell() +
+                                       (daTime / 1000)
                 if checkLimit < ChartingState.inst.__source:getDuration() then
-                    ChartingState.inst.__source:seek(ChartingState.inst.__source:tell() + (daTime/1000))
+                    ChartingState.inst.__source:seek(
+                        ChartingState.inst.__source:tell() + (daTime / 1000))
                 else
                     ChartingState.inst.__source:seek(0)
                 end
@@ -316,7 +308,9 @@ function loadSong(self, song)
     end
     if self.__song.needsVoices then
         ChartingState.vocals = paths.getVoices(song)
-        if ChartingState.vocals then ChartingState.vocals:setLooping(true) end
+        if ChartingState.vocals then
+            ChartingState.vocals:setLooping(true)
+        end
     end
     ChartingState.songPosition = ChartingState.inst.__source:tell() * 1000
 
@@ -332,17 +326,23 @@ end
 function strumLineUpdateY(self)
     local function getYfromStrum(strumTime)
         local offset = (self.gridSize * 13)
-        return math.remapToRange(strumTime, 0, 16 * ChartingState.inst.stepCrochet, self.uiGrid.y + offset, self.uiGrid.y + (self.uiGrid.height / 4) + offset)
+        return math.remapToRange(strumTime, 0,
+                                 16 * ChartingState.inst.stepCrochet,
+                                 self.uiGrid.y + offset, self.uiGrid.y +
+                                     (self.uiGrid.height / 4) + offset)
     end
-    self.camScroll.target.y = getYfromStrum((ChartingState.songPosition) / 1 % (ChartingState.inst.stepCrochet * 16)) / (4 / 4)
+    self.camScroll.target.y = getYfromStrum(
+                                  (ChartingState.songPosition) / 1 %
+                                      (ChartingState.inst.stepCrochet * 16)) /
+                                  (4 / 4)
 end
 
 function updateIcon(self)
     local iconLeft = getIconFromCharacter(self.__song.player2)
     local iconRight = getIconFromCharacter(self.__song.player1)
 
-    self.iconLeft.texture = paths.getImage('icons/icon-'..iconLeft)
-    self.iconRight.texture = paths.getImage('icons/icon-'..iconRight)
+    self.iconLeft.texture = paths.getImage('icons/icon-' .. iconLeft)
+    self.iconRight.texture = paths.getImage('icons/icon-' .. iconRight)
 end
 
 function getIconFromCharacter(char)
@@ -354,18 +354,18 @@ function updateGrid(self)
     for i, spr in ipairs(self.curRenderedNotes.members) do spr:destroy() end
     self.curRenderedNotes:clear()
 
-    if self.__song.notes[self.curSection+1].changeBPM and self.__song.notes[self.curSection+1].bpm > 0 then
-        ChartingState.inst:setBPM(self.__song.notes[self.curSection+1].bpm)
+    if self.__song.notes[self.curSection + 1].changeBPM and
+        self.__song.notes[self.curSection + 1].bpm > 0 then
+        ChartingState.inst:setBPM(self.__song.notes[self.curSection + 1].bpm)
     else
         local daBpm = self.__song.bpm
-        for i = 1,self.curSection+1 do
+        for i = 1, self.curSection + 1 do
             if self.__song.notes[i].changeBPM then
                 daBpm = self.__song.notes[i].bpm
             end
         end
         ChartingState.inst:setBPM(daBpm)
     end
-
 
 end
 
@@ -401,17 +401,22 @@ function ChartingState:draw()
     local r, g, b, a = love.graphics.getColor()
 
     love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle("fill", (self.gridSize * 10) - 1, 0, 2, push:getHeight())
+    love.graphics.rectangle("fill", (self.gridSize * 10) - 1, 0, 2,
+                            push:getHeight())
 
     love.graphics.setColor(0, 0, 1)
-    love.graphics.rectangle("fill", self.uiGrid.x, (self.gridSize * 4) - 1, self.gridSize * 8, 2)
+    love.graphics.rectangle("fill", self.uiGrid.x, (self.gridSize * 4) - 1,
+                            self.gridSize * 8, 2)
 
     love.graphics.setColor(1, 1, 1)
-    local daText = util.floorDecimal(ChartingState.songPosition/1000, 2) ..
-                   ' / ' .. util.floorDecimal(ChartingState.inst.__source:getDuration(), 2) ..
-                   '\nSection: ' .. math.floor(ChartingState.inst.currentStep/16) ..
-                   '\nBeat: ' .. ChartingState.inst.currentBeat ..
-                   '\nStep: ' .. ChartingState.inst.currentStep
+    local daText = util.floorDecimal(ChartingState.songPosition / 1000, 2) ..
+                       ' / ' ..
+                       util.floorDecimal(
+                           ChartingState.inst.__source:getDuration(), 2) ..
+                       '\nSection: ' ..
+                       math.floor(ChartingState.inst.currentStep / 16) ..
+                       '\nBeat: ' .. ChartingState.inst.currentBeat ..
+                       '\nStep: ' .. ChartingState.inst.currentStep
     local huh = love.graphics.newFont(15)
     huh:setFilter("nearest", "nearest")
     love.graphics.setFont(huh)
