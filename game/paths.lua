@@ -15,7 +15,9 @@ local paths = {
     audio = {},
     atlases = {},
     fonts = {},
-    persistantAssets = {"music/freakyMenu.ogg"}
+    persistantAssets = {
+        -- "music/freakyMenu.ogg"
+    }
 }
 
 function paths.isPersistant(path)
@@ -34,8 +36,9 @@ function paths.clearCache()
     end
     for k, o in pairs(paths.audio) do
         if not paths.isPersistant(k) then
-            o:stop()
+            o:release()
             paths.audio[k] = nil
+            game.sound.dataCache[k] = nil
         end
     end
     for k, o in pairs(paths.atlases) do
@@ -58,19 +61,16 @@ function paths.getJSON(key)
     return decodeJson(readFile(paths.getPath(key .. ".json")))
 end
 
-function paths.getFont(key, size, cache)
+function paths.getFont(key, size)
     if size == nil then size = 12 end
-    if cache == nil then cache = true end
 
     local path = paths.getPath("fonts/" .. key)
     key = path .. "_" .. size
-    if cache then
-        local obj = paths.fonts[key]
-        if obj then return obj end
-    end
+    local obj = paths.fonts[key]
+    if obj then return obj end
     if isFile(path) then
-        local obj = love.graphics.newFont(path, size)
-        if cache then paths.fonts[key] = obj end
+        obj = love.graphics.newFont(path, size)
+        paths.fonts[key] = obj
         return obj
     end
 
@@ -78,17 +78,13 @@ function paths.getFont(key, size, cache)
     return nil
 end
 
-function paths.getImage(key, cache)
-    if cache == nil then cache = true end
-
+function paths.getImage(key)
     key = paths.getPath("images/" .. key .. ".png")
-    if cache then
-        local obj = paths.images[key]
-        if obj then return obj end
-    end
+    local obj = paths.images[key]
+    if obj then return obj end
     if isFile(key) then
-        local obj = love.graphics.newImage(key)
-        if cache then paths.images[key] = obj end
+        obj = love.graphics.newImage(key)
+        paths.images[key] = obj
         return obj
     end
 
@@ -96,17 +92,14 @@ function paths.getImage(key, cache)
     return nil
 end
 
-function paths.getAudio(key, type, cache)
-    if cache == nil then cache = true end
-
+function paths.getAudio(key, stream)
     key = paths.getPath(key .. ".ogg")
-    if cache then
-        local obj = paths.audio[key]
-        if obj then return obj:clone() end
-    end
+    local obj = paths.audio[key]
+    if obj then return obj end
     if isFile(key) then
-        local obj = love.audio.newSource(key, type)
-        if cache then paths.audio[key] = obj end
+        obj = stream and love.audio.newSource(key, "stream") or
+                  game.sound.cache(key)
+        paths.audio[key] = obj
         return obj
     end
 
@@ -114,62 +107,44 @@ function paths.getAudio(key, type, cache)
     return nil
 end
 
-function paths.getMusic(key, cache)
-    return paths.getAudio("music/" .. key, "stream", cache)
-end
+function paths.getMusic(key) return paths.getAudio("music/" .. key, true) end
 
-function paths.getSound(key, cache)
-    return paths.getAudio("sounds/" .. key, "static", cache)
-end
+function paths.getSound(key) return paths.getAudio("sounds/" .. key, false) end
 
-function paths.getInst(song, cache)
+function paths.getInst(song)
     local daSong = paths.formatToSongPath(song)
-    return paths.getAudio("songs/" .. daSong .. "/Inst", "stream", cache)
+    return paths.getAudio("songs/" .. daSong .. "/Inst", true)
 end
 
-function paths.getVoices(song, cache)
+function paths.getVoices(song)
     local daSong = paths.formatToSongPath(song)
-    return paths.getAudio("songs/" .. daSong .. "/Voices", "stream", cache)
+    return paths.getAudio("songs/" .. daSong .. "/Voices", true)
 end
 
-function paths.playSound(key, cache)
-    local sound = paths.getSound(key, cache)
-    if sound then sound:play() end
-    return sound
-end
-
-function paths.getSparrowAtlas(key, cache)
-    if cache == nil then cache = true end
-
+function paths.getSparrowAtlas(key)
     local imgPath, xmlPath = key, paths.getPath("images/" .. key .. ".xml")
     key = paths.getPath("images/" .. key)
-    if cache then
-        local obj = paths.atlases[key]
-        if obj then return obj end
-    end
-    local img = paths.getImage(imgPath, cache)
+    local obj = paths.atlases[key]
+    if obj then return obj end
+    local img = paths.getImage(imgPath)
     if img and isFile(xmlPath) then
-        local obj = Sprite.getFramesFromSparrow(img, readFile(xmlPath))
-        if cache then paths.atlases[key] = obj end
+        obj = Sprite.getFramesFromSparrow(img, readFile(xmlPath))
+        paths.atlases[key] = obj
         return obj
     end
 
     return nil
 end
 
-function paths.getPackerAtlas(key, cache)
-    if cache == nil then cache = true end
-
+function paths.getPackerAtlas(key)
     local imgPath, txtPath = key, paths.getPath("images/" .. key .. ".txt")
     key = paths.getPath("images/" .. key)
-    if cache then
-        local obj = paths.atlases[key]
-        if obj then return obj end
-    end
-    local img = paths.getImage(imgPath, cache)
+    local obj = paths.atlases[key]
+    if obj then return obj end
+    local img = paths.getImage(imgPath)
     if img and isFile(txtPath) then
-        local obj = Sprite.getFramesFromPacker(img, readFile(txtPath))
-        if cache then paths.atlases[key] = obj end
+        obj = Sprite.getFramesFromPacker(img, readFile(txtPath))
+        paths.atlases[key] = obj
         return obj
     end
 

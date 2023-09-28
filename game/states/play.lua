@@ -37,7 +37,8 @@ function PlayState:enter()
 
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
-    PlayState.inst = Conductor(paths.getInst(songName), PlayState.SONG.bpm)
+    PlayState.inst = Conductor(game.sound.load(paths.getInst(songName)),
+                               PlayState.SONG.bpm)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
@@ -263,8 +264,7 @@ function PlayState:enter()
             local data = countdownData[swagCounter]
             if data then
                 if data.sound then
-                    local countdownSound = paths.getSound(data.sound)
-                    countdownSound:play()
+                    game.sound.play(paths.getSound(data.sound))
                 end
                 if data.image then
                     local countdownSprite = Sprite()
@@ -511,7 +511,7 @@ function PlayState:closeSubState()
     PlayState.super.closeSubState(self)
     if not self.startingSong then
         if PlayState.vocals and not self.startingSong then
-            PlayState.vocals:seek(PlayState.inst.__source:tell())
+            PlayState.vocals:seek(PlayState.inst.sound:tell())
         end
         PlayState.inst:play()
         if PlayState.vocals then PlayState.vocals:play() end
@@ -669,7 +669,7 @@ end
 
 function PlayState:step(s)
     -- now it works -fellix
-    local time = PlayState.inst.__source:tell()
+    local time = PlayState.inst.sound:tell()
     if PlayState.vocals and
         math.abs(PlayState.vocals:tell() * 1000 - time * 1000) > 20 then
         PlayState.vocals:seek(time)
@@ -803,7 +803,6 @@ end
 function PlayState:leave()
     for _, script in ipairs(self.scripts) do script:call("leave") end
 
-    PlayState.inst:destroy()
     PlayState.inst = nil
     PlayState.vocals = nil
 

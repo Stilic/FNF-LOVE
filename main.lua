@@ -9,6 +9,7 @@ Gamestate = require "lib.gamestate"
 
 Camera = require "game.camera"
 Sprite = require "game.sprite"
+Sound = require "game.sound"
 Text = require "game.text"
 Bar = require "game.bar"
 Group = require "game.group"
@@ -129,6 +130,7 @@ function switchState(state, transition)
     local function switch()
         Timer.clear()
         game.cameras.reset()
+        game.sound.destroy()
         for _, s in ipairs(Gamestate.stack) do
             for _, o in pairs(s) do
                 if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then
@@ -279,6 +281,7 @@ function love.update(dt)
 
     for _, o in pairs(Flicker.instances) do o:update(dt) end
     game.cameras.update(dt)
+    game.sound.update()
 
     Timer.update(dt)
     controls:update()
@@ -299,25 +302,7 @@ function love.draw()
     push.finish()
 end
 
-local audioPauses = {}
-
-function love.audioFocus(f, o)
-    if not f then
-        if o.isPaused then
-            audioPauses[o] = o:isPaused()
-        else
-            audioPauses[o] = not o:isPlaying()
-        end
-        o:pause()
-    else
-        if not audioPauses[o] and (not o.isFinished or not o:isFinished()) then
-            o:play()
-        end
-        audioPauses[o] = nil
-    end
-end
-
 function love.focus(f)
-    for _, o in pairs(Conductor.instances) do love.audioFocus(f, o) end
+    game.sound.onFocus(f)
     Gamestate.focus(f)
 end

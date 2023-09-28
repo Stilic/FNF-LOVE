@@ -41,7 +41,7 @@ function FreeplayState:update(dt)
     if controls:pressed('ui_down') then self:changeSelection(1) end
 
     if controls:pressed("back") then
-        paths.playSound('cancelMenu')
+        game.sound.play(paths.getSound('cancelMenu'))
         switchState(MainMenuState())
     end
     if controls:pressed('accept') then
@@ -56,7 +56,7 @@ end
 
 function FreeplayState:changeSelection(huh)
     if huh == nil then huh = 0 end
-    paths.playSound('scrollMenu')
+    game.sound.play(paths.getSound('scrollMenu'))
 
     FreeplayState.curSelected = FreeplayState.curSelected + huh
 

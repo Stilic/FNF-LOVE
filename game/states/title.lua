@@ -4,19 +4,6 @@ function TitleState:enter()
     self.danceLeft = false
     self.confirmed = false
 
-    TitleState.music = Conductor(paths.getMusic("freakyMenu"), 102)
-    TitleState.music:setLooping(true)
-    TitleState.music.onBeat = function()
-        self.logoBl:play("bump", true)
-
-        self.danceLeft = not self.danceLeft
-        if self.danceLeft then
-            self.gfDance:play("danceLeft")
-        else
-            self.gfDance:play("danceRight")
-        end
-    end
-
     self.gfDance = Sprite(512, 40)
     self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
     self.gfDance:addAnimByIndices("danceLeft", "gfDance", {
@@ -43,7 +30,18 @@ function TitleState:enter()
     self.titleText:updateHitbox()
     self:add(self.titleText)
 
-    TitleState.music:play()
+    TitleState.music = Conductor(game.sound.play(paths.getMusic("freakyMenu"),
+                                                 nil, true), 102)
+    TitleState.music.onBeat = function()
+        self.logoBl:play("bump", true)
+
+        self.danceLeft = not self.danceLeft
+        if self.danceLeft then
+            self.gfDance:play("danceLeft")
+        else
+            self.gfDance:play("danceRight")
+        end
+    end
 end
 
 function TitleState:update(dt)
@@ -55,13 +53,12 @@ function TitleState:update(dt)
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")
-        paths.playSound("confirmMenu")
-        Timer.after(1.5, function()
-            TitleState.music:destroy()
-            switchState(MainMenuState())
-        end)
+        game.sound.play(paths.getSound("confirmMenu"))
+        Timer.after(1.5, function() switchState(MainMenuState()) end)
     end
     TitleState.super.update(self, dt)
 end
+
+function TitleState:leave() TitleState.music = nil end
 
 return TitleState

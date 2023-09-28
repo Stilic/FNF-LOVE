@@ -1,16 +1,11 @@
 local Conductor = Object:extend()
 
-Conductor.instances = {}
-
-function Conductor:new(source, bpm)
-    self.__source = source
-    self.__paused = false
+function Conductor:new(sound, bpm)
+    self.sound = sound
     self.__stepsDone = {}
     self.__lastTime = 0
 
     self:setBPM(bpm)
-
-    table.insert(Conductor.instances, self)
 end
 
 function Conductor:setBPM(bpm)
@@ -23,7 +18,7 @@ function Conductor:setBPM(bpm)
 end
 
 function Conductor:__updateTime()
-    self.time = self.__source:tell() * 1000
+    self.time = self.sound:tell() * 1000
 
     self.currentStepFloat = self.time / self.stepCrochet
     self.currentStep = math.floor(self.currentStepFloat)
@@ -33,7 +28,7 @@ function Conductor:__updateTime()
 end
 
 function Conductor:update()
-    if self.__source:isPlaying() then
+    if self.sound:isPlaying() then
         local oldCurStep = self.currentStep
 
         self:__updateTime()
@@ -80,40 +75,12 @@ function Conductor:__step()
     end
 end
 
-function Conductor:play()
-    self.__source:play()
-    self.__paused = false
-
-    self:__updateTime()
-end
-
-function Conductor:pause()
-    self.__source:pause()
-    self.__paused = true
-end
-
-function Conductor:isPaused() return self.__paused end
-
-function Conductor:isFinished()
-    return not self.__source:isPlaying() and not self:isPaused()
-end
-
-function Conductor:setLooping(state) self.__source:setLooping(state) end
-
-function Conductor:isLooping() return self.__source:isLooping() end
-
 function Conductor:seek(position, unit)
-    local playing = self.__source:isPlaying()
-    if playing then self.__source:pause() end
-    self.__source:seek(position, unit)
+    local playing = self.sound:isPlaying()
+    if playing then self.sound:pause() end
+    self.sound:seek(position, unit)
     self:__updateTime()
-    if playing then self.__source:play() end
-end
-
-function Conductor:destroy()
-    table.remove(Conductor.instances, table.find(Conductor.instances, self))
-    self.__source:stop()
-    self.__source = nil
+    if playing then self.sound:play() end
 end
 
 return Conductor

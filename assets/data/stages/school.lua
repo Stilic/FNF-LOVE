@@ -92,7 +92,7 @@ function create()
         self:add(bgGirls)
 
         if PlayState.storyMode and state.SONG.song:lower() == 'roses' then
-            paths.playSound('gameplay/ANGRY_TEXT_BOX')
+            game.sound.play(paths.getSound('gameplay/ANGRY_TEXT_BOX'))
         end
     end
 end

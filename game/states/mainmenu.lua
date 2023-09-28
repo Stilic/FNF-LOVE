@@ -64,7 +64,6 @@ function MainMenuState:enter()
 end
 
 function MainMenuState:update(dt)
-
     self.camScroll.target.x, self.camScroll.target.y = util.coolLerp(
                                                            self.camScroll.target
                                                                .x,
@@ -79,7 +78,7 @@ function MainMenuState:update(dt)
         if controls:pressed('ui_down') then self:changeSelection(1) end
 
         if controls:pressed("back") then
-            paths.playSound('cancelMenu')
+            game.sound.play(paths.getSound('cancelMenu'))
             switchState(TitleState())
         end
 
@@ -88,7 +87,7 @@ function MainMenuState:update(dt)
                 love.system.openURL('https://ninja-muffin24.itch.io/funkin')
             elseif self.optionShit[MainMenuState.curSelected] == 'freeplay' then
                 self.selectedSomethin = true
-                paths.playSound('confirmMenu')
+                game.sound.play(paths.getSound('confirmMenu'))
 
                 Flicker(self.magentaBg, 1.1, 0.15, false)
 
@@ -124,7 +123,7 @@ end
 
 function MainMenuState:changeSelection(huh)
     if huh == nil then huh = 0 end
-    paths.playSound('scrollMenu')
+    game.sound.play(paths.getSound('scrollMenu'))
 
     MainMenuState.curSelected = MainMenuState.curSelected + huh
 

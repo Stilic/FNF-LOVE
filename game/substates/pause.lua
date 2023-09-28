@@ -8,10 +8,7 @@ function PauseSubState:new()
 
     self.bgColor = {0, 0, 0, 0.5}
 
-    self.music = paths.getMusic('breakfast')
-    self.music:setVolume(0)
-    self.music:setLooping(true)
-    self.music:play()
+    self.music = game.sound.play(paths.getMusic('breakfast'), 0, true)
 
     self.grpShitMenu = Group()
     self:add(self.grpShitMenu)
@@ -40,11 +37,9 @@ function PauseSubState:update(dt)
         local daChoice = self.menuItems[self.curSelected]
 
         switch(daChoice, {
-            ["Resume"]=function() self:close() end,
-            ["Restart Song"]=function()
-                switchState(PlayState())
-            end,
-            ["Exit to menu"]=function()
+            ["Resume"] = function() self:close() end,
+            ["Restart Song"] = function() switchState(PlayState()) end,
+            ["Exit to menu"] = function()
                 switchState(FreeplayState())
             end
         })
@@ -54,7 +49,7 @@ end
 function PauseSubState:changeSelection(huh)
     if huh == nil then huh = 0 end
 
-    paths.playSound('scrollMenu')
+    game.sound.play(paths.getSound('scrollMenu'))
     self.curSelected = self.curSelected + huh
 
     if self.curSelected > #self.menuItems then

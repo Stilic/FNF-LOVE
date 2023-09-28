@@ -1,46 +1,52 @@
-local SoundManager = {list = {}}
-local soundDataCache = {}
+local SoundManager = {list = {}, dataCache = {}}
 
--- `asset` can be either a SoundData instance or a string. `stream` is ignored if `asset` isn't a string.
-function SoundManager.play(asset, stream, volume, looped, autoDestroy, onComplete)
-  local source
-  if type(asset) == "string" then
-    if stream then
-      source = love.audio.newSource(asset, "stream")
+function SoundManager.cache(path)
+    if string.startsWith(path, "./") then path = string.sub(path, 3) end
+    if string.endsWith(path, "/") then path = string.sub(path, 1, -2) end
+
+    if SoundManager.dataCache[path] then
+        return SoundManager.dataCache[path]
     else
-      local path = asset
-      if string.startsWith(path, "./") then
-        path = string.sub(path, 3)
-      end
-      if string.endsWith(path, "/") then
-        path = string.sub(path, 1, -2)
-      end
-      if soundDataCache[path] then
-        asset = soundDataCache[path]
-      else
-        asset = love.sound.newSoundData(path)
-        soundDataCache[path] = asset
-      end
+        local data = love.sound.newSoundData(path)
+        SoundManager.dataCache[path] = data
+        return data
     end
-  end
-  if not source then
-    source = love.audio.newSource(asset)
-  end
-  if volume ~= nil then
-    source:setVolume(volume)
-  end
-  if looping ~= nil then
-    source:setLooping(looping)
-  end
-  table.insert(SoundManager.list, source)
-  source:play()
-  return source
 end
 
-function SoundManager.destroy()
-  for _, s in pairs(SoundManager.list) do
-    s:release()
-  end
+-- `asset` can be either a Source instance or a string.
+function SoundManager.load(asset, volume, looped, autoRelease, onComplete)
+    local sound = Sound(type(asset) == "string" and SoundManager.cache(asset) or
+                            asset)
+    if volume ~= nil then sound:setVolume(volume) end
+    if looped ~= nil then sound:setLooping(looped) end
+    sound.persist = autoRelease ~= nil and autoRelease or false
+    sound.onComplete = onComplete
+    table.insert(SoundManager.list, sound)
+    print(#SoundManager.list)
+    return sound
+end
+
+function SoundManager.play(...)
+    local sound = SoundManager.load(...)
+    sound:play()
+    return sound
+end
+
+function SoundManager.update()
+    for _, s in pairs(SoundManager.list) do s:update() end
+end
+
+function SoundManager.onFocus(focus)
+    for _, s in pairs(SoundManager.list) do s:onFocus(focus) end
+end
+
+function SoundManager.destroy(force)
+    for i, s in pairs(SoundManager.list) do
+        if force or not s.persist then
+            s:release()
+            table.remove(SoundManager.list, i)
+        end
+    end
 end
 
 return SoundManager

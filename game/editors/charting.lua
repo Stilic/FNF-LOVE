@@ -182,7 +182,6 @@ function ChartingState:add_UI_Song()
 end
 
 function ChartingState:update(dt)
-
     for _, inputObj in ipairs(self.blockInput) do
         if inputObj.active then
             self.isTyping = true
@@ -194,7 +193,7 @@ function ChartingState:update(dt)
     self.uiGrid_highlight.y = self.uiGrid.y
     self.uiGrid_highlight.x = self.uiGrid.x
 
-    ChartingState.songPosition = ChartingState.inst.__source:tell() * 1000
+    ChartingState.songPosition = ChartingState.inst.sound:tell() * 1000
     strumLineUpdateY(self)
 
     if Mouse.x > self.uiGrid.x and Mouse.x < self.uiGrid.x + self.uiGrid.width and
@@ -231,14 +230,14 @@ function ChartingState:update(dt)
         end
 
         if Keyboard.justPressed.SPACE then
-            if ChartingState.inst.__source:isPlaying() then
+            if ChartingState.inst.sound:isPlaying() then
                 ChartingState.inst:pause()
                 if ChartingState.vocals then
                     ChartingState.vocals:pause()
                 end
             else
                 if ChartingState.vocals then
-                    ChartingState.vocals:seek(ChartingState.inst.__source:tell())
+                    ChartingState.vocals:seek(ChartingState.inst.sound:tell())
                     ChartingState.vocals:play()
                 end
                 ChartingState.inst:play()
@@ -258,26 +257,26 @@ function ChartingState:update(dt)
             local daTime = 700 * dt * shiftMult
 
             if Keyboard.pressed.W then
-                local checkTime = ChartingState.inst.__source:tell() -
+                local checkTime = ChartingState.inst.sound:tell() -
                                       (daTime / 1000)
                 if checkTime > 0 then
-                    ChartingState.inst.__source:seek(
-                        ChartingState.inst.__source:tell() - (daTime / 1000))
+                    ChartingState.inst.sound:seek(
+                        ChartingState.inst.sound:tell() - (daTime / 1000))
                 end
             else
-                local checkLimit = ChartingState.inst.__source:tell() +
+                local checkLimit = ChartingState.inst.sound:tell() +
                                        (daTime / 1000)
-                if checkLimit < ChartingState.inst.__source:getDuration() then
-                    ChartingState.inst.__source:seek(
-                        ChartingState.inst.__source:tell() + (daTime / 1000))
+                if checkLimit < ChartingState.inst.sound:getDuration() then
+                    ChartingState.inst.sound:seek(
+                        ChartingState.inst.sound:tell() + (daTime / 1000))
                 else
-                    ChartingState.inst.__source:seek(0)
+                    ChartingState.inst.sound:seek(0)
                 end
             end
 
             if ChartingState.vocals then
                 ChartingState.vocals:pause()
-                ChartingState.vocals:seek(ChartingState.inst.__source:tell())
+                ChartingState.vocals:seek(ChartingState.inst.sound:tell())
             end
 
             ChartingState.inst:__updateTime()
@@ -291,7 +290,7 @@ function ChartingState:update(dt)
         end
     end
 
-    ChartingState.songPosition = ChartingState.inst.__source:tell() * 1000
+    ChartingState.songPosition = ChartingState.inst.sound:tell() * 1000
     strumLineUpdateY(self)
 
     ChartingState.super.update(self, dt)
@@ -299,12 +298,12 @@ end
 
 function loadSong(self, song)
     if ChartingState.inst then ChartingState.inst:destroy() end
-    ChartingState.inst = Conductor(paths.getInst(song), self.__song.bpm)
-    ChartingState.inst.__source:setLooping(true)
+    ChartingState.inst = Conductor(game.sound.load(paths.getInst(song)),
+                                   self.__song.bpm)
+    ChartingState.inst.sound:setLooping(true)
     ChartingState.inst.onBeat = function(b)
-        local tick = paths.getSound('metronome')
+        local tick = game.sound.play(paths.getSound('metronome'))
         tick:setPitch(b % 4 == 0 and 1.1 or 1)
-        tick:play()
     end
     if self.__song.needsVoices then
         ChartingState.vocals = paths.getVoices(song)
@@ -312,11 +311,11 @@ function loadSong(self, song)
             ChartingState.vocals:setLooping(true)
         end
     end
-    ChartingState.songPosition = ChartingState.inst.__source:tell() * 1000
+    ChartingState.songPosition = ChartingState.inst.sound:tell() * 1000
 
     local curTime = 0
     if #self.__song.notes <= 1 then
-        while curTime < ChartingState.inst.__source:getDuration() do
+        while curTime < ChartingState.inst.sound:getDuration() do
             addSection(self)
             curTime = curTime + (60 / self.__song.bpm) * 4000
         end
@@ -412,7 +411,7 @@ function ChartingState:draw()
     local daText = util.floorDecimal(ChartingState.songPosition / 1000, 2) ..
                        ' / ' ..
                        util.floorDecimal(
-                           ChartingState.inst.__source:getDuration(), 2) ..
+                           ChartingState.inst.sound:getDuration(), 2) ..
                        '\nSection: ' ..
                        math.floor(ChartingState.inst.currentStep / 16) ..
                        '\nBeat: ' .. ChartingState.inst.currentBeat ..
