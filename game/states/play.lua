@@ -37,8 +37,9 @@ function PlayState:enter()
 
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
-    PlayState.inst = Conductor(game.sound.load(paths.getInst(songName)),
-                               PlayState.SONG.bpm)
+    local sound = game.sound.load(paths.getInst(songName))
+    sound.onComplete = function() switchState(FreeplayState()) end
+    PlayState.inst = Conductor(sound, PlayState.SONG.bpm)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
@@ -300,13 +301,11 @@ function PlayState:update(dt)
 
     self.countdownTimer:update(dt)
 
-    if not isSwitchingState and not self.startingSong and
-        PlayState.inst:isFinished() then switchState(FreeplayState()) end
-
     PlayState.songPosition = PlayState.songPosition + 1000 * dt
     if self.startingSong and PlayState.songPosition >= 0 then
+        print(PlayState.songPosition)
         self.startingSong = false
-        PlayState.inst:play()
+        PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
         PlayState.songPosition = PlayState.inst.time
         for _, script in ipairs(self.scripts) do script:call("songStart") end
@@ -468,8 +467,7 @@ function PlayState:update(dt)
 
         if PlayState.songPosition > 350 / PlayState.SONG.speed + n.time then
             if n.mustPress and not n.wasGoodHit and
-                (not n.isSustain or not n.parentNote.tooLate) and
-                not PlayState.inst:isFinished() then
+                (not n.isSustain or not n.parentNote.tooLate) then
                 if PlayState.vocals then
                     PlayState.vocals:setVolume(0)
                 end
@@ -513,7 +511,7 @@ function PlayState:closeSubState()
         if PlayState.vocals and not self.startingSong then
             PlayState.vocals:seek(PlayState.inst.sound:tell())
         end
-        PlayState.inst:play()
+        PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
     end
 end
@@ -803,7 +801,7 @@ end
 function PlayState:leave()
     for _, script in ipairs(self.scripts) do script:call("leave") end
 
-    PlayState.inst = nil
+    -- PlayState.inst = nil
     PlayState.vocals = nil
 
     controls:unbindPress(self.bindedKeyPress)

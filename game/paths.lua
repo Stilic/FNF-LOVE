@@ -38,7 +38,6 @@ function paths.clearCache()
         if not paths.isPersistant(k) then
             o:release()
             paths.audio[k] = nil
-            game.sound.dataCache[k] = nil
         end
     end
     for k, o in pairs(paths.atlases) do
@@ -98,7 +97,7 @@ function paths.getAudio(key, stream)
     if obj then return obj end
     if isFile(key) then
         obj = stream and love.audio.newSource(key, "stream") or
-                  game.sound.cache(key)
+                  love.sound.newSoundData(key)
         paths.audio[key] = obj
         return obj
     end

@@ -130,7 +130,6 @@ function switchState(state, transition)
     local function switch()
         Timer.clear()
         game.cameras.reset()
-        game.sound.destroy()
         for _, s in ipairs(Gamestate.stack) do
             for _, o in pairs(s) do
                 if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then
@@ -143,6 +142,7 @@ function switchState(state, transition)
             end
         end
 
+        game.sound.destroy()
         paths.clearCache()
 
         Gamestate.switch(state)
