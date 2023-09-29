@@ -793,14 +793,10 @@ function PlayState:recalculateRating()
     self.scoreTxt:screenCenter("x")
 end
 
-function PlayState:focus(f)
-    if PlayState.vocals then love.audioFocus(f, PlayState.vocals) end
-end
-
 function PlayState:leave()
     for _, script in ipairs(self.scripts) do script:call("leave") end
 
-    -- PlayState.inst = nil
+    PlayState.inst = nil
     PlayState.vocals = nil
 
     controls:unbindPress(self.bindedKeyPress)
