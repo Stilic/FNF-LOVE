@@ -303,7 +303,6 @@ function PlayState:update(dt)
 
     PlayState.songPosition = PlayState.songPosition + 1000 * dt
     if self.startingSong and PlayState.songPosition >= 0 then
-        print(PlayState.songPosition)
         self.startingSong = false
         PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
