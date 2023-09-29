@@ -3,32 +3,28 @@ local HealthIcon = Sprite:extend()
 function HealthIcon:new(icon, flip)
     HealthIcon.super.new(self, 0, 0)
 
-    self.icon = icon or "face"
-    self:loadTexture(paths.getImage("icons/icon-" .. self.icon))
+    self:loadTexture(paths.getImage("icons/icon-" .. icon or "face"))
+    self.static = true
 
-    local f0 = Sprite.newFrame("0", 0, 0, 150, self.height,
-                               (self.width == 300 and 300 or 150), self.height,
-                               75, -75)
+    if self.width > 150 then
+        self.width = self.width / 2
+        self:loadTexture(paths.getImage("icons/icon-" .. icon or "face"), true,
+                    math.floor(self.width), math.floor(self.height))
+        self:addAnim("i", {0, 1}, 0)
+        self:play("i")
 
-    local f1 = Sprite.newFrame("1", 150, 0, 150, self.height, 300, self.height,
-                               75, -75)
+        self.static = false
+    end
 
-    if self.width < 300 then f1 = f0 end
-    -- not sure that's the way to do it but it's working for now - Vi
+    self.flipX = flip or false
+    if icon:endsWith("-pixel") then self.antialiasing = false end
 
-    if icon:endsWith('-pixel') then self.antialiasing = false end
-
-    if flip then self.flipX = true end
-
-    self.frames = {f0, f1}
+    self:centerOrigin()
+    self:updateHitbox()
 end
 
 function HealthIcon:swap(frame)
-    self.curFrameIdx = frame
-    self:setFrames({
-        texture = paths.getImage("icons/icon-" .. self.icon),
-        frames = {self.frames[self.curFrameIdx]}
-    })
+    if not self.static then self.curFrame = frame or 0 end
 end
 
 return HealthIcon
