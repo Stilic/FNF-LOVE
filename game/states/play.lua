@@ -43,7 +43,7 @@ function PlayState:enter()
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
-        PlayState.vocals = paths.getVoices(songName)
+        PlayState.vocals = game.sound.load(paths.getVoices(songName))
     end
 
     self.unspawnNotes = {}
