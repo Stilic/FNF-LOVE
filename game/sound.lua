@@ -1,14 +1,15 @@
 local Sound = Object:extend()
-local indexSourceProps = {}
 
 function Sound:new(asset)
     self.__source = asset:typeOf("SoundData") and love.audio.newSource(asset) or
                         asset
+    self.__indexFuncs = {}
 
     self.__paused = true
     self.__wasPlaying = false
     self.__oldVolume = nil
 
+    self.active = true
     self.onComplete = nil
 end
 
@@ -47,7 +48,7 @@ function Sound:isFinished()
 end
 
 function Sound:update()
-    if self:isFinished() then
+    if self.active and self:isFinished() then
         self.__paused = true
         if self.onComplete then self.onComplete() end
     end
@@ -63,15 +64,18 @@ function Sound:onFocus(focus)
 end
 
 function Sound:release()
+    if self.__source then
+        pcall(self.__source.stop, self.__source)
+        self.__source = nil
+    end
+    self.__indexFuncs = {}
+
     self.__paused = true
     self.__wasPlaying = false
     self.__oldVolume = nil
 
+    self.active = false
     self.onComplete = nil
-
-    self.__source:stop()
-    self.__source:release()
-    self.__source = nil
 end
 
 function Sound:__index(key)
@@ -82,15 +86,20 @@ function Sound:__index(key)
             prop = prop[key]
         else
             local source = rawget(self, "__source")
-            prop = source[key]
-            if prop and type(prop) == "function" then
-                prop = indexSourceProps[key]
-                if not prop then
-                    prop = function(_, ...)
-                        return source[key](source, ...)
+            if source then
+                prop = source[key]
+                if prop and type(prop) == "function" then
+                    local indexProps = rawget(self, "__indexFuncs")
+                    prop = indexProps[key]
+                    if not prop then
+                        prop = function(_, ...)
+                            return source[key](source, ...)
+                        end
+                        indexProps[key] = prop
                     end
-                    indexSourceProps[key] = prop
                 end
+            else
+                prop = nil
             end
         end
     end

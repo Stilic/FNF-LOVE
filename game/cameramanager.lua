@@ -15,11 +15,9 @@ function CameraManager.remove(camera)
 end
 
 function CameraManager.reset(camera)
-    local i = #CameraManager.list
-    while i > 0 do
+    for i = #CameraManager.list, 1, -1 do
         table.delete(defaults, CameraManager.list[i])
-        table.remove(CameraManager.list, i)
-        i = i - 1
+        CameraManager.list[i] = nil
     end
 
     if not camera then camera = Camera() end

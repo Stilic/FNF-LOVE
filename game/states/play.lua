@@ -365,7 +365,7 @@ function PlayState:update(dt)
     end
 
     if controls:pressed("pause") then
-        PlayState.inst:pause()
+        PlayState.inst.sound:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
 
         self.paused = true
@@ -375,7 +375,7 @@ function PlayState:update(dt)
         self:openSubState(pause)
     end
     if controls:pressed("debug1") then
-        PlayState.inst:pause()
+        PlayState.inst.sound:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
         switchState(ChartingState())
     end

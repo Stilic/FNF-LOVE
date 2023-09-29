@@ -1,3 +1,4 @@
+---@diagnostic disable: duplicate-set-field
 -- LUA 5.2-LUA 5.3 REIMPLEMENTATIONS
 function string.split(self, sep, t)
     t = t or {}
@@ -10,15 +11,47 @@ function string.replace(self, pattern, rep) -- note: you could just do gsub inst
     return self:gsub('%' .. pattern, rep)
 end
 
-function table.find(table, value)
-    for i, v in next, table do if v == value then return i end end
+function table.find(list, value)
+    for i, v in next, list do if v == value then return i end end
 end
 
-function table.delete(self, object)
+function table.remove(list, callback)
+    local checkIdx
+
+    if callback == nil then callback = #list end
+    if type(callback) == "number" then checkIdx = callback end
+
+    local j, n = 1, #list
+    local value
+
+    for i = 1, n do
+        local check
+        if checkIdx == nil then
+            check = callback(list, i, j)
+        else
+            check = i == checkIdx
+        end
+        if check then
+            value = list[i]
+            list[i] = nil
+        else
+            -- Move i's kept value to j's position, if it's not already there.
+            if i ~= j then
+                list[j] = list[i]
+                list[i] = nil
+            end
+            j = j + 1 -- Increment position of where we'll place the next kept value.
+        end
+    end
+
+    return value
+end
+
+function table.delete(list, object)
     if object then
-        local index = table.find(self, object)
+        local index = table.find(list, object)
         if index then
-            table.remove(self, index)
+            table.remove(list, index)
             return true
         end
     end
@@ -34,12 +67,13 @@ function math.bound(value, min, max) return math.max(min, math.min(max, value)) 
 bit32, iter = bit, ipairs(math)
 
 -- EXTRA FUNCTIONS
-_G.switch = function(param, case_table) -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
-    local case = case_table[param]
-    if case then return case() end
-    local def = case_table['default']
-    return def and def() or nil
-end
+_G.switch =
+    function(param, case_table) -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
+        local case = case_table[param]
+        if case then return case() end
+        local def = case_table['default']
+        return def and def() or nil
+    end
 
 function table.keys(table, includeIndices, keys)
     keys = keys or {}
@@ -129,7 +163,7 @@ local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
 function math.countbytes(x)
     local i = 1
     while x >= 0x400 and i < 5 do
-        x = x / 0x400;
+        x = x / 0x400
         i = i + 1
     end
     return math.truncate(x, 2, true) .. " " .. intervals[i]

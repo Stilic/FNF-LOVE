@@ -129,10 +129,13 @@ function switchState(state, transition)
 
     local function switch()
         Timer.clear()
+
         game.cameras.reset()
+        game.sound.destroy()
+
         for _, s in ipairs(Gamestate.stack) do
-            for _, o in pairs(s) do
-                if type(o) == "table" and o.is and o:is(Sprite) and o.destroy then
+            for _, o in pairs(s.members) do
+                if type(o) == "table" and o.destroy then
                     o:destroy()
                 end
             end
@@ -142,7 +145,6 @@ function switchState(state, transition)
             end
         end
 
-        game.sound.destroy()
         paths.clearCache()
 
         Gamestate.switch(state)
@@ -203,9 +205,7 @@ function love.run()
                 local stats = love.graphics.getStats()
                 love.graphics.printf("FPS: " ..
                                          math.min(love.timer.getFPS(),
-                                                  love.FPScap) .. "\nGC MEM: " ..
-                                         math.countbytes(collectgarbage("count")) ..
-                                         "\nTEX MEM: " ..
+                                                  love.FPScap) .. "\nVRAM: " ..
                                          math.countbytes(stats.texturememory) ..
                                          "\nDRAWS: " .. stats.drawcalls, 6, 6,
                                      300, "left", 0)

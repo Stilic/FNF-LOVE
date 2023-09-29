@@ -231,7 +231,7 @@ function ChartingState:update(dt)
 
         if Keyboard.justPressed.SPACE then
             if ChartingState.inst.sound:isPlaying() then
-                ChartingState.inst:pause()
+                ChartingState.inst.sound:pause()
                 if ChartingState.vocals then
                     ChartingState.vocals:pause()
                 end
@@ -240,12 +240,12 @@ function ChartingState:update(dt)
                     ChartingState.vocals:seek(ChartingState.inst.sound:tell())
                     ChartingState.vocals:play()
                 end
-                ChartingState.inst:play()
+                ChartingState.inst.sound:play()
             end
         end
 
         if Keyboard.pressed.W or Keyboard.pressed.S then
-            ChartingState.inst:pause()
+            ChartingState.inst.sound:pause()
 
             local shiftMult = 1
             if Keyboard.pressed.CONTROL then
@@ -283,7 +283,7 @@ function ChartingState:update(dt)
         end
 
         if Keyboard.justPressed.ENTER then
-            ChartingState.inst:pause()
+            ChartingState.inst.sound:pause()
             if ChartingState.vocals then ChartingState.vocals:pause() end
 
             switchState(PlayState())
@@ -410,9 +410,8 @@ function ChartingState:draw()
     love.graphics.setColor(1, 1, 1)
     local daText = util.floorDecimal(ChartingState.songPosition / 1000, 2) ..
                        ' / ' ..
-                       util.floorDecimal(
-                           ChartingState.inst.sound:getDuration(), 2) ..
-                       '\nSection: ' ..
+                       util.floorDecimal(ChartingState.inst.sound:getDuration(),
+                                         2) .. '\nSection: ' ..
                        math.floor(ChartingState.inst.currentStep / 16) ..
                        '\nBeat: ' .. ChartingState.inst.currentBeat ..
                        '\nStep: ' .. ChartingState.inst.currentStep

@@ -71,7 +71,7 @@ function PauseSubState:changeSelection(huh)
 end
 
 function PauseSubState:close()
-    self.music:stop()
+    self.music:release()
     PauseSubState.super.close(self)
 end
 

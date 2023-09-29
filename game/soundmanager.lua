@@ -1,18 +1,5 @@
 local SoundManager = {list = {}}
 
--- function SoundManager.cache(path)
---     if string.startsWith(path, "./") then path = string.sub(path, 3) end
---     if string.endsWith(path, "/") then path = string.sub(path, 1, -2) end
-
---     if SoundManager.dataCache[path] then
---         return SoundManager.dataCache[path]
---     else
---         local data = love.sound.newSoundData(path)
---         SoundManager.dataCache[path] = data
---         return data
---     end
--- end
-
 function SoundManager.load(asset, volume, looped, autoRelease, onComplete)
     local sound = Sound(asset)
     if volume ~= nil then sound:setVolume(volume) end
@@ -30,20 +17,34 @@ function SoundManager.play(...)
 end
 
 function SoundManager.update()
-    for _, s in pairs(SoundManager.list) do s:update() end
-end
-
-function SoundManager.onFocus(focus)
-    for _, s in pairs(SoundManager.list) do s:onFocus(focus) end
-end
-
-function SoundManager.destroy(force)
-    for i, s in pairs(SoundManager.list) do
-        if force or not s.persist then
-            s:release()
+    for i = #SoundManager.list, 1, -1 do
+        local s = SoundManager.list[i]
+        if s.__source then
+            s:update()
+        else
             table.remove(SoundManager.list, i)
         end
     end
+end
+
+function SoundManager.onFocus(focus)
+    for i = #SoundManager.list, 1, -1 do
+        local s = SoundManager.list[i]
+        if s.__source then
+            s:onFocus(focus)
+        else
+            table.remove(SoundManager.list, i)
+        end
+    end
+end
+
+function SoundManager.destroy(force)
+    table.remove(SoundManager.list, function(t, i)
+        local s = t[i]
+        local remove = force or not s.persist
+        if remove then s:release() end
+        return remove
+    end)
 end
 
 return SoundManager
