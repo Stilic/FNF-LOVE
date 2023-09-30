@@ -20,7 +20,7 @@ function SubState:draw()
     if self:belongsToParent() and self.__parentState.persistentDraw then
         self.__parentState:draw()
     end
-    for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
         c:fill(self.bgColor[1], self.bgColor[2], self.bgColor[3],
                self.bgColor[4])
     end

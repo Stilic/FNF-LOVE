@@ -91,7 +91,7 @@ function MainMenuState:update(dt)
 
                 Flicker(self.magentaBg, 1.1, 0.15, false)
 
-                for i, spr in pairs(self.menuItems.members) do
+                for i, spr in ipairs(self.menuItems.members) do
                     if MainMenuState.curSelected ~= spr.ID then
                         Timer.tween(0.4, spr, {alpha = 0}, 'out-quad',
                                     function()
@@ -118,7 +118,7 @@ function MainMenuState:update(dt)
 
     MainMenuState.super.update(self, dt)
 
-    for _, spr in pairs(self.menuItems.members) do spr:screenCenter('x') end
+    for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
 end
 
 function MainMenuState:changeSelection(huh)
@@ -133,7 +133,7 @@ function MainMenuState:changeSelection(huh)
         MainMenuState.curSelected = #self.optionShit
     end
 
-    for _, spr in pairs(self.menuItems.members) do
+    for _, spr in ipairs(self.menuItems.members) do
         spr:play('idle')
         spr:updateHitbox()
 

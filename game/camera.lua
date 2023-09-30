@@ -61,7 +61,7 @@ function Camera:draw()
         love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
                             self.bgColor[4])
 
-        for i, o in pairs(self.__renderQueue) do
+        for i, o in ipairs(self.__renderQueue) do
             if type(o) == "function" then
                 o(self)
             else

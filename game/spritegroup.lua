@@ -2,7 +2,7 @@
 local function tranformChildren(self, func, value)
     if self.group == nil then return end
 
-    for _, sprite in pairs(self.__sprites) do
+    for _, sprite in ipairs(self.__sprites) do
         if sprite ~= nil then func(sprite, value) end
     end
 end
@@ -201,7 +201,7 @@ function SpriteGroup:getWidth()
 
     local minX = 0
     local maxX = 0
-    for i, member in pairs(self.__sprites) do
+    for _, member in ipairs(self.__sprites) do
         if member ~= nil then
             local minMemberX = member.x
             local maxMemberX = minMemberX + member.width
@@ -218,7 +218,7 @@ function SpriteGroup:getHeight()
 
     local minY = 0
     local maxY = 0
-    for i, member in pairs(self.__sprites) do
+    for _, member in ipairs(self.__sprites) do
         if member ~= nil then
             local minMemberY = member.y
             local maxMemberY = minMemberY + member.height

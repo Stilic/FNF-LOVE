@@ -134,7 +134,7 @@ function switchState(state, transition)
         game.sound.destroy()
 
         for _, s in ipairs(Gamestate.stack) do
-            for _, o in pairs(s.members) do
+            for _, o in ipairs(s.members) do
                 if type(o) == "table" and o.destroy then
                     o:destroy()
                 end
@@ -279,7 +279,7 @@ function love.mousereleased(x, y, button) Mouse.onReleased(button) end
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
-    for _, o in pairs(Flicker.instances) do o:update(dt) end
+    for _, o in ipairs(Flicker.instances) do o:update(dt) end
     game.cameras.update(dt)
     game.sound.update()
 
@@ -295,7 +295,7 @@ end
 function love.draw()
     push.start()
     Gamestate.draw()
-    for _, c in pairs(game.cameras.list) do c:draw() end
+    for _, c in ipairs(game.cameras.list) do c:draw() end
     if fade then
         love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(),
                            fade.height)

@@ -35,7 +35,7 @@ end
 function Bar:draw()
     local r, g, b, a = love.graphics.getColor()
 
-    for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
         if c.visible and c.exists then
             table.insert(c.__renderQueue, self)
         end

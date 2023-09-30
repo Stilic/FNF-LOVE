@@ -60,7 +60,7 @@ function PauseSubState:changeSelection(huh)
 
     local bullShit = 0
 
-    for _, item in pairs(self.grpShitMenu.members) do
+    for _, item in ipairs(self.grpShitMenu.members) do
         item.targetY = bullShit - (self.curSelected - 1)
         bullShit = bullShit + 1
 

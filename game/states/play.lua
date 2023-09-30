@@ -197,9 +197,9 @@ function PlayState:enter()
     self:add(self.gf)
     self:add(self.boyfriend)
     self:add(self.dad)
-    self:add(self.judgeSpritesGroup)
 
     self:add(self.stage.foreground)
+    self:add(self.judgeSpritesGroup)
 
     self.healthBarBG = Sprite()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
@@ -688,14 +688,15 @@ function PlayState:step(s)
         PlayState.songPosition = time * 1000
     end
 
+    for _, script in ipairs(self.scripts) do script:call("step", s) end
+
+    self.stage:step(s)
+
     self.boyfriend:step(s)
     self.gf:step(s)
     self.dad:step(s)
 
-    for _, script in ipairs(self.scripts) do
-        script:call("step", s)
-        script:call("postStep", s)
-    end
+    for _, script in ipairs(self.scripts) do script:call("postStep", s) end
 end
 
 function PlayState:beat(b)
@@ -707,6 +708,8 @@ function PlayState:beat(b)
     end
 
     for _, script in ipairs(self.scripts) do script:call("beat", b) end
+
+    self.stage:beat(b)
 
     if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
         self.camGame.zoom = self.camGame.zoom + 0.015

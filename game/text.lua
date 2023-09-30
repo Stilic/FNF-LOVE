@@ -65,7 +65,7 @@ end
 
 function Text:draw()
     if self.exists and self.alive and self.visible and self.alpha > 0 then
-        for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+        for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
             if c.visible and c.exists then
                 table.insert(c.__renderQueue, self)
             end

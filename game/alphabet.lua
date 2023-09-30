@@ -65,8 +65,7 @@ function Alphabet:addText()
     self:doSplitWords()
 
     local xPos = 0
-    for i, character in pairs(self.splitWords) do
-
+    for i, character in ipairs(self.splitWords) do
         local spaceChar = (character == " " or
                               (self.isBold and character == "_"))
         if spaceChar then

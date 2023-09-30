@@ -11,7 +11,7 @@ function Group:add(obj)
 end
 
 function Group:remove(obj)
-    for i, o in pairs(self.members) do
+    for i, o in ipairs(self.members) do
         if o == obj then
             table.remove(self.members, i)
             break
@@ -48,7 +48,7 @@ function Group:recycle(class, factory, revive)
 end
 
 function Group:update(dt, ...)
-    for _, o in pairs(self.members) do
+    for _, o in ipairs(self.members) do
         local f = o.update
         if f then f(o, dt, ...) end
     end
@@ -58,7 +58,7 @@ function Group:draw(...)
     local oldDefaultCameras = Camera.__defaultCameras
     if self.cameras then Camera.__defaultCameras = self.cameras end
 
-    for _, o in pairs(self.members) do
+    for _, o in ipairs(self.members) do
         local f = o.draw
         if f then f(o, ...) end
     end

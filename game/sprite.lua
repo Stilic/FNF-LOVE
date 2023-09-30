@@ -40,7 +40,7 @@ function Sprite.getFramesFromSparrow(texture, description)
 
     local frames = {texture = texture, frames = {}}
     local sw, sh = texture:getDimensions()
-    for _, c in pairs(parseXml(description).TextureAtlas.children) do
+    for _, c in ipairs(parseXml(description).TextureAtlas.children) do
         if c.name == "SubTexture" then
             table.insert(frames.frames,
                          Sprite.newFrame(c.attrs.name, tonumber(c.attrs.x),
@@ -357,7 +357,7 @@ function Sprite:addAnim(name, frames, framerate, looped)
         looped = looped,
         frames = {}
     }
-    for _, i in pairs(frames) do
+    for _, i in ipairs(frames) do
         table.insert(anim.frames, self.__frames[i + 1])
     end
 
@@ -487,7 +487,7 @@ end
 function Sprite:draw()
     if self.exists and self.alive and self.visible and self.alpha > 0 and
         self.texture and (self.scale.x ~= 0 or self.scale.y ~= 0) then
-        for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+        for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
             if c.visible and c.exists then
                 table.insert(c.__renderQueue, self)
             end

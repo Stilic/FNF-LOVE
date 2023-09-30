@@ -43,7 +43,7 @@ function paths.clearCache()
     for k, o in pairs(paths.atlases) do
         if not paths.isPersistant(k) then
             o.texture:release()
-            for _, f in pairs(o.frames) do f.quad:release() end
+            for _, f in ipairs(o.frames) do f.quad:release() end
             paths.atlases[k] = nil
         end
     end

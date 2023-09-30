@@ -29,15 +29,23 @@ end
 function Stage:update(dt)
     self.script:call("update", dt)
     Stage.super.update(self, dt)
-    self.foreground:update(dt)
     self.script:call("postUpdate", dt)
 end
 
 function Stage:draw()
     self.script:call("draw")
     Stage.super.draw(self)
-    self.foreground:draw()
     self.script:call("postDraw")
+end
+
+function Stage:step(s)
+    self.script:call("step", s)
+    self.script:call("postStep", s)
+end
+
+function Stage:beat(b)
+    self.script:call("beat", b)
+    self.script:call("postBeat", b)
 end
 
 return Stage

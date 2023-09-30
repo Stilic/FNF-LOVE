@@ -26,7 +26,7 @@ function FreeplayState:enter()
         if songText:getWidth() > 980 then
             local textScale = 980 / songText:getWidth()
             songText.scale.x = textScale
-            for _, letter in pairs(songText.lettersArray) do
+            for _, letter in ipairs(songText.lettersArray) do
                 letter.x = letter.x * textScale
                 letter.offset.x = letter.offset.x * textScale
             end
@@ -68,7 +68,7 @@ function FreeplayState:changeSelection(huh)
 
     local bullShit = 0
 
-    for _, item in pairs(self.grpSongs.members) do
+    for _, item in ipairs(self.grpSongs.members) do
         item.targetY = bullShit - (FreeplayState.curSelected - 1)
         bullShit = bullShit + 1
 
