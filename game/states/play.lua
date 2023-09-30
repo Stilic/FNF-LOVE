@@ -213,12 +213,16 @@ function PlayState:enter()
     self.healthBar:setValue(self.health)
 
     self.iconP1 = HealthIcon(self.boyfriend.icon, true)
-    self.iconP1.y = self.healthBar.y - 150
+    self.iconP1.y = self.healthBar.y - 75
     self.iconP1:setScrollFactor()
+    self.iconP1:updateHitbox()
+    self.iconP1.origin = {x = 150, y = 0}
 
     self.iconP2 = HealthIcon(self.dad.icon, false)
-    self.iconP2.y = self.healthBar.y - 150
+    self.iconP2.y = self.healthBar.y - 75
     self.iconP2:setScrollFactor()
+    self.iconP2:updateHitbox()
+    self.iconP2.origin = {x = 150, y = 0}
 
     self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
                          paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
@@ -321,17 +325,22 @@ function PlayState:update(dt)
                       0.04 * self.stage.camSpeed)
 
     local iconOffset = 26
-    self.iconP1.x = push.getWidth() - self.healthBar.x - self.iconP1.width +
-                        iconOffset -
-                        (self.healthBar.width * (self.healthBar.percent * 0.01) -
-                            iconOffset) -- wtf
-    self.iconP2.x = self.iconP1.x - iconOffset + 75
+    self.iconP1.x = self.healthBar.x + (self.healthBar.width * (math.remapToRange(
+                        self.healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset)
+
+    self.iconP2.x = self.healthBar.x + (self.healthBar.width * (math.remapToRange(
+                        self.healthBar.percent, 0, 100, 100, 0) * 0.01)) -
+                        (self.iconP2.width - iconOffset)
 
     local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
     self.iconP1.scale = {x = mult, y = mult}
-    self.iconP2.scale = {x = mult, y = mult}
+    self.iconP1:updateHitbox()
 
-    self.iconP1:swap((self.health < .2 and 2 or 1))
+    local mult = util.coolLerp(self.iconP2.scale.x, 1, 0.25)
+    self.iconP2.scale = {x = mult, y = mult}
+    -- self.iconP2:updateHitbox() -- doesn't seems to work...? - vik
+
+    self.iconP1:swap((self.health < 0.2 and 2 or 1))
     self.iconP2:swap((self.health > 1.8 and 2 or 1))
 
     local mustHit = self:getCurrentSection()
