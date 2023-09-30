@@ -67,10 +67,14 @@ end
 
 function Character:draw()
     self.script:call("draw")
-    if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
     Character.super.draw(self)
-    if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
     self.script:call("postDraw")
+end
+
+function Character:__render(camera)
+    if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
+    Character.super.__render(self, camera)
+    if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
 end
 
 function Character:step(s)
