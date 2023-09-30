@@ -26,18 +26,17 @@ PlayState.pixelStage = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
-    self.scripts = Script.loadScriptsFromDirectory({"data/scripts/charts",
-                                                    "songs/"..PlayState.SONG.song
-                                                    })
-    for _, script in ipairs(self.scripts) do script:call("create") end
-
-    self.keysPressed = {}
-
     if PlayState.SONG == nil then
         PlayState.SONG = paths.getJSON("songs/tutorial/tutorial").song
     end
 
     local songName = paths.formatToSongPath(PlayState.SONG.song)
+
+    self.scripts = Script.loadScriptsFromDirectory({"data/scripts/charts",
+                                                    "songs/"..songName})
+    for _, script in ipairs(self.scripts) do script:call("create") end
+
+    self.keysPressed = {}
 
     local sound = game.sound.load(paths.getInst(songName))
     sound.onComplete = function() switchState(FreeplayState()) end
