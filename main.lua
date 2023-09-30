@@ -295,6 +295,7 @@ end
 function love.draw()
     push.start()
     Gamestate.draw()
+    for _, c in pairs(game.cameras.list) do c:draw() end
     if fade then
         love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(),
                            fade.height)

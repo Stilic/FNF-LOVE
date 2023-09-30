@@ -23,7 +23,6 @@ function Button:update(dt)
 end
 
 function Button:draw()
-
     local cameras = self.cameras or Camera.__defaultCameras
     for _, cam in ipairs(cameras) do
         cam:attach()

@@ -82,7 +82,7 @@ function Sprite.getFramesFromPacker(texture, description)
     return frames
 end
 
-function Sprite.getTilesfromTexture(texture, tileSize, region, tileSpacing)
+function Sprite.getTiles(texture, tileSize, region, tileSpacing)
     if region == nil then
         region = {
             x = 0,
@@ -103,12 +103,10 @@ function Sprite.getTilesfromTexture(texture, tileSize, region, tileSpacing)
 
     local tileFrames = {}
 
-    region = {
-        x = math.floor(region.x),
-        y = math.floor(region.y),
-        width = math.floor(region.width),
-        height = math.floor(region.height)
-    }
+    region.x = math.floor(region.x)
+    region.y = math.floor(region.y)
+    region.width = math.floor(region.width)
+    region.height = math.floor(region.height)
     tileSpacing = {x = math.floor(tileSpacing.x), y = math.floor(tileSpacing.y)}
     tileSize = {x = math.floor(tileSize.x), y = math.floor(tileSize.y)}
 
@@ -224,10 +222,8 @@ function Sprite:loadTexture(texture, animated, framewidth, frameheight)
     self.height = frameheight
 
     if animated then
-        self.__frames = Sprite.getTilesfromTexture(texture, {
-            x = framewidth,
-            y = frameheight
-        })
+        self.__frames = Sprite.getTiles(texture,
+                                        {x = framewidth, y = frameheight})
     end
 
     return self
@@ -489,81 +485,76 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
-    if self.exists and self.alive and self.texture and
-        (self.scale.x > 0 or self.scale.y > 0) then
-        local min, mag, anisotropy = self.texture:getFilter()
-        local mode = self.antialiasing and "linear" or "nearest"
-        self.texture:setFilter(mode, mode, anisotropy)
-
-        local f = self:getCurrentFrame()
-
-        local shader = love.graphics.getShader()
-        if self.shader then love.graphics.setShader(self.shader) end
-        love.graphics.setBlendMode(self.blend)
-
-        if self.clipRect then love.graphics.setStencilTest("greater", 0) end
-
-        local cameras = self.cameras or Camera.__defaultCameras
-        for _, cam in ipairs(cameras) do
-            local alpha = self.alpha * cam.alpha
-            if self.visible and alpha > 0 then
-                cam:attach()
-
-                local x, y, rad, sx, sy, ox, oy = self.x, self.y,
-                                                  math.rad(self.angle),
-                                                  self.scale.x, self.scale.y,
-                                                  self.origin.x, self.origin.y
-
-                if self.flipX then sx = -sx end
-                if self.flipY then sy = -sy end
-
-                local r, g, b, a = love.graphics.getColor()
-                love.graphics.setColor(self.color[1], self.color[2],
-                                       self.color[3], alpha)
-
-                x, y = x + ox - self.offset.x, y + oy - self.offset.y
-
-                if f then
-                    ox, oy = ox + f.offset.x, oy + f.offset.y
-                end
-
-                x, y = x - (cam.scroll.x * self.scrollFactor.x),
-                       y - (cam.scroll.y * self.scrollFactor.y)
-
-                if self.clipRect then
-                    stencilSprite, stencilX, stencilY = self, x, y
-                    love.graphics.stencil(stencil, "replace", 1, false)
-                end
-
-                if self.__createdGraphic then
-                    local w, h = self:getFrameDimensions()
-
-                    love.graphics.push()
-                    love.graphics.translate(x, y)
-                    love.graphics.rotate(rad)
-                    love.graphics.rectangle('fill', -(math.abs(self.scale.x) * w)/2,
-                                                    -(math.abs(self.scale.y) * h)/2,
-                                                    math.abs(self.scale.x) * w,
-                                                    math.abs(self.scale.y) * h)
-                    love.graphics.pop()
-                elseif not f then
-                    love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
-                else
-                    love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy,
-                                       ox, oy)
-                end
-
-                love.graphics.setColor(r, g, b, a)
-
-                cam:detach()
+    if self.exists and self.alive and self.visible and self.alpha > 0 and
+        self.texture and (self.scale.x ~= 0 or self.scale.y ~= 0) then
+        for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+            if c.visible and c.exists then
+                table.insert(c.__renderQueue, self)
             end
         end
-
-        self.texture:setFilter(min, mag, anisotropy)
-        if self.clipRect then love.graphics.setStencilTest() end
-        if self.shader then love.graphics.setShader(shader) end
-        love.graphics.setBlendMode("alpha")
     end
+end
+
+function Sprite:__render(camera)
+    local min, mag, anisotropy = self.texture:getFilter()
+    local mode = self.antialiasing and "linear" or "nearest"
+    self.texture:setFilter(mode, mode, anisotropy)
+
+    local f = self:getCurrentFrame()
+
+    local shader = love.graphics.getShader()
+    if self.shader then love.graphics.setShader(self.shader) end
+
+    local blendMode, alphaMode = love.graphics.getBlendMode()
+    love.graphics.setBlendMode(self.blend)
+
+    if self.clipRect then love.graphics.setStencilTest("greater", 0) end
+
+    local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
+                                      self.scale.x, self.scale.y, self.origin.x,
+                                      self.origin.y
+
+    if self.flipX then sx = -sx end
+    if self.flipY then sy = -sy end
+
+    local r, g, b, a = love.graphics.getColor()
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+
+    x, y = x + ox - self.offset.x, y + oy - self.offset.y
+
+    if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
+
+    x, y = x - (camera.scroll.x * self.scrollFactor.x),
+           y - (camera.scroll.y * self.scrollFactor.y)
+
+    if self.clipRect then
+        stencilSprite, stencilX, stencilY = self, x, y
+        love.graphics.stencil(stencil, "replace", 1, false)
+    end
+
+    if self.__createdGraphic then
+        local w, h = self:getFrameDimensions()
+
+        love.graphics.push()
+        love.graphics.translate(x, y)
+        love.graphics.rotate(rad)
+        love.graphics.rectangle('fill', -(math.abs(self.scale.x) * w) / 2,
+                                -(math.abs(self.scale.y) * h) / 2,
+                                math.abs(self.scale.x) * w,
+                                math.abs(self.scale.y) * h)
+        love.graphics.pop()
+    elseif not f then
+        love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
+    else
+        love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy)
+    end
+
+    love.graphics.setColor(r, g, b, a)
+
+    self.texture:setFilter(min, mag, anisotropy)
+    if self.clipRect then love.graphics.setStencilTest() end
+    if self.shader then love.graphics.setShader(shader) end
+    love.graphics.setBlendMode(blendMode, alphaMode)
 end
 
 return Sprite

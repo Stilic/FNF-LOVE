@@ -35,25 +35,25 @@ end
 function Bar:draw()
     local r, g, b, a = love.graphics.getColor()
 
-    local cameras = self.cameras or Camera.__defaultCameras
-    for _, cam in ipairs(cameras) do
-        cam:attach()
-
-        if self.filledBar then
-            love.graphics.setColor(self.flipX and self.color or self.opColor)
-            love.graphics.rectangle("fill", self.x, self.y, self.width,
-                                    self.height)
+    for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+        if c.visible and c.exists then
+            table.insert(c.__renderQueue, self)
         end
-
-        love.graphics.setColor(self.flipX and self.opColor or self.color)
-        love.graphics.rectangle("fill", self.x - cam.scroll.x,
-                                self.y - cam.scroll.y, self.fillWidth,
-                                self.height)
-
-        cam:detach()
     end
 
     love.graphics.setColor(r, g, b, a)
+end
+
+function Bar:__render(camera)
+    if self.filledBar then
+        love.graphics.setColor(self.flipX and self.color or self.opColor)
+        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    end
+
+    love.graphics.setColor(self.flipX and self.opColor or self.color)
+    love.graphics.rectangle("fill", self.x - camera.scroll.x,
+                            self.y - camera.scroll.y, self.fillWidth,
+                            self.height)
 end
 
 return Bar
