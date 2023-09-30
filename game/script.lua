@@ -2,26 +2,34 @@ local Script = Object:extend()
 
 local chunkMt = {__index = _G}
 
-function Script.loadScriptsFromDirectory(dir)
+function Script.loadScriptsFromDirectory(dirs)
     local scripts = {}
 
-    for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                "data/" .. dir))) do
-        if string.endsWith(file, '.lua') then
-            table.insert(scripts,
-                         Script(dir .. "/" .. util.removeExtension(file)))
+    for _, dir in pairs(dirs) do 
+        for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(dir))) do
+            if string.endsWith(file, '.lua') then
+                table.insert(scripts,
+                             Script(dir .. "/" .. util.removeExtension(file), true))
+            end
         end
     end
 
     return scripts
 end
 
-function Script:new(path)
+function Script:new(path, ignoreData)
     self.path = path
     self.variables = {}
     self.closed = false
-
-    local p = "data/" .. path
+    
+    local p
+    
+    --- to not break shit
+    if ignoreData then 
+        p = path
+    else
+        p = "data/" .. path
+    end
 
     local chunk = paths.getLua(p)
     if chunk then

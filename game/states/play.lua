@@ -26,7 +26,9 @@ PlayState.pixelStage = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
-    self.scripts = Script.loadScriptsFromDirectory("scripts/charts")
+    self.scripts = Script.loadScriptsFromDirectory({"data/scripts/charts",
+                                                    "songs/"..PlayState.SONG.song
+                                                    })
     for _, script in ipairs(self.scripts) do script:call("create") end
 
     self.keysPressed = {}
