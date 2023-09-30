@@ -184,7 +184,7 @@ function Sprite:new(x, y, texture)
     if texture then self:loadTexture(texture) end
 end
 
-function Sprite:loadTexture(texture, animated, framewidth, frameheight)
+function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     if animated == nil then animated = false end
 
     if type(texture) == "string" then
@@ -196,34 +196,34 @@ function Sprite:loadTexture(texture, animated, framewidth, frameheight)
     self.curFrame = nil
     self.animFinished = nil
 
-    if framewidth == nil then framewidth = 0 end
-    if framewidth == 0 then
-        framewidth = animated and self.texture:getHeight() or
+    if frameWidth == nil then frameWidth = 0 end
+    if frameWidth == 0 then
+        frameWidth = animated and self.texture:getHeight() or
                          self.texture:getWidth()
-        framewidth = (framewidth > self.texture:getWidth()) or
-                         self.texture:getWidth() or framewidth
-        -- elseif framewidth > self.texture:getWidth() then
-        --     print('frameWidth:' .. framewidth ..
-        --               ' is larger than the graphic\'s width:' ..
-        --               self.texture:getWidth())
+        frameWidth = (frameWidth > self.texture:getWidth()) or
+                         self.texture:getWidth() or frameWidth
+    elseif frameWidth > self.texture:getWidth() then
+        print('frameWidth:' .. frameWidth ..
+                  ' is larger than the graphic\'s width:' ..
+                  self.texture:getWidth())
     end
-    self.width = framewidth
+    self.width = frameWidth
 
-    if frameheight == nil then frameheight = 0 end
-    if frameheight == 0 then
-        frameheight = animated and framewidth or self.texture:getHeight()
-        frameheight = (frameheight > self.texture:getHeight()) or
-                          self.texture:getHeight() or frameheight
-        -- elseif frameheight > self.texture:getHeight() then
-        --     print('frameHeight:' .. frameheight ..
-        --               ' is larger than the graphic\'s height:' ..
-        --               self.texture:getHeight())
+    if frameHeight == nil then frameHeight = 0 end
+    if frameHeight == 0 then
+        frameHeight = animated and frameWidth or self.texture:getHeight()
+        frameHeight = (frameHeight > self.texture:getHeight()) or
+                          self.texture:getHeight() or frameHeight
+    elseif frameHeight > self.texture:getHeight() then
+        print('frameHeight:' .. frameHeight ..
+                  ' is larger than the graphic\'s height:' ..
+                  self.texture:getHeight())
     end
-    self.height = frameheight
+    self.height = frameHeight
 
     if animated then
         self.__frames = Sprite.getTiles(texture,
-                                        {x = framewidth, y = frameheight})
+                                        {x = frameWidth, y = frameHeight})
     end
 
     return self
@@ -518,7 +518,8 @@ function Sprite:__render(camera)
     if self.flipY then sy = -sy end
 
     local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+                           self.alpha)
 
     x, y = x + ox - self.offset.x, y + oy - self.offset.y
 
