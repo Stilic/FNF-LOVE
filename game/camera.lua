@@ -26,6 +26,8 @@ function Camera:new(x, y, width, height)
 
     self.__canvas = love.graphics.newCanvas()
     self.__renderQueue = {}
+
+    self:onResize(love.graphics.getDimensions())
 end
 
 function Camera:update()
@@ -46,13 +48,20 @@ function Camera:fill(r, g, b, a)
     end)
 end
 
+function Camera:onResize(w, h)
+    local gw, gh = push.getDimensions()
+    self.__scale = math.min(w / gw, h / gh)
+    self.__offsetX = math.floor(w / 2 - (gw * self.__scale) / 2)
+    self.__offsetY = math.floor(h / 2 - (gh * self.__scale) / 2)
+end
+
 function Camera:draw()
     if self.visible and self.exists and self.alpha > 0 then
         love.graphics.push()
         love.graphics.rotate(-self.angle)
         local w, h = self.width * 0.5, self.height * 0.5
         love.graphics.translate(w - self.x, h - self.y)
-        love.graphics.scale(self.zoom, self.zoom)
+        love.graphics.scale(self.zoom * self.__scale)
         love.graphics.translate(-w, -h)
 
         local canvas = love.graphics.getCanvas()
@@ -82,7 +91,7 @@ function Camera:draw()
         local blendMode, alphaMode = love.graphics.getBlendMode()
         love.graphics.setBlendMode("alpha", "premultiplied")
 
-        love.graphics.draw(self.__canvas)
+        love.graphics.draw(self.__canvas, self.__offsetX, self.__offsetY)
 
         love.graphics.setShader(shader)
         love.graphics.setColor(r, g, b, a)

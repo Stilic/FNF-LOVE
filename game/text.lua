@@ -47,6 +47,12 @@ function Text:screenCenter(axes)
     end
 end
 
+function Text:setScrollFactor(x, y)
+    if x == nil then x = 0 end
+    if y == nil then y = 0 end
+    self.scrollFactor.x, self.scrollFactor.y = x, y
+end
+
 function Text:kill()
     self.alive = false
     self.exists = false

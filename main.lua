@@ -87,9 +87,9 @@ controls = (require "lib.baton").new({
     joystick = love.joystick.getJoysticks()[1]
 })
 
-local fade, fadeTimer
+local fade
 function fadeOut(time, callback)
-    if fadeTimer then Timer.cancel(fadeTimer) end
+    if fade and fade.timer then Timer.cancel(fade.timer) end
 
     fade = {
         height = push.getHeight() * 2,
@@ -97,15 +97,19 @@ function fadeOut(time, callback)
                                    {0, 0, 0, 0})
     }
     fade.y = -fade.height
-    fadeTimer = Timer.tween(time, fade, {y = 0}, "linear", function()
+    fade.timer = Timer.tween(time, fade, {y = 0}, "linear", function()
         fade.texture:release()
         fade = nil
         if callback then callback() end
     end)
+    fade.draw = function()
+        love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(),
+                           fade.height)
+    end
 end
 
 function fadeIn(time, callback)
-    if fadeTimer then Timer.cancel(fadeTimer) end
+    if fade and fade.timer then Timer.cancel(fade.timer) end
 
     fade = {
         height = push.getHeight() * 2,
@@ -113,12 +117,18 @@ function fadeIn(time, callback)
                                    {0, 0, 0})
     }
     fade.y = -fade.height / 2
-    fadeTimer = Timer.tween(time * 2, fade, {y = fade.height}, "linear",
-                            function()
+    fade.timer = Timer.tween(time * 2, fade, {y = fade.height}, "linear",
+                             function()
         fade.texture:release()
         fade = nil
         if callback then callback() end
     end)
+    fade.draw = function(camera)
+        love.graphics.draw(fade.texture,
+                           -(camera.scroll.x * self.scrollFactor.x),
+                           -(camera.scroll.y * self.scrollFactor.y), fade.y, 0,
+                           push:getWidth(), fade.height)
+    end
 end
 
 isSwitchingState = false
@@ -246,9 +256,10 @@ function love.load()
     Gamestate.switch(TitleState())
 end
 
-function love.resize(width, height)
-    push.resize(width, height)
-    Gamestate.resize(width, height)
+function love.resize(w, h)
+    push.resize(w, h)
+    for _, c in ipairs(game.cameras.list) do c:onResize(w, h) end
+    Gamestate.resize(w, h)
 end
 
 local function callUIInput(func, ...)
@@ -295,11 +306,10 @@ end
 function love.draw()
     push.start()
     Gamestate.draw()
-    for _, c in ipairs(game.cameras.list) do c:draw() end
     if fade then
-        love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(),
-                           fade.height)
+        table.insert(game.cameras.list[1], fade.draw)
     end
+    for _, c in ipairs(game.cameras.list) do c:draw() end
     push.finish()
 end
 

@@ -58,6 +58,7 @@ function MainMenuState:enter()
     self.daText = Text(12, push:getHeight() - 24, "FNF-LOVE v0.5",
                        paths.getFont("vcr.ttf", 16), {255, 255, 255})
     self.daText.outWidth = 2
+    self.daText:setScrollFactor()
     self:add(self.daText)
 
     self:changeSelection()
