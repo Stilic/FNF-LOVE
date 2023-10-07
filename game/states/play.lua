@@ -216,20 +216,38 @@ function PlayState:enter()
 
     self.iconP1 = HealthIcon(self.boyfriend.icon, true)
     self.iconP1.y = self.healthBar.y - 75
-    self.iconP1:setScrollFactor()
-    self.iconP1:updateHitbox()
-    self.iconP1.origin = {x = 150, y = 0}
+    self.healthBar.opColor = self.iconP1:getDominant()
 
     self.iconP2 = HealthIcon(self.dad.icon, false)
     self.iconP2.y = self.healthBar.y - 75
-    self.iconP2:setScrollFactor()
-    self.iconP2:updateHitbox()
-    self.iconP2.origin = {x = 150, y = 0}
+    self.healthBar.color = self.iconP2:getDominant()
 
-    self.scoreTxt = Text(0, self.healthBarBG.y + 30, "",
-                         paths.getFont("vcr.ttf", 16), {1, 1, 1}, "center")
+    local font = paths.getFont("vcr.ttf", 16)
+    self.scoreTxt = Text(0, self.healthBarBG.y - 30, "", font, {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
-    self:recalculateRating()
+
+    self.timeTxt = Text(0, self.healthBar.y + 30, "", font, {1, 1, 1}, "center")
+    self.timeTxt.outWidth = 1
+
+    self.timeArcBG = Graphic(self.timeTxt.x - 20, self.timeTxt.y + 6,
+                             100, 100, {0, 0, 0}, "arc", "line")
+    self.timeArcBG.outWidth = 5
+    self.timeArcBG.config = {
+        radius = 8, arctype = "closed",
+        angle1 = 0, angle2 = 360,
+        segments = 40
+    }
+    self.timeArcBG:updateDimensions()
+
+    self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y,
+                           100, 100, {1, 1, 1}, "arc", "line")
+    self.timeArc.outWidth = 2
+    self.timeArc.config = {
+        radius = 8, arctype = "open",
+        angle1 = -90, angle2 = 0,
+        segments = 40
+    }
+    self.timeArcBG:updateDimensions()
 
     self:add(self.receptors)
     self:add(self.sustainsGroup)
@@ -240,10 +258,16 @@ function PlayState:enter()
     self:add(self.iconP1)
     self:add(self.iconP2)
     self:add(self.scoreTxt)
+    self:add(self.timeArcBG)
+    self:add(self.timeArc)
+    self:add(self.timeTxt)
+
+    self:recalculateRating()
 
     for _, o in ipairs({
         self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
-        self.healthBar, self.iconP1, self.iconP2, self.scoreTxt
+        self.healthBar, self.iconP1, self.iconP2, self.scoreTxt, self.timeArcBG,
+        self.timeArc, self.timeTxt
     }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -326,26 +350,51 @@ function PlayState:update(dt)
         util.coolLerp(self.camGame.target.y, self.camFollow.y,
                       0.04 * self.stage.camSpeed)
 
-    local iconOffset = 26
-    self.iconP1.x = self.healthBar.x + (self.healthBar.width *
-                        (math.remapToRange(self.healthBar.percent, 0, 100, 100,
-                                           0) * 0.01) - iconOffset)
-
-    self.iconP2.x = self.healthBar.x + (self.healthBar.width *
-                        (math.remapToRange(self.healthBar.percent, 0, 100, 100,
-                                           0) * 0.01)) -
-                        (self.iconP2.width - iconOffset)
-
     local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
     self.iconP1.scale = {x = mult, y = mult}
-    self.iconP1:updateHitbox()
-
-    local mult = util.coolLerp(self.iconP2.scale.x, 1, 0.25)
     self.iconP2.scale = {x = mult, y = mult}
-    -- self.iconP2:updateHitbox() -- doesn't seems to work...? - vik
+
+    self.iconP1:updateHitbox()
+    self.iconP2:updateHitbox()
+
+    local iconOffset = 26
+    self.iconP1.x = self.healthBar.x + (self.healthBar.width * (math.remapToRange(
+                        self.healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset)
+
+    self.iconP2.x = self.healthBar.x + (self.healthBar.width * (math.remapToRange(
+                        self.healthBar.percent, 0, 100, 100, 0) * 0.01)) -
+                        (self.iconP2.width - iconOffset)
 
     self.iconP1:swap((self.health < 0.2 and 2 or 1))
     self.iconP2:swap((self.health > 1.8 and 2 or 1))
+
+    -- time arc / text
+    local songTime = PlayState.inst.time / 1000
+
+    local mode = "left" -- for now until ClientPrefs is a thing - Vi
+    if mode == "left" then
+        songTime = PlayState.inst.sound:getDuration() - songTime
+    end
+
+    local function to_clock(ms)
+        local total = math.floor(ms)
+        local mins = string.format("%.f", math.floor(total / 60))
+        local secs = string.format("%02.f", total % 60)
+        return mins .. ":" .. secs
+    end
+
+    self.timeTxt:setContent(to_clock(songTime))
+
+    self.timeTxt:screenCenter("x")
+    self.timeTxt.x = self.timeTxt.x + (self.timeArcBG.width + 5)
+
+    self.timeArcBG:screenCenter("x")
+    self.timeArcBG.x = self.timeTxt.x - self.timeArcBG.width - 5
+    self.timeArc.x = self.timeArcBG.x
+
+    local timeAngle = ((PlayState.inst.time / 1000) /
+                          (PlayState.inst.sound:getDuration() / 1000)) * 0.36
+    self.timeArc.config.angle2 = -90 + math.ceil(timeAngle)
 
     local mustHit = self:getCurrentSection()
     if mustHit ~= nil then
