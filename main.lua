@@ -8,6 +8,7 @@ Gamestate = require "lib.gamestate"
 
 Camera = require "game.camera"
 Sprite = require "game.sprite"
+Graphic = require "game.graphic"
 Sound = require "game.sound"
 Text = require "game.text"
 Bar = require "game.bar"
