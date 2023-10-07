@@ -55,7 +55,7 @@ function MainMenuState:enter()
 
     self.camFollow = {x = 0, y = 0}
 
-    self.daText = Text(12, push:getHeight() - 24, "FNF-LOVE v0.5",
+    self.daText = Text(12, game.height - 24, "FNF-LOVE v0.5",
                        paths.getFont("vcr.ttf", 16), {255, 255, 255})
     self.daText.outWidth = 2
     self.daText:setScrollFactor()

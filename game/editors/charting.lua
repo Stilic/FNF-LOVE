@@ -87,7 +87,7 @@ function ChartingState:enter()
 
     local tabs = {"Charting", "Events", "Note", "Section", "Song"}
     self.UI_Box = ui.UITabMenu(890, 40, tabs)
-    self.UI_Box.height = (push.getHeight() - self.UI_Box.tabHeight) -
+    self.UI_Box.height = (game.height - self.UI_Box.tabHeight) -
                              (self.UI_Box.y * 2)
 
     self:add(self.UI_Box)
@@ -401,7 +401,7 @@ function ChartingState:draw()
 
     love.graphics.setColor(0, 0, 0)
     love.graphics.rectangle("fill", (self.gridSize * 10) - 1, 0, 2,
-                            push:getHeight())
+                            game.height)
 
     love.graphics.setColor(0, 0, 1)
     love.graphics.rectangle("fill", self.uiGrid.x, (self.gridSize * 4) - 1,

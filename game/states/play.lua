@@ -153,11 +153,11 @@ function PlayState:enter()
     self.enemyReceptors = Group()
     self.judgeSpritesGroup = Group()
 
-    local rx, ry = push.getWidth() / 2, 50
-    if PlayState.downscroll then ry = push.getHeight() - 100 - ry end
+    local rx, ry = game.width / 2, 50
+    if PlayState.downscroll then ry = game.height - 100 - ry end
     for i = 0, 1 do
         for j = 0, 3 do
-            local rep = Receptor(rx + (push.getWidth() / 4) *
+            local rep = Receptor(rx + (game.width / 4) *
                                      (i == 1 and 1 or -1), ry, j, i)
             rep:groupInit()
             self.receptors:add(rep)
@@ -205,8 +205,8 @@ function PlayState:enter()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter("x")
-    self.healthBarBG.y = (PlayState.downscroll and push.getHeight() * 0.1 or
-                             push.getHeight() * 0.9)
+    self.healthBarBG.y = (PlayState.downscroll and game.height * 0.1 or
+                             game.height * 0.9)
     self.healthBarBG:setScrollFactor()
 
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,

@@ -112,7 +112,7 @@ function Mouse.onReleased(button)
 end
 
 function Mouse.onMoved(x, y)
-    Mouse.x, Mouse.y = push.toGame(x, y)
+    Mouse.x, Mouse.y = love.graphics.transformPoint(x, y)
     Mouse.screenX, Mouse.screenY = x, y
     Mouse.isMoved = true
 end

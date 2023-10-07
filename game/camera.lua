@@ -7,9 +7,9 @@ function Camera:new(x, y, width, height)
     if x == nil then x = 0 end
     if y == nil then y = 0 end
     if width == nil then width = 0 end
-    if width <= 0 then width = push.getWidth() end
+    if width <= 0 then width = game.width end
     if height == nil then height = 0 end
-    if height <= 0 then height = push.getHeight() end
+    if height <= 0 then height = game.height end
     self.x = x
     self.y = y
     self.scroll = {x = 0, y = 0}
@@ -24,10 +24,8 @@ function Camera:new(x, y, width, height)
     self.bgColor = {0, 0, 0, 0}
     self.shader = nil
 
-    self.__canvas = love.graphics.newCanvas()
+    self.__canvas = love.graphics.newCanvas(self.width, self.height)
     self.__renderQueue = {}
-
-    self:onResize(love.graphics.getDimensions())
 end
 
 function Camera:update()
@@ -48,20 +46,13 @@ function Camera:fill(r, g, b, a)
     end)
 end
 
-function Camera:onResize(w, h)
-    local gw, gh = push.getDimensions()
-    self.__scale = math.min(w / gw, h / gh)
-    self.__offsetX = math.floor(w / 2 - (gw * self.__scale) / 2)
-    self.__offsetY = math.floor(h / 2 - (gh * self.__scale) / 2)
-end
-
 function Camera:draw()
     if self.visible and self.exists and self.alpha > 0 then
         love.graphics.push()
         love.graphics.rotate(-self.angle)
         local w, h = self.width * 0.5, self.height * 0.5
         love.graphics.translate(w - self.x, h - self.y)
-        love.graphics.scale(self.zoom * self.__scale)
+        love.graphics.scale(self.zoom)
         love.graphics.translate(-w, -h)
 
         local canvas = love.graphics.getCanvas()
@@ -91,7 +82,11 @@ function Camera:draw()
         local blendMode, alphaMode = love.graphics.getBlendMode()
         love.graphics.setBlendMode("alpha", "premultiplied")
 
-        love.graphics.draw(self.__canvas, self.__offsetX, self.__offsetY)
+        local winWidth, winHeight = love.graphics.getDimensions()
+        local scale = math.min(winWidth / game.width, winHeight / game.height)
+        love.graphics.draw(self.__canvas, (winWidth - scale * game.width) / 2,
+                           (winHeight - scale * game.height) / 2, 0, scale,
+                           scale)
 
         love.graphics.setShader(shader)
         love.graphics.setColor(r, g, b, a)

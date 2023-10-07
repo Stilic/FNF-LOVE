@@ -22,8 +22,8 @@ end
 
 function Bar:screenCenter(axes)
     if axes == nil then axes = "xy" end
-    if axes:find("x") then self.x = (push.getWidth() - self.width) * 0.5 end
-    if axes:find("y") then self.y = (push.getHeight() - self.height) * 0.5 end
+    if axes:find("x") then self.x = (game.width - self.width) * 0.5 end
+    if axes:find("y") then self.y = (game.height - self.height) * 0.5 end
     return self
 end
 

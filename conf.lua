@@ -8,8 +8,6 @@ function love.conf(t)
     t.window.icon = "art/icon.png"
     t.window.width = dimensions.width
     t.window.height = dimensions.height
-    t.window.minwidth = 200
-    t.window.minheight = 0
     t.window.resizable = true
     t.window.vsync = false
 

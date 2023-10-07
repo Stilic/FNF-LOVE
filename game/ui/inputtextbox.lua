@@ -79,13 +79,13 @@ function InputTextBox:draw()
         love.graphics.setColor(1, 1, 1)
         love.graphics.push()
         love.graphics.translate(self.x + 5, self.y)
-        push.setScissor(self.x, self.y, self.width - 10, self.height)
+        love.graphics.setScissor(self.x, self.y, self.width - 10, self.height)
 
         love.graphics.setColor(self.colorText)
         love.graphics.setFont(self.font)
         love.graphics.print(self.text, -self.__scrollTextX, (self.height - self.font:getHeight()) / 2)
         love.graphics.pop()
-        push.setScissor()
+        love.graphics.setScissor()
 
         if self.active and true then
             love.graphics.setColor(self.colorCursor)

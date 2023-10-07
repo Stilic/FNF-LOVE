@@ -40,10 +40,10 @@ function Text:screenCenter(axes)
     if axes == nil then axes = "xy" end
 
     if axes:find("x") then
-        self.x = (push.getWidth() - self.font:getWidth(self.content)) * 0.5
+        self.x = (game.width - self.font:getWidth(self.content)) * 0.5
     end
     if axes:find("y") then
-        self.y = (push.getHeight() - self.font:getHeight(self.content)) * 0.5
+        self.y = (game.height - self.font:getHeight(self.content)) * 0.5
     end
 end
 

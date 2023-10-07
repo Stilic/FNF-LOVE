@@ -3,7 +3,6 @@ io.stdout:setvbuf("no")
 require "lib.override"
 
 Object = require "lib.classic"
-push = require "lib.push"
 Timer = require "lib.timer"
 Gamestate = require "lib.gamestate"
 
@@ -92,7 +91,7 @@ function fadeOut(time, callback)
     if fade and fade.timer then Timer.cancel(fade.timer) end
 
     fade = {
-        height = push.getHeight() * 2,
+        height = game.height * 2,
         texture = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0},
                                    {0, 0, 0, 0})
     }
@@ -103,16 +102,14 @@ function fadeOut(time, callback)
         if callback then callback() end
     end)
     fade.draw = function()
-        love.graphics.draw(fade.texture, 0, fade.y, 0, push:getWidth(),
-                           fade.height)
+        love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
     end
 end
-
 function fadeIn(time, callback)
     if fade and fade.timer then Timer.cancel(fade.timer) end
 
     fade = {
-        height = push.getHeight() * 2,
+        height = game.height * 2,
         texture = util.newGradient("vertical", {0, 0, 0, 0}, {0, 0, 0},
                                    {0, 0, 0})
     }
@@ -123,11 +120,8 @@ function fadeIn(time, callback)
         fade = nil
         if callback then callback() end
     end)
-    fade.draw = function(camera)
-        love.graphics.draw(fade.texture,
-                           -(camera.scroll.x * self.scrollFactor.x),
-                           -(camera.scroll.y * self.scrollFactor.y), fade.y, 0,
-                           push:getWidth(), fade.height)
+    fade.draw = function()
+        love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
     end
 end
 
@@ -249,18 +243,14 @@ function love.load()
     if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
 
     local dimensions = require "dimensions"
-    push.setupScreen(dimensions.width, dimensions.height, {upscale = "normal"})
+    game.width, game.height = dimensions.width, dimensions.height
 
     game.cameras.reset()
 
     Gamestate.switch(TitleState())
 end
 
-function love.resize(w, h)
-    push.resize(w, h)
-    for _, c in ipairs(game.cameras.list) do c:onResize(w, h) end
-    Gamestate.resize(w, h)
-end
+function love.resize(w, h) Gamestate.resize(w, h) end
 
 local function callUIInput(func, ...)
     for _, o in ipairs(ui.UIInputTextBox.instances) do
@@ -304,13 +294,12 @@ function love.update(dt)
 end
 
 function love.draw()
-    push.start()
     Gamestate.draw()
     if fade then
-        table.insert(game.cameras.list[1], fade.draw)
+        table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
+                     fade.draw)
     end
     for _, c in ipairs(game.cameras.list) do c:draw() end
-    push.finish()
 end
 
 function love.focus(f)
