@@ -68,9 +68,6 @@ function PlayState:enter()
     -- reset ui stage
     PlayState.pixelStage = false
 
-    -- i moved the stage here, cuz i changed the pixelStage variable in the stage file
-    -- if it is not moved, the notes and receptors will not change to pixel skin
-    -- fellix
     self.stage = Stage(PlayState.SONG.stage)
     self:add(self.stage)
 
@@ -157,8 +154,8 @@ function PlayState:enter()
     if PlayState.downscroll then ry = game.height - 100 - ry end
     for i = 0, 1 do
         for j = 0, 3 do
-            local rep = Receptor(rx + (game.width / 4) *
-                                     (i == 1 and 1 or -1), ry, j, i)
+            local rep = Receptor(rx + (game.width / 4) * (i == 1 and 1 or -1),
+                                 ry, j, i)
             rep:groupInit()
             self.receptors:add(rep)
             if i == 1 then
@@ -222,29 +219,38 @@ function PlayState:enter()
     self.iconP2.y = self.healthBar.y - 75
     self.healthBar.color = self.iconP2:getDominant()
 
+    local textOffset = 30
+    if PlayState.downscroll then textOffset = -textOffset end
+
     local font = paths.getFont("vcr.ttf", 16)
-    self.scoreTxt = Text(0, self.healthBarBG.y - 30, "", font, {1, 1, 1}, "center")
+    self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", font,
+                         {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
 
-    self.timeTxt = Text(0, self.healthBar.y + 30, "", font, {1, 1, 1}, "center")
+    self.timeTxt = Text(0, self.healthBar.y - textOffset, "", font, {1, 1, 1},
+                        "center")
     self.timeTxt.outWidth = 1
 
-    self.timeArcBG = Graphic(self.timeTxt.x - 20, self.timeTxt.y + 6,
-                             100, 100, {0, 0, 0}, "arc", "line")
-    self.timeArcBG.outWidth = 5
+    self.timeArcBG = Graphic(self.timeTxt.x - 20, self.timeTxt.y + 6, 100, 100,
+                             {0, 0, 0}, "arc", "line")
+    self.timeArcBG.outWidth = 7
     self.timeArcBG.config = {
-        radius = 8, arctype = "closed",
-        angle1 = 0, angle2 = 360,
+        radius = 8,
+        arctype = "closed",
+        angle1 = 0,
+        angle2 = 360,
         segments = 40
     }
     self.timeArcBG:updateDimensions()
 
-    self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y,
-                           100, 100, {1, 1, 1}, "arc", "line")
+    self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 100, 100,
+                           {1, 1, 1}, "arc", "line")
     self.timeArc.outWidth = 2
     self.timeArc.config = {
-        radius = 8, arctype = "open",
-        angle1 = -90, angle2 = 0,
+        radius = 8,
+        arctype = "open",
+        angle1 = -90,
+        angle2 = 0,
         segments = 40
     }
     self.timeArcBG:updateDimensions()
@@ -358,11 +364,13 @@ function PlayState:update(dt)
     self.iconP2:updateHitbox()
 
     local iconOffset = 26
-    self.iconP1.x = self.healthBar.x + (self.healthBar.width * (math.remapToRange(
-                        self.healthBar.percent, 0, 100, 100, 0) * 0.01) - iconOffset)
+    self.iconP1.x = self.healthBar.x + (self.healthBar.width *
+                        (math.remapToRange(self.healthBar.percent, 0, 100, 100,
+                                           0) * 0.01) - iconOffset)
 
-    self.iconP2.x = self.healthBar.x + (self.healthBar.width * (math.remapToRange(
-                        self.healthBar.percent, 0, 100, 100, 0) * 0.01)) -
+    self.iconP2.x = self.healthBar.x + (self.healthBar.width *
+                        (math.remapToRange(self.healthBar.percent, 0, 100, 100,
+                                           0) * 0.01)) -
                         (self.iconP2.width - iconOffset)
 
     self.iconP1:swap((self.health < 0.2 and 2 or 1))
