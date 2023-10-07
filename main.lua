@@ -56,7 +56,6 @@ ui = {
     UIInputTextBox = require "game.ui.inputtextbox",
     UINumericStepper = require "game.ui.numericstepper",
     UITabMenu = require "game.ui.tabmenu",
-    UIText = require "game.ui.text"
 }
 
 controls = (require "lib.baton").new({

@@ -18,41 +18,44 @@ end
 
 function Button:update(dt)
     local mx, my = Mouse.x, Mouse.y
-    self.hovered = (mx >= self.x and mx <= self.x + self.width and
-                    my >= self.y and my <= self.y + self.height)
+    self.hovered =
+        (mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
+            self.y + self.height)
 end
 
 function Button:draw()
-    local cameras = self.cameras or Camera.__defaultCameras
-    for _, cam in ipairs(cameras) do
-        cam:attach()
-
-        local r, g, b, a = love.graphics.getColor()
-
-        love.graphics.setColor(self.color)
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
-
-        if self.hovered then love.graphics.setColor(0.2, 0.2, 0.2)
-        else love.graphics.setColor(0, 0, 0) end
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-
-        local textX = self.x + (self.width - self.font:getWidth(self.text)) / 2
-        local textY = self.y + (self.height - self.font:getHeight()) / 2
-
-        love.graphics.setColor(self.textColor)
-        love.graphics.print(self.text, textX, textY)
-        love.graphics.setColor(r, g, b, a)
-
-        love.graphics.setColor(r, g, b, a)
-
-        cam:detach()
+    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
+        if c.visible and c.exists then
+            table.insert(c.__renderQueue, self)
+        end
     end
 end
 
-function Button:mousepressed(x, y, button, istouch, presses)
-    if self.hovered and self.callback then
-        self.callback()
+function Button:__render()
+    local r, g, b, a = love.graphics.getColor()
+
+    love.graphics.setColor(self.color)
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+
+    if self.hovered then
+        love.graphics.setColor(0.2, 0.2, 0.2)
+    else
+        love.graphics.setColor(0, 0, 0)
     end
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+
+    local textX = self.x + (self.width - self.font:getWidth(self.text)) / 2
+    local textY = self.y + (self.height - self.font:getHeight()) / 2
+
+    love.graphics.setColor(self.textColor)
+    love.graphics.print(self.text, textX, textY)
+    love.graphics.setColor(r, g, b, a)
+
+    love.graphics.setColor(r, g, b, a)
+end
+
+function Button:mousepressed(x, y, button, istouch, presses)
+    if self.hovered and self.callback then self.callback() end
 end
 
 return Button

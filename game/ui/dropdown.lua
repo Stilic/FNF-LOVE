@@ -21,9 +21,8 @@ function Dropdown:new(x, y, options)
 
     self.onChanged = nil
 
-    self.__openButton = ui.UIButton(0, 0, self.height, self.height, "", function()
-        self.isOpen = not self.isOpen
-    end)
+    self.__openButton = ui.UIButton(0, 0, self.height, self.height, "",
+                                    function() self.isOpen = not self.isOpen end)
 
     table.insert(Dropdown.instances, self)
 end
@@ -43,67 +42,76 @@ function Dropdown:update(dt)
     self.__openButton:update(dt)
 end
 
-function drawBoid(mode, x, y, length, width , angle)
-	love.graphics.push()
-	love.graphics.translate(x, y)
-	love.graphics.rotate(math.rad(angle))
-	love.graphics.polygon(mode, -length/2, -width /2, -length/2, width /2, length/2, 0)
-	love.graphics.pop()
+function drawBoid(mode, x, y, length, width, angle)
+    love.graphics.push()
+    love.graphics.translate(x, y)
+    love.graphics.rotate(math.rad(angle))
+    love.graphics.polygon(mode, -length / 2, -width / 2, -length / 2, width / 2,
+                          length / 2, 0)
+    love.graphics.pop()
 end
 
 function Dropdown:draw()
-    local cameras = self.cameras or Camera.__defaultCameras
-    for _, cam in ipairs(cameras) do
-        cam:attach()
+    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
+        if c.visible and c.exists then
+            table.insert(c.__renderQueue, self)
+        end
+    end
+end
 
-        if self.isOpen then for i, option in ipairs(self.options) do
+function Dropdown:__render()
+    if self.isOpen then
+        for i, option in ipairs(self.options) do
             if i > self.__curScroll and i <= (self.__maxShow + self.__curScroll) then
                 local fakeIndex = i - self.__curScroll
                 local optionX = self.x
                 local optionY = self.y + (self.height * fakeIndex)
 
                 love.graphics.setColor(1, 1, 1)
-                love.graphics.rectangle("fill", optionX, optionY, self.width, self.height)
+                love.graphics.rectangle("fill", optionX, optionY, self.width,
+                                        self.height)
                 love.graphics.setColor(0, 0, 0)
-                love.graphics.print(option, optionX + 5, optionY + (self.height - self.font:getHeight()) / 2)
-                if Mouse.x >= optionX and Mouse.x < optionX + self.width
-                    and Mouse.y >= optionY and Mouse.y < optionY + self.height then
+                love.graphics.print(option, optionX + 5, optionY +
+                                        (self.height - self.font:getHeight()) /
+                                        2)
+                if Mouse.x >= optionX and Mouse.x < optionX + self.width and
+                    Mouse.y >= optionY and Mouse.y < optionY + self.height then
                     love.graphics.setColor(0, 0.6, 1)
-                    love.graphics.rectangle("fill", optionX, optionY, self.width, self.height)
+                    love.graphics.rectangle("fill", optionX, optionY,
+                                            self.width, self.height)
                     love.graphics.setColor(1, 1, 1)
-                    love.graphics.print(option, optionX + 5, optionY + (self.height - self.font:getHeight()) / 2)
+                    love.graphics.print(option, optionX + 5, optionY +
+                                            (self.height - self.font:getHeight()) /
+                                            2)
                 end
             end
-        end end
-
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.print(self.selectedLabel, self.x + 5, self.y + (self.height - self.font:getHeight()) / 2)
-
-        self.__openButton.x = self.x + self.width
-        self.__openButton.y = self.y
-        self.__openButton:draw()
-
-        love.graphics.setColor(1, 1, 1)
-        if self.isOpen then
-            drawBoid("fill", self.__openButton.x + (self.__openButton.width * 0.49),
-                             self.__openButton.y + (self.__openButton.height * 0.49),
-                             self.__openButton.width * 0.4,
-                             self.__openButton.height * 0.6,
-                             -90)
-        else
-            drawBoid("fill", self.__openButton.x + (self.__openButton.width * 0.49),
-                             self.__openButton.y + (self.__openButton.height * 0.49),
-                             self.__openButton.width * 0.4,
-                             self.__openButton.height * 0.6,
-                             90)
         end
+    end
 
-        cam:detach()
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.print(self.selectedLabel, self.x + 5,
+                        self.y + (self.height - self.font:getHeight()) / 2)
+
+    self.__openButton.x = self.x + self.width
+    self.__openButton.y = self.y
+    self.__openButton:draw()
+
+    love.graphics.setColor(1, 1, 1)
+    if self.isOpen then
+        drawBoid("fill", self.__openButton.x + (self.__openButton.width * 0.49),
+                 self.__openButton.y + (self.__openButton.height * 0.49),
+                 self.__openButton.width * 0.4, self.__openButton.height * 0.6,
+                 -90)
+    else
+        drawBoid("fill", self.__openButton.x + (self.__openButton.width * 0.49),
+                 self.__openButton.y + (self.__openButton.height * 0.49),
+                 self.__openButton.width * 0.4, self.__openButton.height * 0.6,
+                 90)
     end
 end
 
@@ -121,9 +129,8 @@ function isMouseOverOption(self, mx, my)
         for i, _ in ipairs(self.options) do
             local optionX = self.x
             local optionY = self.y + (self.height * i)
-            if mx >= optionX and mx < optionX + self.width and my >= optionY and my < optionY + self.height then
-                return i
-            end
+            if mx >= optionX and mx < optionX + self.width and my >= optionY and
+                my < optionY + self.height then return i end
         end
     end
 end

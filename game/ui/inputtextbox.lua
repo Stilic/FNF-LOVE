@@ -4,16 +4,8 @@ local InputTextBox = Object:extend()
 
 InputTextBox.instances = {}
 
-local RemoveType = {
-    NONE = 0,
-    DELETE = 1,
-    BACKSPACE = 2
-}
-local CursorDirection = {
-    NONE = 0,
-    LEFT = 1,
-    RIGHT = 2
-}
+local RemoveType = {NONE = 0, DELETE = 1, BACKSPACE = 2}
+local CursorDirection = {NONE = 0, LEFT = 1, RIGHT = 2}
 
 function InputTextBox:new(x, y, width, height, font)
     self.x = x or 0
@@ -65,37 +57,42 @@ function InputTextBox:new(x, y, width, height, font)
 end
 
 function InputTextBox:draw()
-    local cameras = self.cameras or Camera.__defaultCameras
-    for _, cam in ipairs(cameras) do
-        cam:attach()
-
-        local r, g, b, a = love.graphics.getColor()
-
-        love.graphics.setColor(self.color)
-        love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
-        love.graphics.setColor(self.colorBorder)
-        love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
-
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.push()
-        love.graphics.translate(self.x + 5, self.y)
-        love.graphics.setScissor(self.x, self.y, self.width - 10, self.height)
-
-        love.graphics.setColor(self.colorText)
-        love.graphics.setFont(self.font)
-        love.graphics.print(self.text, -self.__scrollTextX, (self.height - self.font:getHeight()) / 2)
-        love.graphics.pop()
-        love.graphics.setScissor()
-
-        if self.active and true then
-            love.graphics.setColor(self.colorCursor)
-            love.graphics.rectangle("fill", self.x - self.__scrollTextX + 5 + self.font:getWidth(self.text:sub(1, self.__cursorPos)), self.y + 3, 1, self.height - 6)
+    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
+        if c.visible and c.exists then
+            table.insert(c.__renderQueue, self)
         end
-
-        love.graphics.setColor(r, g, b, a)
-
-        cam:detach()
     end
+end
+
+function InputTextBox:__render()
+    local r, g, b, a = love.graphics.getColor()
+
+    love.graphics.setColor(self.color)
+    love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+    love.graphics.setColor(self.colorBorder)
+    love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.push()
+    love.graphics.translate(self.x + 5, self.y)
+    love.graphics.setScissor(self.x, self.y, self.width - 10, self.height)
+
+    love.graphics.setColor(self.colorText)
+    love.graphics.setFont(self.font)
+    love.graphics.print(self.text, -self.__scrollTextX,
+                        (self.height - self.font:getHeight()) / 2)
+    love.graphics.pop()
+    love.graphics.setScissor()
+
+    if self.active and true then
+        love.graphics.setColor(self.colorCursor)
+        love.graphics.rectangle("fill", self.x - self.__scrollTextX + 5 +
+                                    self.font:getWidth(
+                                        self.text:sub(1, self.__cursorPos)),
+                                self.y + 3, 1, self.height - 6)
+    end
+
+    love.graphics.setColor(r, g, b, a)
 end
 
 function InputTextBox:update(dt)
@@ -104,7 +101,9 @@ function InputTextBox:update(dt)
 
         if self.__input and self.__typing then
             self.__typing = false
-            local newText = self.text:sub(1, self.__cursorPos) .. self.__input .. self.text:sub(self.__cursorPos + 1)
+            local newText =
+                self.text:sub(1, self.__cursorPos) .. self.__input ..
+                    self.text:sub(self.__cursorPos + 1)
             self.text = newText
             self.__cursorPos = self.__cursorPos + utf8.len(self.__input)
             self.__input = ""
@@ -114,9 +113,11 @@ function InputTextBox:update(dt)
         if self.__cursorMove then
             self.__cursorMoveTimer = self.__cursorMoveTimer + dt
             if self.__cursorMoveTimer >= self.__cursorBlinkTime then
-                if self.__cursorMoveDir == CursorDirection.LEFT and self.__cursorPos > 0 then
+                if self.__cursorMoveDir == CursorDirection.LEFT and
+                    self.__cursorPos > 0 then
                     self.__cursorPos = self.__cursorPos - 1
-                elseif self.__cursorMoveDir == CursorDirection.RIGHT and self.__cursorPos < utf8.len(self.text) then
+                elseif self.__cursorMoveDir == CursorDirection.RIGHT and
+                    self.__cursorPos < utf8.len(self.text) then
                     self.__cursorPos = self.__cursorPos + 1
                 end
                 self.__cursorMoveTimer = self.__cursorBlinkTime - 0.02
@@ -126,25 +127,40 @@ function InputTextBox:update(dt)
         if self.__removePressed then
             self.__removeTimer = self.__removeTimer + dt
             if self.__removeTimer >= self.__removeTime then
-                if self.__removeType == RemoveType.BACKSPACE and self.__cursorPos > 0 then
-                    local byteoffset = utf8.offset(self.text, -1, self.__cursorPos + 1)
+                if self.__removeType == RemoveType.BACKSPACE and
+                    self.__cursorPos > 0 then
+                    local byteoffset = utf8.offset(self.text, -1,
+                                                   self.__cursorPos + 1)
                     if byteoffset then
-                        self.text = string.sub(self.text, 1, byteoffset - 1) .. string.sub(self.text, byteoffset + 1)
+                        self.text = string.sub(self.text, 1, byteoffset - 1) ..
+                                        string.sub(self.text, byteoffset + 1)
                         self.__cursorPos = self.__cursorPos - 1
                     end
-                elseif self.__removeType == RemoveType.DELETE and self.__cursorPos < utf8.len(self.text) then
-                    local byteoffset = utf8.offset(self.text, 1, self.__cursorPos + 1)
+                elseif self.__removeType == RemoveType.DELETE and
+                    self.__cursorPos < utf8.len(self.text) then
+                    local byteoffset = utf8.offset(self.text, 1,
+                                                   self.__cursorPos + 1)
                     if byteoffset then
-                        self.text = string.sub(self.text, 1, byteoffset - 1) .. string.sub(self.text, byteoffset + 1)
+                        self.text = string.sub(self.text, 1, byteoffset - 1) ..
+                                        string.sub(self.text, byteoffset + 1)
                     end
                 end
                 self.__removeTimer = self.__removeTime - 0.02
             end
             self.__newTextWidth = self.font:getWidth(self.text)
             if self.__newTextWidth > self.__prevTextWidth then
-                self.__scrollTextX = math.max(self.__scrollTextX - (self.__newTextWidth - self.__prevTextWidth), 0)
-            elseif self.__newTextWidth < self.__prevTextWidth and self.__scrollTextX > 0 then
-                self.__scrollTextX = math.min(self.__scrollTextX + (self.__prevTextWidth - self.__newTextWidth), self.__prevTextWidth - self.canvas:getWidth())
+                self.__scrollTextX = math.max(
+                                         self.__scrollTextX -
+                                             (self.__newTextWidth -
+                                                 self.__prevTextWidth), 0)
+            elseif self.__newTextWidth < self.__prevTextWidth and
+                self.__scrollTextX > 0 then
+                self.__scrollTextX = math.min(
+                                         self.__scrollTextX +
+                                             (self.__prevTextWidth -
+                                                 self.__newTextWidth),
+                                         self.__prevTextWidth -
+                                             self.canvas:getWidth())
             end
         end
 
@@ -154,9 +170,13 @@ function InputTextBox:update(dt)
             self.__cursorBlinkTimer = 0
         end
 
-        local cursorX = self.x + 5 + self.font:getWidth(self.text:sub(1, self.__cursorPos)) - self.__scrollTextX
+        local cursorX = self.x + 5 +
+                            self.font:getWidth(
+                                self.text:sub(1, self.__cursorPos)) -
+                            self.__scrollTextX
         if cursorX > self.x + self.width - 10 then
-            self.__scrollTextX = self.__scrollTextX + (cursorX - (self.x + self.width - 10))
+            self.__scrollTextX = self.__scrollTextX +
+                                     (cursorX - (self.x + self.width - 10))
         elseif cursorX < self.x + 5 then
             self.__scrollTextX = self.__scrollTextX - (self.x + 5 - cursorX)
         elseif self.__scrollTextX < 0 then
@@ -167,7 +187,8 @@ end
 
 function InputTextBox:mousepressed(x, y, button, istouch, presses)
     if button == 1 then
-        if x >= self.x and x <= self.x + self.width and y >= self.y and y <= self.y + self.height then
+        if x >= self.x and x <= self.x + self.width and y >= self.y and y <=
+            self.y + self.height then
             self.active = true
             self.__cursorVisible = true
 
@@ -188,9 +209,11 @@ function InputTextBox:keypressed(key, scancode, isrepeat)
     if self.active then
         if key == "backspace" then
             if self.__cursorPos > 0 then
-                local byteoffset = utf8.offset(self.text, -1, self.__cursorPos + 1)
+                local byteoffset = utf8.offset(self.text, -1,
+                                               self.__cursorPos + 1)
                 if byteoffset then
-                    self.text = string.sub(self.text, 1, byteoffset - 1) .. string.sub(self.text, byteoffset + 1)
+                    self.text = string.sub(self.text, 1, byteoffset - 1) ..
+                                    string.sub(self.text, byteoffset + 1)
                     self.__cursorPos = self.__cursorPos - 1
                 end
             end
@@ -199,15 +222,26 @@ function InputTextBox:keypressed(key, scancode, isrepeat)
 
             self.__newTextWidth = self.font:getWidth(self.text)
             if self.__newTextWidth > self.__prevTextWidth then
-                self.__scrollTextX = math.max(self.__scrollTextX - (self.__newTextWidth - self.__prevTextWidth), 0)
-            elseif self.__newTextWidth < self.__prevTextWidth and self.__scrollTextX > 0 then
-                self.__scrollTextX = math.min(self.__scrollTextX + (self.__prevTextWidth - self.__newTextWidth), self.__prevTextWidth - self.canvas:getWidth())
+                self.__scrollTextX = math.max(
+                                         self.__scrollTextX -
+                                             (self.__newTextWidth -
+                                                 self.__prevTextWidth), 0)
+            elseif self.__newTextWidth < self.__prevTextWidth and
+                self.__scrollTextX > 0 then
+                self.__scrollTextX = math.min(
+                                         self.__scrollTextX +
+                                             (self.__prevTextWidth -
+                                                 self.__newTextWidth),
+                                         self.__prevTextWidth -
+                                             self.canvas:getWidth())
             end
         elseif key == "delete" then
             if self.__cursorPos < utf8.len(self.text) then
-                local byteoffset = utf8.offset(self.text, 1, self.__cursorPos + 1)
+                local byteoffset = utf8.offset(self.text, 1,
+                                               self.__cursorPos + 1)
                 if byteoffset then
-                    self.text = string.sub(self.text, 1, byteoffset - 1) .. string.sub(self.text, byteoffset + 1)
+                    self.text = string.sub(self.text, 1, byteoffset - 1) ..
+                                    string.sub(self.text, byteoffset + 1)
                 end
             end
             self.__removePressed = true
