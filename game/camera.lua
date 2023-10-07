@@ -24,7 +24,7 @@ function Camera:new(x, y, width, height)
     self.bgColor = {0, 0, 0, 0}
     self.shader = nil
 
-    self.__canvas = love.graphics.newCanvas(push.getDimensions())
+    self.__canvas = love.graphics.newCanvas()
     self.__renderQueue = {}
 
     self:onResize(love.graphics.getDimensions())
@@ -42,7 +42,7 @@ function Camera:fill(r, g, b, a)
         local oR, oG, oB, oA = love.graphics.getColor()
 
         love.graphics.setColor(r, g, b, a)
-        -- love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+        love.graphics.rectangle("fill", 0, 0, self.width, self.height)
 
         love.graphics.setColor(oR, oG, oB, oA)
     end)
@@ -51,8 +51,8 @@ end
 function Camera:onResize(w, h)
     local gw, gh = push.getDimensions()
     self.__scale = math.min(w / gw, h / gh)
-    self.__offsetX = math.floor(w / 2 - (gw * self.__scale) / 2) - 260
-    self.__offsetY = math.floor(h / 2 - (gh * self.__scale) / 2) - 140
+    self.__offsetX = math.floor(w / 2 - (gw * self.__scale) / 2)
+    self.__offsetY = math.floor(h / 2 - (gh * self.__scale) / 2)
 end
 
 function Camera:draw()
