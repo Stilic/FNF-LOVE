@@ -17,6 +17,13 @@ function util.floorDecimal(value, decimals)
     return newValue / tempMult
 end
 
+function util.remapToGame(x, y)
+    local gw, gh = love.graphics.getDimensions()
+    local sx, sy = game.width / gw, game.height / gh
+
+    return x * sx, y * sx
+end
+
 function util.newGradient(dir, ...)
     local isHorizontal = true
     if dir == "vertical" then isHorizontal = false end
