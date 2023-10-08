@@ -253,7 +253,7 @@ function PlayState:enter()
         angle2 = 0,
         segments = 40
     }
-    self.timeArcBG:updateDimensions()
+    self.timeArc:updateDimensions()
 
     self:add(self.receptors)
     self:add(self.sustainsGroup)
