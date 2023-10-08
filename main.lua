@@ -1,64 +1,30 @@
 io.stdout:setvbuf("no")
 
 require "lib.override"
+require "loxel.init"
 
-Object = require "lib.classic"
 Timer = require "lib.timer"
-Gamestate = require "lib.gamestate"
 
-Basic = require "game.basic"
-Camera = require "game.camera"
-Sprite = require "game.sprite"
-Graphic = require "game.graphic"
-Sound = require "game.sound"
-Text = require "game.text"
-Bar = require "game.bar"
-Group = require "game.group"
-SpriteGroup = require 'game.spritegroup'
-State = require "game.state"
-SubState = require "game.substate"
-Flicker = require "game.flicker"
+paths = require "funkin.paths"
+util = require "funkin.util"
 
-paths = require "game.paths"
-util = require "game.util"
+Script = require "funkin.backend.script"
+Conductor = require "funkin.backend.conductor"
+Graphic = require "funkin.ui.graphic"
+Note = require "funkin.gameplay.ui.note"
+Receptor = require "funkin.gameplay.ui.receptor"
+Stage = require "funkin.gameplay.stage"
+Character = require "funkin.gameplay.character"
+Alphabet = require "funkin.ui.alphabet"
+HealthIcon = require "funkin.gameplay.ui.healthicon"
+BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 
-Script = require "game.script"
+TitleState = require "funkin.states.title"
+MainMenuState = require "funkin.states.mainmenu"
+FreeplayState = require "funkin.states.freeplay"
+PlayState = require "funkin.states.play"
 
-Conductor = require "game.conductor"
-Note = require "game.gameplay.ui.note"
-Receptor = require "game.gameplay.ui.receptor"
-HealthIcon = require "game.gameplay.ui.healthicon"
-Stage = require "game.gameplay.stage"
-Character = require "game.gameplay.character"
-
-Alphabet = require "game.alphabet"
-BackgroundGirls = require "game.gameplay.backgroundgirls"
-
-TitleState = require "game.states.title"
-MainMenuState = require "game.states.mainmenu"
-FreeplayState = require "game.states.freeplay"
-PlayState = require "game.states.play"
-
-ChartingState = require "game.editors.charting"
-
-game = {
-    camera = nil,
-    cameras = require "game.cameramanager",
-    sound = require "game.soundmanager"
-}
-
-Keyboard = require "game.input.keyboard"
-Mouse = require "game.input.mouse"
-
-ui = {
-    UIButton = require "game.ui.button",
-    UICheckbox = require "game.ui.checkbox",
-    UIDropDown = require "game.ui.dropdown",
-    UIGrid = require "game.ui.grid",
-    UIInputTextBox = require "game.ui.inputtextbox",
-    UINumericStepper = require "game.ui.numericstepper",
-    UITabMenu = require "game.ui.tabmenu",
-}
+ChartingState = require "funkin.editors.charting"
 
 controls = (require "lib.baton").new({
     controls = {
@@ -242,11 +208,6 @@ function love.load()
 
     local os = love.system.getOS()
     if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
-
-    local dimensions = require "dimensions"
-    game.width, game.height = dimensions.width, dimensions.height
-
-    game.cameras.reset()
 
     Gamestate.switch(TitleState())
 end

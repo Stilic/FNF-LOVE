@@ -3,6 +3,40 @@ local cvTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
 
+function Camera.remapToGame(x, y)
+    local scale = {}
+    local offset = {}
+
+    local dw, dh
+    local ww, wh = love.graphics.getDimensions()
+    scale.x = ww / game.width
+    scale.y = wh / game.height
+
+    local sv = math.min(scale.x, scale.y)
+    if sv >= 1 then sv = math.floor(sv) end
+
+    offset.x = math.floor((scale.x - sv) * (game.width / 2))
+    offset.y = math.floor((scale.y - sv) * (game.height / 2))
+
+    scale.x, scale.y = sv, sv
+
+    dw = ww - offset.x * 2
+    dh = wh - offset.y * 2
+
+    local nx, ny
+    x, y = x - offset.x, y - offset.y
+    nx, ny = x / dw, y / dh
+
+    x =
+        (x >= 0 and x <= game.width * scale.x) and math.floor(nx * game.width) or
+            -1
+    y =
+        (y >= 0 and y <= game.height * scale.y) and math.floor(ny * game.height) or
+            -1
+
+    return x, y
+end
+
 function Camera:new(x, y, width, height)
     Camera.super.new(self)
 

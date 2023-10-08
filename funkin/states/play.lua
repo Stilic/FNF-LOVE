@@ -1,4 +1,4 @@
-local PauseSubState = require "game.substates.pause"
+local PauseSubState = require "funkin.substates.pause"
 
 local PlayState = State:extend()
 

@@ -112,7 +112,7 @@ function Mouse.onReleased(button)
 end
 
 function Mouse.onMoved(x, y)
-    Mouse.x, Mouse.y = util.remapToGame(x, y)
+    Mouse.x, Mouse.y = Camera.remapToGame(x, y)
     Mouse.screenX, Mouse.screenY = x, y
     Mouse.isMoved = true
 end
