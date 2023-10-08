@@ -1,6 +1,8 @@
-local Button = Object:extend()
+local Button = Basic:extend()
 
 function Button:new(x, y, width, height, text, callback)
+    Button.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
     self.width = width or 80
@@ -12,8 +14,6 @@ function Button:new(x, y, width, height, text, callback)
     self.callback = callback
     self.color = {0.5, 0.5, 0.5}
     self.textColor = {1, 1, 1}
-
-    self.cameras = nil
 end
 
 function Button:update(dt)
@@ -21,14 +21,6 @@ function Button:update(dt)
     self.hovered =
         (mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
             self.y + self.height)
-end
-
-function Button:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function Button:__render()

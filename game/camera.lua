@@ -1,9 +1,11 @@
-local Camera = Object:extend()
+local Camera = Basic:extend()
 local cvTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
 
 function Camera:new(x, y, width, height)
+    Camera.super.new(self)
+
     if x == nil then x = 0 end
     if y == nil then y = 0 end
     if width == nil then width = 0 end
@@ -19,8 +21,6 @@ function Camera:new(x, y, width, height)
     self.alpha = 1
     self.angle = 0
     self.zoom = 1
-    self.visible = true
-    self.exists = true
     self.bgColor = {0, 0, 0, 0}
     self.shader = nil
 
@@ -47,7 +47,7 @@ function Camera:fill(r, g, b, a)
 end
 
 function Camera:draw()
-    if self.visible and self.exists and self.alpha > 0 then
+    if self.visible and self.exists and self.alpha ~= 0 and self.zoom ~= 0 then
         love.graphics.push()
         love.graphics.rotate(-self.angle)
         local w, h = self.width * 0.5, self.height * 0.5
@@ -95,7 +95,7 @@ function Camera:draw()
 end
 
 function Camera:destroy()
-    self.exists = false
+    Camera.super.destroy(self)
 
     self.__canvas:release()
     self.__canvas = nil

@@ -1,6 +1,6 @@
 local utf8 = require "utf8"
 
-local NumericStepper = Object:extend()
+local NumericStepper = Basic:extend()
 
 NumericStepper.instances = {}
 
@@ -10,6 +10,8 @@ local CursorDirection = {NONE = 0, LEFT = 1, RIGHT = 2}
 -- yeah this is inputtextbox + button
 
 function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
+    NumericStepper.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
     self.width = 40
@@ -28,8 +30,6 @@ function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
     self.colorBorder = {0, 0, 0}
     self.colorCursor = {0, 0, 0}
     self.clearOnPressed = false
-
-    self.cameras = nil
 
     -- add text
     self.__input = ""
@@ -78,14 +78,6 @@ function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
     end)
 
     table.insert(NumericStepper.instances, self)
-end
-
-function NumericStepper:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function NumericStepper:__render()
@@ -333,6 +325,6 @@ function NumericStepper:textinput(text)
     end
 end
 
-function isNumber(str) return string.match(str, "[0123456789%.]+") == str end
+local function isNumber(str) return string.match(str, "[0123456789%.]+") == str end
 
 return NumericStepper

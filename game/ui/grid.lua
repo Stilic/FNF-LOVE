@@ -1,6 +1,8 @@
-local Grid = Object:extend()
+local Grid = Basic:extend()
 
 function Grid:new(x, y, rows, cols, cellSize, color1, color2)
+    Grid.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
     self.rows = rows or 2
@@ -13,19 +15,9 @@ function Grid:new(x, y, rows, cols, cellSize, color1, color2)
     self.width = self.cellSize * self.cols
     self.height = self.cellSize * self.rows
 
-    self.cameras = nil
-
     for i = 1, rows do
         self.grid[i] = {}
         for j = 1, cols do self.grid[i][j] = (i + j) % 2 == 0 and 1 or 2 end
-    end
-end
-
-function Grid:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
     end
 end
 

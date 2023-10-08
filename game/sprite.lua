@@ -19,7 +19,7 @@ local function stencil()
     end
 end
 
-local Sprite = Object:extend()
+local Sprite = Basic:extend()
 
 function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
     local aw, ah = x + w, y + h
@@ -138,6 +138,8 @@ end
 local defaultTexture = love.graphics.newImage('art/default.png')
 
 function Sprite:new(x, y, texture)
+    Sprite.super.new(self)
+
     if x == nil then x = 0 end
     if y == nil then y = 0 end
     self.x = x
@@ -146,11 +148,6 @@ function Sprite:new(x, y, texture)
     self.texture = defaultTexture
     self.width, self.height = 0, 0
     self.antialiasing = true
-
-    self.cameras = nil
-
-    self.alive = true
-    self.exists = true
 
     self.origin = {x = 0, y = 0}
     self.offset = {x = 0, y = 0}
@@ -163,7 +160,6 @@ function Sprite:new(x, y, texture)
     self.velocity = {x = 0, y = 0}
     self.acceleration = {x = 0, y = 0}
 
-    self.visible = true
     self.color = {1, 1, 1}
     self.alpha = 1
     self.angle = 0
@@ -437,7 +433,7 @@ function Sprite:finish()
 end
 
 function Sprite:destroy()
-    self.exists = false
+    Sprite.super.destroy(self)
 
     self.texture = nil
 
@@ -454,18 +450,8 @@ function Sprite:destroy()
     self.animPaused = false
 end
 
-function Sprite:kill()
-    self.alive = false
-    self.exists = false
-end
-
-function Sprite:revive()
-    self.alive = true
-    self.exists = true
-end
-
 function Sprite:update(dt)
-    if self.alive and self.exists and self.curAnim and not self.animFinished and
+    if self.curAnim and not self.animFinished and
         not self.animPaused then
         self.curFrame = self.curFrame + dt * self.curAnim.framerate
         if self.curFrame >= #self.curAnim.frames then
@@ -477,6 +463,7 @@ function Sprite:update(dt)
             end
         end
     end
+
     self.velocity.x = self.velocity.x + self.acceleration.x * dt
     self.velocity.y = self.velocity.y + self.acceleration.y * dt
 
@@ -485,13 +472,8 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
-    if self.exists and self.alive and self.visible and self.alpha > 0 and
-        self.texture and (self.scale.x ~= 0 or self.scale.y ~= 0) then
-        for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-            if c.visible and c.exists then
-                table.insert(c.__renderQueue, self)
-            end
-        end
+    if self.alpha ~= 0 and (self.scale.x ~= 0 or self.scale.y ~= 0) then
+        Sprite.super.draw(self)
     end
 end
 

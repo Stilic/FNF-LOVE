@@ -1,6 +1,6 @@
 local utf8 = require "utf8"
 
-local InputTextBox = Object:extend()
+local InputTextBox = Basic:extend()
 
 InputTextBox.instances = {}
 
@@ -8,6 +8,8 @@ local RemoveType = {NONE = 0, DELETE = 1, BACKSPACE = 2}
 local CursorDirection = {NONE = 0, LEFT = 1, RIGHT = 2}
 
 function InputTextBox:new(x, y, width, height, font)
+    InputTextBox.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
     self.width = width or 100
@@ -21,8 +23,6 @@ function InputTextBox:new(x, y, width, height, font)
     self.colorBorder = {0, 0, 0}
     self.colorCursor = {0, 0, 0}
     self.clearOnPressed = false
-
-    self.cameras = nil
 
     -- add text
     self.__input = ""
@@ -54,14 +54,6 @@ function InputTextBox:new(x, y, width, height, font)
     self.onChanged = nil
 
     table.insert(InputTextBox.instances, self)
-end
-
-function InputTextBox:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function InputTextBox:__render()

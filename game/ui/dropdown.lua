@@ -1,8 +1,10 @@
-local Dropdown = Object:extend()
+local Dropdown = Basic:extend()
 
 Dropdown.instances = {}
 
 function Dropdown:new(x, y, options)
+    Dropdown.super.new(self)
+
     self.x = x
     self.y = y
     self.width = 90
@@ -11,7 +13,6 @@ function Dropdown:new(x, y, options)
     self.selectedOption = 1
     self.isOpen = false
     self.hovered = false
-    self.cameras = nil
     self.font = love.graphics.getFont()
     self.selectedLabel = self.options[1]
 
@@ -49,14 +50,6 @@ function drawBoid(mode, x, y, length, width, angle)
     love.graphics.polygon(mode, -length / 2, -width / 2, -length / 2, width / 2,
                           length / 2, 0)
     love.graphics.pop()
-end
-
-function Dropdown:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function Dropdown:__render()

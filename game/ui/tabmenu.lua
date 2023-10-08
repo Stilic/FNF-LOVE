@@ -22,9 +22,11 @@ local function yTransform(obj, y) obj.y = obj.y + y end
 
 -----------------------------------------------------------------------------------------------
 
-local TabMenu = Object:extend()
+local TabMenu = Basic:extend()
 
 function TabMenu:new(x, y, tabs, font)
+    TabMenu.super.new(self)
+
     self.x = x
     self.y = y
     self.tabs = tabs
@@ -34,8 +36,6 @@ function TabMenu:new(x, y, tabs, font)
     self.width = 380
     self.height = 480
     self.tabHeight = 20
-
-    self.cameras = nil
 
     self.__x = self.x
     self.__y = self.y
@@ -48,6 +48,7 @@ function TabMenu:addGroup(group)
     end
     table.insert(self.group, group)
 end
+
 function TabMenu:removeGroup(group)
     for i, grp in ipairs(self.group) do
         if grp == group then table.remove(self.group, i) end
@@ -82,14 +83,6 @@ function TabMenu:update(dt)
         self.__y = self.y
     end
     if self.tabs then callChildren(self, 'update', dt) end
-end
-
-function TabMenu:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function TabMenu:__render()

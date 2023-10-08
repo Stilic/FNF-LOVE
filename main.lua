@@ -6,6 +6,7 @@ Object = require "lib.classic"
 Timer = require "lib.timer"
 Gamestate = require "lib.gamestate"
 
+Basic = require "game.basic"
 Camera = require "game.camera"
 Sprite = require "game.sprite"
 Graphic = require "game.graphic"
