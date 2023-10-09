@@ -409,24 +409,35 @@ function PlayState:update(dt)
 
     local mustHit = self:getCurrentSection()
     if mustHit ~= nil then
+        gfHit = mustHit.gfSection
         mustHit = mustHit.mustHitSection
         if mustHit ~= nil then
-            if mustHit then
-                local midpoint = self.boyfriend:getMidpoint()
-                self.camFollow.x = midpoint.x - 100 -
-                                       (self.boyfriend.cameraPosition.x -
-                                           self.stage.boyfriendCam.x)
-                self.camFollow.y = midpoint.y - 100 +
-                                       (self.boyfriend.cameraPosition.y +
-                                           self.stage.boyfriendCam.y)
+            if gfHit == nil or gfHit == false then 
+                if mustHit then
+                    local midpoint = self.boyfriend:getMidpoint()
+                    self.camFollow.x = midpoint.x - 100 -
+                    (self.boyfriend.cameraPosition.x -
+                    self.stage.boyfriendCam.x)
+                    self.camFollow.y = midpoint.y - 100 +
+                    (self.boyfriend.cameraPosition.y +
+                    self.stage.boyfriendCam.y)
+                else
+                    local midpoint = self.dad:getMidpoint()
+                    self.camFollow.x = midpoint.x + 150 +
+                    (self.dad.cameraPosition.x +
+                    self.stage.dadCam.x)
+                    self.camFollow.y = midpoint.y - 100 +
+                    (self.dad.cameraPosition.y +
+                    self.stage.dadCam.y)
+                end
             else
-                local midpoint = self.dad:getMidpoint()
-                self.camFollow.x = midpoint.x + 150 +
-                                       (self.dad.cameraPosition.x +
-                                           self.stage.dadCam.x)
-                self.camFollow.y = midpoint.y - 100 +
-                                       (self.dad.cameraPosition.y +
-                                           self.stage.dadCam.y)
+                local midpoint = self.gf:getMidpoint()
+                self.camFollow.x = midpoint.x -
+                (self.gf.cameraPosition.x -
+                self.stage.gfCam.x)
+                self.camFollow.y = midpoint.y -
+                (self.gf.cameraPosition.y -
+                self.stage.gfCam.y)
             end
         end
     end
@@ -675,15 +686,12 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        for _, script in ipairs(self.scripts) do
-            script:call("goodNoteHit", n)
-        end
+        for _, script in ipairs(self.scripts) do script:call("goodNoteHit", n)end
 
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false)
-
         local time = 0
         if not n.mustPress or PlayState.botPlay then
             self.camZooming = true
@@ -722,9 +730,7 @@ function PlayState:goodNoteHit(n)
 
             self:removeNote(n)
 
-            for _, script in ipairs(self.scripts) do
-                script:call("postGoodNoteHit", n)
-            end
+            for _, script in ipairs(self.scripts) do script:call("postGoodNoteHit", n) end
         end
     end
 end
