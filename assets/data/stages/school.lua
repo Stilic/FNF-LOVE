@@ -1,3 +1,5 @@
+local bgGirls
+
 function create()
     self.camZoom = 1.05
     self.camSpeed = 1

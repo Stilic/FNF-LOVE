@@ -9,9 +9,8 @@ function Character:new(x, y, char, isPlayer)
 
     self.__reverseDraw = false
 
-    self.singDuration = 4
+    self.holdTime = 4
     self.lastHit = 0
-    self.lastSing = nil
 
     self.danceSpeed = 2
     self.danced = false
@@ -85,7 +84,7 @@ end
 function Character:beat(b)
     self.script:call("beat", b)
     if self.lastHit > 0 then
-        if self.lastHit + PlayState.inst.stepCrochet * self.singDuration <
+        if self.lastHit + PlayState.inst.stepCrochet * self.holdTime <
             PlayState.inst.time then
             self:dance()
             self.lastHit = 0
@@ -117,7 +116,6 @@ end
 
 function Character:dance(force)
     if self.__animations and self.script:callReturn("dance") then
-        self.lastSing = nil
         if self.__animations["danceLeft"] and self.__animations["danceRight"] then
             self.danced = not self.danced
 
