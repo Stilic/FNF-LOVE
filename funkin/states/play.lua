@@ -217,11 +217,9 @@ function PlayState:enter()
 
     self.iconP1 = HealthIcon(self.boyfriend.icon, true)
     self.iconP1.y = self.healthBar.y - 75
-    self.healthBar.opColor = self.iconP1:getDominant()
 
     self.iconP2 = HealthIcon(self.dad.icon, false)
     self.iconP2.y = self.healthBar.y - 75
-    self.healthBar.color = self.iconP2:getDominant()
 
     local textOffset = 30
     if PlayState.downscroll then textOffset = -textOffset end
