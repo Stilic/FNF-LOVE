@@ -61,6 +61,26 @@ function MainMenuState:enter()
     self.daText:setScrollFactor()
     self:add(self.daText)
 
+    -- funny popup
+    self.gf_popup = SpriteGroup(game.width - 460, game.height)
+    self.gf_popup:setScrollFactor()
+
+    local popup_bg = Sprite(100)
+    popup_bg:make(350, 130, {0, 0, 0})
+    popup_bg.alpha = 0.7
+
+    local wip_text = Text(116, 34, 'Work In\nProgress..',
+                       paths.getFont("vcr.ttf", 34), {255, 255, 255})
+    local gf_icon = HealthIcon('gf', true)
+    gf_icon.x = 150
+    self.gf_popup:add(popup_bg)
+    self.gf_popup:add(wip_text)
+    self.gf_popup:add(gf_icon)
+
+    self:add(self.gf_popup)
+    self.popup_tween = Timer.new()
+    self.popup_appears = false
+
     self:changeSelection()
 end
 
@@ -84,9 +104,25 @@ function MainMenuState:update(dt)
         end
 
         if controls:pressed("accept") then
-            if self.optionShit[MainMenuState.curSelected] == 'donate' then
+            local selected = self.optionShit[MainMenuState.curSelected]
+            if selected == 'donate' then
                 love.system.openURL('https://ninja-muffin24.itch.io/funkin')
-            elseif self.optionShit[MainMenuState.curSelected] == 'freeplay' then
+            elseif not self.popup_appears and selected == 'story_mode' or selected == 'options' then
+                self.popup_appears = true
+                game.sound.play(paths.getSound('gameplay/GF_'..love.math.random(1, 4)))
+                game.sound.play(paths.getSound('gameplay/ANGRY'))
+                game.camera:shake(0.003, 0.2)
+
+                self.popup_tween:tween(0.5, self.gf_popup, {y = game.height - 140},
+                                       "out-cubic", function()
+                    self.popup_tween:after(1.5, function()
+                        self.popup_tween:tween(0.5, self.gf_popup, {y = game.height},
+                                               "in-cubic", function()
+                            self.popup_appears = false
+                        end)
+                    end)
+                end)
+            elseif selected == 'freeplay' then
                 self.selectedSomethin = true
                 game.sound.play(paths.getSound('confirmMenu'))
 
@@ -118,6 +154,8 @@ function MainMenuState:update(dt)
     end
 
     MainMenuState.super.update(self, dt)
+
+    self.popup_tween:update(dt)
 
     for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
 end

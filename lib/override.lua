@@ -172,3 +172,8 @@ math.positive_infinity = math.huge
 math.negative_infinity = -math.huge
 
 math.noise = require "lib.noise"
+
+function love.math.randomBool(chance)
+    chance = chance or 50
+    return love.math.random(0, 100) < chance
+end

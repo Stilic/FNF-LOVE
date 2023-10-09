@@ -121,6 +121,7 @@ end
 
 function Keyboard.onPressed(key)
     for k, value in pairs(Keyboard.keys) do
+        if key == '=' then key = '+' end
         if key == 'lshift' or key == 'rshift' then key = 'shift' end
         if key == 'lgui' or key == 'rgui' then key = 'windows' end
         if key == 'lalt' or key == 'ralt' then key = 'alt' end
@@ -137,6 +138,7 @@ end
 
 function Keyboard.onReleased(key)
     for k, value in pairs(Keyboard.keys) do
+        if key == '=' then key = '+' end
         if key == 'lshift' or key == 'rshift' then key = 'shift' end
         if key == 'lgui' or key == 'rgui' then key = 'windows' end
         if key == 'lalt' or key == 'ralt' then key = 'alt' end

@@ -16,7 +16,7 @@ local paths = {
     atlases = {},
     fonts = {},
     persistantAssets = {
-        -- "music/freakyMenu.ogg"
+        -- "assets/music/freakyMenu.ogg"
     }
 }
 

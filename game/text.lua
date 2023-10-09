@@ -18,7 +18,7 @@ function Text:new(x, y, content, font, color, align, limit)
     self.alive = true
     self.exists = true
 
-    self.antialiasing = true
+    self.antialiasing = false
     self.blend = "alpha"
     self.shader = nil
 

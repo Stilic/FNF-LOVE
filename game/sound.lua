@@ -9,6 +9,7 @@ function Sound:new(asset)
     self.__wasPlaying = false
     self.__oldVolume = nil
 
+    self.muted = false
     self.active = true
     self.onComplete = nil
 end
@@ -30,6 +31,7 @@ end
 
 function Sound:mute()
     if self.__oldVolume == nil then
+        self.muted = true
         self.__oldVolume = self.__source:getVolume()
         self.__source:setVolume(0)
     end
@@ -37,6 +39,7 @@ end
 
 function Sound:unmute()
     if self.__oldVolume ~= nil then
+        self.muted = false
         self.__source:setVolume(self.__oldVolume)
         self.__oldVolume = nil
     end

@@ -55,7 +55,11 @@ function PlayState:enter()
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
-        if songName == "senpai" or songName == "roses" or songName == "thorns" then
+        if songName == 'spookeez' or songName == 'south' or songName == 'monster' then
+            curStage = 'spooky'
+        elseif songName == 'pico' or songName == 'philly-nice' or songName == 'blammed' then
+            curStage = 'philly'
+        elseif songName == "senpai" or songName == "roses" or songName == "thorns" then
             curStage = "school"
         elseif songName == "ugh" or songName == "guns" or songName == "stress" then
             curStage = "tank"
@@ -329,6 +333,7 @@ function PlayState:enter()
         end)
     end
 
+    self.stage.script:call("postCreate")
     for _, script in ipairs(self.scripts) do script:call("postCreate") end
 end
 
@@ -565,12 +570,14 @@ function PlayState:update(dt)
         end
     end
 
+    self.stage.script:call("postUpdate", dt)
     for _, script in ipairs(self.scripts) do script:call("postUpdate", dt) end
 end
 
 function PlayState:draw()
     for _, script in ipairs(self.scripts) do script:call("draw") end
     PlayState.super.draw(self)
+    self.stage.script:call("postDraw")
     for _, script in ipairs(self.scripts) do script:call("postDraw") end
 end
 
@@ -735,7 +742,7 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:step(s)
-    -- now it works -fellix
+    -- now it works -fellynn
     local time = PlayState.inst.sound:tell()
     if PlayState.vocals and
         math.abs(PlayState.vocals:tell() * 1000 - time * 1000) > 20 then
@@ -753,6 +760,7 @@ function PlayState:step(s)
     self.gf:step(s)
     self.dad:step(s)
 
+    self.stage.script:call("postStep", s)
     for _, script in ipairs(self.scripts) do script:call("postStep", s) end
 end
 
@@ -781,6 +789,7 @@ function PlayState:beat(b)
     self.gf:beat(b)
     self.dad:beat(b)
 
+    self.stage.script:call("postBeat", b)
     for _, script in ipairs(self.scripts) do script:call("postBeat", b) end
 end
 

@@ -1,4 +1,4 @@
--- Converted By FelliX
+-- Converted By Fellynn
 function create()
 	self:setFrames(paths.getSparrowAtlas('characters/tankmanCaptain'))
 

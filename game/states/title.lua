@@ -50,6 +50,7 @@ function TitleState:update(dt)
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")
+        game.camera:flash({1, 1, 1}, 2)
         game.sound.play(paths.getSound("confirmMenu"))
         Timer.after(1.5, function() switchState(MainMenuState()) end)
     end
