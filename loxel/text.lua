@@ -13,7 +13,7 @@ function Text:new(x, y, content, font, color, align, limit)
 
     self.color = color or {1, 1, 1}
     self.alpha = 1
-    self.scrollFactor = {x = 1, y = 1}
+    self.scrollFactor = {x = 0, y = 0}
 
     self.alive = true
     self.exists = true

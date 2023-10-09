@@ -80,7 +80,7 @@ function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
     table.insert(NumericStepper.instances, self)
 end
 
-function NumericStepper:__render()
+function NumericStepper:__render(camera)
     local r, g, b, a = love.graphics.getColor()
 
     love.graphics.setColor(self.color)
@@ -110,12 +110,12 @@ function NumericStepper:__render()
 
     self.increaseButton.x = self.x + (self.width * 1.05)
     self.increaseButton.y = self.y
-    self.increaseButton:draw()
+    self.increaseButton:__render(camera)
 
     self.decreaseButton.x = self.increaseButton.x +
                                 (self.increaseButton.width * 1.05)
     self.decreaseButton.y = self.y
-    self.decreaseButton:draw()
+    self.decreaseButton:__render(camera)
 
     love.graphics.setColor(r, g, b, a)
 end

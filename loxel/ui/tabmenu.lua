@@ -85,7 +85,7 @@ function TabMenu:update(dt)
     if self.tabs then callChildren(self, 'update', dt) end
 end
 
-function TabMenu:__render()
+function TabMenu:__render(camera)
     local r, g, b, a = love.graphics.getColor()
 
     if self.tabs then
@@ -121,7 +121,7 @@ function TabMenu:__render()
     love.graphics.rectangle("line", self.x, self.y + self.tabHeight,
                             self.width + (#self.tabs + 3), self.height)
 
-    if self.tabs then callChildren(self, 'draw') end
+    if self.tabs then callChildren(self, '__render', camera) end
 
     love.graphics.setColor(r, g, b, a)
 end

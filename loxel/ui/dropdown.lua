@@ -52,7 +52,7 @@ function drawBoid(mode, x, y, length, width, angle)
     love.graphics.pop()
 end
 
-function Dropdown:__render()
+function Dropdown:__render(camera)
     if self.isOpen then
         for i, option in ipairs(self.options) do
             if i > self.__curScroll and i <= (self.__maxShow + self.__curScroll) then
@@ -92,7 +92,7 @@ function Dropdown:__render()
 
     self.__openButton.x = self.x + self.width
     self.__openButton.y = self.y
-    self.__openButton:draw()
+    self.__openButton:__render(camera)
 
     love.graphics.setColor(1, 1, 1)
     if self.isOpen then
