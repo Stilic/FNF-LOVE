@@ -156,7 +156,6 @@ function PlayState:enter()
     self.receptors = Group()
     self.playerReceptors = Group()
     self.enemyReceptors = Group()
-    self.judgeSpritesGroup = Group()
 
     local rx, ry = game.width / 2, 50
     if PlayState.downscroll then ry = game.height - 100 - ry end
@@ -173,6 +172,14 @@ function PlayState:enter()
             end
         end
     end
+
+    self.splashes = Group()
+
+    local splash = NoteSplash()
+    splash.alpha = 0
+    self.splashes:add(splash)
+
+    self.judgeSprites = Group()
 
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
@@ -204,7 +211,7 @@ function PlayState:enter()
     self:add(self.dad)
 
     self:add(self.stage.foreground)
-    self:add(self.judgeSpritesGroup)
+    self:add(self.judgeSprites)
 
     self.healthBarBG = Sprite()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
@@ -264,6 +271,7 @@ function PlayState:enter()
     self:add(self.receptors)
     self:add(self.sustainsGroup)
     self:add(self.notesGroup)
+    self:add(self.splashes)
 
     self:add(self.healthBarBG)
     self:add(self.healthBar)
@@ -277,9 +285,9 @@ function PlayState:enter()
     self:recalculateRating()
 
     for _, o in ipairs({
-        self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
-        self.healthBar, self.iconP1, self.iconP2, self.scoreTxt, self.timeArcBG,
-        self.timeArc, self.timeTxt
+        self.receptors, self.splashes, self.notesGroup, self.sustainsGroup,
+        self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
+        self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt
     }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -690,8 +698,9 @@ function PlayState:goodNoteHit(n)
                 time = time * 2
             end
         end
-        (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-            1]:confirm(time)
+        local receptor = (n.mustPress and self.playerReceptors or
+                             self.enemyReceptors).members[n.data + 1]
+        receptor:confirm(time)
 
         if not n.isSustain then
             if n.mustPress then
@@ -706,6 +715,12 @@ function PlayState:goodNoteHit(n)
 
                 self.combo = self.combo + 1
                 self.score = self.score + rating.score
+
+                if rating.splash then
+                    local splash = self.splashes:recycle(NoteSplash)
+                    splash.x, splash.y = receptor.x, receptor.y
+                    splash:setup(n.data)
+                end
                 self:popUpScore(rating)
 
                 self.totalHit = self.totalHit + rating.mod
@@ -792,7 +807,7 @@ end
 function PlayState:popUpScore(rating)
     local accel = PlayState.inst.crochet * 0.001
 
-    local judgeSpr = self.judgeSpritesGroup:recycle()
+    local judgeSpr = self.judgeSprites:recycle()
 
     local antialias = not PlayState.pixelStage
     local uiStage = PlayState.pixelStage and "pixel" or "normal"
@@ -829,7 +844,7 @@ function PlayState:popUpScore(rating)
         local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
         for i = 1, #comboStr do
             local digit = tonumber(comboStr:sub(i, i)) or 0
-            local numScore = self.judgeSpritesGroup:recycle()
+            local numScore = self.judgeSprites:recycle()
             numScore:loadTexture(paths.getImage(
                                      "skins/" .. uiStage .. "/num" .. digit))
             numScore:setGraphicSize(math.floor(numScore.width *

@@ -31,7 +31,7 @@ function Group:recycle(class, factory, revive)
 
     local newObject
     for _, o in ipairs(self.members) do
-        if o and not o.exists and (class == nil or (o.is and o:is(class))) then
+        if o and not o.exists and (o.is and o:is(class)) then
             newObject = o
             break
         end

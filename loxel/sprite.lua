@@ -324,16 +324,13 @@ function Sprite:getMidpoint()
 end
 
 function Sprite:getGraphicMidpoint()
-    return {
-        x = self.x + self:getFrameWidth() * 0.5,
-        y = self.y + self:getFrameHeight() * 0.5
-    }
+    return self.x + self:getFrameWidth() * 0.5,
+           self.y + self:getFrameHeight() * 0.5
 end
 
 function Sprite:setPosition(x, y)
     if x == nil then x = self.x end
     if y == nil then y = self.y end
-
     self.x, self.y = x, y
 end
 
@@ -417,6 +414,14 @@ function Sprite:play(anim, force, frame)
     self.curFrame = frame or 1
     self.animFinished = false
     self.animPaused = false
+end
+
+function Sprite:pause()
+    if self.curAnim and not self.animFinished then self.animPaused = true end
+end
+
+function Sprite:resume()
+    if self.curAnim and not self.animFinished then self.animPaused = false end
 end
 
 function Sprite:stop()
