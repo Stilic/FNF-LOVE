@@ -16,7 +16,7 @@ PlayState.ratings = {
 }
 PlayState.downscroll = false
 PlayState.botPlay = false
-PlayState.songPosition = 0
+PlayState.notePosition = 0
 
 PlayState.SONG = nil
 
@@ -133,7 +133,7 @@ function PlayState:enter()
 
     table.sort(self.unspawnNotes, PlayState.sortByShit)
 
-    PlayState.songPosition = -PlayState.inst.crochet * 5
+    PlayState.notePosition = -PlayState.inst.crochet * 5
 
     self.score = 0
     self.combo = 0
@@ -344,12 +344,12 @@ function PlayState:update(dt)
 
     self.countdownTimer:update(dt)
 
-    PlayState.songPosition = PlayState.songPosition + 1000 * dt
-    if self.startingSong and PlayState.songPosition >= 0 then
+    PlayState.notePosition = PlayState.notePosition + 1000 * dt
+    if self.startingSong and PlayState.notePosition >= 0 then
         self.startingSong = false
         PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
-        PlayState.songPosition = PlayState.inst.time
+        PlayState.notePosition = PlayState.inst.time
         for _, script in ipairs(self.scripts) do script:call("songStart") end
     end
 
@@ -463,7 +463,7 @@ function PlayState:update(dt)
             time = time / PlayState.SONG.speed
         end
         while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-            PlayState.songPosition < time do
+            PlayState.notePosition < time do
             local n = table.remove(self.unspawnNotes, 1)
             local grp = n.isSustain and self.sustainsGroup or self.notesGroup
             self.allNotes:add(n)
@@ -475,7 +475,7 @@ function PlayState:update(dt)
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
         if not n.tooLate and ((not n.mustPress or PlayState.botPlay) and
-            ((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition) or
+            ((n.isSustain and n.canBeHit) or n.time <= PlayState.notePosition) or
             (n.isSustain and self.keysPressed[n.data] and n.parentNote and
                 n.parentNote.wasGoodHit and n.canBeHit)) then
             self:goodNoteHit(n)
@@ -492,7 +492,7 @@ function PlayState:update(dt)
         local sy = r.y + n.scrollOffset.y
 
         n.x = r.x + n.scrollOffset.x
-        n.y = sy - (PlayState.songPosition - time) *
+        n.y = sy - (PlayState.notePosition - time) *
                   (0.45 * PlayState.SONG.speed) *
                   (PlayState.downscroll and -1 or 1)
 
@@ -541,7 +541,7 @@ function PlayState:update(dt)
             end
         end
 
-        if PlayState.songPosition > 350 / PlayState.SONG.speed + n.time then
+        if PlayState.notePosition > 350 / PlayState.SONG.speed + n.time then
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) then
                 if PlayState.vocals then
@@ -744,8 +744,8 @@ function PlayState:step(s)
         math.abs(PlayState.vocals:tell() * 1000 - time * 1000) > 20 then
         PlayState.vocals:seek(time)
     end
-    if math.abs(time * 1000 - PlayState.songPosition) > 20 then
-        PlayState.songPosition = time * 1000
+    if math.abs(time * 1000 - PlayState.notePosition) > 20 then
+        PlayState.notePosition = time * 1000
     end
 
     for _, script in ipairs(self.scripts) do script:call("step", s) end
