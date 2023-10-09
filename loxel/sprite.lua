@@ -157,6 +157,7 @@ function Sprite:new(x, y, texture)
     self.flipX = false
     self.flipY = false
 
+    self.moves = false
     self.velocity = {x = 0, y = 0}
     self.acceleration = {x = 0, y = 0}
 
@@ -451,8 +452,7 @@ function Sprite:destroy()
 end
 
 function Sprite:update(dt)
-    if self.curAnim and not self.animFinished and
-        not self.animPaused then
+    if self.curAnim and not self.animFinished and not self.animPaused then
         self.curFrame = self.curFrame + dt * self.curAnim.framerate
         if self.curFrame >= #self.curAnim.frames then
             if self.curAnim.looped then
@@ -464,11 +464,13 @@ function Sprite:update(dt)
         end
     end
 
-    self.velocity.x = self.velocity.x + self.acceleration.x * dt
-    self.velocity.y = self.velocity.y + self.acceleration.y * dt
+    if self.moves then
+        self.velocity.x = self.velocity.x + self.acceleration.x * dt
+        self.velocity.y = self.velocity.y + self.acceleration.y * dt
 
-    self.x = self.x + self.velocity.x * dt
-    self.y = self.y + self.velocity.y * dt
+        self.x = self.x + self.velocity.x * dt
+        self.y = self.y + self.velocity.y * dt
+    end
 end
 
 function Sprite:draw()

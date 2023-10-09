@@ -55,11 +55,14 @@ function PlayState:enter()
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
-        if songName == 'spookeez' or songName == 'south' or songName == 'monster' then
+        if songName == 'spookeez' or songName == 'south' or songName ==
+            'monster' then
             curStage = 'spooky'
-        elseif songName == 'pico' or songName == 'philly-nice' or songName == 'blammed' then
+        elseif songName == 'pico' or songName == 'philly-nice' or songName ==
+            'blammed' then
             curStage = 'philly'
-        elseif songName == "senpai" or songName == "roses" or songName == "thorns" then
+        elseif songName == "senpai" or songName == "roses" or songName ==
+            "thorns" then
             curStage = "school"
         elseif songName == "ugh" or songName == "guns" or songName == "stress" then
             curStage = "tank"
@@ -806,6 +809,7 @@ function PlayState:popUpScore(rating)
                                            (PlayState.pixelStage and 4.7 or 0.7)))
     judgeSpr:updateHitbox()
     judgeSpr:screenCenter()
+    judgeSpr.moves = true
     -- use fixed values to display at the same position on a different resolution
     judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
     judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
@@ -837,6 +841,7 @@ function PlayState:popUpScore(rating)
                                                    (PlayState.pixelStage and 4.5 or
                                                        0.5)))
             numScore:updateHitbox()
+            numScore.moves = true
             numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
             numScore.y = judgeSpr.y + 115
             numScore.velocity.y = 0

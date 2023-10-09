@@ -2,9 +2,6 @@ local Conductor = Object:extend()
 
 function Conductor:new(sound, bpm)
     self.sound = sound
-    self.__stepsDone = {}
-    self.__lastTime = 0
-
     self:setBPM(bpm)
 end
 
@@ -29,41 +26,10 @@ end
 
 function Conductor:update()
     if self.sound:isPlaying() then
-        local oldCurStep = self.currentStep
-
+        local step = self.currentStep
         self:__updateTime()
-
-        -- borrowed from forever engine -stilic
-        local trueDecStep, trueStep = self.currentStepFloat, self.currentStep
-
-        for i, s in ipairs(self.__stepsDone) do
-            if s < oldCurStep then table.remove(self.__stepsDone, i) end
-        end
-
-        for i = oldCurStep, trueStep do
-            if i > 0 and not table.find(self.__stepsDone, i) then
-                self.currentStepFloat = i
-                self.currentStep = i
-
-                self:__step()
-
-                table.insert(self.__stepsDone, i)
-            end
-        end
-
-        -- music looped
-        if self.currentStep < oldCurStep then self:__step() end
-
-        self.currentStepFloat = trueDecStep
-        self.currentStep = trueStep
-
-        if self.onStep and oldCurStep ~= trueStep and trueStep > 0 and
-            not table.find(self.__stepsDone, trueStep) then
+        if step ~= self.currentStep and self.currentStep >= 0 then
             self:__step()
-
-            if not table.find(self.stepsDone, trueStep) then
-                table.insert(self.stepsDone, trueStep)
-            end
         end
     end
 end
