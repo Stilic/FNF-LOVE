@@ -320,7 +320,7 @@ function Sprite:setScrollFactor(x, y)
 end
 
 function Sprite:getMidpoint()
-    return {x = self.x + self.width * 0.5, y = self.y + self.height * 0.5}
+    return self.x + self.width * 0.5, self.y + self.height * 0.5
 end
 
 function Sprite:getGraphicMidpoint()

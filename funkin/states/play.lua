@@ -391,14 +391,7 @@ function PlayState:update(dt)
         songTime = PlayState.inst.sound:getDuration() - songTime
     end
 
-    local function to_clock(ms)
-        local total = math.floor(ms)
-        local mins = string.format("%.f", math.floor(total / 60))
-        local secs = string.format("%02.f", total % 60)
-        return mins .. ":" .. secs
-    end
-
-    self.timeTxt:setContent(to_clock(songTime))
+    self.timeTxt:setContent(util.getFormattedTime(songTime))
 
     self.timeTxt:screenCenter("x")
     self.timeTxt.x = self.timeTxt.x + (self.timeArcBG.width + 5)
@@ -411,37 +404,33 @@ function PlayState:update(dt)
                           (PlayState.inst.sound:getDuration() / 1000)) * 0.36
     self.timeArc.config.angle2 = -90 + math.ceil(timeAngle)
 
-    local mustHit = self:getCurrentSection()
-    if mustHit ~= nil then
-        gfHit = mustHit.gfSection
-        mustHit = mustHit.mustHitSection
-        if mustHit ~= nil then
-            if gfHit == nil or gfHit == false then 
-                if mustHit then
-                    local midpoint = self.boyfriend:getMidpoint()
-                    self.camFollow.x = midpoint.x - 100 -
-                    (self.boyfriend.cameraPosition.x -
-                    self.stage.boyfriendCam.x)
-                    self.camFollow.y = midpoint.y - 100 +
-                    (self.boyfriend.cameraPosition.y +
-                    self.stage.boyfriendCam.y)
-                else
-                    local midpoint = self.dad:getMidpoint()
-                    self.camFollow.x = midpoint.x + 150 +
-                    (self.dad.cameraPosition.x +
-                    self.stage.dadCam.x)
-                    self.camFollow.y = midpoint.y - 100 +
-                    (self.dad.cameraPosition.y +
-                    self.stage.dadCam.y)
-                end
+    local section = self:getCurrentSection()
+    if section ~= nil then
+        if section.gfSection then
+            local x, y = self.gf:getMidpoint()
+            self.camFollow.x = x -
+                                   (self.gf.cameraPosition.x -
+                                       self.stage.gfCam.x)
+            self.camFollow.y = y -
+                                   (self.gf.cameraPosition.y -
+                                       self.stage.gfCam.y)
+        else
+            if section.mustHitSection then
+                local x, y = self.boyfriend:getMidpoint()
+                self.camFollow.x = x - 100 -
+                                       (self.boyfriend.cameraPosition.x -
+                                           self.stage.boyfriendCam.x)
+                self.camFollow.y = y - 100 +
+                                       (self.boyfriend.cameraPosition.y +
+                                           self.stage.boyfriendCam.y)
             else
-                local midpoint = self.gf:getMidpoint()
-                self.camFollow.x = midpoint.x -
-                (self.gf.cameraPosition.x -
-                self.stage.gfCam.x)
-                self.camFollow.y = midpoint.y -
-                (self.gf.cameraPosition.y -
-                self.stage.gfCam.y)
+                local x, y = self.dad:getMidpoint()
+                self.camFollow.x = x + 150 +
+                                       (self.dad.cameraPosition.x +
+                                           self.stage.dadCam.x)
+                self.camFollow.y = y - 100 +
+                                       (self.dad.cameraPosition.y +
+                                           self.stage.dadCam.y)
             end
         end
     end
@@ -474,7 +463,7 @@ function PlayState:update(dt)
             time = time / PlayState.SONG.speed
         end
         while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-        PlayState.songPosition < time do
+            PlayState.songPosition < time do
             local n = table.remove(self.unspawnNotes, 1)
             local grp = n.isSustain and self.sustainsGroup or self.notesGroup
             self.allNotes:add(n)
@@ -620,7 +609,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type)
-    if not self.startingSong and not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
+    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -633,8 +622,7 @@ function PlayState:onKeyPress(key, type)
                 for _, n in ipairs(self.notesGroup.members) do
                     if n.mustPress and not n.isSustain and not n.tooLate and
                         not n.wasGoodHit then
-                        if not n.canBeHit and
-                            n:checkDiff(PlayState.inst.time) then
+                        if not n.canBeHit and n:checkDiff(PlayState.inst.time) then
                             n:update(0)
                         end
                         if n.canBeHit and n.data == key then
@@ -666,7 +654,7 @@ function PlayState:onKeyPress(key, type)
 end
 
 function PlayState:onKeyRelease(key, type)
-    if not self.startingSong and not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
+    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -685,12 +673,15 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        for _, script in ipairs(self.scripts) do script:call("goodNoteHit", n)end
+        for _, script in ipairs(self.scripts) do
+            script:call("goodNoteHit", n)
+        end
 
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false)
+
         local time = 0
         if not n.mustPress or PlayState.botPlay then
             self.camZooming = true
@@ -729,7 +720,9 @@ function PlayState:goodNoteHit(n)
 
             self:removeNote(n)
 
-            for _, script in ipairs(self.scripts) do script:call("postGoodNoteHit", n) end
+            for _, script in ipairs(self.scripts) do
+                script:call("postGoodNoteHit", n)
+            end
         end
     end
 end
