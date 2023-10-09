@@ -42,6 +42,7 @@ function PlayState:enter()
     local sound = game.sound.load(paths.getInst(songName))
     sound.onComplete = function() switchState(FreeplayState()) end
     PlayState.inst = Conductor(sound, PlayState.SONG.bpm)
+    PlayState.inst:mapBPMChanges(PlayState.SONG)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
@@ -462,7 +463,7 @@ function PlayState:update(dt)
             time = time / PlayState.SONG.speed
         end
         while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-            PlayState.songPosition < time do
+        PlayState.songPosition < time do
             local n = table.remove(self.unspawnNotes, 1)
             local grp = n.isSustain and self.sustainsGroup or self.notesGroup
             self.allNotes:add(n)
@@ -608,7 +609,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type)
-    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
+    if not self.startingSong and not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -616,16 +617,13 @@ function PlayState:onKeyPress(key, type)
             self.keysPressed[key] = true
 
             if not self.startingSong then
-                local prevSongPos = PlayState.songPosition
-                PlayState.songPosition = PlayState.inst.time
-
                 local noteList = {}
 
                 for _, n in ipairs(self.notesGroup.members) do
                     if n.mustPress and not n.isSustain and not n.tooLate and
                         not n.wasGoodHit then
                         if not n.canBeHit and
-                            n:checkDiff(PlayState.songPosition) then
+                            n:checkDiff(PlayState.inst.time) then
                             n:update(0)
                         end
                         if n.canBeHit and n.data == key then
@@ -646,8 +644,6 @@ function PlayState:onKeyPress(key, type)
 
                     self:goodNoteHit(coolNote)
                 end
-
-                PlayState.songPosition = prevSongPos
             end
 
             local r = self.playerReceptors.members[key + 1]
@@ -659,7 +655,7 @@ function PlayState:onKeyPress(key, type)
 end
 
 function PlayState:onKeyRelease(key, type)
-    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
+    if not self.startingSong and not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -700,7 +696,7 @@ function PlayState:goodNoteHit(n)
 
         if not n.isSustain then
             if n.mustPress then
-                local diff, rating = math.abs(n.time - PlayState.songPosition),
+                local diff, rating = math.abs(n.time - PlayState.inst.time),
                                      PlayState.ratings[#PlayState.ratings - 1]
                 for _, r in next, PlayState.ratings do
                     if diff <= r.time then
