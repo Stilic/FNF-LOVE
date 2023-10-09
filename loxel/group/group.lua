@@ -1,8 +1,8 @@
-local Group = Object:extend()
+local Group = Basic:extend()
 
 function Group:new()
+    Group.super.new(self)
     self.members = {}
-    self.cameras = nil
 end
 
 function Group:add(obj)
@@ -47,23 +47,54 @@ function Group:recycle(class, factory, revive)
     return newObject
 end
 
-function Group:update(dt, ...)
+function Group:update(dt)
     for _, o in ipairs(self.members) do
-        local f = o.update
-        if f then f(o, dt, ...) end
+        if o.exists and o.active then
+            local f = o.update
+            if f then f(o, dt) end
+        end
     end
 end
 
-function Group:draw(...)
+function Group:draw()
     local oldDefaultCameras = Camera.__defaultCameras
     if self.cameras then Camera.__defaultCameras = self.cameras end
 
     for _, o in ipairs(self.members) do
-        local f = o.draw
-        if f then f(o, ...) end
+        if o.exists and o.visible then
+            local f = o.draw
+            if f then f(o) end
+        end
     end
 
     Camera.__defaultCameras = oldDefaultCameras
+end
+
+function Group:kill()
+    for _, o in ipairs(self.members) do
+        local f = o.kill
+        if f then f(o) end
+    end
+
+    Group.super.kill(self)
+end
+
+function Group:revive()
+    for _, o in ipairs(self.members) do
+        local f = o.revive
+        if f then f(o) end
+    end
+
+    Group.super.revive(self)
+end
+
+function Group:destroy()
+    Group.super.destroy(self)
+
+    for _, o in ipairs(self.members) do
+        local f = o.destroy
+        if f then f(o) end
+    end
 end
 
 return Group

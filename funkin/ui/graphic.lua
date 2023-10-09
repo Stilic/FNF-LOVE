@@ -1,6 +1,8 @@
-local Graphic = Object:extend()
+local Graphic = Basic:extend()
 
 function Graphic:new(x, y, width, height, color, type, fill)
+    Graphic.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
 
@@ -22,14 +24,10 @@ function Graphic:new(x, y, width, height, color, type, fill)
 
     self.outWidth = 6
 
-    self.cameras = nil
-    self.alive = true
-    self.exists = true
     self.antialiasing = false
 
     self.scrollFactor = {x = 1, y = 1}
 
-    self.visible = true
     self.color = color or {0, 0, 0}
     self.alpha = 1
     self.angle = 0
@@ -76,25 +74,9 @@ function Graphic:screenCenter(axes)
     return self
 end
 
-function Graphic:kill()
-    self.alive = false
-    self.exists = false
-end
-
-function Graphic:revive()
-    self.alive = true
-    self.exists = true
-end
-
 function Graphic:draw()
-    if self.exists and self.alive and self.visible and self.alpha > 0 and
-    (self.width > 0 or self.height > 0 or self.config.radius > 0 or self.points) then
-        for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-            if c.visible and c.exists then
-                table.insert(c.__renderQueue, self)
-            end
-        end
-    end
+    if self.width > 0 or self.height > 0 or self.config.radius > 0 or
+        self.points then Graphic.super.draw(self) end
 end
 
 function Graphic:__render(camera)
@@ -107,10 +89,8 @@ function Graphic:__render(camera)
     local mode = (self.antialiasing and "nearest" or "linear")
     love.graphics.setDefaultFilter(mode, mode, anisotropy)
 
-
     local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(self.color[1], self.color[2],
-                           self.color[3], alpha)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3], alpha)
 
     local rad = math.rad(self.angle)
     local w, h = self.width, self.height
@@ -121,8 +101,7 @@ function Graphic:__render(camera)
     x, y = self.x - (camera.scroll.x * self.scrollFactor.x),
            self.y - (camera.scroll.y * self.scrollFactor.y)
 
-    local rad, seg, type = self.config.radius,
-                           self.config.segments,
+    local rad, seg, type = self.config.radius, self.config.segments,
                            self.config.arctype
 
     love.graphics.setLineWidth(self.outWidth)
@@ -134,10 +113,10 @@ function Graphic:__render(camera)
         if self.points then
             local fixpoly = {}
             for i = 1, #self.points, 2 do
-                local fx = self.points[i] - (
-                               camera.scroll.x * self.scrollFactor.x)
-                local fy = self.points[i + 1] - (
-                               camera.scroll.y * self.scrollFactor.y)
+                local fx = self.points[i] -
+                               (camera.scroll.x * self.scrollFactor.x)
+                local fy = self.points[i + 1] -
+                               (camera.scroll.y * self.scrollFactor.y)
                 table.insert(fixpoly, fx)
                 table.insert(fixpoly, fy)
             end
@@ -148,8 +127,7 @@ function Graphic:__render(camera)
         love.graphics.circle(self.fill, x, y, rad, seg)
 
     elseif self.type == "arc" then
-        love.graphics.arc(self.fill, type, x, y, rad,
-                          ang1, ang2, seg)
+        love.graphics.arc(self.fill, type, x, y, rad, ang1, ang2, seg)
     end
 
     love.graphics.setColor(r, g, b, a)

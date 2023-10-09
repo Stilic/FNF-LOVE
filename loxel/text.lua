@@ -1,6 +1,8 @@
-local Text = Object:extend()
+local Text = Basic:extend()
 
 function Text:new(x, y, content, font, color, align, limit)
+    Text.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
 
@@ -11,8 +13,6 @@ function Text:new(x, y, content, font, color, align, limit)
 
     self.color = color or {1, 1, 1}
     self.alpha = 1
-    self.cameras = nil
-    self.visible = true
     self.scrollFactor = {x = 1, y = 1}
 
     self.alive = true
@@ -53,30 +53,11 @@ function Text:setScrollFactor(x, y)
     self.scrollFactor.x, self.scrollFactor.y = x, y
 end
 
-function Text:kill()
-    self.alive = false
-    self.exists = false
-end
-
-function Text:revive()
-    self.alive = true
-    self.exists = true
-end
-
 function Text:destroy()
-    self.exists = false
+    Text.super.destroy(self)
+
     self.content = nil
     self.outWidth = 0
-end
-
-function Text:draw()
-    if self.exists and self.alive and self.visible and self.alpha > 0 then
-        for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-            if c.visible and c.exists then
-                table.insert(c.__renderQueue, self)
-            end
-        end
-    end
 end
 
 function Text:__render(camera)

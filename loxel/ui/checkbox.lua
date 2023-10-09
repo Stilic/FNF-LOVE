@@ -1,13 +1,14 @@
-local Checkbox = Object:extend()
+local Checkbox = Basic:extend()
 
 function Checkbox:new(x, y, size, callback)
+    Checkbox.super.new(self)
+
     self.x = x or 0
     self.y = y or 0
     self.size = size or 20
     self.checked = false
     self.hovered = false
     self.callback = callback
-    self.cameras = nil
 end
 
 function Checkbox:update(dt)
@@ -15,14 +16,6 @@ function Checkbox:update(dt)
     self.hovered =
         (mx >= self.x and mx <= self.x + self.size and my >= self.y and my <=
             self.y + self.size)
-end
-
-function Checkbox:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function Checkbox:__render()

@@ -1,6 +1,7 @@
-local Bar = Object:extend()
+local Bar = Basic:extend()
 
 function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)
+    Bar.super.new(self)
     self.x = x or 0
     self.y = y or 0
     self.width = width or 100
@@ -11,7 +12,6 @@ function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)
     self.opColor = opColor or {0, 255, 0}
     self.flipX = false
     self.filledBar = filledBar or false
-    self.cameras = nil
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
     self.percent = (self.value / self.maxValue) * 100
 end
@@ -30,14 +30,6 @@ end
 function Bar:update()
     self.fillWidth = self.width - ((self.value / self.maxValue) * self.width)
     self.percent = (self.value / self.maxValue) * 100
-end
-
-function Bar:draw()
-    for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
-        if c.visible and c.exists then
-            table.insert(c.__renderQueue, self)
-        end
-    end
 end
 
 function Bar:__render(camera)
