@@ -26,21 +26,11 @@ function Stage:new(name)
 end
 
 function Stage:update(dt)
-    self.script:call("update", dt)
     Stage.super.update(self, dt)
 end
 
 function Stage:draw()
-    self.script:call("draw")
     Stage.super.draw(self)
-end
-
-function Stage:step(s)
-    self.script:call("step", s)
-end
-
-function Stage:beat(b)
-    self.script:call("beat", b)
 end
 
 return Stage
