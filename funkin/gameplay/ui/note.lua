@@ -104,8 +104,8 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-    return self.time > PlayState.songPosition - safeZoneOffset *
-               self.lateHitMult and self.time < PlayState.songPosition +
+    return self.time > PlayState.inst.time - safeZoneOffset *
+               self.lateHitMult and self.time < PlayState.inst.time +
                safeZoneOffset * self.earlyHitMult
 end
 
@@ -113,7 +113,7 @@ function Note:update(dt)
     self.canBeHit = self:checkDiff()
 
     if self.mustPress then
-        if not self.wasGoodHit and self.time < PlayState.songPosition -
+        if not self.wasGoodHit and self.time < PlayState.inst.time -
             safeZoneOffset then self.tooLate = true end
     end
 

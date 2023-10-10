@@ -56,4 +56,10 @@ function util.removeExtension(filename)
     end
 end
 
+function util.getFormattedTime(ms)
+    local total = math.floor(ms)
+    return string.format("%.f", math.floor(total / 60)) .. ":" ..
+               string.format("%02.f", total % 60)
+end
+
 return util

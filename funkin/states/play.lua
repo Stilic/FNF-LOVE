@@ -16,7 +16,7 @@ PlayState.ratings = {
 }
 PlayState.downscroll = false
 PlayState.botPlay = false
-PlayState.songPosition = 0
+PlayState.notePosition = 0
 
 PlayState.SONG = nil
 
@@ -42,6 +42,7 @@ function PlayState:enter()
     local sound = game.sound.load(paths.getInst(songName))
     sound.onComplete = function() switchState(FreeplayState()) end
     PlayState.inst = Conductor(sound, PlayState.SONG.bpm)
+    PlayState.inst:mapBPMChanges(PlayState.SONG)
     PlayState.inst.onBeat = function(b) self:beat(b) end
     PlayState.inst.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
@@ -55,11 +56,14 @@ function PlayState:enter()
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
-        if songName == 'spookeez' or songName == 'south' or songName == 'monster' then
+        if songName == 'spookeez' or songName == 'south' or songName ==
+            'monster' then
             curStage = 'spooky'
-        elseif songName == 'pico' or songName == 'philly-nice' or songName == 'blammed' then
+        elseif songName == 'pico' or songName == 'philly-nice' or songName ==
+            'blammed' then
             curStage = 'philly'
-        elseif songName == "senpai" or songName == "roses" or songName == "thorns" then
+        elseif songName == "senpai" or songName == "roses" or songName ==
+            "thorns" then
             curStage = "school"
         elseif songName == "ugh" or songName == "guns" or songName == "stress" then
             curStage = "tank"
@@ -129,7 +133,7 @@ function PlayState:enter()
 
     table.sort(self.unspawnNotes, PlayState.sortByShit)
 
-    PlayState.songPosition = -PlayState.inst.crochet * 5
+    PlayState.notePosition = -PlayState.inst.crochet * 5
 
     self.score = 0
     self.combo = 0
@@ -152,7 +156,6 @@ function PlayState:enter()
     self.receptors = Group()
     self.playerReceptors = Group()
     self.enemyReceptors = Group()
-    self.judgeSpritesGroup = Group()
 
     local rx, ry = game.width / 2, 50
     if PlayState.downscroll then ry = game.height - 100 - ry end
@@ -169,6 +172,14 @@ function PlayState:enter()
             end
         end
     end
+
+    self.splashes = Group()
+
+    local splash = NoteSplash()
+    splash.alpha = 0
+    self.splashes:add(splash)
+
+    self.judgeSprites = Group()
 
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
@@ -200,7 +211,7 @@ function PlayState:enter()
     self:add(self.dad)
 
     self:add(self.stage.foreground)
-    self:add(self.judgeSpritesGroup)
+    self:add(self.judgeSprites)
 
     self.healthBarBG = Sprite()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
@@ -260,6 +271,7 @@ function PlayState:enter()
     self:add(self.receptors)
     self:add(self.sustainsGroup)
     self:add(self.notesGroup)
+    self:add(self.splashes)
 
     self:add(self.healthBarBG)
     self:add(self.healthBar)
@@ -273,9 +285,9 @@ function PlayState:enter()
     self:recalculateRating()
 
     for _, o in ipairs({
-        self.receptors, self.notesGroup, self.sustainsGroup, self.healthBarBG,
-        self.healthBar, self.iconP1, self.iconP2, self.scoreTxt, self.timeArcBG,
-        self.timeArc, self.timeTxt
+        self.receptors, self.splashes, self.notesGroup, self.sustainsGroup,
+        self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
+        self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt
     }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -340,12 +352,12 @@ function PlayState:update(dt)
 
     self.countdownTimer:update(dt)
 
-    PlayState.songPosition = PlayState.songPosition + 1000 * dt
-    if self.startingSong and PlayState.songPosition >= 0 then
+    PlayState.notePosition = PlayState.notePosition + 1000 * dt
+    if self.startingSong and PlayState.notePosition >= 0 then
         self.startingSong = false
         PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
-        PlayState.songPosition = PlayState.inst.time
+        PlayState.notePosition = PlayState.inst.time
         for _, script in ipairs(self.scripts) do script:call("songStart") end
     end
 
@@ -387,14 +399,7 @@ function PlayState:update(dt)
         songTime = PlayState.inst.sound:getDuration() - songTime
     end
 
-    local function to_clock(ms)
-        local total = math.floor(ms)
-        local mins = string.format("%.f", math.floor(total / 60))
-        local secs = string.format("%02.f", total % 60)
-        return mins .. ":" .. secs
-    end
-
-    self.timeTxt:setContent(to_clock(songTime))
+    self.timeTxt:setContent(util.getFormattedTime(songTime))
 
     self.timeTxt:screenCenter("x")
     self.timeTxt.x = self.timeTxt.x + (self.timeArcBG.width + 5)
@@ -407,24 +412,31 @@ function PlayState:update(dt)
                           (PlayState.inst.sound:getDuration() / 1000)) * 0.36
     self.timeArc.config.angle2 = -90 + math.ceil(timeAngle)
 
-    local mustHit = self:getCurrentSection()
-    if mustHit ~= nil then
-        mustHit = mustHit.mustHitSection
-        if mustHit ~= nil then
-            if mustHit then
-                local midpoint = self.boyfriend:getMidpoint()
-                self.camFollow.x = midpoint.x - 100 -
+    local section = self:getCurrentSection()
+    if section ~= nil then
+        if section.gfSection then
+            local x, y = self.gf:getMidpoint()
+            self.camFollow.x = x -
+                                   (self.gf.cameraPosition.x -
+                                       self.stage.gfCam.x)
+            self.camFollow.y = y -
+                                   (self.gf.cameraPosition.y -
+                                       self.stage.gfCam.y)
+        else
+            if section.mustHitSection then
+                local x, y = self.boyfriend:getMidpoint()
+                self.camFollow.x = x - 100 -
                                        (self.boyfriend.cameraPosition.x -
                                            self.stage.boyfriendCam.x)
-                self.camFollow.y = midpoint.y - 100 +
+                self.camFollow.y = y - 100 +
                                        (self.boyfriend.cameraPosition.y +
                                            self.stage.boyfriendCam.y)
             else
-                local midpoint = self.dad:getMidpoint()
-                self.camFollow.x = midpoint.x + 150 +
+                local x, y = self.dad:getMidpoint()
+                self.camFollow.x = x + 150 +
                                        (self.dad.cameraPosition.x +
                                            self.stage.dadCam.x)
-                self.camFollow.y = midpoint.y - 100 +
+                self.camFollow.y = y - 100 +
                                        (self.dad.cameraPosition.y +
                                            self.stage.dadCam.y)
             end
@@ -459,7 +471,7 @@ function PlayState:update(dt)
             time = time / PlayState.SONG.speed
         end
         while #self.unspawnNotes > 0 and self.unspawnNotes[1].time -
-            PlayState.songPosition < time do
+            PlayState.notePosition < time do
             local n = table.remove(self.unspawnNotes, 1)
             local grp = n.isSustain and self.sustainsGroup or self.notesGroup
             self.allNotes:add(n)
@@ -471,7 +483,7 @@ function PlayState:update(dt)
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
         if not n.tooLate and ((not n.mustPress or PlayState.botPlay) and
-            ((n.isSustain and n.canBeHit) or n.time <= PlayState.songPosition) or
+            ((n.isSustain and n.canBeHit) or n.time <= PlayState.notePosition) or
             (n.isSustain and self.keysPressed[n.data] and n.parentNote and
                 n.parentNote.wasGoodHit and n.canBeHit)) then
             self:goodNoteHit(n)
@@ -488,7 +500,7 @@ function PlayState:update(dt)
         local sy = r.y + n.scrollOffset.y
 
         n.x = r.x + n.scrollOffset.x
-        n.y = sy - (PlayState.songPosition - time) *
+        n.y = sy - (PlayState.notePosition - time) *
                   (0.45 * PlayState.SONG.speed) *
                   (PlayState.downscroll and -1 or 1)
 
@@ -537,7 +549,7 @@ function PlayState:update(dt)
             end
         end
 
-        if PlayState.songPosition > 350 / PlayState.SONG.speed + n.time then
+        if PlayState.notePosition > 350 / PlayState.SONG.speed + n.time then
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) then
                 if PlayState.vocals then
@@ -613,16 +625,12 @@ function PlayState:onKeyPress(key, type)
             self.keysPressed[key] = true
 
             if not self.startingSong then
-                local prevSongPos = PlayState.songPosition
-                PlayState.songPosition = PlayState.inst.time
-
                 local noteList = {}
 
                 for _, n in ipairs(self.notesGroup.members) do
                     if n.mustPress and not n.isSustain and not n.tooLate and
                         not n.wasGoodHit then
-                        if not n.canBeHit and
-                            n:checkDiff(PlayState.songPosition) then
+                        if not n.canBeHit and n:checkDiff(PlayState.inst.time) then
                             n:update(0)
                         end
                         if n.canBeHit and n.data == key then
@@ -643,8 +651,6 @@ function PlayState:onKeyPress(key, type)
 
                     self:goodNoteHit(coolNote)
                 end
-
-                PlayState.songPosition = prevSongPos
             end
 
             local r = self.playerReceptors.members[key + 1]
@@ -692,12 +698,13 @@ function PlayState:goodNoteHit(n)
                 time = time * 2
             end
         end
-        (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-            1]:confirm(time)
+        local receptor = (n.mustPress and self.playerReceptors or
+                             self.enemyReceptors).members[n.data + 1]
+        receptor:confirm(time)
 
         if not n.isSustain then
             if n.mustPress then
-                local diff, rating = math.abs(n.time - PlayState.songPosition),
+                local diff, rating = math.abs(n.time - PlayState.inst.time),
                                      PlayState.ratings[#PlayState.ratings - 1]
                 for _, r in next, PlayState.ratings do
                     if diff <= r.time then
@@ -708,6 +715,12 @@ function PlayState:goodNoteHit(n)
 
                 self.combo = self.combo + 1
                 self.score = self.score + rating.score
+
+                if rating.splash then
+                    local splash = self.splashes:recycle(NoteSplash)
+                    splash.x, splash.y = receptor.x, receptor.y
+                    splash:setup(n.data)
+                end
                 self:popUpScore(rating)
 
                 self.totalHit = self.totalHit + rating.mod
@@ -746,8 +759,8 @@ function PlayState:step(s)
         math.abs(PlayState.vocals:tell() * 1000 - time * 1000) > 20 then
         PlayState.vocals:seek(time)
     end
-    if math.abs(time * 1000 - PlayState.songPosition) > 20 then
-        PlayState.songPosition = time * 1000
+    if math.abs(time * 1000 - PlayState.notePosition) > 20 then
+        PlayState.notePosition = time * 1000
     end
 
     for _, script in ipairs(self.scripts) do script:call("step", s) end
@@ -794,7 +807,7 @@ end
 function PlayState:popUpScore(rating)
     local accel = PlayState.inst.crochet * 0.001
 
-    local judgeSpr = self.judgeSpritesGroup:recycle()
+    local judgeSpr = self.judgeSprites:recycle()
 
     local antialias = not PlayState.pixelStage
     local uiStage = PlayState.pixelStage and "pixel" or "normal"
@@ -806,6 +819,7 @@ function PlayState:popUpScore(rating)
                                            (PlayState.pixelStage and 4.7 or 0.7)))
     judgeSpr:updateHitbox()
     judgeSpr:screenCenter()
+    judgeSpr.moves = true
     -- use fixed values to display at the same position on a different resolution
     judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
     judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
@@ -830,13 +844,14 @@ function PlayState:popUpScore(rating)
         local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
         for i = 1, #comboStr do
             local digit = tonumber(comboStr:sub(i, i)) or 0
-            local numScore = self.judgeSpritesGroup:recycle()
+            local numScore = self.judgeSprites:recycle()
             numScore:loadTexture(paths.getImage(
                                      "skins/" .. uiStage .. "/num" .. digit))
             numScore:setGraphicSize(math.floor(numScore.width *
                                                    (PlayState.pixelStage and 4.5 or
                                                        0.5)))
             numScore:updateHitbox()
+            numScore.moves = true
             numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
             numScore.y = judgeSpr.y + 115
             numScore.velocity.y = 0

@@ -271,7 +271,6 @@ function ChartingState:update(dt)
             addSection(self)
         end
         changeSection(self, self.curSection + 1, false)
-        --print()
         --print('increased curSection')
     elseif self.strumLine.y < -10 + self.strumOffset then
         changeSection(self, self.curSection - 1, false)

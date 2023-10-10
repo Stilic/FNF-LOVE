@@ -2,9 +2,7 @@ local Conductor = Object:extend()
 
 function Conductor:new(sound, bpm)
     self.sound = sound
-    self.__stepsDone = {}
-    self.__lastTime = 0
-
+    self.__bpmChanges = {}
     self:setBPM(bpm)
 end
 
@@ -20,7 +18,11 @@ end
 function Conductor:__updateTime()
     self.time = self.sound:tell() * 1000
 
-    self.currentStepFloat = self.time / self.stepCrochet
+    local stepTime, songTime = 0, 0
+    for _, c in ipairs(self.__bpmChanges) do
+        if self.time >= c[2] then stepTime, songTime = c[1], c[2] end
+    end
+    self.currentStepFloat = stepTime + (self.time - songTime) / self.stepCrochet
     self.currentStep = math.floor(self.currentStepFloat)
 
     self.currentBeatFloat = self.currentStepFloat / 4
@@ -29,41 +31,10 @@ end
 
 function Conductor:update()
     if self.sound:isPlaying() then
-        local oldCurStep = self.currentStep
-
+        local step = self.currentStep
         self:__updateTime()
-
-        -- borrowed from forever engine -stilic
-        local trueDecStep, trueStep = self.currentStepFloat, self.currentStep
-
-        for i, s in ipairs(self.__stepsDone) do
-            if s < oldCurStep then table.remove(self.__stepsDone, i) end
-        end
-
-        for i = oldCurStep, trueStep do
-            if i > 0 and not table.find(self.__stepsDone, i) then
-                self.currentStepFloat = i
-                self.currentStep = i
-
-                self:__step()
-
-                table.insert(self.__stepsDone, i)
-            end
-        end
-
-        -- music looped
-        if self.currentStep < oldCurStep then self:__step() end
-
-        self.currentStepFloat = trueDecStep
-        self.currentStep = trueStep
-
-        if self.onStep and oldCurStep ~= trueStep and trueStep > 0 and
-            not table.find(self.__stepsDone, trueStep) then
+        if step ~= self.currentStep and self.currentStep >= 0 then
             self:__step()
-
-            if not table.find(self.stepsDone, trueStep) then
-                table.insert(self.stepsDone, trueStep)
-            end
         end
     end
 end
@@ -81,6 +52,24 @@ function Conductor:seek(position, unit)
     self.sound:seek(position, unit)
     self:__updateTime()
     if playing then self.sound:play() end
+end
+
+function Conductor:mapBPMChanges(song)
+    self.__bpmChanges = {}
+
+    local bpm, totalSteps, totalPos, toAdd = song.bpm, 0, 0,
+                                             ((60 / song.bpm) * 1000 / 4)
+    for _, s in ipairs(song.notes) do
+        if s.changeBPM and s.bpm ~= bpm then
+            bpm = s.bpm
+            toAdd = ((60 / bpm) * 1000 / 4)
+            table.insert(self.__bpmChanges, {totalSteps, totalPos, bpm})
+        end
+
+        local deltaSteps = s.lengthInSteps
+        totalSteps = totalSteps + deltaSteps
+        totalPos = totalPos + toAdd * deltaSteps
+    end
 end
 
 return Conductor

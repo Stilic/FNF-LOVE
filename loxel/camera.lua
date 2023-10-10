@@ -96,12 +96,15 @@ function Camera:update(dt)
             end
         else
             if self.__shakeAxes:find('x') then
-                local shakeVal = love.math.random(-1, 1) * self.__shakeIntensity * self.width
+                local shakeVal =
+                    love.math.random(-1, 1) * self.__shakeIntensity * self.width
                 self.__shakeX = self.__shakeX + shakeVal * self.zoom
             end
 
             if self.__shakeAxes:find('y') then
-                local shakeVal = love.math.random(-1, 1) * self.__shakeIntensity * self.height
+                local shakeVal =
+                    love.math.random(-1, 1) * self.__shakeIntensity *
+                        self.height
                 self.__shakeY = self.__shakeY + shakeVal * self.zoom
             end
         end
@@ -143,7 +146,8 @@ function Camera:draw()
     if self.visible and self.exists and self.alpha ~= 0 and self.zoom ~= 0 then
         love.graphics.push()
         local w, h = self.width * 0.5, self.height * 0.5
-        love.graphics.translate(w - self.x + self.__shakeX, h - self.y + self.__shakeY)
+        love.graphics.translate(w - self.x + self.__shakeX,
+                                h - self.y + self.__shakeY)
         love.graphics.rotate(math.rad(-self.angle))
         love.graphics.scale(self.zoom)
         love.graphics.translate(-w, -h)

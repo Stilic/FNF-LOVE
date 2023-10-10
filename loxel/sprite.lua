@@ -157,6 +157,7 @@ function Sprite:new(x, y, texture)
     self.flipX = false
     self.flipY = false
 
+    self.moves = false
     self.velocity = {x = 0, y = 0}
     self.acceleration = {x = 0, y = 0}
 
@@ -319,20 +320,17 @@ function Sprite:setScrollFactor(x, y)
 end
 
 function Sprite:getMidpoint()
-    return {x = self.x + self.width * 0.5, y = self.y + self.height * 0.5}
+    return self.x + self.width * 0.5, self.y + self.height * 0.5
 end
 
 function Sprite:getGraphicMidpoint()
-    return {
-        x = self.x + self:getFrameWidth() * 0.5,
-        y = self.y + self:getFrameHeight() * 0.5
-    }
+    return self.x + self:getFrameWidth() * 0.5,
+           self.y + self:getFrameHeight() * 0.5
 end
 
 function Sprite:setPosition(x, y)
     if x == nil then x = self.x end
     if y == nil then y = self.y end
-
     self.x, self.y = x, y
 end
 
@@ -418,6 +416,14 @@ function Sprite:play(anim, force, frame)
     self.animPaused = false
 end
 
+function Sprite:pause()
+    if self.curAnim and not self.animFinished then self.animPaused = true end
+end
+
+function Sprite:resume()
+    if self.curAnim and not self.animFinished then self.animPaused = false end
+end
+
 function Sprite:stop()
     if self.curAnim then
         self.animFinished = true
@@ -451,8 +457,7 @@ function Sprite:destroy()
 end
 
 function Sprite:update(dt)
-    if self.curAnim and not self.animFinished and
-        not self.animPaused then
+    if self.curAnim and not self.animFinished and not self.animPaused then
         self.curFrame = self.curFrame + dt * self.curAnim.framerate
         if self.curFrame >= #self.curAnim.frames then
             if self.curAnim.looped then
@@ -464,11 +469,13 @@ function Sprite:update(dt)
         end
     end
 
-    self.velocity.x = self.velocity.x + self.acceleration.x * dt
-    self.velocity.y = self.velocity.y + self.acceleration.y * dt
+    if self.moves then
+        self.velocity.x = self.velocity.x + self.acceleration.x * dt
+        self.velocity.y = self.velocity.y + self.acceleration.y * dt
 
-    self.x = self.x + self.velocity.x * dt
-    self.y = self.y + self.velocity.y * dt
+        self.x = self.x + self.velocity.x * dt
+        self.y = self.y + self.velocity.y * dt
+    end
 end
 
 function Sprite:draw()

@@ -70,7 +70,7 @@ function MainMenuState:enter()
     popup_bg.alpha = 0.7
 
     local wip_text = Text(116, 34, 'Work In\nProgress..',
-                       paths.getFont("vcr.ttf", 34), {255, 255, 255})
+                          paths.getFont("vcr.ttf", 34), {255, 255, 255})
     local gf_icon = HealthIcon('gf', true)
     gf_icon.x = 150
     self.gf_popup:add(popup_bg)
@@ -78,8 +78,7 @@ function MainMenuState:enter()
     self.gf_popup:add(gf_icon)
 
     self:add(self.gf_popup)
-    self.popup_tween = Timer.new()
-    self.popup_appears = false
+    self.popupAppears = false
 
     self:changeSelection()
 end
@@ -107,18 +106,21 @@ function MainMenuState:update(dt)
             local selected = self.optionShit[MainMenuState.curSelected]
             if selected == 'donate' then
                 love.system.openURL('https://ninja-muffin24.itch.io/funkin')
-            elseif not self.popup_appears and selected == 'story_mode' or selected == 'options' then
-                self.popup_appears = true
-                game.sound.play(paths.getSound('gameplay/GF_'..love.math.random(1, 4)))
+            elseif not self.popupAppears and selected == 'story_mode' or
+                selected == 'options' then
+                self.popupAppears = true
+                game.sound.play(paths.getSound('gameplay/GF_' ..
+                                                   love.math.random(1, 4)))
                 game.sound.play(paths.getSound('gameplay/ANGRY'))
                 game.camera:shake(0.003, 0.2)
 
-                self.popup_tween:tween(0.5, self.gf_popup, {y = game.height - 140},
-                                       "out-cubic", function()
-                    self.popup_tween:after(1.5, function()
-                        self.popup_tween:tween(0.5, self.gf_popup, {y = game.height},
-                                               "in-cubic", function()
-                            self.popup_appears = false
+                Timer.tween(0.5, self.gf_popup, {y = game.height - 140},
+                            "out-cubic", function()
+                    Timer.after(1.5, function()
+                        Timer.tween(0.5, self.gf_popup, {y = game.height},
+                                    "in-cubic",
+                                    function()
+                            self.popupAppears = false
                         end)
                     end)
                 end)
@@ -155,8 +157,6 @@ function MainMenuState:update(dt)
 
     MainMenuState.super.update(self, dt)
 
-    self.popup_tween:update(dt)
-
     for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
 end
 
@@ -180,10 +180,8 @@ function MainMenuState:changeSelection(huh)
             spr:play('selected')
             local add = 0
             if #self.menuItems > 4 then add = #self.menuItems * 8 end
-            self.camFollow = {
-                x = spr:getGraphicMidpoint().x,
-                y = spr:getGraphicMidpoint().y - add
-            }
+            local x, y = spr:getGraphicMidpoint()
+            self.camFollow.x, self.camFollow.y = x, y - add
             spr:centerOffsets()
         end
     end
