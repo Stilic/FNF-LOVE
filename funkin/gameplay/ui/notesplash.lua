@@ -4,6 +4,7 @@ function NoteSplash:new(x, y)
     NoteSplash.super.new(self, x, y)
 
     self:setFrames(paths.getSparrowAtlas("skins/normal/noteSplashes"))
+    self.antialiasing = true
 
     for i = 0, 1, 1 do
         for j = 0, 3, 1 do
