@@ -24,6 +24,7 @@ MainMenuState = require "funkin.states.mainmenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
+CharacterEditor = require "funkin.editors.character"
 ChartingState = require "funkin.editors.charting"
 
 controls = (require "lib.baton").new({
@@ -48,7 +49,8 @@ controls = (require "lib.baton").new({
         back = {"key:backspace", "key:escape", "button:b"},
         pause = {"key:return", "key:escape", "button:start"},
         reset = {"key:r", "button:leftstick"},
-        debug1 = {"key:7"}
+        debug1 = {"key:7"},
+        debug2 = {"key:8"}
     },
     joystick = love.joystick.getJoysticks()[1]
 })
