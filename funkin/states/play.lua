@@ -27,7 +27,7 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
     self.scripts = Script.loadScriptsFromDirectory("scripts/charts")
-    for _, script in ipairs(self.scripts) do script:call("create") end
+    for _, script in ipairs(self.scripts) do script:call("create")end
 
     self.keysPressed = {}
 
@@ -343,12 +343,11 @@ function PlayState:enter()
         end)
     end
 
-    self.stage.script:call("postCreate")
-    for _, script in ipairs(self.scripts) do script:call("postCreate") end
+    self:callOnScripts("postCreate")
 end
 
 function PlayState:update(dt)
-    for _, script in ipairs(self.scripts) do script:call("update", dt) end
+    self:callOnScripts("update", dt)
 
     self.countdownTimer:update(dt)
 
@@ -358,7 +357,7 @@ function PlayState:update(dt)
         PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
         PlayState.notePosition = PlayState.inst.time
-        for _, script in ipairs(self.scripts) do script:call("songStart") end
+        self:callOnScripts("songStart")
     end
 
     PlayState.super.update(self, dt)
@@ -586,15 +585,13 @@ function PlayState:update(dt)
         end
     end
 
-    self.stage.script:call("postUpdate", dt)
-    for _, script in ipairs(self.scripts) do script:call("postUpdate", dt) end
+    self:callOnScripts("postUpdate", dt)
 end
 
 function PlayState:draw()
-    for _, script in ipairs(self.scripts) do script:call("draw") end
+    self:callOnScripts("draw")
     PlayState.super.draw(self)
-    self.stage.script:call("postDraw")
-    for _, script in ipairs(self.scripts) do script:call("postDraw") end
+    self:callOnScripts("postDraw")
 end
 
 function PlayState:closeSubState()
@@ -687,9 +684,7 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        for _, script in ipairs(self.scripts) do
-            script:call("goodNoteHit", n)
-        end
+        self:callOnScripts("goodNoteHit", n)
 
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
@@ -741,9 +736,7 @@ function PlayState:goodNoteHit(n)
 
             self:removeNote(n)
 
-            for _, script in ipairs(self.scripts) do
-                script:call("postGoodNoteHit", n)
-            end
+            self:callOnScripts("postGoodNoteHit", n)
         end
     end
 end
@@ -769,16 +762,13 @@ function PlayState:step(s)
         PlayState.notePosition = time * 1000
     end
 
-    for _, script in ipairs(self.scripts) do script:call("step", s) end
-
-    self.stage:step(s)
+    self:callOnScripts("step", s)
 
     self.boyfriend:step(s)
     self.gf:step(s)
     self.dad:step(s)
 
-    self.stage.script:call("postStep", s)
-    for _, script in ipairs(self.scripts) do script:call("postStep", s) end
+    self:callOnScripts("postStep", s)
 end
 
 function PlayState:beat(b)
@@ -789,9 +779,7 @@ function PlayState:beat(b)
         PlayState.inst:setBPM(section.bpm)
     end
 
-    for _, script in ipairs(self.scripts) do script:call("beat", b) end
-
-    self.stage:beat(b)
+    self:callOnScripts("beat", b)
 
     if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
         self.camGame.zoom = self.camGame.zoom + 0.015
@@ -806,8 +794,7 @@ function PlayState:beat(b)
     self.gf:beat(b)
     self.dad:beat(b)
 
-    self.stage.script:call("postBeat", b)
-    for _, script in ipairs(self.scripts) do script:call("postBeat", b) end
+    self:callOnScripts("postBeat", b)
 end
 
 function PlayState:popUpScore(rating)
@@ -895,7 +882,7 @@ function PlayState:recalculateRating()
 end
 
 function PlayState:leave()
-    for _, script in ipairs(self.scripts) do script:call("leave") end
+    self:callOnScripts("leave")
 
     PlayState.inst = nil
     PlayState.vocals = nil
@@ -903,7 +890,21 @@ function PlayState:leave()
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)
 
-    for _, script in ipairs(self.scripts) do script:call("postLeave") end
+    self:callOnScripts("postLeave")
+end
+
+function PlayState:setOnScripts(var, value)
+    self.stage.script:set(var, value)
+    for _, script in ipairs(self.scripts) do
+        script:set(var, value)
+    end
+end
+
+function PlayState:callOnScripts(func, ...)
+    self.stage.script:call(func, ...)
+    for _, script in ipairs(self.scripts) do
+        script:call(func, ...)
+    end
 end
 
 return PlayState
