@@ -235,14 +235,14 @@ function PlayState:enter()
     local textOffset = 30
     if PlayState.downscroll then textOffset = -textOffset end
 
-    local font = paths.getFont("vcr.ttf", 16)
+    local font = paths.getFont("vcr.ttf", 18)
     self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", font,
                          {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
 
     self.timeTxt = Text(0, self.healthBar.y - textOffset, "", font, {1, 1, 1},
                         "center")
-    self.timeTxt.outWidth = 1
+    self.timeTxt.outWidth = 1.25
 
     self.timeArcBG = Graphic(self.timeTxt.x - 20, self.timeTxt.y + 6, 100, 100,
                              {0, 0, 0}, "arc", "line")
@@ -558,7 +558,7 @@ function PlayState:update(dt)
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) then
                 if PlayState.vocals then
-                    PlayState.vocals:setVolume(0)
+                    PlayState.vocals.__volume = 0
                 end
                 self.combo = 0
                 self.score = self.score - 100
@@ -686,7 +686,7 @@ function PlayState:goodNoteHit(n)
         n.wasGoodHit = true
         self:callOnScripts("goodNoteHit", n)
 
-        if PlayState.vocals then PlayState.vocals:setVolume(1) end
+        if PlayState.vocals then PlayState.vocals.__volume = 1 end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false)

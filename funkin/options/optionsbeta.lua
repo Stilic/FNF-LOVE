@@ -114,8 +114,16 @@ function OptionsState:add_GameplayTab()
     local gameplayTab = Group()
     gameplayTab.name = 'Gameplay'
 
-    local optionsVar = {'scrollType', 'noteSplash', 'pauseMusic'}
-    local options = {'Scroll Type', 'Note Splash', 'Pause Music'}
+    local optionsVar = {
+        'scrollType',
+        'noteSplash',
+        'pauseMusic'
+    }
+    local options = {
+        'Scroll Type',
+        'Note Splash',
+        'Pause Music'
+    }
 
     local type_table = {
         ["string"] = true,

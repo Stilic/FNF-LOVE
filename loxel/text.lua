@@ -80,11 +80,11 @@ function Text:__render(camera)
                            alpha)
 
     if self.outWidth > 0 then
-        for dx = -self.outWidth, self.outWidth do
-            for dy = -self.outWidth, self.outWidth do
-                love.graphics.printf(self.content, x + dx, y + dy,
-                                     (self.limit or self:getWidth()),
-                                     self.alignment)
+        local step = 0.1
+        for dx = -self.outWidth, self.outWidth, step do
+            for dy = -self.outWidth, self.outWidth, step do
+                love.graphics.setColor(self.outColor[1], self.outColor[2], self.outColor[3], alpha)
+                love.graphics.printf(self.content, x + dx, y + dy, (self.limit or self:getWidth()), self.alignment)
             end
         end
     end
