@@ -144,6 +144,8 @@ end
 
 function Camera:draw()
     if self.visible and self.exists and self.alpha ~= 0 and self.zoom ~= 0 then
+        local r, g, b, a = love.graphics.getColor()
+
         love.graphics.push()
         local w, h = self.width * 0.5, self.height * 0.5
         love.graphics.translate(w - self.x + self.__shakeX,
@@ -167,9 +169,12 @@ function Camera:draw()
             self.__renderQueue[i] = nil
         end
 
+        love.graphics.push()
         love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
                                self.__flashColor[3], self.__flashAlpha)
         love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+        love.graphics.setColor(r, g, b, a)
+        love.graphics.pop()
 
         love.graphics.pop()
         love.graphics.setCanvas(canvas)
@@ -177,7 +182,6 @@ function Camera:draw()
         local shader = love.graphics.getShader()
         love.graphics.setShader(self.shader)
 
-        local r, g, b, a = love.graphics.getColor()
         love.graphics.setColor(1, 1, 1, self.alpha)
 
         local blendMode, alphaMode = love.graphics.getBlendMode()
