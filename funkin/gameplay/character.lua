@@ -1,7 +1,16 @@
 local Character = Sprite:extend()
 
+Character.editorMode = false
+
 function Character:new(x, y, char, isPlayer)
     Character.super.new(self, x, y)
+
+    if not Character.editorMode then
+        self.script = Script("characters/" .. char)
+        self.script.variables["self"] = self
+
+        self.script:call("create")
+    end
 
     self.char = char
     self.isPlayer = isPlayer or false
@@ -15,27 +24,77 @@ function Character:new(x, y, char, isPlayer)
     self.danceSpeed = 2
     self.danced = false
 
-    self.icon = "face"
+    local jsonData = paths.getJSON("data/characters/" .. self.char)
+    if jsonData == nil then jsonData = paths.getJSON("data/characters/bf") end
 
-    self.cameraPosition = {x = 0, y = 0}
+    self:setFrames(paths.getAtlas(jsonData.image))
 
-    self.script = Script("characters/" .. char)
-    if (self.script.closed) then self.script = Script("characters/bf") end
-    self.script.variables["self"] = self
+    self.imageFile = jsonData.image
+    self.jsonScale = 1
+    if jsonData.scale ~= 1 then
+        self.jsonScale = jsonData.scale
+        self:setGraphicSize(math.floor(self.width * self.jsonScale))
+        self:updateHitbox()
+    end
 
-    self.script:call("create")
+    self.positionTable = {
+        x = jsonData.position[1],
+        y = jsonData.position[2]
+    }
+    self.cameraPosition = {
+        x = jsonData.camera_position[1],
+        y = jsonData.camera_position[2]
+    }
+
+    self.icon = jsonData.healthicon
+
+    self.flipX = (jsonData.flip_x == true)
+    self.jsonFlipX = self.flipX
+
+    self.noAntialiasing = (jsonData.no_antialiasing == true)
+    self.antialiasing = ClientPrefs.data.antialiasing and not self.noAntialiasing or
+                                                          false
+
+    self.animationsTable = jsonData.animations
+    if self.animationsTable and #self.animationsTable > 0 then
+        for _, anim in ipairs(self.animationsTable) do
+            local animAnim = '' .. anim.anim
+            local animName = '' .. anim.name
+            local animFps = anim.fps
+            local animLoop = anim.loop
+            local animOffsets = anim.offsets
+            local animIndices = anim.indices
+            if animIndices ~= nil and #animIndices > 0 then
+                self:addAnimByIndices(animAnim, animName, animIndices, animFps, animLoop)
+            else
+                self:addAnimByPrefix(animAnim, animName, animFps, animLoop)
+            end
+
+            if animOffsets ~= nil and #animOffsets > 1 then
+                self:addOffset(animAnim, animOffsets[1], animOffsets[2])
+            end
+        end
+    end
 
     if self.isPlayer ~= self.flipX then
         self.__reverseDraw = true
         self:switchAnim("singLEFT", "singRIGHT")
         self:switchAnim("singLEFTmiss", "singRIGHTmiss")
+        self:switchAnim("singLEFT-loop", "singRIGHT-loop")
     end
     if self.isPlayer then self.flipX = not self.flipX end
+
+    if self.__animations['danceLeft'] and self.__animations['danceRight'] then
+        self.danceSpeed = 1
+    end
+
+    self.x = self.x + self.positionTable.x
+    self.y = self.y + self.positionTable.y
 
     self:dance()
     self:finish()
 
-    self.script:call("postCreate")
+    if not Character.editorMode then self.script:call("postCreate") end
 end
 
 function Character:switchAnim(oldAnim, newAnim)
@@ -59,15 +118,15 @@ function Character:update(dt)
         if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~=
             nil then self:playAnim(self.curAnim.name .. '-loop') end
     end
-    self.script:call("update", dt)
+    if not Character.editorMode then self.script:call("update", dt) end
     Character.super.update(self, dt)
-    self.script:call("postUpdate", dt)
+    if not Character.editorMode then self.script:call("postUpdate", dt) end
 end
 
 function Character:draw()
-    self.script:call("draw")
+    if not Character.editorMode then self.script:call("draw") end
     Character.super.draw(self)
-    self.script:call("postDraw")
+    if not Character.editorMode then self.script:call("postDraw") end
 end
 
 function Character:__render(camera)
@@ -77,12 +136,12 @@ function Character:__render(camera)
 end
 
 function Character:step(s)
-    self.script:call("step", s)
-    self.script:call("postStep", s)
+    if not Character.editorMode then self.script:call("step", s) end
+    if not Character.editorMode then self.script:call("postStep", s) end
 end
 
 function Character:beat(b)
-    self.script:call("beat", b)
+    if not Character.editorMode then self.script:call("beat", b) end
     if self.lastHit > 0 then
         if self.lastHit + PlayState.inst.stepCrochet * self.holdTime <
             PlayState.inst.time then
@@ -92,7 +151,7 @@ function Character:beat(b)
     elseif b % self.danceSpeed == 0 then
         self:dance(self.danceSpeed < 2)
     end
-    self.script:call("postBeat", b)
+    if not Character.editorMode then self.script:call("postBeat", b) end
 end
 
 function Character:playAnim(anim, force, frame)
@@ -115,7 +174,8 @@ function Character:sing(dir, miss)
 end
 
 function Character:dance(force)
-    if self.__animations and self.script:callReturn("dance") then
+    if self.__animations and (not Character.editorMode and self.script:callReturn("dance")
+                              or true) then
         if self.__animations["danceLeft"] and self.__animations["danceRight"] then
             self.danced = not self.danced
 

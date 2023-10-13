@@ -167,6 +167,10 @@ function Camera:draw()
             self.__renderQueue[i] = nil
         end
 
+        love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
+                               self.__flashColor[3], self.__flashAlpha)
+        love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+
         love.graphics.pop()
         love.graphics.setCanvas(canvas)
 

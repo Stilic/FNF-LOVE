@@ -197,7 +197,10 @@ function NumericStepper:update(dt)
                                              (self.__prevTextWidth -
                                                  self.__newTextWidth),
                                          self.__prevTextWidth -
-                                             self.canvas:getWidth())
+                                                (self.width - 10))
+            end
+            if self.onChanged then
+                self.onChanged(tonumber(self.value))
             end
         end
 
@@ -274,7 +277,10 @@ function NumericStepper:keypressed(key, scancode, isrepeat)
                                              (self.__prevTextWidth -
                                                  self.__newTextWidth),
                                          self.__prevTextWidth -
-                                             self.canvas:getWidth())
+                                                (self.width - 10))
+            end
+            if self.onChanged then
+                self.onChanged(tonumber(self.value))
             end
         elseif key == "delete" then
             if self.__cursorPos < utf8.len(self.value) then
@@ -287,6 +293,9 @@ function NumericStepper:keypressed(key, scancode, isrepeat)
             end
             self.__removePressed = true
             self.__removeType = RemoveType.DELETE
+            if self.onChanged then
+                self.onChanged(tonumber(self.value))
+            end
         elseif key == "left" then
             if self.__cursorPos > 0 then
                 self.__cursorPos = self.__cursorPos - 1
@@ -316,6 +325,8 @@ function NumericStepper:keyreleased(key, scancode)
     end
 end
 
+local function isNumber(str) return string.match(str, "[0123456789%.]+") == str end
+
 function NumericStepper:textinput(text)
     if self.active then
         if isNumber(text) then
@@ -324,7 +335,5 @@ function NumericStepper:textinput(text)
         end
     end
 end
-
-local function isNumber(str) return string.match(str, "[0123456789%.]+") == str end
 
 return NumericStepper

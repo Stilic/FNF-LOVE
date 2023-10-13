@@ -24,6 +24,9 @@ function Dropdown:new(x, y, options)
 
     self.__openButton = ui.UIButton(0, 0, self.height, self.height, "",
                                     function() self.isOpen = not self.isOpen end)
+    self.__slider = ui.UISlider(0, 0, self.height,
+                                self.height*10, 0, "vertical", 0,
+                                #self.options - self.__maxShow)
 
     table.insert(Dropdown.instances, self)
 end
@@ -41,6 +44,7 @@ function Dropdown:update(dt)
     end
 
     self.__openButton:update(dt)
+    self.__slider:update()
 end
 
 function drawBoid(mode, x, y, length, width, angle)
@@ -53,6 +57,7 @@ function drawBoid(mode, x, y, length, width, angle)
 end
 
 function Dropdown:__render(camera)
+    local ogScis_x, ogScis_y, ogScis_w, ogScis_h = love.graphics.getScissor()
     if self.isOpen then
         for i, option in ipairs(self.options) do
             if i > self.__curScroll and i <= (self.__maxShow + self.__curScroll) then
@@ -64,18 +69,29 @@ function Dropdown:__render(camera)
                 love.graphics.rectangle("fill", optionX, optionY, self.width,
                                         self.height)
                 love.graphics.setColor(0, 0, 0)
+
+                love.graphics.push()
+                love.graphics.setScissor(optionX + 2, optionY,
+                                         self.width - 7, self.height)
                 love.graphics.print(option, optionX + 5, optionY +
                                         (self.height - self.font:getHeight()) /
                                         2)
+                love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w, ogScis_h)
+                love.graphics.pop()
                 if Mouse.x >= optionX and Mouse.x < optionX + self.width and
                     Mouse.y >= optionY and Mouse.y < optionY + self.height then
                     love.graphics.setColor(0, 0.6, 1)
                     love.graphics.rectangle("fill", optionX, optionY,
                                             self.width, self.height)
                     love.graphics.setColor(1, 1, 1)
+                    love.graphics.push()
+                    love.graphics.setScissor(optionX + 2, optionY,
+                                             self.width - 7, self.height)
                     love.graphics.print(option, optionX + 5, optionY +
                                             (self.height - self.font:getHeight()) /
                                             2)
+                    love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w, ogScis_h)
+                    love.graphics.pop()
                 end
             end
         end
@@ -87,8 +103,24 @@ function Dropdown:__render(camera)
     love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 
     love.graphics.setColor(0, 0, 0)
+    love.graphics.push()
+    love.graphics.setScissor(self.x + 2, self.y,
+                             self.width - 7, self.height)
     love.graphics.print(self.selectedLabel, self.x + 5,
                         self.y + (self.height - self.font:getHeight()) / 2)
+    love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w, ogScis_h)
+    love.graphics.pop()
+
+    if self.isOpen and #self.options > self.__maxShow then
+        self.__slider.x = self.x + self.width
+        self.__slider.y = self.y + self.height
+        self.__slider:__render(camera)
+        self.__curScroll = math.floor(self.__slider.value)
+
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.rectangle("fill", self.__slider.x, self.__slider.y,
+                                1, self.height*self.__maxShow)
+    end
 
     self.__openButton.x = self.x + self.width
     self.__openButton.y = self.y
@@ -134,6 +166,11 @@ function Dropdown:mousepressed(x, y, button)
         self:selectOption(optionClicked + self.__curScroll)
     end
     self.__openButton:mousepressed(x, y, button)
+    self.__slider:mousepressed(x, y, button)
+end
+
+function Dropdown:mousereleased(x, y, button)
+    self.__slider:mousereleased(x, y, button)
 end
 
 return Dropdown

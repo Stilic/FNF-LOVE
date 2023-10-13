@@ -106,8 +106,7 @@ function MainMenuState:update(dt)
             local selected = self.optionShit[MainMenuState.curSelected]
             if selected == 'donate' then
                 love.system.openURL('https://ninja-muffin24.itch.io/funkin')
-            elseif not self.popupAppears and selected == 'story_mode' or
-                selected == 'options' then
+            elseif not self.popupAppears and selected == 'story_mode' then
                 self.popupAppears = true
                 game.sound.play(paths.getSound('gameplay/GF_' ..
                                                    love.math.random(1, 4)))
@@ -124,7 +123,7 @@ function MainMenuState:update(dt)
                         end)
                     end)
                 end)
-            elseif selected == 'freeplay' then
+            elseif selected == 'freeplay' or selected == 'options' then
                 self.selectedSomethin = true
                 game.sound.play(paths.getSound('confirmMenu'))
 
@@ -146,7 +145,7 @@ function MainMenuState:update(dt)
                             elseif daChoice == 'freeplay' then
                                 switchState(FreeplayState())
                             elseif daChoice == 'options' then
-                                --
+                                switchState(OptionsState())
                             end
                         end)
                     end

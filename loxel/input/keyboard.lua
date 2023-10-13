@@ -105,7 +105,9 @@ local Keyboard = {
     pressed = {},
 
     justReleased = {},
-    released = {}
+    released = {},
+
+    input = nil
 }
 
 for key in pairs(Keyboard.keys) do Keyboard.released[key] = true end
@@ -117,6 +119,7 @@ function Keyboard.update()
             Keyboard.justReleased[key] = nil
         end
     end
+    Keyboard.input = nil
 end
 
 function Keyboard.onPressed(key)
@@ -134,6 +137,7 @@ function Keyboard.onPressed(key)
             Keyboard.released[k] = nil
         end
     end
+    Keyboard.input = key
 end
 
 function Keyboard.onReleased(key)

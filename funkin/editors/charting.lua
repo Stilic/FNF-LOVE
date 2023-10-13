@@ -141,9 +141,12 @@ function ChartingState:add_UI_Song()
     speed_stepper.onChanged = function(value) self.__song.speed = value end
 
     local optionsChar = {}
-    for i, str in pairs(love.filesystem.getDirectoryItems(paths.getPath('data/characters'))) do
+    for _, str in pairs(love.filesystem.getDirectoryItems(
+                        paths.getPath('data/characters'))) do
         local charName = str:withoutExt()
-        if not charName:endsWith('-dead') then table.insert(optionsChar, charName) end
+        if str:endsWith('.json') and not charName:endsWith('-dead') then
+            table.insert(optionsChar, charName)
+        end
     end
 
     local boyfriend_dropdown = ui.UIDropDown(10, 210, optionsChar)
@@ -165,7 +168,7 @@ function ChartingState:add_UI_Song()
     girlfriend_dropdown.onChanged = function(value) self.__song.gfVersion = value end
 
     local optionsStage = {}
-    for i, str in pairs(love.filesystem.getDirectoryItems(paths.getPath('data/stages'))) do
+    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath('data/stages'))) do
         local stageName = str:withoutExt()
         table.insert(optionsStage, stageName)
     end

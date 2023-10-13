@@ -1,12 +1,7 @@
 local decodeJson = (require "lib.json").decode
 
-local function isFile(path)
-    local info = love.filesystem.getInfo(path)
-    return info and info.type == "file"
-end
-
 local function readFile(key)
-    if isFile(key) then return love.filesystem.read(key) end
+    if paths.exists(key, "file") then return love.filesystem.read(key) end
     return nil
 end
 
@@ -52,6 +47,11 @@ end
 
 function paths.getPath(key) return "assets/" .. key end
 
+function paths.exists(path, infotype)
+    local info = love.filesystem.getInfo(path)
+    return info and info.type == infotype:lower()
+end
+
 function paths.getText(key)
     return readFile(paths.getPath("data/" .. key .. ".txt"))
 end
@@ -67,7 +67,7 @@ function paths.getFont(key, size)
     key = path .. "_" .. size
     local obj = paths.fonts[key]
     if obj then return obj end
-    if isFile(path) then
+    if paths.exists(path, "file") then
         obj = love.graphics.newFont(path, size)
         paths.fonts[key] = obj
         return obj
@@ -81,7 +81,7 @@ function paths.getImage(key)
     key = paths.getPath("images/" .. key .. ".png")
     local obj = paths.images[key]
     if obj then return obj end
-    if isFile(key) then
+    if paths.exists(key, "file") then
         obj = love.graphics.newImage(key)
         paths.images[key] = obj
         return obj
@@ -95,7 +95,7 @@ function paths.getAudio(key, stream)
     key = paths.getPath(key .. ".ogg")
     local obj = paths.audio[key]
     if obj then return obj end
-    if isFile(key) then
+    if paths.exists(key, "file") then
         obj = stream and love.audio.newSource(key, "stream") or
                   love.sound.newSoundData(key)
         paths.audio[key] = obj
@@ -126,7 +126,7 @@ function paths.getSparrowAtlas(key)
     local obj = paths.atlases[key]
     if obj then return obj end
     local img = paths.getImage(imgPath)
-    if img and isFile(xmlPath) then
+    if img and paths.exists(xmlPath, "file") then
         obj = Sprite.getFramesFromSparrow(img, readFile(xmlPath))
         paths.atlases[key] = obj
         return obj
@@ -141,7 +141,7 @@ function paths.getPackerAtlas(key)
     local obj = paths.atlases[key]
     if obj then return obj end
     local img = paths.getImage(imgPath)
-    if img and isFile(txtPath) then
+    if img and paths.exists(txtPath, "file") then
         obj = Sprite.getFramesFromPacker(img, readFile(txtPath))
         paths.atlases[key] = obj
         return obj
@@ -150,9 +150,16 @@ function paths.getPackerAtlas(key)
     return nil
 end
 
+function paths.getAtlas(key)
+    if paths.exists(paths.getPath('images/'..key..'.xml'), "file") then
+        return paths.getSparrowAtlas(key)
+    end
+    return paths.getPackerAtlas(key)
+end
+
 function paths.getLua(key)
     local path = paths.getPath(key .. ".lua")
-    if isFile(path) then
+    if paths.exists(path, "file") then
         local chunk = love.filesystem.load(path)
         return chunk
     end

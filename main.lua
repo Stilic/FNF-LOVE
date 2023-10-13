@@ -5,9 +5,11 @@ require "loxel.init"
 
 Timer = require "lib.timer"
 
+WindowDialogue = require "lib.windowdialogue"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
+ClientPrefs = require "funkin.backend.clientprefs"
 Script = require "funkin.backend.script"
 Conductor = require "funkin.backend.conductor"
 Graphic = require "funkin.ui.graphic"
@@ -25,36 +27,10 @@ MainMenuState = require "funkin.states.mainmenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
+OptionsState = require "funkin.options.optionsbeta"
+
 CharacterEditor = require "funkin.editors.character"
 ChartingState = require "funkin.editors.charting"
-
-controls = (require "lib.baton").new({
-    controls = {
-        ui_left = {"key:left", "key:a", "axis:leftx-", "button:dpleft"},
-        ui_down = {"key:down", "key:s", "axis:lefty+", "button:dpdown"},
-        ui_up = {"key:up", "key:w", "axis:lefty-", "button:dpup"},
-        ui_right = {"key:right", "key:d", "axis:leftx+", "button:dpright"},
-
-        note_left = {
-            "key:left", "key:d", "axis:leftx-", "button:dpleft", "button:x"
-        },
-        note_down = {
-            "key:down", "key:f", "axis:lefty+", "button:dpdown", "button:a"
-        },
-        note_up = {"key:up", "key:j", "axis:lefty-", "button:dpup", "button:y"},
-        note_right = {
-            "key:right", "key:k", "axis:leftx+", "button:dpright", "button:b"
-        },
-
-        accept = {"key:space", "key:return", "button:a", "button:start"},
-        back = {"key:backspace", "key:escape", "button:b"},
-        pause = {"key:return", "key:escape", "button:start"},
-        reset = {"key:r", "button:leftstick"},
-        debug1 = {"key:7"},
-        debug2 = {"key:8"}
-    },
-    joystick = love.joystick.getJoysticks()[1]
-})
 
 local fade
 function fadeOut(time, callback)
@@ -211,6 +187,11 @@ function love.load()
 
     local os = love.system.getOS()
     if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
+
+    -- for the joystick, i'll remake it later
+    controls = (require "lib.baton").new({
+        controls = table.clone(ClientPrefs.controls)
+    })
 
     Gamestate.switch(TitleState())
 end

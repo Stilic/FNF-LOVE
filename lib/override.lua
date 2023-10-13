@@ -88,6 +88,15 @@ function string.withoutExt(self)
     return self:sub(0, -1 - (self:reverse():find('%.') or 1))
 end
 
+function string.fileName(self)
+    local separator = package.config:sub(1,1)
+    local parts = {}
+    for part in self:split(separator) do
+        table.insert(parts, part)
+    end
+    return parts[#parts]
+end
+
 function string.startsWith(self, prefix) return self:find(prefix, 1, true) == 1 end
 
 function string.endsWith(self, suffix)
@@ -132,6 +141,18 @@ function table.splice(tbl, start, count, ...)
     local args = {...}
     for i = #args, 1, -1 do table.insert(tbl, start, args[i]) end
     return removedItems
+end
+
+function table.clone(original)
+    local clone = {}
+    for key, value in pairs(original) do
+        if type(value) == "table" then
+            clone[key] = table.clone(value)
+        else
+            clone[key] = value
+        end
+    end
+    return clone
 end
 
 function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc

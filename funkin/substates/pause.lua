@@ -6,9 +6,13 @@ function PauseSubState:new()
     self.menuItems = {"Resume", "Restart Song", "Exit to menu"}
     self.curSelected = 1
 
-    self.bgColor = {0, 0, 0, 0.5}
-
     self.music = game.sound.play(paths.getMusic('breakfast'), 0, true)
+
+    self.bg = Sprite()
+    self.bg:make(game.width, game.height, {0, 0, 0})
+    self.bg.alpha = 0
+    self.bg:setScrollFactor()
+    self:add(self.bg)
 
     self.grpShitMenu = Group()
     self:add(self.grpShitMenu)
@@ -22,6 +26,8 @@ function PauseSubState:new()
     end
 
     self:changeSelection()
+
+    Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 end
 
 function PauseSubState:update(dt)

@@ -464,6 +464,12 @@ function PlayState:update(dt)
         if PlayState.vocals then PlayState.vocals:pause() end
         switchState(ChartingState())
     end
+    if controls:pressed("debug2") then
+        PlayState.inst.sound:pause()
+        if PlayState.vocals then PlayState.vocals:pause() end
+        CharacterEditor.onPlayState = true
+        switchState(CharacterEditor())
+    end
 
     if self.unspawnNotes[1] then
         local time = 2000

@@ -22,7 +22,8 @@ ui = {
     UIGrid = require "loxel.ui.grid",
     UIInputTextBox = require "loxel.ui.inputtextbox",
     UINumericStepper = require "loxel.ui.numericstepper",
-    UITabMenu = require "loxel.ui.tabmenu"
+    UITabMenu = require "loxel.ui.tabmenu",
+    UISlider = require "loxel.ui.slider"
 }
 
 game = {
