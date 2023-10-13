@@ -26,19 +26,8 @@ function CharacterEditor:enter()
     game.cameras.reset(self.camEditor)
     game.cameras.add(self.camMenu, false)
 
-    local bg = Sprite(-600, -200):loadTexture(
-                   paths.getImage("stages/stage/stageback"))
-    bg.antialiasing = true
-    bg:setScrollFactor(0.9, 0.9)
-    self:add(bg)
-
-    local stageFront = Sprite(-650, 600):loadTexture(
-                           paths.getImage("stages/stage/stagefront"))
-    stageFront:setGraphicSize(math.floor(stageFront.width * 1.1))
-    stageFront:updateHitbox()
-    stageFront.antialiasing = true
-    stageFront:setScrollFactor(0.9, 0.9)
-    self:add(stageFront)
+    self.stageLayer = Stage('stage')
+    self:add(self.stageLayer)
 
     self.charLayer = Group()
     self:add(self.charLayer)
