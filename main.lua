@@ -27,10 +27,10 @@ MainMenuState = require "funkin.states.mainmenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
-OptionsState = require "funkin.options.optionsbeta"
+OptionsState = require "funkin.states.optionsbeta"
 
-CharacterEditor = require "funkin.editors.character"
-ChartingState = require "funkin.editors.charting"
+CharacterEditor = require "funkin.states.editors.character"
+ChartingState = require "funkin.states.editors.charting"
 
 local fade
 function fadeOut(time, callback)

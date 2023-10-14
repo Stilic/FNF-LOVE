@@ -37,6 +37,10 @@ function Character:new(x, y, char, isPlayer)
         self:updateHitbox()
     end
 
+    if jsonData.sing_duration ~= nil then
+        self.holdTime = jsonData.sing_duration
+    end
+
     self.positionTable = {
         x = jsonData.position[1],
         y = jsonData.position[2]
