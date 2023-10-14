@@ -5,6 +5,8 @@ Note.colors = {"purple", "blue", "green", "red"}
 Note.directions = {"left", "down", "up", "right"}
 Note.pixelAnim = {{{4}, {0}}, {{5}, {1}}, {{6}, {2}}, {{7}, {3}}}
 
+Note.chartingMode = false
+
 function Note:new(time, data, prevNote, sustain, parentNote)
     Note.super.new(self, 0, -2000)
 
@@ -104,16 +106,18 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-    return self.time > PlayState.inst.time - safeZoneOffset *
-               self.lateHitMult and self.time < PlayState.inst.time +
+    local instTime = (Note.chartingMode and ChartingState or PlayState).inst.time
+    return self.time > instTime - safeZoneOffset *
+               self.lateHitMult and self.time < instTime +
                safeZoneOffset * self.earlyHitMult
 end
 
 function Note:update(dt)
+    local instTime = (Note.chartingMode and ChartingState or PlayState).inst.time
     self.canBeHit = self:checkDiff()
 
     if self.mustPress then
-        if not self.wasGoodHit and self.time < PlayState.inst.time -
+        if not self.wasGoodHit and self.time < instTime -
             safeZoneOffset then self.tooLate = true end
     end
 

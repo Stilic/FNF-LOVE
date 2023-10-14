@@ -37,6 +37,8 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
+    self.currentSection = 0
+
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     local sound = game.sound.load(paths.getInst(songName))
@@ -607,7 +609,7 @@ end
 
 -- CAN RETURN NIL!!
 function PlayState:getCurrentSection()
-    return PlayState.SONG.notes[math.floor(PlayState.inst.currentStep / 16) + 1]
+    return PlayState.SONG.notes[self.currentSection + 1]
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -772,18 +774,23 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
-    local section = self:getCurrentSection()
-    if section and section.changeBPM then
-        print("bpm change! OLD BPM: " .. PlayState.inst.bpm .. ", NEW BPM: " ..
-                  section.bpm)
-        PlayState.inst:setBPM(section.bpm)
-    end
-
     self:callOnScripts("beat", b)
 
-    if b % 4 == 0 and self.camZooming and self.camGame.zoom < 1.35 then
-        self.camGame.zoom = self.camGame.zoom + 0.015
-        self.camHUD.zoom = self.camHUD.zoom + 0.03
+    local section = self:getCurrentSection()
+    local sectionBeats = ((section and section.sectionBeats) and
+                           section.sectionBeats or 4)
+    if b % sectionBeats == 0 then
+        if section and section.changeBPM then
+            print("bpm change! OLD BPM: " .. PlayState.inst.bpm .. ", NEW BPM: " ..
+                      section.bpm)
+            PlayState.inst:setBPM(section.bpm)
+        end
+
+        if self.camZooming and self.camGame.zoom < 1.35 then
+            self.camGame.zoom = self.camGame.zoom + 0.015
+            self.camHUD.zoom = self.camHUD.zoom + 0.03
+        end
+        self.currentSection = self.currentSection + 1
     end
 
     local scaleNum = 1.2
