@@ -27,7 +27,7 @@ MainMenuState = require "funkin.states.mainmenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
-OptionsState = require "funkin.states.optionsbeta"
+OptionsState = require "funkin.states.options.options"
 
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"

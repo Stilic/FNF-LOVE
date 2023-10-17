@@ -3,10 +3,11 @@ local PauseSubState = SubState:extend()
 function PauseSubState:new()
     PauseSubState.super.new(self)
 
-    self.menuItems = {"Resume", "Restart Song", "Exit to menu"}
+    self.menuItems = {"Resume", "Restart Song", "Options", "Exit to menu"}
     self.curSelected = 1
 
-    self.music = game.sound.play(paths.getMusic('breakfast'), 0, true)
+    self.music = game.sound.play(paths.getMusic(ClientPrefs.data.pauseMusic),
+                                 0, true)
 
     self.bg = Sprite()
     self.bg:make(game.width, game.height, {0, 0, 0})
@@ -45,9 +46,11 @@ function PauseSubState:update(dt)
         switch(daChoice, {
             ["Resume"] = function() self:close() end,
             ["Restart Song"] = function() switchState(PlayState()) end,
-            ["Exit to menu"] = function()
-                switchState(FreeplayState())
-            end
+            ["Options"] = function ()
+                OptionsState.onPlayState = true
+                switchState(OptionsState())
+            end,
+            ["Exit to menu"] = function() switchState(FreeplayState()) end
         })
     end
 end

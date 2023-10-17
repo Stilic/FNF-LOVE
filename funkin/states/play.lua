@@ -244,7 +244,7 @@ function PlayState:enter()
 
     self.timeTxt = Text(0, self.healthBar.y - textOffset, "", font, {1, 1, 1},
                         "center")
-    self.timeTxt.outWidth = 1.25
+    self.timeTxt.outWidth = 1
 
     self.timeArcBG = Graphic(self.timeTxt.x - 20, self.timeTxt.y + 6, 100, 100,
                              {0, 0, 0}, "arc", "line")
@@ -460,12 +460,12 @@ function PlayState:update(dt)
         pause.cameras = {self.camOther}
         self:openSubState(pause)
     end
-    if controls:pressed("debug1") then
+    if controls:pressed("debug_1") then
         PlayState.inst.sound:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
         switchState(ChartingState())
     end
-    if controls:pressed("debug2") then
+    if controls:pressed("debug_2") then
         PlayState.inst.sound:pause()
         if PlayState.vocals then PlayState.vocals:pause() end
         CharacterEditor.onPlayState = true

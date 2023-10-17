@@ -9,7 +9,7 @@ SoundManager.showSoundTray = false
 
 function SoundManager.load(asset, volume, looped, autoRelease, onComplete)
     local sound = Sound(asset)
-    if volume ~= nil then sound:setVolume(volume) end
+    if volume ~= nil then sound. __volume = volume end
     if looped ~= nil then sound:setLooping(looped) end
     sound.persist = (autoRelease ~= nil and autoRelease or false)
     sound.onComplete = onComplete
@@ -87,11 +87,6 @@ function SoundManager.changeVolume(increase)
                                           or math.max(0, SoundManager.volume - 0.1)
     if math.abs(SoundManager.volume) < 1e-10 then SoundManager.volume = 0 end
     SoundManager.play(paths.getSound('beep'))
-
-    for i = #SoundManager.list, 1, -1 do
-        local s = SoundManager.list[i]
-        s.__source:setVolume(s.__volume * SoundManager.volume)
-    end
 
     SoundManager.__soundTrayTimer = 2
 end

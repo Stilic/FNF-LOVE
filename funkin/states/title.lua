@@ -46,8 +46,8 @@ end
 
 function TitleState:update(dt)
     TitleState.music:update(dt)
-    if controls:pressed("debug1") then switchState(ChartingState()) end
-    if controls:pressed("debug2") then switchState(CharacterEditor()) end
+    if controls:pressed("debug_1") then switchState(ChartingState()) end
+    if controls:pressed("debug_2") then switchState(CharacterEditor()) end
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")

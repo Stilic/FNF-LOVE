@@ -3,7 +3,7 @@ local ClientPrefs = Object:extend()
 ClientPrefs.data = {
     noteSplash = true,
     scrollType = 'upscroll',
-    pauseMusic = 'breakfast',
+    pauseMusic = 'railways',
     antialiasing = true
 }
 
@@ -23,8 +23,8 @@ ClientPrefs.controls = {
     pause = {"key:return", "key:escape"},
     reset = {"key:r"},
 
-    debug1 = {"key:7"},
-    debug2 = {"key:8"}
+    debug_1 = {"key:7"},
+    debug_2 = {"key:8"}
 }
 
 return ClientPrefs

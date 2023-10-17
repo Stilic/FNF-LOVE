@@ -1,5 +1,12 @@
 local OptionsState = State:extend()
 
+local tabs = {
+    controls = require "funkin.states.options.controls",
+    gameplay = require "funkin.states.options.gameplay"
+}
+
+OptionsState.onPlayState = false
+
 function OptionsState:enter()
     self.curTab = 1
     self.curSelect = 1
@@ -49,13 +56,15 @@ function OptionsState:enter()
     self.allTabs = Group()
     self:add(self.allTabs)
 
+    self.textGroup = Group()
+    self:add(self.textGroup)
+
     self.timerHold = 0
     self.waiting_input = false
     self.block_input = false
     self.onTab = false
 
-    self:add_ControlsTab()
-    self:add_GameplayTab()
+    self:reset_Tabs()
 
     self:changeTab()
 
@@ -73,83 +82,21 @@ end
 
 function OptionsState:reset_Tabs()
     self.allTabs:clear()
-    self:add_ControlsTab()
-    self:add_GameplayTab()
+    self.textGroup:clear()
+
+    tabs.controls.add(self)
+    tabs.gameplay.add(self)
 
     for i, grp in ipairs(self.allTabs.members) do
         for j, obj in ipairs(grp.members) do
             obj.visible = (grp.name == self.optionsTab[self.curTab])
         end
     end
-end
-
-function OptionsState:add_ControlsTab()
-    local controlsTab = Group()
-    controlsTab.name = 'Controls'
-
-    -- NOTE
-    for i, text in ipairs({'Left', 'Down', 'Up', 'Right'}) do
-        local daGroup = Group()
-
-        local yPos = (i * 45) + 80
-        local control = Text(145, yPos, 'Note ' .. text, paths.getFont('phantommuff.ttf', 30),
-                             {1, 1, 1})
-        daGroup:add(control)
-
-        local bind1 = self.controls['note_'..text:lower()][1]:split(':')
-        local bind1Txt = Text(382, yPos, bind1[2], paths.getFont('phantommuff.ttf', 30),
-                             {1, 1, 1}, "left", 115)
-        daGroup:add(bind1Txt)
-        local bind2 = self.controls['note_'..text:lower()][2]:split(':')
-        local bind2Txt = Text(542, yPos, bind2[2], paths.getFont('phantommuff.ttf', 30),
-                             {1, 1, 1}, "left", 115)
-        daGroup:add(bind2Txt)
-
-        controlsTab:add(daGroup)
+    for i, grp in ipairs(self.textGroup.members) do
+        for j, obj in ipairs(grp.members) do
+            obj.visible = (grp.name == self.optionsTab[self.curTab])
+        end
     end
-    self.allTabs:add(controlsTab)
-end
-
-function OptionsState:add_GameplayTab()
-    local gameplayTab = Group()
-    gameplayTab.name = 'Gameplay'
-
-    local optionsVar = {
-        'scrollType',
-        'noteSplash',
-        'pauseMusic'
-    }
-    local options = {
-        'Scroll Type',
-        'Note Splash',
-        'Pause Music'
-    }
-
-    local type_table = {
-        ["string"] = true,
-        ["boolean"] = false,
-        ["number"] = 0
-    }
-
-    for i, text in ipairs(options) do
-        local daGroup = Group()
-
-        local yPos = (i * 45) + 80
-        local control = Text(145, yPos, text, paths.getFont('phantommuff.ttf', 30),
-                             {1, 1, 1})
-        daGroup:add(control)
-
-        local realvalue = ClientPrefs.data[optionsVar[i]]
-        local value = type_table[type(realvalue)] and '< '..tostring(realvalue)..' >'
-                                                   or tostring(realvalue)
-        local valueTxt = Text(382, yPos, value,
-                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
-        daGroup:add(valueTxt)
-
-        gameplayTab:add(daGroup)
-    end
-
-    self.allTabs:add(gameplayTab)
 end
 
 function OptionsState:update(dt)
@@ -168,7 +115,12 @@ function OptionsState:update(dt)
             self.controlsCursor.visible = (self.optionsTab[self.curTab] == 'Controls'
                                            and false)
         else
-            switchState(MainMenuState())
+            if OptionsState.onPlayState then
+                switchState(PlayState())
+                OptionsState.onPlayState = false
+            else
+                switchState(MainMenuState())
+            end
         end
     end
 
@@ -231,11 +183,15 @@ function OptionsState:update(dt)
         game.sound.play(paths.getSound('confirmMenu'))
         self.block_input = true
 
-        local arrow = {'left', 'down', 'up', 'right'}
+        local arrow = {
+            'note_left', 'note_down', 'note_up', 'note_right',
+            'ui_left', 'ui_down', 'ui_up', 'ui_right',
+            'accept', 'back', 'pause'
+        }
         local text = arrow[self.curSelect]
 
         local newBind = 'key:'..Keyboard.input:lower()
-        self.controls['note_'..text][self.curBindSelect] = newBind
+        self.controls[text][self.curBindSelect] = newBind
 
         self:reset_Tabs()
 
@@ -281,7 +237,7 @@ function OptionsState:changeSelection(huh, tab)
         self.curSelect = #tab.members
     end
 
-    local yPos = (self.curSelect * 45) + 76
+    local yPos = tab.members[self.curSelect].members[1].y - 2
     self.optionsCursor.y = yPos
     if self.optionsTab[self.curTab] == 'Controls' then
         self.controlsCursor.y = yPos
@@ -302,6 +258,11 @@ function OptionsState:changeTab(huh)
     self.titleTxt:setContent('< '..self.optionsTab[self.curTab]..' >')
 
     for i, grp in ipairs(self.allTabs.members) do
+        for j, obj in ipairs(grp.members) do
+            obj.visible = (grp.name == self.optionsTab[self.curTab])
+        end
+    end
+    for i, grp in ipairs(self.textGroup.members) do
         for j, obj in ipairs(grp.members) do
             obj.visible = (grp.name == self.optionsTab[self.curTab])
         end
