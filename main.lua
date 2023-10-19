@@ -228,7 +228,7 @@ function love.update(dt)
 
     for _, o in ipairs(Flicker.instances) do o:update(dt) end
     game.cameras.update(dt)
-    game.sound.update(dt)
+    game.sound.update()
 
     Timer.update(dt)
     controls:update()
@@ -244,10 +244,6 @@ function love.draw()
     if fade then
         table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
                      fade.draw)
-    end
-    if game.sound.showSoundTray then
-        table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
-                     game.sound.drawSoundTray)
     end
     for _, c in ipairs(game.cameras.list) do c:draw() end
 end

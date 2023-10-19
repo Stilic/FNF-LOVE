@@ -66,12 +66,6 @@ function Camera:new(x, y, width, height)
     self.__flashDuration = 0
     self.__flashComplete = nil
 
-    self.__fadeColor = {0, 0, 0}
-    self.__fadeAlpha = 0
-    self.__fadeDuration = 0
-    self.__fadeIn = false
-    self.__fadeComplete = nil
-
     self.__shakeX = 0
     self.__shakeY = 0
     self.__shakeAxes = 'xy'
@@ -80,41 +74,19 @@ function Camera:new(x, y, width, height)
     self.__shakeComplete = nil
 end
 
-function Camera:updateFlash(dt)
+function Camera:update(dt)
+    if self.target then
+        self.scroll.x, self.scroll.y = self.target.x - self.width * 0.5,
+                                       self.target.y - self.height * 0.5
+    end
+
     if self.__flashAlpha > 0 then
         self.__flashAlpha = self.__flashAlpha - dt / self.__flashDuration
         if self.__flashAlpha <= 0 and self.__flashComplete ~= nil then
             self.__flashComplete()
         end
     end
-end
 
-function Camera:updateFade(dt)
-    if self.__fadeDuration == 0.0 then return end
-
-    if self.__fadeIn then
-        self.__fadeAlpha = self.__fadeAlpha - dt / self.__fadeDuration
-        if self.__fadeAlpha <= 0 then
-            self.__fadeAlpha = 0
-            self:completeFade()
-        end
-    else
-        self.__fadeAlpha = self.__fadeAlpha + dt / self.__fadeDuration
-        if self.__fadeAlpha >= 1 then
-            self.__fadeAlpha = 1
-            self:completeFade()
-        end
-    end
-end
-
-function Camera:completeFade()
-    self.__fadeDuration = 0
-    if self.__fadeComplete ~= nil then
-        self.__fadeComplete()
-    end
-end
-
-function Camera:updateShake(dt)
     self.__shakeX, self.__shakeY = 0, 0
     if self.__shakeDuration > 0 then
         self.__shakeDuration = self.__shakeDuration - dt
@@ -137,16 +109,6 @@ function Camera:updateShake(dt)
             end
         end
     end
-end
-
-function Camera:update(dt)
-    if self.target then
-        self.scroll.x, self.scroll.y = self.target.x - self.width * 0.5,
-                                       self.target.y - self.height * 0.5
-    end
-    self:updateFlash(dt)
-    self:updateFade(dt)
-    self:updateShake(dt)
 end
 
 function Camera:fill(r, g, b, a)
@@ -180,18 +142,6 @@ function Camera:flash(color, duration, onComplete, force)
     self.__flashAlpha = 1
 end
 
-function Camera:fade(color, duration, fadeIn, onComplete, force)
-    if not force and (self.__fadeAlpha > 0) then return end
-
-    self.__fadeColor = color or {0, 0, 0}
-    if duration == nil then duration = 1 end
-    if duration <= 0 then duration = 0.000001 end
-    self.__fadeIn = fadeIn or false
-    self.__fadeDuration = duration
-    self.__fadeComplete = onComplete or nil
-    self.__fadeAlpha = self.__fadeIn and 0.999999 or 0.000001
-end
-
 function Camera:draw()
     if self.visible and self.exists and self.alpha ~= 0 and self.zoom ~= 0 then
         local r, g, b, a = love.graphics.getColor()
@@ -219,15 +169,12 @@ function Camera:draw()
             self.__renderQueue[i] = nil
         end
 
+        love.graphics.push()
         love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
                                self.__flashColor[3], self.__flashAlpha)
         love.graphics.rectangle("fill", 0, 0, self.width, self.height)
         love.graphics.setColor(r, g, b, a)
-
-        love.graphics.setColor(self.__fadeColor[1], self.__fadeColor[2],
-                               self.__fadeColor[3], self.__fadeAlpha)
-        love.graphics.rectangle("fill", 0, 0, self.width, self.height)
-        love.graphics.setColor(r, g, b, a)
+        love.graphics.pop()
 
         love.graphics.pop()
         love.graphics.setCanvas(canvas)

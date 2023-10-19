@@ -44,7 +44,6 @@ function create()
     self:add(phillyTrain)
 
     trainSound = Sound(paths.getSound('gameplay/train_passes'))
-    table.insert(game.sound.list, trainSound)
 
     local street = Sprite(-40, streetBehind.y)
     street:loadTexture(paths.getImage(SCRIPT_PATH .. 'street'))

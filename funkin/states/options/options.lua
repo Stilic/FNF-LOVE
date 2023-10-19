@@ -97,6 +97,41 @@ function OptionsState:reset_Tabs()
             obj.visible = (grp.name == self.optionsTab[self.curTab])
         end
     end
+    self.allTabs:add(controlsTab)
+end
+
+function OptionsState:add_GameplayTab()
+    local gameplayTab = Group()
+    gameplayTab.name = 'Gameplay'
+
+    local optionsVar = {'scrollType', 'noteSplash', 'pauseMusic'}
+    local options = {'Scroll Type', 'Note Splash', 'Pause Music'}
+
+    local type_table = {
+        ["string"] = true,
+        ["boolean"] = false,
+        ["number"] = 0
+    }
+
+    for i, text in ipairs(options) do
+        local daGroup = Group()
+
+        local yPos = (i * 45) + 80
+        local control = Text(145, yPos, text, paths.getFont('phantommuff.ttf', 30),
+                             {1, 1, 1})
+        daGroup:add(control)
+
+        local realvalue = ClientPrefs.data[optionsVar[i]]
+        local value = type_table[type(realvalue)] and '< '..tostring(realvalue)..' >'
+                                                   or tostring(realvalue)
+        local valueTxt = Text(382, yPos, value,
+                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
+        daGroup:add(valueTxt)
+
+        gameplayTab:add(daGroup)
+    end
+
+    self.allTabs:add(gameplayTab)
 end
 
 function OptionsState:update(dt)

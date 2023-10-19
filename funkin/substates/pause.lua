@@ -32,8 +32,8 @@ function PauseSubState:new()
 end
 
 function PauseSubState:update(dt)
-    if self.music.__volume < 0.5 then
-        self.music.__volume = self.music.__volume + 0.01 * dt
+    if self.music:getVolume() < 0.5 then
+        self.music:setVolume(self.music:getVolume() + 0.01 * dt)
     end
     PauseSubState.super.update(self, dt)
 

@@ -8,7 +8,6 @@ function Sound:new(asset)
     self.__paused = true
     self.__wasPlaying = false
     self.__oldVolume = nil
-    self.__volume = 1
 
     self.muted = false
     self.active = true
@@ -52,7 +51,6 @@ function Sound:isFinished()
 end
 
 function Sound:update()
-    self.__source:setVolume(self.__volume * game.sound.volume)
     if self.active and self:isFinished() then
         self.__paused = true
         if self.onComplete then self.onComplete() end
