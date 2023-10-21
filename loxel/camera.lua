@@ -1,4 +1,5 @@
 local Camera = Basic:extend()
+
 local canvas = love.graphics.newCanvas(game.width, game.height)
 local canvasTable = {canvas, stencil = true}
 
@@ -155,7 +156,7 @@ function Camera:draw()
         love.graphics.scale(self.zoom)
         love.graphics.translate(-w, -h)
 
-        local canvas = love.graphics.getCanvas()
+        local cv = love.graphics.getCanvas()
         love.graphics.setCanvas(canvasTable)
         love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
                             self.bgColor[4])
@@ -175,7 +176,7 @@ function Camera:draw()
         love.graphics.setColor(r, g, b, a)
 
         love.graphics.pop()
-        love.graphics.setCanvas(canvas)
+        love.graphics.setCanvas(cv)
 
         local shader = love.graphics.getShader()
         love.graphics.setShader(self.shader)

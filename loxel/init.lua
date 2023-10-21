@@ -1,3 +1,6 @@
+local dimensions = require "dimensions"
+game = {width = dimensions.width, height = dimensions.height}
+
 Object = require "lib.classic"
 Gamestate = require "lib.gamestate"
 
@@ -26,15 +29,6 @@ ui = {
     UISlider = require "loxel.ui.slider"
 }
 
-game = {
-    camera = nil,
-    cameras = require "loxel.managers.cameramanager",
-    sound = require "loxel.managers.soundmanager"
-}
-
-do
-    local dimensions = require "dimensions"
-    game.width, game.height = dimensions.width, dimensions.height
-end
-
+game.cameras = require "loxel.managers.cameramanager"
+game.sound = require "loxel.managers.soundmanager"
 game.cameras.reset()

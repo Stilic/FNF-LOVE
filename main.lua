@@ -1,7 +1,7 @@
 io.stdout:setvbuf("no")
 
 require "lib.override"
-require "loxel.init"
+require "loxel"
 
 Timer = require "lib.timer"
 
