@@ -1,5 +1,6 @@
 local Camera = Basic:extend()
-local cvTable = {love.graphics.newCanvas(), stencil = true}
+local canvas = love.graphics.newCanvas(game.width, game.height)
+local canvasTable = {canvas, stencil = true}
 
 Camera.__defaultCameras = {}
 
@@ -155,7 +156,7 @@ function Camera:draw()
         love.graphics.translate(-w, -h)
 
         local canvas = love.graphics.getCanvas()
-        love.graphics.setCanvas(cvTable)
+        love.graphics.setCanvas(canvasTable)
         love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
                             self.bgColor[4])
 
@@ -186,7 +187,7 @@ function Camera:draw()
 
         local winWidth, winHeight = love.graphics.getDimensions()
         local scale = math.min(winWidth / game.width, winHeight / game.height)
-        love.graphics.draw(cvTable[1], (winWidth - scale * game.width) / 2,
+        love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
                            (winHeight - scale * game.height) / 2, 0, scale,
                            scale)
 
