@@ -695,9 +695,12 @@ function PlayState:goodNoteHit(n)
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false)
 
+        if not n.mustPress then
+            self.camZooming = true
+        end
+
         local time = 0
         if not n.mustPress or PlayState.botPlay then
-            self.camZooming = true
             time = 0.15
             if n.isSustain and not n.isSustainEnd then
                 time = time * 2
