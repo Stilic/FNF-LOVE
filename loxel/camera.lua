@@ -1,5 +1,5 @@
 local Camera = Basic:extend()
-local cvTable = {nil, stencil = true}
+local cvTable = {love.graphics.newCanvas(), stencil = true}
 
 Camera.__defaultCameras = {}
 
@@ -58,7 +58,6 @@ function Camera:new(x, y, width, height)
     self.bgColor = {0, 0, 0, 0}
     self.shader = nil
 
-    self.__canvas = love.graphics.newCanvas(self.width, self.height)
     self.__renderQueue = {}
 
     self.__flashColor = {1, 1, 1}
@@ -147,6 +146,7 @@ function Camera:draw()
         local r, g, b, a = love.graphics.getColor()
 
         love.graphics.push()
+
         local w, h = self.width * 0.5, self.height * 0.5
         love.graphics.translate(w - self.x + self.__shakeX,
                                 h - self.y + self.__shakeY)
@@ -155,7 +155,6 @@ function Camera:draw()
         love.graphics.translate(-w, -h)
 
         local canvas = love.graphics.getCanvas()
-        cvTable[1] = self.__canvas
         love.graphics.setCanvas(cvTable)
         love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
                             self.bgColor[4])
@@ -169,12 +168,10 @@ function Camera:draw()
             self.__renderQueue[i] = nil
         end
 
-        love.graphics.push()
         love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
                                self.__flashColor[3], self.__flashAlpha)
         love.graphics.rectangle("fill", 0, 0, self.width, self.height)
         love.graphics.setColor(r, g, b, a)
-        love.graphics.pop()
 
         love.graphics.pop()
         love.graphics.setCanvas(canvas)
@@ -189,7 +186,7 @@ function Camera:draw()
 
         local winWidth, winHeight = love.graphics.getDimensions()
         local scale = math.min(winWidth / game.width, winHeight / game.height)
-        love.graphics.draw(self.__canvas, (winWidth - scale * game.width) / 2,
+        love.graphics.draw(cvTable[1], (winWidth - scale * game.width) / 2,
                            (winHeight - scale * game.height) / 2, 0, scale,
                            scale)
 
@@ -197,13 +194,6 @@ function Camera:draw()
         love.graphics.setColor(r, g, b, a)
         love.graphics.setBlendMode(blendMode, alphaMode)
     end
-end
-
-function Camera:destroy()
-    Camera.super.destroy(self)
-
-    self.__canvas:release()
-    self.__canvas = nil
 end
 
 return Camera
