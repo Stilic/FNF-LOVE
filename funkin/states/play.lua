@@ -26,8 +26,9 @@ PlayState.pixelStage = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
-    self.scripts = Script.loadScriptsFromDirectory("scripts/charts")
-    for _, script in ipairs(self.scripts) do script:call("create")end
+    self.scripts = ScriptsHandler()
+    self.scripts:loadDirectory("scripts/charts")
+    self.scripts:call("create")
 
     self.keysPressed = {}
 
@@ -80,6 +81,7 @@ function PlayState:enter()
 
     self.stage = Stage(PlayState.SONG.stage)
     self:add(self.stage)
+    self.scripts:insert(self.stage.script)
 
     local notes = PlayState.SONG.notes
     for _, s in ipairs(notes) do
@@ -345,11 +347,11 @@ function PlayState:enter()
         end)
     end
 
-    self:callOnScripts("postCreate")
+    self.scripts:call("postCreate")
 end
 
 function PlayState:update(dt)
-    self:callOnScripts("update", dt)
+    self.scripts:call("update", dt)
 
     self.countdownTimer:update(dt)
 
@@ -359,7 +361,7 @@ function PlayState:update(dt)
         PlayState.inst.sound:play()
         if PlayState.vocals then PlayState.vocals:play() end
         PlayState.notePosition = PlayState.inst.time
-        self:callOnScripts("songStart")
+        self.scripts:call("songStart")
     end
 
     PlayState.super.update(self, dt)
@@ -587,13 +589,13 @@ function PlayState:update(dt)
         end
     end
 
-    self:callOnScripts("postUpdate", dt)
+    self.scripts:call("postUpdate", dt)
 end
 
 function PlayState:draw()
-    self:callOnScripts("draw")
+    self.scripts:call("draw")
     PlayState.super.draw(self)
-    self:callOnScripts("postDraw")
+    self.scripts:call("postDraw")
 end
 
 function PlayState:closeSubState()
@@ -686,7 +688,7 @@ end
 function PlayState:goodNoteHit(n)
     if not n.wasGoodHit then
         n.wasGoodHit = true
-        self:callOnScripts("goodNoteHit", n)
+        self.scripts:call("goodNoteHit", n)
 
         if PlayState.vocals then PlayState.vocals:setVolume(1) end
 
@@ -738,7 +740,7 @@ function PlayState:goodNoteHit(n)
 
             self:removeNote(n)
 
-            self:callOnScripts("postGoodNoteHit", n)
+            self.scripts:call("postGoodNoteHit", n)
         end
     end
 end
@@ -764,17 +766,17 @@ function PlayState:step(s)
         PlayState.notePosition = time * 1000
     end
 
-    self:callOnScripts("step", s)
+    self.scripts:call("step", s)
 
     self.boyfriend:step(s)
     self.gf:step(s)
     self.dad:step(s)
 
-    self:callOnScripts("postStep", s)
+    self.scripts:call("postStep", s)
 end
 
 function PlayState:beat(b)
-    self:callOnScripts("beat", b)
+    self.scripts:call("beat", b)
 
     local section = self:getCurrentSection()
     local sectionBeats = ((section and section.sectionBeats) and
@@ -801,7 +803,7 @@ function PlayState:beat(b)
     self.gf:beat(b)
     self.dad:beat(b)
 
-    self:callOnScripts("postBeat", b)
+    self.scripts:call("postBeat", b)
 end
 
 function PlayState:popUpScore(rating)
@@ -889,7 +891,7 @@ function PlayState:recalculateRating()
 end
 
 function PlayState:leave()
-    self:callOnScripts("leave")
+    self.scripts:call("leave")
 
     PlayState.inst = nil
     PlayState.vocals = nil
@@ -897,21 +899,7 @@ function PlayState:leave()
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)
 
-    self:callOnScripts("postLeave")
-end
-
-function PlayState:setOnScripts(var, value)
-    self.stage.script:set(var, value)
-    for _, script in ipairs(self.scripts) do
-        script:set(var, value)
-    end
-end
-
-function PlayState:callOnScripts(func, ...)
-    self.stage.script:call(func, ...)
-    for _, script in ipairs(self.scripts) do
-        script:call(func, ...)
-    end
+    self.scripts:call("postLeave")
 end
 
 return PlayState

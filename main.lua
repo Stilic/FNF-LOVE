@@ -11,6 +11,7 @@ util = require "funkin.util"
 
 ClientPrefs = require "funkin.backend.clientprefs"
 Script = require "funkin.backend.script"
+ScriptsHandler = require "funkin.backend.scriptshandler"
 Conductor = require "funkin.backend.conductor"
 Graphic = require "funkin.ui.graphic"
 Note = require "funkin.gameplay.ui.note"

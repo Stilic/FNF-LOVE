@@ -2,18 +2,6 @@ local Script = Object:extend()
 
 local chunkMt = {__index = _G}
 
-function Script.loadScriptsFromDirectory(dir)
-    local scripts = {}
-    for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                "data/" .. dir))) do
-        if string.endsWith(file, '.lua') then
-            table.insert(scripts,
-                         Script(dir .. "/" .. util.removeExtension(file)))
-        end
-    end
-    return scripts
-end
-
 function Script:new(path)
     self.path = path
     self.variables = {}
@@ -36,6 +24,12 @@ function Script:new(path)
     self.variables["SCRIPT_PATH"] = p
     self.variables["close"] = function() self:close() end
     self.variables["state"] = Gamestate.current()
+end
+
+function Script:set(var, value)
+    if self.closed then return end
+
+    self.variables[var] = value
 end
 
 function Script:call(func, ...)
