@@ -61,8 +61,12 @@ end
 function Sound:update()
     if self:isFinished() then
         if self.onComplete then self.onComplete() end
-        if self.autoKill and not self.__source:isLooping() then
-            self:kill()
+        if not self.__source:isLooping() then
+            if self.autoKill then
+                self:kill()
+            else
+                self:stop()
+            end
         end
     end
 end

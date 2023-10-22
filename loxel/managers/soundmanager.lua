@@ -21,12 +21,14 @@ function SoundManager.playMusic(asset, volume, looped)
 end
 
 function SoundManager.update()
-    if SoundManager.music then SoundManager.music:update() end
+    if SoundManager.music and SoundManager.music.exists and
+        SoundManager.music.active then SoundManager.music:update() end
     SoundManager.list:update()
 end
 
 function SoundManager.onFocus(focus)
-    if SoundManager.music then SoundManager.music:onFocus(focus) end
+    if SoundManager.music and SoundManager.music.exists and
+        SoundManager.music.active then SoundManager.music:onFocus(focus) end
     for _, s in ipairs(SoundManager.list.members) do
         if s.exists then s:onFocus(focus) end
     end
