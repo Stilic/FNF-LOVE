@@ -51,7 +51,7 @@ function create()
 end
 
 function update(dt)
-    phillyWindow.alpha = phillyWindow.alpha - (PlayState.inst.crochet / 1000) *
+    phillyWindow.alpha = phillyWindow.alpha - (PlayState.conductor.crochet / 1000) *
                              dt * 1.5
 
     if trainMoving then
@@ -61,7 +61,7 @@ function update(dt)
             if trainSound.__source:tell() >= 4.7 then
                 startedMoving = true
                 state.gf:playAnim('hairBlow')
-                state.gf.lastHit = PlayState.inst.time
+                state.gf.lastHit = PlayState.conductor.time
             end
 
             if startedMoving then

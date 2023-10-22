@@ -1,79 +1,42 @@
-local SoundManager = {list = {}}
+local SoundManager = {list = Group(), music = nil}
 
--- wip
-SoundManager.volumeHandler = 1.0
-SoundManager.__volume = nil
-SoundManager.volume = 1
-SoundManager.muted = false
-
-function SoundManager.load(asset, volume, looped, autoRelease, onComplete)
-    local sound = Sound(asset)
-    if volume ~= nil then sound. __volume = volume end
+function SoundManager.play(asset, volume, looped, autoKill, onComplete)
+    local sound = SoundManager.list:recycle(Sound):load(asset)
+    if volume ~= nil then sound:setVolume(volume) end
     if looped ~= nil then sound:setLooping(looped) end
-    sound.persist = (autoRelease ~= nil and autoRelease or false)
+    sound.autoKill = autoKill ~= nil and autoKill or true
     sound.onComplete = onComplete
-    table.insert(SoundManager.list, sound)
+    sound:play()
     return sound
 end
 
-function SoundManager.play(...)
-    local sound = SoundManager.load(...)
-    if SoundManager.volume ~= 1 then
-        sound.__source:setVolume(sound.__source:getVolume() * SoundManager.volume)
-    end
+function SoundManager.playMusic(asset, volume, looped)
+    local sound = Sound():load(asset)
+    if volume ~= nil then sound:setVolume(volume) end
+    if looped ~= nil then sound:setLooping(looped) end
+    sound.persist = true
+    SoundManager.music = sound
     sound:play()
     return sound
 end
 
 function SoundManager.update()
-    for i = #SoundManager.list, 1, -1 do
-        local s = SoundManager.list[i]
-        if s.__source then
-            s:update()
-        else
-            table.remove(SoundManager.list, i)
-        end
-    end
-
-    if Keyboard.justPressed.ZERO then
-        SoundManager.toggleMuted()
-    elseif Keyboard.justPressed.PLUS then
-        SoundManager.changeVolume(true)
-    elseif Keyboard.justPressed.MINUS then
-        SoundManager.changeVolume()
-    end
-end
-
-function SoundManager.toggleMuted()
-    SoundManager.muted = not SoundManager.muted
-
-    if SoundManager.volumeHandler ~= nil then
-        SoundManager.volumeHandler = SoundManager.muted and 0 or SoundManager.volume
-    end
-end
-
-function SoundManager.changeVolume(increase)
-    SoundManager.muted = false
-    SoundManager.volume = increase ~= nil and math.min(1, SoundManager.volume + 0.1)
-                                          or math.max(0, SoundManager.volume - 0.1)
+    if SoundManager.music then SoundManager.music:update() end
+    SoundManager.list:update()
 end
 
 function SoundManager.onFocus(focus)
-    for i = #SoundManager.list, 1, -1 do
-        local s = SoundManager.list[i]
-        if s.__source then
-            s:onFocus(focus)
-        else
-            table.remove(SoundManager.list, i)
-        end
+    if SoundManager.music then SoundManager.music:onFocus(focus) end
+    for _, s in ipairs(SoundManager.list.members) do
+        if s.exists then s:onFocus(focus) end
     end
 end
 
 function SoundManager.destroy(force)
-    table.remove(SoundManager.list, function(t, i)
+    table.remove(SoundManager.list.members, function(t, i)
         local s = t[i]
         local remove = force or not s.persist
-        if remove then s:release() end
+        if remove then s:destroy() end
         return remove
     end)
 end

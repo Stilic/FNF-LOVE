@@ -40,16 +40,19 @@ function PlayState:enter()
 
     self.currentSection = 0
 
+    if game.sound.music then game.sound.music:stop() end
+
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
-    local sound = game.sound.load(paths.getInst(songName))
-    sound.onComplete = function() switchState(FreeplayState()) end
-    PlayState.inst = Conductor(sound, PlayState.SONG.bpm)
-    PlayState.inst:mapBPMChanges(PlayState.SONG)
-    PlayState.inst.onBeat = function(b) self:beat(b) end
-    PlayState.inst.onStep = function(s) self:step(s) end
+    game.sound.music = Sound():load(paths.getInst(songName))
+    game.sound.music.onComplete = function() switchState(FreeplayState()) end
+    PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
+    PlayState.conductor:mapBPMChanges(PlayState.SONG)
+    PlayState.conductor.onBeat = function(b) self:beat(b) end
+    PlayState.conductor.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
-        PlayState.vocals = game.sound.load(paths.getVoices(songName))
+        self.vocals = Sound():load(paths.getVoices(songName))
+        table.insert(game.sound.list, self.vocals)
     end
 
     self.unspawnNotes = {}
@@ -81,7 +84,7 @@ function PlayState:enter()
 
     self.stage = Stage(PlayState.SONG.stage)
     self:add(self.stage)
-    self.scripts:insert(self.stage.script)
+    table.insert(self.scripts.scripts, self.stage.script)
 
     local notes = PlayState.SONG.notes
     for _, s in ipairs(notes) do
@@ -111,7 +114,7 @@ function PlayState:enter()
                         local susLength = tonumber(n[3])
                         if susLength ~= nil and susLength > 0 then
                             susLength = math.round(n[3] /
-                                                       PlayState.inst
+                                                       PlayState.conductor
                                                            .stepCrochet)
 
                             for susNote = 0, math.max(math.floor(susLength) - 1,
@@ -119,7 +122,7 @@ function PlayState:enter()
                                 oldNote = self.unspawnNotes[#self.unspawnNotes]
 
                                 local sustain = Note(daStrumTime +
-                                                         PlayState.inst
+                                                         PlayState.conductor
                                                              .stepCrochet *
                                                          (susNote + 1),
                                                      daNoteData, oldNote, true,
@@ -137,7 +140,7 @@ function PlayState:enter()
 
     table.sort(self.unspawnNotes, PlayState.sortByShit)
 
-    PlayState.notePosition = -PlayState.inst.crochet * 5
+    PlayState.notePosition = -PlayState.conductor.crochet * 5
 
     self.score = 0
     self.combo = 0
@@ -313,7 +316,7 @@ function PlayState:enter()
         {sound = basePath .. "/introGo", image = basePath .. "/go"}
     }
 
-    local crochet = PlayState.inst.crochet / 1000
+    local crochet = PlayState.conductor.crochet / 1000
     for swagCounter = 1, 6 do
         self.countdownTimer:after(crochet * (swagCounter - 1), function()
             local data = countdownData[swagCounter]
@@ -358,15 +361,15 @@ function PlayState:update(dt)
     PlayState.notePosition = PlayState.notePosition + 1000 * dt
     if self.startingSong and PlayState.notePosition >= 0 then
         self.startingSong = false
-        PlayState.inst.sound:play()
-        if PlayState.vocals then PlayState.vocals:play() end
-        PlayState.notePosition = PlayState.inst.time
+        PlayState.conductor.sound:play()
+        if self.vocals then self.vocals:play() end
+        PlayState.notePosition = PlayState.conductor.time
         self.scripts:call("songStart")
     end
 
     PlayState.super.update(self, dt)
 
-    PlayState.inst:update()
+    PlayState.conductor:update()
 
     self.camGame.target.x, self.camGame.target.y =
         util.coolLerp(self.camGame.target.x, self.camFollow.x,
@@ -395,11 +398,11 @@ function PlayState:update(dt)
     self.iconP2:swap((self.health > 1.8 and 2 or 1))
 
     -- time arc / text
-    local songTime = PlayState.inst.time / 1000
+    local songTime = PlayState.conductor.time / 1000
 
     local mode = "left" -- for now until ClientPrefs is a thing - Vi
     if mode == "left" then
-        songTime = PlayState.inst.sound:getDuration() - songTime
+        songTime = PlayState.conductor.sound:getDuration() - songTime
     end
 
     self.timeTxt:setContent(util.getFormattedTime(songTime))
@@ -411,8 +414,9 @@ function PlayState:update(dt)
     self.timeArcBG.x = self.timeTxt.x - self.timeArcBG.width - 5
     self.timeArc.x = self.timeArcBG.x
 
-    local timeAngle = ((PlayState.inst.time / 1000) /
-                          (PlayState.inst.sound:getDuration() / 1000)) * 0.36
+    local timeAngle = ((PlayState.conductor.time / 1000) /
+                          (PlayState.conductor.sound:getDuration() / 1000)) *
+                          0.36
     self.timeArc.config.angle2 = -90 + math.ceil(timeAngle)
 
     local section = self:getCurrentSection()
@@ -453,8 +457,8 @@ function PlayState:update(dt)
     end
 
     if controls:pressed("pause") then
-        PlayState.inst.sound:pause()
-        if PlayState.vocals then PlayState.vocals:pause() end
+        PlayState.conductor.sound:pause()
+        if self.vocals then self.vocals:pause() end
 
         self.paused = true
 
@@ -463,13 +467,13 @@ function PlayState:update(dt)
         self:openSubState(pause)
     end
     if controls:pressed("debug_1") then
-        PlayState.inst.sound:pause()
-        if PlayState.vocals then PlayState.vocals:pause() end
+        PlayState.conductor.sound:pause()
+        if self.vocals then self.vocals:pause() end
         switchState(ChartingState())
     end
     if controls:pressed("debug_2") then
-        PlayState.inst.sound:pause()
-        if PlayState.vocals then PlayState.vocals:pause() end
+        PlayState.conductor.sound:pause()
+        if self.vocals then self.vocals:pause() end
         CharacterEditor.onPlayState = true
         switchState(CharacterEditor())
     end
@@ -519,7 +523,7 @@ function PlayState:update(dt)
                 if n.flipY then
                     if n.isSustainEnd then
                         n.y = n.y + (43.5 * 0.7) *
-                                  (PlayState.inst.stepCrochet / 100 * 1.5 *
+                                  (PlayState.conductor.stepCrochet / 100 * 1.5 *
                                       PlayState.SONG.speed) - n.height
                     end
                     n.y = n.y + Note.swagWidth / 2 - 60.5 *
@@ -561,9 +565,7 @@ function PlayState:update(dt)
         if PlayState.notePosition > 350 / PlayState.SONG.speed + n.time then
             if n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) then
-                if PlayState.vocals then
-                    PlayState.vocals:setVolume(0)
-                end
+                if self.vocals then self.vocals:setVolume(0) end
                 self.combo = 0
                 self.score = self.score - 100
                 self.misses = self.misses + 1
@@ -601,11 +603,11 @@ end
 function PlayState:closeSubState()
     PlayState.super.closeSubState(self)
     if not self.startingSong then
-        if PlayState.vocals and not self.startingSong then
-            PlayState.vocals:seek(PlayState.inst.sound:tell())
+        if self.vocals and not self.startingSong then
+            self.vocals:seek(PlayState.conductor.sound:tell())
         end
-        PlayState.inst.sound:play()
-        if PlayState.vocals then PlayState.vocals:play() end
+        PlayState.conductor.sound:play()
+        if self.vocals then self.vocals:play() end
     end
 end
 
@@ -637,7 +639,8 @@ function PlayState:onKeyPress(key, type)
                 for _, n in ipairs(self.notesGroup.members) do
                     if n.mustPress and not n.isSustain and not n.tooLate and
                         not n.wasGoodHit then
-                        if not n.canBeHit and n:checkDiff(PlayState.inst.time) then
+                        if not n.canBeHit and
+                            n:checkDiff(PlayState.conductor.time) then
                             n:update(0)
                         end
                         if n.canBeHit and n.data == key then
@@ -690,14 +693,12 @@ function PlayState:goodNoteHit(n)
         n.wasGoodHit = true
         self.scripts:call("goodNoteHit", n)
 
-        if PlayState.vocals then PlayState.vocals:setVolume(1) end
+        if self.vocals then self.vocals:setVolume(1) end
 
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false)
 
-        if not n.mustPress then
-            self.camZooming = true
-        end
+        if not n.mustPress then self.camZooming = true end
 
         local time = 0
         if not n.mustPress or PlayState.botPlay then
@@ -712,8 +713,9 @@ function PlayState:goodNoteHit(n)
 
         if not n.isSustain then
             if n.mustPress then
-                local diff, rating = math.abs(n.time - PlayState.inst.time),
-                                     PlayState.ratings[#PlayState.ratings - 1]
+                local diff, rating =
+                    math.abs(n.time - PlayState.conductor.time),
+                    PlayState.ratings[#PlayState.ratings - 1]
                 for _, r in next, PlayState.ratings do
                     if diff <= r.time then
                         rating = r
@@ -760,10 +762,9 @@ end
 
 function PlayState:step(s)
     -- now it works -fellynn
-    local time = PlayState.inst.sound:tell()
-    if PlayState.vocals and
-        math.abs(PlayState.vocals:tell() * 1000 - time * 1000) > 20 then
-        PlayState.vocals:seek(time)
+    local time = PlayState.conductor.sound:tell()
+    if self.vocals and math.abs(self.vocals:tell() * 1000 - time * 1000) > 20 then
+        self.vocals:seek(time)
     end
     if math.abs(time * 1000 - PlayState.notePosition) > 20 then
         PlayState.notePosition = time * 1000
@@ -783,12 +784,12 @@ function PlayState:beat(b)
 
     local section = self:getCurrentSection()
     local sectionBeats = ((section and section.sectionBeats) and
-                           section.sectionBeats or 4)
+                             section.sectionBeats or 4)
     if b % sectionBeats == 0 then
         if section and section.changeBPM then
-            print("bpm change! OLD BPM: " .. PlayState.inst.bpm .. ", NEW BPM: " ..
-                      section.bpm)
-            PlayState.inst:setBPM(section.bpm)
+            print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
+                      ", NEW BPM: " .. section.bpm)
+            PlayState.conductor:setBPM(section.bpm)
         end
 
         if self.camZooming and self.camGame.zoom < 1.35 then
@@ -810,7 +811,7 @@ function PlayState:beat(b)
 end
 
 function PlayState:popUpScore(rating)
-    local accel = PlayState.inst.crochet * 0.001
+    local accel = PlayState.conductor.crochet * 0.001
 
     local judgeSpr = self.judgeSprites:recycle()
 
@@ -896,8 +897,11 @@ end
 function PlayState:leave()
     self.scripts:call("leave")
 
-    PlayState.inst = nil
-    PlayState.vocals = nil
+    PlayState.conductor = nil
+    game.sound.music:destroy()
+    game.sound.music = nil
+
+    game.sound.playMusic(paths.getMusic("freakyMenu"), nil, true)
 
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)

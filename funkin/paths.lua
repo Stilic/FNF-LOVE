@@ -10,9 +10,7 @@ local paths = {
     audio = {},
     atlases = {},
     fonts = {},
-    persistantAssets = {
-        -- "assets/music/freakyMenu.ogg"
-    }
+    persistantAssets = {"assets/music/freakyMenu.ogg"}
 }
 
 function paths.isPersistant(path)
@@ -151,7 +149,7 @@ function paths.getPackerAtlas(key)
 end
 
 function paths.getAtlas(key)
-    if paths.exists(paths.getPath('images/'..key..'.xml'), "file") then
+    if paths.exists(paths.getPath('images/' .. key .. '.xml'), "file") then
         return paths.getSparrowAtlas(key)
     end
     return paths.getPackerAtlas(key)

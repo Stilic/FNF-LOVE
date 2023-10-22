@@ -1,17 +1,40 @@
-local Sound = Object:extend()
+local Sound = Basic:extend()
 
-function Sound:new(asset)
-    self.__source = asset:typeOf("SoundData") and love.audio.newSource(asset) or
-                        asset
+function Sound:new()
+    Sound.super.new(self)
+
     self.__indexFuncs = {}
+    self.visible = false
+
+    self:reset()
+end
+
+function Sound:reset(destroySound)
+    if self.__source and (destroySound ~= nil and destroySound or true) then
+        pcall(self.__source.stop, self.__source)
+        self.__source = nil
+        self.__indexFuncs = {}
+    end
 
     self.__paused = true
     self.__wasPlaying = false
-    self.__oldVolume = nil
 
-    self.muted = false
-    self.active = true
+    self.persist = false
+    self.autoKill = false
+
+    self.active = false
+
     self.onComplete = nil
+end
+
+function Sound:load(asset)
+    self:reset()
+
+    self.__source = asset:typeOf("SoundData") and love.audio.newSource(asset) or
+                        asset
+    self.active = true
+
+    return self
 end
 
 function Sound:play()
@@ -25,24 +48,9 @@ function Sound:pause()
 end
 
 function Sound:stop()
-    self:pause()
+    self.__paused = true
     self.__source:stop()
-end
-
-function Sound:mute()
-    if self.__oldVolume == nil then
-        self.muted = true
-        self.__oldVolume = self.__source:getVolume()
-        self.__source:setVolume(0)
-    end
-end
-
-function Sound:unmute()
-    if self.__oldVolume ~= nil then
-        self.muted = false
-        self.__source:setVolume(self.__oldVolume)
-        self.__oldVolume = nil
-    end
+    self:reset(self.autoKill)
 end
 
 function Sound:isFinished()
@@ -51,9 +59,11 @@ function Sound:isFinished()
 end
 
 function Sound:update()
-    if self.active and self:isFinished() then
-        self.__paused = true
+    if self:isFinished() then
         if self.onComplete then self.onComplete() end
+        if self.autoKill and not self.__source:isLooping() then
+            self:kill()
+        end
     end
 end
 
@@ -66,47 +76,52 @@ function Sound:onFocus(focus)
     end
 end
 
-function Sound:release()
+function Sound:kill()
+    Sound.super.kill(self)
+    self:reset(self.autoKill)
+end
+
+function Sound:destroy()
     if self.__source then
         pcall(self.__source.stop, self.__source)
         self.__source = nil
+        self.__indexFuncs = {}
     end
-    self.__indexFuncs = {}
-
-    self.__paused = true
-    self.__wasPlaying = false
-    self.__oldVolume = nil
-
-    self.active = false
     self.onComplete = nil
+
+    Sound.super.destroy(self)
 end
 
 function Sound:__index(key)
-    local prop = rawget(self, key)
-    if not prop then
-        prop = getmetatable(self)
-        if prop[key] then
-            prop = prop[key]
-        else
-            local source = rawget(self, "__source")
-            if source then
-                prop = source[key]
-                if prop and type(prop) == "function" then
-                    local indexProps = rawget(self, "__indexFuncs")
-                    prop = indexProps[key]
-                    if not prop then
-                        prop = function(_, ...)
-                            return source[key](source, ...)
-                        end
-                        indexProps[key] = prop
-                    end
-                end
+    if key == "release" then
+        return nil
+    else
+        local prop = rawget(self, key)
+        if not prop then
+            prop = getmetatable(self)
+            if prop[key] then
+                prop = prop[key]
             else
-                prop = nil
+                local source = rawget(self, "__source")
+                if source then
+                    prop = source[key]
+                    if prop and type(prop) == "function" then
+                        local indexProps = rawget(self, "__indexFuncs")
+                        prop = indexProps[key]
+                        if not prop then
+                            prop = function(_, ...)
+                                return source[key](source, ...)
+                            end
+                            indexProps[key] = prop
+                        end
+                    end
+                else
+                    prop = nil
+                end
             end
         end
+        return prop
     end
-    return prop
 end
 
 return Sound

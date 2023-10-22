@@ -89,7 +89,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
             prevNote.isSustainEnd = false
 
             prevNote.scale.y = (prevNote.width / prevNote:getFrameWidth()) *
-                                   ((PlayState.inst.stepCrochet / 100) *
+                                   ((PlayState.conductor.stepCrochet / 100) *
                                        (1.05 / 0.7)) * PlayState.SONG.speed
 
             if PlayState.pixelStage then
@@ -106,14 +106,14 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-    local instTime = (Note.chartingMode and ChartingState or PlayState).inst.time
+    local instTime = (Note.chartingMode and ChartingState or PlayState).conductor.time
     return self.time > instTime - safeZoneOffset *
                self.lateHitMult and self.time < instTime +
                safeZoneOffset * self.earlyHitMult
 end
 
 function Note:update(dt)
-    local instTime = (Note.chartingMode and ChartingState or PlayState).inst.time
+    local instTime = (Note.chartingMode and ChartingState or PlayState).conductor.time
     self.canBeHit = self:checkDiff()
 
     if self.mustPress then

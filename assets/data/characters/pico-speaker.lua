@@ -19,7 +19,7 @@ end
 function sortAnims(a, b) return a[1] < b[1] end
 
 function update(dt)
-	if #animationNotes > 0 and PlayState.inst.time > animationNotes[1][1] then
+	if #animationNotes > 0 and PlayState.conductor.time > animationNotes[1][1] then
 		local noteData = 1
 
 		if animationNotes[1][2] > 2 then

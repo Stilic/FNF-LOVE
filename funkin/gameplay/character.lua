@@ -41,10 +41,7 @@ function Character:new(x, y, char, isPlayer)
         self.holdTime = jsonData.sing_duration
     end
 
-    self.positionTable = {
-        x = jsonData.position[1],
-        y = jsonData.position[2]
-    }
+    self.positionTable = {x = jsonData.position[1], y = jsonData.position[2]}
     self.cameraPosition = {
         x = jsonData.camera_position[1],
         y = jsonData.camera_position[2]
@@ -56,8 +53,8 @@ function Character:new(x, y, char, isPlayer)
     self.jsonFlipX = self.flipX
 
     self.noAntialiasing = (jsonData.no_antialiasing == true)
-    self.antialiasing = ClientPrefs.data.antialiasing and not self.noAntialiasing or
-                                                          false
+    self.antialiasing = ClientPrefs.data.antialiasing and
+                            not self.noAntialiasing or false
 
     self.animationsTable = jsonData.animations
     if self.animationsTable and #self.animationsTable > 0 then
@@ -69,7 +66,8 @@ function Character:new(x, y, char, isPlayer)
             local animOffsets = anim.offsets
             local animIndices = anim.indices
             if animIndices ~= nil and #animIndices > 0 then
-                self:addAnimByIndices(animAnim, animName, animIndices, animFps, animLoop)
+                self:addAnimByIndices(animAnim, animName, animIndices, animFps,
+                                      animLoop)
             else
                 self:addAnimByPrefix(animAnim, animName, animFps, animLoop)
             end
@@ -147,8 +145,8 @@ end
 function Character:beat(b)
     if not Character.editorMode then self.script:call("beat", b) end
     if self.lastHit > 0 then
-        if self.lastHit + PlayState.inst.stepCrochet * self.holdTime <
-            PlayState.inst.time then
+        if self.lastHit + PlayState.conductor.stepCrochet * self.holdTime <
+            PlayState.conductor.time then
             self:dance()
             self.lastHit = 0
         end
@@ -174,12 +172,12 @@ function Character:sing(dir, miss)
     if miss then anim = anim .. "miss" end
     self:playAnim(anim, true)
 
-    self.lastHit = PlayState.inst.time
+    self.lastHit = PlayState.conductor.time
 end
 
 function Character:dance(force)
-    if self.__animations and (not Character.editorMode and self.script:callReturn("dance")
-                              or true) then
+    if self.__animations and
+        (not Character.editorMode and self.script:call("dance") or true) then
         if self.__animations["danceLeft"] and self.__animations["danceRight"] then
             self.danced = not self.danced
 
