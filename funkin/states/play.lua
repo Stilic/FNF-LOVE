@@ -45,7 +45,10 @@ function PlayState:enter()
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     game.sound.music = Sound():load(paths.getInst(songName))
-    game.sound.music.onComplete = function() switchState(FreeplayState()) end
+    game.sound.music.onComplete = function()
+        switchState(FreeplayState())
+        game.sound.playMusic(paths.getMusic("freakyMenu"), nil, true)
+    end
     PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
     PlayState.conductor:mapBPMChanges(PlayState.SONG)
     PlayState.conductor.onBeat = function(b) self:beat(b) end
@@ -900,8 +903,6 @@ function PlayState:leave()
     PlayState.conductor = nil
     game.sound.music:destroy()
     game.sound.music = nil
-
-    game.sound.playMusic(paths.getMusic("freakyMenu"), nil, true)
 
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)
