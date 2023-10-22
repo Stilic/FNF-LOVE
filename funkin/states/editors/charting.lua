@@ -449,13 +449,12 @@ function ChartingState:loadSong(song)
     if ChartingState.conductor then ChartingState.conductor.sound:release() end
     if self.vocals then self.vocals:release() end
 
-    local inst = Sound():load(paths.getInst(song))
-    table.insert(game.sound.list, inst)
+    game.sound.music = Sound():load(paths.getInst(song))
     ChartingState.conductor = Conductor(inst, self.__song.bpm)
     ChartingState.conductor.sound:setLooping(true)
     if self.__song.needsVoices then
         self.vocals = Sound():load(paths.getVoices(song))
-        table.insert(game.sound.list, self.vocals)
+        game.sound.list:add(self.vocals)
         if self.vocals then self.vocals.__source:setLooping(true) end
     end
     ChartingState.songPosition = ChartingState.conductor.sound:tell() * 1000

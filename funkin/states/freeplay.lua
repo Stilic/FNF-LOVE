@@ -4,12 +4,14 @@ FreeplayState.curSelected = 1
 
 function FreeplayState:enter()
     self.songs = {
-        'Test', 'Tutorial', 'Bopeebo', 'Fresh', 'Dad Battle',
-        'Spookeez', 'South', 'Monster',
-        'Pico', 'Philly Nice', 'Blammed',
-        'Senpai', 'Roses', 'Thorns',
-        'Ugh', 'Guns', 'Stress'
+        'Test', 'Tutorial', 'Bopeebo', 'Fresh', 'Dad Battle', 'Spookeez',
+        'South', 'Monster', 'Pico', 'Philly Nice', 'Blammed', 'Senpai', 'Roses',
+        'Thorns', 'Ugh', 'Guns', 'Stress'
     }
+
+    if not game.sound.music then
+        game.sound.playMusic(paths.getMusic("freakyMenu"), nil, true)
+    end
 
     self.bg = Sprite()
     self.bg:loadTexture(paths.getImage('menus/mainmenu/menuBGBlue'))
