@@ -23,7 +23,7 @@ function Script:new(path)
     if not p:endsWith("/") then p = p .. "/" end
     self.variables["SCRIPT_PATH"] = p
     self.variables["close"] = function() self:close() end
-    self.variables["state"] = Gamestate.current()
+    self.variables["state"] = game.getState()
 end
 
 function Script:set(var, value)

@@ -1,4 +1,4 @@
-local parseXml = require "lib.xml"
+local parseXml = require "loxel.lib.xml"
 
 local stencilSprite, stencilX, stencilY = {}, 0, 0
 local function stencil()

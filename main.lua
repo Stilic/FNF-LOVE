@@ -1,6 +1,5 @@
 io.stdout:setvbuf("no")
 
-require "lib.override"
 require "loxel"
 
 Timer = require "lib.timer"
@@ -32,90 +31,6 @@ OptionsState = require "funkin.states.options.options"
 
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
-
-local fade
-function fadeOut(time, callback)
-    if fade and fade.timer then Timer.cancel(fade.timer) end
-
-    fade = {
-        height = game.height * 2,
-        texture = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0},
-                                   {0, 0, 0, 0})
-    }
-    fade.y = -fade.height
-    fade.timer = Timer.tween(time, fade, {y = 0}, "linear", function()
-        fade.texture:release()
-        fade = nil
-        if callback then callback() end
-    end)
-    fade.draw = function()
-        love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
-    end
-end
-function fadeIn(time, callback)
-    if fade and fade.timer then Timer.cancel(fade.timer) end
-
-    fade = {
-        height = game.height * 2,
-        texture = util.newGradient("vertical", {0, 0, 0, 0}, {0, 0, 0},
-                                   {0, 0, 0})
-    }
-    fade.y = -fade.height / 2
-    fade.timer = Timer.tween(time * 2, fade, {y = fade.height}, "linear",
-                             function()
-        fade.texture:release()
-        fade = nil
-        if callback then callback() end
-    end)
-    fade.draw = function()
-        love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
-    end
-end
-
-isSwitchingState = false
-function switchState(state, transition)
-    if transition == nil then transition = true end
-
-    isSwitchingState = true
-
-    local function switch()
-        Timer.clear()
-
-        game.cameras.reset()
-        game.sound.destroy()
-
-        for _, s in ipairs(Gamestate.stack) do
-            for _, o in ipairs(s.members) do
-                if type(o) == "table" and o.destroy then
-                    o:destroy()
-                end
-            end
-            if s.subState then
-                Gamestate.pop(table.find(Gamestate.stack, s.subState))
-                s.subState = nil
-            end
-        end
-
-        paths.clearCache()
-
-        Gamestate.switch(state)
-        isSwitchingState = false
-
-        collectgarbage()
-    end
-
-    if transition then
-        fadeOut(0.7, function()
-            switch()
-            fadeIn(0.6)
-        end)
-    else
-        switch()
-    end
-end
-function resetState(transition, ...)
-    switchState(getmetatable(Gamestate.stack[1])(...), transition)
-end
 
 function love.run()
     local _, _, flags = love.window.getMode()
@@ -184,72 +99,40 @@ function love.run()
 end
 
 function love.load()
-    love.mouse.setVisible(false)
-
-    local os = love.system.getOS()
-    if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
-
     -- for the joystick, i'll remake it later
     controls = (require "lib.baton").new({
         controls = table.clone(ClientPrefs.controls)
     })
 
-    Gamestate.switch(TitleState())
+    game.init(TitleState)
 end
 
-function love.resize(w, h) Gamestate.resize(w, h) end
+function love.resize(w, h) game.resize(w, h) end
 
-local function callUIInput(func, ...)
-    for _, o in ipairs(ui.UIInputTextBox.instances) do
-        if o[func] then o[func](o, ...) end
-    end
-    for _, o in ipairs(ui.UINumericStepper.instances) do
-        if o[func] then o[func](o, ...) end
-    end
-end
 function love.keypressed(...)
     controls:onKeyPress(...)
-    Keyboard.onPressed(...)
-    callUIInput('keypressed', ...)
+    game.keypressed(...)
 end
 function love.keyreleased(...)
     controls:onKeyRelease(...)
-    Keyboard.onReleased(...)
-    callUIInput('keyreleased', ...)
+    game.keyreleased(...)
 end
-function love.textinput(text) callUIInput('textinput', text) end
+function love.textinput(text) game.textinput(text) end
 
-function love.wheelmoved(x, y) Mouse.wheel = y end
-function love.mousemoved(x, y) Mouse.onMoved(x, y) end
-function love.mousepressed(x, y, button) Mouse.onPressed(button) end
-function love.mousereleased(x, y, button) Mouse.onReleased(button) end
+function love.wheelmoved(x, y) game.wheelmoved(x, y) end
+function love.mousemoved(x, y) game.mousemoved(x, y) end
+function love.mousepressed(x, y, button) game.mousepressed(x, y, button) end
+function love.mousereleased(x, y, button) game.mousereleased(x, y, button) end
 
 function love.update(dt)
     dt = math.min(dt, 1 / 30)
 
-    for _, o in ipairs(Flicker.instances) do o:update(dt) end
-    game.cameras.update(dt)
-    game.sound.update()
-
     Timer.update(dt)
     controls:update()
 
-    if not isSwitchingState then Gamestate.update(dt) end
-
-    Keyboard.update()
-    Mouse.update()
+    game.update(dt)
 end
 
-function love.draw()
-    Gamestate.draw()
-    if fade then
-        table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
-                     fade.draw)
-    end
-    for _, c in ipairs(game.cameras.list) do c:draw() end
-end
+function love.draw() game.draw() end
 
-function love.focus(f)
-    game.sound.onFocus(f)
-    Gamestate.focus(f)
-end
+function love.focus(f) game.focus(f) end

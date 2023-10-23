@@ -45,13 +45,13 @@ function PauseSubState:update(dt)
 
         switch(daChoice, {
             ["Resume"] = function() self:close() end,
-            ["Restart Song"] = function() switchState(PlayState()) end,
+            ["Restart Song"] = function() game.switchState(PlayState()) end,
             ["Options"] = function()
                 OptionsState.onPlayState = true
-                switchState(OptionsState())
+                game.switchState(OptionsState())
             end,
             ["Exit to menu"] = function()
-                switchState(FreeplayState())
+                game.switchState(FreeplayState())
             end
         })
     end

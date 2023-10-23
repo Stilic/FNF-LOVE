@@ -47,13 +47,13 @@ function FreeplayState:update(dt)
 
     if controls:pressed("back") then
         game.sound.play(paths.getSound('cancelMenu'))
-        switchState(MainMenuState())
+        game.switchState(MainMenuState())
     end
     if controls:pressed('accept') then
         local daSong = paths.formatToSongPath(
                            self.songs[FreeplayState.curSelected])
         PlayState.SONG = paths.getJSON("songs/" .. daSong .. "/" .. daSong).song
-        switchState(PlayState())
+        game.switchState(PlayState())
     end
 
     FreeplayState.super.update(self, dt)

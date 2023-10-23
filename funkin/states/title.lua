@@ -49,14 +49,14 @@ end
 
 function TitleState:update(dt)
     TitleState.music:update(dt)
-    if controls:pressed("debug_1") then switchState(ChartingState()) end
-    if controls:pressed("debug_2") then switchState(CharacterEditor()) end
+    if controls:pressed("debug_1") then game.switchState(ChartingState()) end
+    if controls:pressed("debug_2") then game.switchState(CharacterEditor()) end
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")
         game.camera:flash({1, 1, 1}, 2)
         game.sound.play(paths.getSound("confirmMenu"))
-        Timer.after(1.5, function() switchState(MainMenuState()) end)
+        Timer.after(1.5, function() game.switchState(MainMenuState()) end)
     end
     TitleState.super.update(self, dt)
 end

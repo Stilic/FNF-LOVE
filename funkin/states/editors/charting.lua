@@ -391,14 +391,14 @@ function ChartingState:update(dt)
             ChartingState.conductor.sound:pause()
             if self.vocals then self.vocals:pause() end
 
-            switchState(PlayState())
+            game.switchState(PlayState())
         end
 
         if Keyboard.justPressed.BACKSPACE then
             ChartingState.conductor.sound:pause()
             if self.vocals then self.vocals:pause() end
 
-            switchState(MainMenuState())
+            game.switchState(MainMenuState())
         end
 
         local shiftThing = 1
@@ -450,7 +450,7 @@ function ChartingState:loadSong(song)
     if self.vocals then self.vocals:release() end
 
     game.sound.music = Sound():load(paths.getInst(song))
-    ChartingState.conductor = Conductor(inst, self.__song.bpm)
+    ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
     ChartingState.conductor.sound:setLooping(true)
     if self.__song.needsVoices then
         self.vocals = Sound():load(paths.getVoices(song))

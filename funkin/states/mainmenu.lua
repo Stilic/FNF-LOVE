@@ -99,7 +99,7 @@ function MainMenuState:update(dt)
 
         if controls:pressed("back") then
             game.sound.play(paths.getSound('cancelMenu'))
-            switchState(TitleState())
+            game.switchState(TitleState())
         end
 
         if controls:pressed("accept") then
@@ -143,9 +143,9 @@ function MainMenuState:update(dt)
                             if daChoice == 'story_mode' then
                                 --
                             elseif daChoice == 'freeplay' then
-                                switchState(FreeplayState())
+                                game.switchState(FreeplayState())
                             elseif daChoice == 'options' then
-                                switchState(OptionsState())
+                                game.switchState(OptionsState())
                             end
                         end)
                     end

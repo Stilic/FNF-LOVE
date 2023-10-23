@@ -252,9 +252,9 @@ function CharacterEditor:update(dt)
         if Keyboard.justPressed.ESCAPE then
             if CharacterEditor.onPlayState then
                 CharacterEditor.onPlayState = false
-                switchState(PlayState())
+                game.switchState(PlayState())
             else
-                switchState(MainMenuState())
+                game.switchState(MainMenuState())
             end
         end
     end

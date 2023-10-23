@@ -151,10 +151,10 @@ function OptionsState:update(dt)
                                            and false)
         else
             if OptionsState.onPlayState then
-                switchState(PlayState())
+                game.switchState(PlayState())
                 OptionsState.onPlayState = false
             else
-                switchState(MainMenuState())
+                game.switchState(MainMenuState())
             end
         end
     end
