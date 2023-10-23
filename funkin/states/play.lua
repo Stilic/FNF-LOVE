@@ -38,14 +38,14 @@ function PlayState:enter()
 
     self.keysPressed = {}
 
-    self.currentSection = 0
-
     if game.sound.music then game.sound.music:stop() end
 
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     game.sound.music = Sound():load(paths.getInst(songName))
-    game.sound.music.onComplete = function() game.switchState(FreeplayState()) end
+    game.sound.music.onComplete = function()
+        game.switchState(FreeplayState())
+    end
     PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
     PlayState.conductor:mapBPMChanges(PlayState.SONG)
     PlayState.conductor.onBeat = function(b) self:beat(b) end
@@ -613,7 +613,9 @@ end
 
 -- CAN RETURN NIL!!
 function PlayState:getCurrentSection()
-    return PlayState.SONG.notes[self.currentSection + 1]
+    return
+        PlayState.SONG.notes[math.floor(PlayState.conductor.currentStep / 16) +
+            1]
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -783,9 +785,8 @@ function PlayState:beat(b)
     self.scripts:call("beat", b)
 
     local section = self:getCurrentSection()
-    local sectionBeats = ((section and section.sectionBeats) and
-                             section.sectionBeats or 4)
-    if b % sectionBeats == 0 then
+    if b % ((section and section.sectionBeats) and section.sectionBeats or 4) ==
+        0 then
         if section and section.changeBPM then
             print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
                       ", NEW BPM: " .. section.bpm)
@@ -796,7 +797,6 @@ function PlayState:beat(b)
             self.camGame.zoom = self.camGame.zoom + 0.015
             self.camHUD.zoom = self.camHUD.zoom + 0.03
         end
-        self.currentSection = self.currentSection + 1
     end
 
     local scaleNum = 1.2
