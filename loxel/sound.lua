@@ -20,7 +20,7 @@ function Sound:reset(destroySound)
     self.__wasPlaying = false
 
     self.persist = false
-    self.autoKill = false
+    self.autoDestroy = false
 
     self.active = false
 
@@ -50,7 +50,6 @@ end
 function Sound:stop()
     self.__paused = true
     self.__source:stop()
-    self:reset(self.autoKill)
 end
 
 function Sound:isFinished()
@@ -62,7 +61,7 @@ function Sound:update()
     if self:isFinished() then
         if self.onComplete then self.onComplete() end
         if not self.__source:isLooping() then
-            if self.autoKill then
+            if self.autoDestroy then
                 self:kill()
             else
                 self:stop()
@@ -82,7 +81,7 @@ end
 
 function Sound:kill()
     Sound.super.kill(self)
-    self:reset(self.autoKill)
+    self:reset(self.autoDestroy)
 end
 
 function Sound:destroy()

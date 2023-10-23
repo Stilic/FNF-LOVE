@@ -43,7 +43,8 @@ function create()
     phillyTrain:loadTexture(paths.getImage(SCRIPT_PATH .. 'train'))
     self:add(phillyTrain)
 
-    trainSound = Sound(paths.getSound('gameplay/train_passes'))
+    trainSound = Sound():load(paths.getSound('gameplay/train_passes'))
+    game.sound.list:add(trainSound)
 
     local street = Sprite(-40, streetBehind.y)
     street:loadTexture(paths.getImage(SCRIPT_PATH .. 'street'))
@@ -51,14 +52,14 @@ function create()
 end
 
 function update(dt)
-    phillyWindow.alpha = phillyWindow.alpha - (PlayState.conductor.crochet / 1000) *
-                             dt * 1.5
+    phillyWindow.alpha = phillyWindow.alpha -
+                             (PlayState.conductor.crochet / 1000) * dt * 1.5
 
     if trainMoving then
         trainFrameTiming = trainFrameTiming + dt
 
         if trainFrameTiming >= 1 / 24 then
-            if trainSound.__source:tell() >= 4.7 then
+            if trainSound:tell() >= 4.7 then
                 startedMoving = true
                 state.gf:playAnim('hairBlow')
                 state.gf.lastHit = PlayState.conductor.time
@@ -108,6 +109,7 @@ function beat(b)
         trainCooldown > 8 then
         trainCooldown = love.math.random(-4, 0)
         trainMoving = true
-        if not trainSound.__source:isPlaying() then trainSound:play() end
+        trainSound:stop()
+        trainSound:play()
     end
 end

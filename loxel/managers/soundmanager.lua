@@ -1,10 +1,10 @@
 local SoundManager = {list = Group(), music = nil}
 
-function SoundManager.play(asset, volume, looped, autoKill, onComplete)
+function SoundManager.play(asset, volume, looped, autoDestroy, onComplete)
     local sound = SoundManager.list:recycle(Sound):load(asset)
     if volume ~= nil then sound:setVolume(volume) end
     if looped ~= nil then sound:setLooping(looped) end
-    sound.autoKill = autoKill ~= nil and autoKill or true
+    sound.autoDestroy = autoDestroy ~= nil and autoDestroy or true
     sound.onComplete = onComplete
     sound:play()
     return sound
