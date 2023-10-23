@@ -9,8 +9,7 @@ function PauseSubState:new()
     self.music = game.sound.play(paths.getMusic(ClientPrefs.data.pauseMusic), 0,
                                  true)
 
-    self.bg = Sprite()
-    self.bg:make(game.width, game.height, {0, 0, 0})
+    self.bg = Sprite():make(game.width, game.height, {0, 0, 0})
     self.bg.alpha = 0
     self.bg:setScrollFactor()
     self:add(self.bg)

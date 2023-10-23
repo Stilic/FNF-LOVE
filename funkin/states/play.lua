@@ -151,12 +151,10 @@ function PlayState:enter()
     self.totalPlayed = 0
     self.totalHit = 0.0
 
-    self.camGame = Camera()
-    self.camGame.target = {x = 0, y = 0}
+    game.camera.target = {x = 0, y = 0}
+
     self.camHUD = Camera()
     self.camOther = Camera()
-
-    game.cameras.reset(self.camGame)
     game.cameras.add(self.camHUD, false)
     game.cameras.add(self.camOther, false)
 
@@ -191,7 +189,7 @@ function PlayState:enter()
     self.camFollow = {x = 0, y = 0}
     self.camZooming = false
 
-    self.camGame.zoom = self.stage.camZoom
+    game.camera.zoom = self.stage.camZoom
 
     local gfVersion = PlayState.SONG.gfVersion
     if gfVersion == nil then
@@ -371,10 +369,10 @@ function PlayState:update(dt)
 
     PlayState.conductor:update()
 
-    self.camGame.target.x, self.camGame.target.y =
-        util.coolLerp(self.camGame.target.x, self.camFollow.x,
+    game.camera.target.x, game.camera.target.y =
+        util.coolLerp(game.camera.target.x, self.camFollow.x,
                       0.04 * self.stage.camSpeed),
-        util.coolLerp(self.camGame.target.y, self.camFollow.y,
+        util.coolLerp(game.camera.target.y, self.camFollow.y,
                       0.04 * self.stage.camSpeed)
 
     local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
@@ -451,7 +449,7 @@ function PlayState:update(dt)
     end
 
     if self.camZooming then
-        self.camGame.zoom = util.coolLerp(self.camGame.zoom, self.stage.camZoom,
+        game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom,
                                           0.0475)
         self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
     end
@@ -793,8 +791,8 @@ function PlayState:beat(b)
             PlayState.conductor:setBPM(section.bpm)
         end
 
-        if self.camZooming and self.camGame.zoom < 1.35 then
-            self.camGame.zoom = self.camGame.zoom + 0.015
+        if self.camZooming and game.camera.zoom < 1.35 then
+            game.camera.zoom = game.camera.zoom + 0.015
             self.camHUD.zoom = self.camHUD.zoom + 0.03
         end
     end

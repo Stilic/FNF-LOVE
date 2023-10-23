@@ -19,11 +19,9 @@ function CharacterEditor:enter()
         self.isPlayer = self.curChar:startsWith('bf')
     end
 
-    self.camEditor = Camera()
-    self.camEditor.scroll = {x = 0, y = 0}
-    self.camMenu = Camera()
+    game.camera.scroll = {x = 0, y = 0}
 
-    game.cameras.reset(self.camEditor)
+    self.camMenu = Camera()
     game.cameras.add(self.camMenu, false)
 
     self.stageLayer = Stage('stage')
@@ -36,12 +34,10 @@ function CharacterEditor:enter()
 
     self:changeAnim()
 
-    self.camPoint1 = Sprite()
-    self.camPoint1:make(5, 30, {1, 1, 1})
+    self.camPoint1 = Sprite():make(5, 30, {1, 1, 1})
     self:add(self.camPoint1)
 
-    self.camPoint2 = Sprite()
-    self.camPoint2:make(30, 5, {1, 1, 1})
+    self.camPoint2 = Sprite():make(30, 5, {1, 1, 1})
     self:add(self.camPoint2)
 
     self.blockInput = {}
@@ -51,7 +47,8 @@ function CharacterEditor:enter()
     self.animationTab.height = game.height * 0.2
     self:add(self.animationTab)
 
-    self.charTab = ui.UITabMenu(game.width * 0.7, game.height * 0.6, {'Character'})
+    self.charTab = ui.UITabMenu(game.width * 0.7, game.height * 0.6,
+                                {'Character'})
     self.charTab.width = game.width * 0.3
     self.charTab.height = game.height * 0.4
     self:add(self.charTab)
@@ -73,9 +70,8 @@ function CharacterEditor:add_UI_Character()
     local tab_char = Group()
     tab_char.name = 'Character'
 
-    local save_char = ui.UIButton(140, 10, 100, 20, 'Save', function()
-        self:saveCharacter()
-    end)
+    local save_char = ui.UIButton(140, 10, 100, 20, 'Save',
+                                  function() self:saveCharacter() end)
 
     local playable_check = ui.UICheckbox(10, 40, 20)
     playable_check.checked = self.isPlayer
@@ -90,9 +86,10 @@ function CharacterEditor:add_UI_Character()
 
         self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
         self.char.y = 100 + self.char.positionTable.y
-        self.camEditor.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
+        game.camera.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
 
-        if self.char.curAnim.name:find('LEFT') or self.char.curAnim.name:find('RIGHT') then
+        if self.char.curAnim.name:find('LEFT') or
+            self.char.curAnim.name:find('RIGHT') then
             self.char:playAnim(self.curAnim.anim, true)
         end
     end
@@ -107,29 +104,40 @@ function CharacterEditor:add_UI_Character()
     end
 
     local camX_stepper = ui.UINumericStepper(10, 130, 10,
-                                             self.char.cameraPosition.x, -9000, 9000)
-    camX_stepper.onChanged = function(value) self.char.cameraPosition.x = value end
+                                             self.char.cameraPosition.x, -9000,
+                                             9000)
+    camX_stepper.onChanged = function(value)
+        self.char.cameraPosition.x = value
+    end
 
-    local camY_stepper = ui.UINumericStepper(camX_stepper.x + 90, camX_stepper.y, 10,
-                                             self.char.cameraPosition.y, -9000, 9000)
-    camY_stepper.onChanged = function(value) self.char.cameraPosition.y = value end
+    local camY_stepper = ui.UINumericStepper(camX_stepper.x + 90,
+                                             camX_stepper.y, 10,
+                                             self.char.cameraPosition.y, -9000,
+                                             9000)
+    camY_stepper.onChanged = function(value)
+        self.char.cameraPosition.y = value
+    end
 
-    local posX_stepper = ui.UINumericStepper(camX_stepper.x, camX_stepper.y + 50, 10,
-                                             self.char.positionTable.x, -9000, 9000)
+    local posX_stepper = ui.UINumericStepper(camX_stepper.x,
+                                             camX_stepper.y + 50, 10,
+                                             self.char.positionTable.x, -9000,
+                                             9000)
     posX_stepper.onChanged = function(value)
         self.char.positionTable.x = value
         self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
     end
-    local posY_stepper = ui.UINumericStepper(posX_stepper.x + 90, posX_stepper.y, 10,
-                                             self.char.positionTable.y, -9000, 9000)
+    local posY_stepper = ui.UINumericStepper(posX_stepper.x + 90,
+                                             posX_stepper.y, 10,
+                                             self.char.positionTable.y, -9000,
+                                             9000)
     posY_stepper.onChanged = function(value)
         self.char.positionTable.y = value
         self.char.y = 100 + self.char.positionTable.y
     end
 
     local optionsChar = {}
-    for _, str in pairs(love.filesystem.getDirectoryItems(
-                        paths.getPath('data/characters'))) do
+    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                              'data/characters'))) do
         local charName = str:withoutExt()
         if str:endsWith('.json') and not charName:endsWith('-dead') then
             table.insert(optionsChar, charName)
@@ -152,7 +160,9 @@ function CharacterEditor:add_UI_Character()
         posY_stepper.value = tostring(self.char.positionTable.y)
 
         flipX_check.checked = self.char.flipX
-        if self.isPlayer then flipX_check.checked = not flipX_check.checked end
+        if self.isPlayer then
+            flipX_check.checked = not flipX_check.checked
+        end
     end
 
     tab_char:add(Text(38, 43, 'Playable Character'))
@@ -199,7 +209,8 @@ function CharacterEditor:update(dt)
 
     local isTyping = false
     for _, inputObj in ipairs(self.blockInput) do
-        if inputObj.active then isTyping = true
+        if inputObj.active then
+            isTyping = true
             break
         end
         isTyping = false
@@ -213,19 +224,19 @@ function CharacterEditor:update(dt)
         local shiftMult = Keyboard.pressed.SHIFT and 10 or 1
 
         if Keyboard.pressed.J then
-            self.camEditor.scroll.x = self.camEditor.scroll.x - (2 + shiftMult)
+            game.camera.scroll.x = game.camera.scroll.x - (2 + shiftMult)
         elseif Keyboard.pressed.L then
-            self.camEditor.scroll.x = self.camEditor.scroll.x + (2 + shiftMult)
+            game.camera.scroll.x = game.camera.scroll.x + (2 + shiftMult)
         end
         if Keyboard.pressed.I then
-            self.camEditor.scroll.y = self.camEditor.scroll.y - (2 + shiftMult)
+            game.camera.scroll.y = game.camera.scroll.y - (2 + shiftMult)
         elseif Keyboard.pressed.K then
-            self.camEditor.scroll.y = self.camEditor.scroll.y + (2 + shiftMult)
+            game.camera.scroll.y = game.camera.scroll.y + (2 + shiftMult)
         end
         if Keyboard.pressed.U then
-            self.camEditor.zoom = self.camEditor.zoom - 0.01
+            game.camera.zoom = game.camera.zoom - 0.01
         elseif Keyboard.pressed.O then
-            self.camEditor.zoom = self.camEditor.zoom + 0.01
+            game.camera.zoom = game.camera.zoom + 0.01
         end
 
         if Keyboard.justPressed.LEFT then
@@ -261,18 +272,16 @@ function CharacterEditor:update(dt)
 
     updateCamPoint(self)
 
-    local animInfo = 'Current Animation\n'..
-                     '\nName: '..self.curAnim.anim..
-                     '\nOffsets: ['..self.curAnim.offsets[1]..', '
-                                   ..self.curAnim.offsets[2]..']'..
-                     '\nFPS: '..self.curAnim.fps
+    local animInfo = 'Current Animation\n' .. '\nName: ' .. self.curAnim.anim ..
+                         '\nOffsets: [' .. self.curAnim.offsets[1] .. ', ' ..
+                         self.curAnim.offsets[2] .. ']' .. '\nFPS: ' ..
+                         self.curAnim.fps
     self.animInfoTxt:setContent(animInfo)
 
-    local charInfo = 'Current Character\n'..
-                     '\nName: '..self.curChar..
-                     '\nImage: '..self.char.imageFile..
-                     '\nIcon: '..self.char.icon..
-                     '\nFlip X: '..tostring(self.char.jsonFlipX)
+    local charInfo = 'Current Character\n' .. '\nName: ' .. self.curChar ..
+                         '\nImage: ' .. self.char.imageFile .. '\nIcon: ' ..
+                         self.char.icon .. '\nFlip X: ' ..
+                         tostring(self.char.jsonFlipX)
     self.charInfoTxt:setContent(charInfo)
 end
 
@@ -289,7 +298,7 @@ function CharacterEditor:loadCharacter()
 
     self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
     self.char.y = 100 + self.char.positionTable.y
-    self.camEditor.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
+    game.camera.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
 end
 
 function CharacterEditor:changeOffsets(x, y)
@@ -312,7 +321,8 @@ function CharacterEditor:changeAnim(huh)
 end
 
 function CharacterEditor:saveCharacter()
-    local file = WindowDialogue.askSaveAsFile(nil, {{"JSON Files", "*.json"}}, self.curChar..".json")
+    local file = WindowDialogue.askSaveAsFile(nil, {{"JSON Files", "*.json"}},
+                                              self.curChar .. ".json")
 
     if file then
         local animationsTable = self.char.animationsTable
@@ -321,17 +331,11 @@ function CharacterEditor:saveCharacter()
         local charData = {
             animations = animationsTable,
             image = self.char.imageFile,
-            position = {
-                positionTable.x,
-                positionTable.y
-            },
+            position = {positionTable.x, positionTable.y},
             healthicon = self.char.icon,
             flip_x = self.char.jsonFlipX,
             no_antialiasing = self.char.noAntialiasing,
-            camera_position = {
-                cameraPosition.x,
-                cameraPosition.y
-            },
+            camera_position = {cameraPosition.x, cameraPosition.y},
             scale = self.char.jsonScale
         }
 

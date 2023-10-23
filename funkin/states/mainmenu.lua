@@ -7,9 +7,7 @@ function MainMenuState:enter()
 
     self.selectedSomethin = false
 
-    self.camScroll = Camera()
-    self.camScroll.target = {x = 0, y = 0}
-    game.cameras.reset(self.camScroll)
+    game.camera.target = {x = 0, y = 0}
 
     local yScroll = math.max(0.25 - (0.05 * (#self.optionShit - 4)), 0.1)
     self.menuBg = Sprite()
@@ -65,8 +63,7 @@ function MainMenuState:enter()
     self.gf_popup = SpriteGroup(game.width - 460, game.height)
     self.gf_popup:setScrollFactor()
 
-    local popup_bg = Sprite(100)
-    popup_bg:make(350, 130, {0, 0, 0})
+    local popup_bg = Sprite(100):make(350, 130, {0, 0, 0})
     popup_bg.alpha = 0.7
 
     local wip_text = Text(116, 34, 'Work In\nProgress..',
@@ -84,14 +81,9 @@ function MainMenuState:enter()
 end
 
 function MainMenuState:update(dt)
-    self.camScroll.target.x, self.camScroll.target.y = util.coolLerp(
-                                                           self.camScroll.target
-                                                               .x,
-                                                           self.camFollow.x, 1),
-                                                       util.coolLerp(
-                                                           self.camScroll.target
-                                                               .y,
-                                                           self.camFollow.y, 1)
+    game.camera.target.x, game.camera.target.y =
+        util.coolLerp(game.camera.target.x, self.camFollow.x, 1),
+        util.coolLerp(game.camera.target.y, self.camFollow.y, 1)
 
     if not self.selectedSomethin then
         if controls:pressed('ui_up') then self:changeSelection(-1) end

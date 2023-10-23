@@ -112,17 +112,6 @@ function Camera:update(dt)
     end
 end
 
-function Camera:fill(r, g, b, a)
-    table.insert(self.__renderQueue, function()
-        local oR, oG, oB, oA = love.graphics.getColor()
-
-        love.graphics.setColor(r, g, b, a)
-        love.graphics.rectangle("fill", 0, 0, self.width, self.height)
-
-        love.graphics.setColor(oR, oG, oB, oA)
-    end)
-end
-
 function Camera:shake(intensity, duration, onComplete, force, axes)
     if not force and (self.__shakeDuration > 0) then return end
 
@@ -147,6 +136,11 @@ function Camera:draw()
     if self.visible and self.exists and self.alpha ~= 0 and self.zoom ~= 0 then
         local r, g, b, a = love.graphics.getColor()
 
+        local cv = love.graphics.getCanvas()
+        love.graphics.setCanvas(canvasTable)
+        love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
+                            self.bgColor[4])
+
         love.graphics.push()
 
         local w, h = self.width * 0.5, self.height * 0.5
@@ -155,11 +149,6 @@ function Camera:draw()
         love.graphics.rotate(math.rad(-self.angle))
         love.graphics.scale(self.zoom)
         love.graphics.translate(-w, -h)
-
-        local cv = love.graphics.getCanvas()
-        love.graphics.setCanvas(canvasTable)
-        love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
-                            self.bgColor[4])
 
         for i, o in ipairs(self.__renderQueue) do
             if type(o) == "function" then

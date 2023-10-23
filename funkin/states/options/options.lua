@@ -18,33 +18,28 @@ function OptionsState:enter()
     bg:screenCenter()
     self:add(bg)
 
-    self.optionsTab = {
-        'Controls',
-        'Gameplay'
-    }
+    self.optionsTab = {'Controls', 'Gameplay'}
 
-    self.titleTabBG = Sprite(0, 20)
-    self.titleTabBG:make(game.width * 0.8, 65, {0, 0, 0})
+    self.titleTabBG = Sprite(0, 20):make(game.width * 0.8, 65, {0, 0, 0})
     self.titleTabBG.alpha = 0.7
     self.titleTabBG:screenCenter('x')
     self:add(self.titleTabBG)
 
-    self.tabBG = Sprite(0, 105)
-    self.tabBG:make(game.width * 0.8, game.height * 0.75, {0, 0, 0})
+    self.tabBG = Sprite(0, 105):make(game.width * 0.8, game.height * 0.75,
+                                     {0, 0, 0})
     self.tabBG.alpha = 0.7
     self.tabBG:screenCenter('x')
     self:add(self.tabBG)
 
-    self.optionsCursor = Sprite()
-    self.optionsCursor:make((game.width * 0.78), 39, {1, 1, 1})
+    self.optionsCursor = Sprite():make((game.width * 0.78), 39, {1, 1, 1})
     self.optionsCursor.alpha = 0.1
     self.optionsCursor.visible = false
     self.optionsCursor:screenCenter('x')
     self:add(self.optionsCursor)
 
     self.curBindSelect = 1
-    self.controlsCursor = Sprite(377)
-    self.controlsCursor:make(125, 39, {1, 1, 1})
+
+    self.controlsCursor = Sprite(377):make(125, 39, {1, 1, 1})
     self.controlsCursor.alpha = 0.2
     self.controlsCursor.visible = false
     self:add(self.controlsCursor)
@@ -68,13 +63,13 @@ function OptionsState:enter()
 
     self:changeTab()
 
-    self.blackFG = Sprite()
-    self.blackFG:make(game.width, game.height, {0, 0, 0})
+    self.blackFG = Sprite():make(game.width, game.height, {0, 0, 0})
     self.blackFG.alpha = 0
     self:add(self.blackFG)
 
-    self.waitInputTxt = Text(0, 0, 'Rebinding..', paths.getFont('phantommuff.ttf', 60),
-                             {1, 1, 1}, "center", game.width)
+    self.waitInputTxt = Text(0, 0, 'Rebinding..',
+                             paths.getFont('phantommuff.ttf', 60), {1, 1, 1},
+                             "center", game.width)
     self.waitInputTxt:screenCenter('y')
     self.waitInputTxt.visible = false
     self:add(self.waitInputTxt)
@@ -107,23 +102,19 @@ function OptionsState:add_GameplayTab()
     local optionsVar = {'scrollType', 'noteSplash', 'pauseMusic'}
     local options = {'Scroll Type', 'Note Splash', 'Pause Music'}
 
-    local type_table = {
-        ["string"] = true,
-        ["boolean"] = false,
-        ["number"] = 0
-    }
+    local type_table = {["string"] = true, ["boolean"] = false, ["number"] = 0}
 
     for i, text in ipairs(options) do
         local daGroup = Group()
 
         local yPos = (i * 45) + 80
-        local control = Text(145, yPos, text, paths.getFont('phantommuff.ttf', 30),
-                             {1, 1, 1})
+        local control = Text(145, yPos, text,
+                             paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
         daGroup:add(control)
 
         local realvalue = ClientPrefs.data[optionsVar[i]]
-        local value = type_table[type(realvalue)] and '< '..tostring(realvalue)..' >'
-                                                   or tostring(realvalue)
+        local value = type_table[type(realvalue)] and '< ' ..
+                          tostring(realvalue) .. ' >' or tostring(realvalue)
         local valueTxt = Text(382, yPos, value,
                               paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
         daGroup:add(valueTxt)
@@ -145,10 +136,11 @@ function OptionsState:update(dt)
             self.waitInputTxt.visible = false
         elseif self.onTab then
             self.onTab = false
-            self.titleTxt:setContent('< '..self.optionsTab[self.curTab]..' >')
+            self.titleTxt:setContent('< ' .. self.optionsTab[self.curTab] ..
+                                         ' >')
             self.optionsCursor.visible = false
-            self.controlsCursor.visible = (self.optionsTab[self.curTab] == 'Controls'
-                                           and false)
+            self.controlsCursor.visible =
+                (self.optionsTab[self.curTab] == 'Controls' and false)
         else
             if OptionsState.onPlayState then
                 game.switchState(PlayState())
@@ -159,7 +151,7 @@ function OptionsState:update(dt)
         end
     end
 
-   if not self.waiting_input then
+    if not self.waiting_input then
         if not self.onTab then
             if controls:pressed('ui_left') then
                 self:changeTab(-1)
@@ -219,13 +211,12 @@ function OptionsState:update(dt)
         self.block_input = true
 
         local arrow = {
-            'note_left', 'note_down', 'note_up', 'note_right',
-            'ui_left', 'ui_down', 'ui_up', 'ui_right',
-            'accept', 'back', 'pause'
+            'note_left', 'note_down', 'note_up', 'note_right', 'ui_left',
+            'ui_down', 'ui_up', 'ui_right', 'accept', 'back', 'pause'
         }
         local text = arrow[self.curSelect]
 
-        local newBind = 'key:'..Keyboard.input:lower()
+        local newBind = 'key:' .. Keyboard.input:lower()
         self.controls[text][self.curBindSelect] = newBind
 
         self:reset_Tabs()
@@ -257,8 +248,8 @@ function OptionsState:changeBindSelection(huh)
         self.curBindSelect = 2
     end
 
-    self.controlsCursor.x = (self.curBindSelect == 1 and 382
-                          or self.curBindSelect == 2 and 542) - 5
+    self.controlsCursor.x = (self.curBindSelect == 1 and 382 or
+                                self.curBindSelect == 2 and 542) - 5
 end
 
 function OptionsState:changeSelection(huh, tab)
@@ -290,7 +281,7 @@ function OptionsState:changeTab(huh)
         self.curTab = #self.optionsTab
     end
 
-    self.titleTxt:setContent('< '..self.optionsTab[self.curTab]..' >')
+    self.titleTxt:setContent('< ' .. self.optionsTab[self.curTab] .. ' >')
 
     for i, grp in ipairs(self.allTabs.members) do
         for j, obj in ipairs(grp.members) do

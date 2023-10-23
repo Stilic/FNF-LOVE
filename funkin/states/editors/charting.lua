@@ -33,9 +33,7 @@ function ChartingState:enter()
         PlayState.SONG = self.__song
     end
 
-    self.camScroll = Camera()
-    self.camScroll.target = {x = 640, y = 360}
-    game.cameras.reset(self.camScroll)
+    game.camera.target = {x = 640, y = 360}
 
     self.strumLine = {x = 640, y = 360}
 
@@ -57,20 +55,21 @@ function ChartingState:enter()
     self.curRenderedNotes = Group()
     self:add(self.curRenderedNotes)
 
-    local daBlack = Sprite(self.gridBox.x, 0)
+    local daBlack = Sprite(self.gridBox.x, 0):make(self.gridSize * 8,
+                                                   (self.gridSize * 4),
+                                                   {0, 0, 0})
     daBlack:setScrollFactor()
-    daBlack:make(self.gridSize * 8, (self.gridSize * 4), {0, 0, 0})
     daBlack.alpha = 0.4
     self:add(daBlack)
 
-    local blackLine = Sprite(self.gridBox.x + (self.gridSize * 4) - 1, 0)
+    local blackLine = Sprite(self.gridBox.x + (self.gridSize * 4) - 1, 0):make(
+                          2, game.height, {0, 0, 0})
     blackLine:setScrollFactor(1, 0)
-    blackLine:make(2, game.height, {0, 0, 0})
     self:add(blackLine)
 
-    local curPosLine = Sprite(self.gridBox.x, (self.gridSize * 4) - 1)
+    local curPosLine = Sprite(self.gridBox.x, (self.gridSize * 4) - 1):make(
+                           self.gridSize * 8, 2, {0, 1, 0})
     curPosLine:setScrollFactor()
-    curPosLine:make(self.gridSize * 8, 2, {0, 1, 0})
     self:add(curPosLine)
 
     local testText = Text((self.gridBox.x - 50), self.gridBox.y, '',
@@ -102,8 +101,7 @@ function ChartingState:enter()
 
     self.blockInput = {}
 
-    self.dummyArrow = Sprite()
-    self.dummyArrow:make(self.gridSize, self.gridSize, {1, 1, 1})
+    self.dummyArrow = Sprite():make(self.gridSize, self.gridSize, {1, 1, 1})
     self:add(self.dummyArrow)
 
     local tabs = {"Charting", "Note", "Section", "Song"}
@@ -300,18 +298,18 @@ function ChartingState:update(dt)
 
     if Mouse.x > self.gridBox.x and Mouse.x < self.gridBox.x +
         self.gridBox.width and Mouse.y > self.gridBox.y + (self.gridSize * 4) and
-        Mouse.y + self.camScroll.target.y < self.gridBox.y +
+        Mouse.y + game.camera.target.y < self.gridBox.y +
         (self.gridSize * self:getSectionBeats() * 4) + (self.gridSize * 9) then
 
         self.dummyArrow.visible = true
         self.dummyArrow.x = math.floor(Mouse.x / self.gridSize) * self.gridSize
         if Keyboard.pressed.SHIFT then
-            self.dummyArrow.y = (Mouse.y + self.camScroll.target.y -
+            self.dummyArrow.y = (Mouse.y + game.camera.target.y -
                                     (self.gridSize * 9) - (self.gridSize / 2))
         else
             local gridmult = self.gridSize / (16 / 16)
             self.dummyArrow.y = math.floor(
-                                    (Mouse.y + self.camScroll.target.y -
+                                    (Mouse.y + game.camera.target.y -
                                         (self.gridSize * 9)) / gridmult) *
                                     gridmult
         end
@@ -327,7 +325,7 @@ function ChartingState:update(dt)
             else
                 if Mouse.x > self.gridBox.x and Mouse.x < self.gridBox.x +
                     self.gridBox.width and Mouse.y > self.gridBox.y +
-                    (self.gridSize * 4) and Mouse.y + self.camScroll.target.y <
+                    (self.gridSize * 4) and Mouse.y + game.camera.target.y <
                     self.gridBox.y +
                     (self.gridSize * self:getSectionBeats() * 4) +
                     (self.gridSize * 9) then
@@ -485,7 +483,7 @@ function ChartingState:strumLineUpdateY()
                            (ChartingState.songPosition - self:sectionStartTime()) /
                                1 % (ChartingState.conductor.stepCrochet * 16)) /
                            (self:getSectionBeats() / 4)
-    self.camScroll.target = self.strumLine
+    game.camera.target = self.strumLine
 end
 
 function ChartingState:changeSection(sec, updateMusic)

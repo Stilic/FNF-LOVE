@@ -176,7 +176,7 @@ function Sprite:new(x, y, texture)
     self.animFinished = nil
     self.animPaused = false
 
-    self.__createdGraphic = false
+    self.__rectangleMode = false
 
     if texture then self:loadTexture(texture) end
 end
@@ -188,6 +188,8 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
         texture = love.graphics.newImage(texture) or defaultTexture
     end
     self.texture = texture
+
+    self.__rectangleMode = false
 
     self.curAnim = nil
     self.curFrame = nil
@@ -233,8 +235,10 @@ function Sprite:make(width, height, color)
 
     self:setGraphicSize(width, height)
     self.color = color
-    self.__createdGraphic = true
+    self.__rectangleMode = true
     self:updateHitbox()
+
+    return self
 end
 
 function Sprite:setFrames(frames)
@@ -522,7 +526,7 @@ function Sprite:__render(camera)
         love.graphics.stencil(stencil, "replace", 1, false)
     end
 
-    if self.__createdGraphic then
+    if self.__rectangleMode then
         local w, h = self:getFrameDimensions()
 
         love.graphics.push()
