@@ -482,6 +482,13 @@ function Sprite:update(dt)
     end
 end
 
+function Sprite:isOnScreen(camera)
+    camera = camera or game.camera
+    return Basic.checkCollision(0, 0, camera.width * camera.zoom,
+                                camera.height * camera.zoom, self.x, self.y,
+                                self.width, self.height)
+end
+
 function Sprite:draw()
     if self.alpha ~= 0 and (self.scale.x ~= 0 or self.scale.y ~= 0) then
         Sprite.super.draw(self)
@@ -528,14 +535,12 @@ function Sprite:__render(camera)
 
     if self.__rectangleMode then
         local w, h = self:getFrameDimensions()
+        w, h = math.abs(self.scale.x) * w, math.abs(self.scale.y) * h
 
         love.graphics.push()
         love.graphics.translate(x, y)
         love.graphics.rotate(rad)
-        love.graphics.rectangle('fill', -(math.abs(self.scale.x) * w) / 2,
-                                -(math.abs(self.scale.y) * h) / 2,
-                                math.abs(self.scale.x) * w,
-                                math.abs(self.scale.y) * h)
+        love.graphics.rectangle('fill', -w / 2, -h / 2, w, h)
         love.graphics.pop()
     elseif not f then
         love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)

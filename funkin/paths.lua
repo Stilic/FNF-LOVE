@@ -55,7 +55,12 @@ function paths.getText(key)
 end
 
 function paths.getJSON(key)
-    return decodeJson(readFile(paths.getPath(key .. ".json")))
+    local data = readFile(paths.getPath(key .. ".json"))
+    if data then
+        return decodeJson(data)
+    else
+        return nil
+    end
 end
 
 function paths.getFont(key, size)
