@@ -59,16 +59,16 @@ function Conductor:mapBPMChanges(song)
 
     local bpm, totalSteps, totalPos, toAdd = song.bpm, 0, 0,
                                              ((60 / song.bpm) * 1000 / 4)
-    for i, s in ipairs(song.notes) do
-        if s.changeBPM and s.bpm ~= bpm then
+    for _, s in ipairs(song.notes) do
+        if s.changeBPM and s.bpm ~= nil and s.bpm ~= bpm then
             bpm = s.bpm
             toAdd = ((60 / bpm) * 1000 / 4)
             table.insert(self.__bpmChanges, {totalSteps, totalPos, bpm})
         end
 
-        local section = song.notes[i]
-        local deltaSteps = math.round((section.sectionBeats ~= nil and
-                                          section.sectionBeats or 4) * 4)
+        local deltaSteps = math.round(
+                               (s.sectionBeats ~= nil and s.sectionBeats or 4) *
+                                   4)
         totalSteps = totalSteps + deltaSteps
         totalPos = totalPos + toAdd * deltaSteps
     end

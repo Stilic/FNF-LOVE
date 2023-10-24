@@ -519,9 +519,8 @@ end
 
 function ChartingState:updateIcon()
     local function getIconFromCharacter(char)
-        local charScript = paths.getJSON("data/characters/" .. char)
-        local icon = charScript.healthicon
-        return icon or 'bf'
+        local data = paths.getJSON("data/characters/" .. char)
+        return (data and data.healthicon) and data.healthicon or 'bf'
     end
     local iconLeft = getIconFromCharacter(self.__song.player2)
     local iconRight = getIconFromCharacter(self.__song.player1)

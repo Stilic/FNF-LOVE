@@ -524,19 +524,16 @@ function PlayState:update(dt)
         if n.isSustain then
             n.flipY = PlayState.downscroll
             if n.flipY then
-                if n.flipY then
-                    if n.isSustainEnd then
-                        n.y = n.y + (43.5 * 0.7) *
-                                  (PlayState.conductor.stepCrochet / 100 * 1.5 *
-                                      PlayState.SONG.speed) - n.height
-                    end
-                    n.y = n.y + Note.swagWidth / 2 - 60.5 *
-                              (PlayState.SONG.speed - 1) + 27.5 *
-                              (PlayState.SONG.bpm / 100 - 1) *
-                              (PlayState.SONG.speed - 1)
-                else
-                    n.y = n.y + Note.swagWidth / 10
+                if n.isSustainEnd then
+                    n.y = n.y + (43.5 * 0.7) *
+                              (PlayState.conductor.stepCrochet / 100 * 1.5 *
+                                  PlayState.SONG.speed) - n.height
                 end
+                n.y = n.y + Note.swagWidth / 2 - 60.5 *
+                          (PlayState.SONG.speed - 1) + 27.5 *
+                          (PlayState.SONG.bpm / 100 - 1) *
+                          (PlayState.SONG.speed - 1)
+
             else
                 n.y = n.y + Note.swagWidth / 12
             end
