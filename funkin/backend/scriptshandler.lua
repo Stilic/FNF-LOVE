@@ -7,8 +7,7 @@ function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)
 function ScriptsHandler:loadDirectory(...)
     for _, dir in ipairs({...}) do
         for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                    "data/" ..
-                                                                        dir))) do
+                                                                    dir))) do
             if string.endsWith(file, '.lua') then
                 self:loadScript(util.removeExtension(file))
             end

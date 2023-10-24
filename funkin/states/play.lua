@@ -32,7 +32,7 @@ function PlayState:enter()
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
-    self.scripts:loadDirectory("songs")
+    self.scripts:loadDirectory("data/scripts/songs")
     self.scripts:loadDirectory("songs/" .. songName)
     self.scripts:call("create")
 
