@@ -2,15 +2,15 @@ local ScriptsHandler = Object:extend()
 
 function ScriptsHandler:new() self.scripts = {} end
 
+function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)) end
+
 function ScriptsHandler:loadDirectory(...)
     for _, dir in ipairs({...}) do
         for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
                                                                     "data/" ..
                                                                         dir))) do
             if string.endsWith(file, '.lua') then
-
-                table.insert(self.scripts,
-                             Script(dir .. "/" .. util.removeExtension(file)))
+                self:loadScript(util.removeExtension(file))
             end
         end
     end

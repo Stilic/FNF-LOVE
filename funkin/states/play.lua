@@ -26,21 +26,17 @@ PlayState.pixelStage = false
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState:enter()
-    self.scripts = ScriptsHandler()
-    self.scripts:loadDirectory("scripts/charts")
-    self.scripts:call("create")
-
-    self.keysPressed = {}
-
     if PlayState.SONG == nil then
         PlayState.SONG = paths.getJSON("songs/tutorial/tutorial").song
     end
+    local songName = paths.formatToSongPath(PlayState.SONG.song)
 
-    self.keysPressed = {}
+    self.scripts = ScriptsHandler()
+    self.scripts:loadDirectory("songs")
+    self.scripts:loadDirectory("songs/" .. songName)
+    self.scripts:call("create")
 
     if game.sound.music then game.sound.music:stop() end
-
-    local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     game.sound.music = Sound():load(paths.getInst(songName))
     game.sound.music.onComplete = function()
@@ -54,6 +50,8 @@ function PlayState:enter()
         self.vocals = Sound():load(paths.getVoices(songName))
         game.sound.list:add(self.vocals)
     end
+
+    self.keysPressed = {}
 
     self.unspawnNotes = {}
     self.allNotes = Group()
@@ -450,7 +448,7 @@ function PlayState:update(dt)
 
     if self.camZooming then
         game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom,
-                                          0.0475)
+                                         0.0475)
         self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
     end
 
@@ -493,10 +491,12 @@ function PlayState:update(dt)
     local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
     local ogStepCrochet = ogCrochet / 4
     for i, n in ipairs(self.allNotes.members) do
-        if not self.startingSong and not n.tooLate and ((not n.mustPress or PlayState.botPlay) and
-            ((n.isSustain and n.canBeHit) or n.time <= PlayState.notePosition) or
-            (n.isSustain and self.keysPressed[n.data] and n.parentNote and
-                n.parentNote.wasGoodHit and n.canBeHit)) then
+        if not self.startingSong and not n.tooLate and
+            ((not n.mustPress or PlayState.botPlay) and
+                ((n.isSustain and n.canBeHit) or n.time <=
+                    PlayState.notePosition) or
+                (n.isSustain and self.keysPressed[n.data] and n.parentNote and
+                    n.parentNote.wasGoodHit and n.canBeHit)) then
             self:goodNoteHit(n)
         end
 

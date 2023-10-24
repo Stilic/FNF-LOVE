@@ -25,12 +25,4 @@ function Stage:new(name)
     self.script:call("create")
 end
 
-function Stage:update(dt)
-    Stage.super.update(self, dt)
-end
-
-function Stage:draw()
-    Stage.super.draw(self)
-end
-
 return Stage
