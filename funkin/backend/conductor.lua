@@ -29,6 +29,13 @@ function Conductor:__updateTime()
     self.currentBeat = math.floor(self.currentBeatFloat)
 end
 
+function Conductor:__step()
+    if self.onStep then self.onStep(self.currentStep) end
+    if self.onBeat and self.currentStep % 4 == 0 then
+        self.onBeat(self.currentBeat)
+    end
+end
+
 function Conductor:update()
     if self.sound:isPlaying() then
         local step = self.currentStep
@@ -36,13 +43,6 @@ function Conductor:update()
         if step ~= self.currentStep and self.currentStep >= 0 then
             self:__step()
         end
-    end
-end
-
-function Conductor:__step()
-    if self.onStep then self.onStep(self.currentStep) end
-    if self.onBeat and self.currentStep % 4 == 0 then
-        self.onBeat(self.currentBeat)
     end
 end
 
@@ -66,16 +66,12 @@ function Conductor:mapBPMChanges(song)
             table.insert(self.__bpmChanges, {totalSteps, totalPos, bpm})
         end
 
-        local deltaSteps = math.round(self:getSectionBeats(song, i) * 4)
+        local section = song.notes[i]
+        local deltaSteps = math.round((section.sectionBeats ~= nil and
+                                          section.sectionBeats or 4) * 4)
         totalSteps = totalSteps + deltaSteps
         totalPos = totalPos + toAdd * deltaSteps
     end
-end
-
-function Conductor:getSectionBeats(song, section)
-    local val = nil
-    if song.notes[section] ~= nil then val = song.notes[section].sectionBeats end
-    return val ~= nil and val or 4
 end
 
 return Conductor

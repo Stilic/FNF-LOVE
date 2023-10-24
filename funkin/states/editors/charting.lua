@@ -121,7 +121,6 @@ function ChartingState:enter()
 end
 
 function ChartingState:add_UI_Song()
-
     local input_song = ui.UIInputTextBox(45, 10, 135, 20)
     input_song.text = self.__song.song
     input_song.onChanged = function(value) self.__song.song = value end
@@ -444,9 +443,6 @@ function ChartingState:update(dt)
 end
 
 function ChartingState:loadSong(song)
-    if ChartingState.conductor then ChartingState.conductor.sound:release() end
-    if self.vocals then self.vocals:release() end
-
     game.sound.music = Sound():load(paths.getInst(song))
     ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
     ChartingState.conductor.sound:setLooping(true)
@@ -601,6 +597,7 @@ end
 function ChartingState:leave()
     love.mouse.setVisible(false)
 
+    ChartingState.conductor = nil
     game.sound.music:destroy()
     game.sound.music = nil
 

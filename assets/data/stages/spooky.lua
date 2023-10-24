@@ -18,7 +18,7 @@ function beat(b)
                                            love.math.random(1, 2)))
         hallowBG:play('lightning')
 
-        state.camGame:shake(0.001, 1.4)
+        game.camera:shake(0.001, 1.4)
         state.camHUD:shake(0.001, 1.4)
 
         lightningStrikeBeat = b
