@@ -112,7 +112,11 @@ function Mouse.onReleased(button)
 end
 
 function Mouse.onMoved(x, y)
-    Mouse.x, Mouse.y = Camera.remapToGame(x, y)
+    local winWidth, winHeight = love.graphics.getDimensions()
+    local scale = math.min(winWidth / game.width, winHeight / game.height)
+    Mouse.x, Mouse.y = (x - (winWidth - scale * game.width) / 2) / scale,
+                       (y - (winHeight - scale * game.height) / 2) / scale
+
     Mouse.screenX, Mouse.screenY = x, y
     Mouse.isMoved = true
 end

@@ -482,13 +482,6 @@ function Sprite:update(dt)
     end
 end
 
-function Sprite:isOnScreen(camera)
-    camera = camera or game.camera
-    return Basic.checkCollision(0, 0, camera.width * camera.zoom,
-                                camera.height * camera.zoom, self.x, self.y,
-                                self.width, self.height)
-end
-
 function Sprite:draw()
     if self.alpha ~= 0 and (self.scale.x ~= 0 or self.scale.y ~= 0) then
         Sprite.super.draw(self)
