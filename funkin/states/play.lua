@@ -84,9 +84,11 @@ function PlayState:enter()
     self:add(self.stage)
     table.insert(self.scripts.scripts, self.stage.script)
 
-    local notes = PlayState.SONG.notes
-    for _, s in ipairs(notes) do
+    for _, s in ipairs(PlayState.SONG.notes) do
         if s and s.sectionNotes then
+            if s.changeBPM and s.bpm ~= nil and s.bpm ~= PlayState.conductor.bpm then
+                PlayState.conductor:setBPM(s.bpm)
+            end
             for _, n in ipairs(s.sectionNotes) do
                 local daStrumTime = tonumber(n[1])
                 local daNoteData = tonumber(n[2])
@@ -114,26 +116,30 @@ function PlayState:enter()
                             susLength = math.round(n[3] /
                                                        PlayState.conductor
                                                            .stepCrochet)
+                            if susLength > 0 then
+                                for susNote = 0, math.max(susLength - 1, 1) do
+                                    oldNote =
+                                        self.unspawnNotes[#self.unspawnNotes]
 
-                            for susNote = 0, math.max(math.floor(susLength) - 1,
-                                                      1) do
-                                oldNote = self.unspawnNotes[#self.unspawnNotes]
-
-                                local sustain = Note(daStrumTime +
-                                                         PlayState.conductor
-                                                             .stepCrochet *
-                                                         (susNote + 1),
-                                                     daNoteData, oldNote, true,
-                                                     note)
-                                sustain.mustPress = gottaHitNote
-                                sustain:setScrollFactor()
-                                table.insert(self.unspawnNotes, sustain)
+                                    local sustain = Note(daStrumTime +
+                                                             PlayState.conductor
+                                                                 .stepCrochet *
+                                                             (susNote + 1),
+                                                         daNoteData, oldNote,
+                                                         true, note)
+                                    sustain.mustPress = gottaHitNote
+                                    sustain:setScrollFactor()
+                                    table.insert(self.unspawnNotes, sustain)
+                                end
                             end
                         end
                     end
                 end
             end
         end
+    end
+    if PlayState.conductor.bpm ~= PlayState.SONG.bpm then
+        PlayState.conductor:setBPM(PlayState.SONG.bpm)
     end
 
     table.sort(self.unspawnNotes, PlayState.sortByShit)
@@ -518,19 +524,16 @@ function PlayState:update(dt)
         if n.isSustain then
             n.flipY = PlayState.downscroll
             if n.flipY then
-                if n.flipY then
-                    if n.isSustainEnd then
-                        n.y = n.y + (43.5 * 0.7) *
-                                  (PlayState.conductor.stepCrochet / 100 * 1.5 *
-                                      PlayState.SONG.speed) - n.height
-                    end
-                    n.y = n.y + Note.swagWidth / 2 - 60.5 *
-                              (PlayState.SONG.speed - 1) + 27.5 *
-                              (PlayState.SONG.bpm / 100 - 1) *
-                              (PlayState.SONG.speed - 1)
-                else
-                    n.y = n.y + Note.swagWidth / 10
+                if n.isSustainEnd then
+                    n.y = n.y + (43.5 * 0.7) *
+                              (PlayState.conductor.stepCrochet / 100 * 1.5 *
+                                  PlayState.SONG.speed) - n.height
                 end
+                n.y = n.y + Note.swagWidth / 2 - 60.5 *
+                          (PlayState.SONG.speed - 1) + 27.5 *
+                          (PlayState.SONG.bpm / 100 - 1) *
+                          (PlayState.SONG.speed - 1)
+
             else
                 n.y = n.y + Note.swagWidth / 12
             end

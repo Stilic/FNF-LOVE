@@ -62,7 +62,7 @@ function update(dt)
             if trainSound:tell() >= 4.7 then
                 startedMoving = true
                 state.gf:playAnim('hairBlow')
-                state.gf.lastHit = PlayState.conductor.time
+                state.gf.lastHit = math.floor(PlayState.conductor.time)
             end
 
             if startedMoving then

@@ -172,7 +172,7 @@ function Character:sing(dir, miss)
     if miss then anim = anim .. "miss" end
     self:playAnim(anim, true)
 
-    self.lastHit = PlayState.conductor.time
+    self.lastHit = math.floor(PlayState.conductor.time)
 end
 
 function Character:dance(force)

@@ -1,4 +1,4 @@
-local ClientPrefs = Object:extend()
+local ClientPrefs = {}
 
 ClientPrefs.data = {
     noteSplash = true,
