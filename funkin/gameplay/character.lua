@@ -66,8 +66,8 @@ function Character:new(x, y, char, isPlayer)
             local animOffsets = anim.offsets
             local animIndices = anim.indices
             if animIndices ~= nil and #animIndices > 0 then
-                self:addAnimByIndices(animAnim, animName, animIndices, animFps,
-                                      nil, animLoop)
+                self:addAnimByIndices(animAnim, animName, animIndices, nil,
+                                      animFps, animLoop)
             else
                 self:addAnimByPrefix(animAnim, animName, animFps, animLoop)
             end
