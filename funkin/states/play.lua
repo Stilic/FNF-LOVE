@@ -786,7 +786,8 @@ function PlayState:beat(b)
     self.scripts:call("beat", b)
 
     local section = self:getCurrentSection()
-    if b % (section.sectionBeats ~= nil and section.sectionBeats or 4) == 0 then
+    if section and b %
+        (section.sectionBeats ~= nil and section.sectionBeats or 4) == 0 then
         if section and section.changeBPM then
             print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
                       ", NEW BPM: " .. section.bpm)

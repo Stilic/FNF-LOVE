@@ -1,26 +1,13 @@
-local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2, a2)
+local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2)
     local cos1 = math.cos(a1)
     local sin1 = math.sin(a1)
-    local cos2 = math.cos(a2)
-    local sin2 = math.sin(a2)
 
-    local centerX1 = x1 + w1 / 2
-    local centerY1 = y1 + h1 / 2
-    local centerX2 = x2 + w2 / 2
-    local centerY2 = y2 + h2 / 2
+    local relativeX = (x2 + w2 / 2) - (x1 + w1 / 2)
+    local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
 
-    local relativeX = centerX2 - centerX1
-    local relativeY = centerY2 - centerY1
-
-    local rotatedX = relativeX * cos1 + relativeY * sin1
-    local rotatedY = -relativeX * sin1 + relativeY * cos1
-
-    local projectedX = math.abs(rotatedX) - (w1 / 2 + w2 / 2)
-    local projectedY = math.abs(rotatedY) - (h1 / 2 + h2 / 2)
-
-    local collision = projectedX < 0 and projectedY < 0
-
-    return collision
+    return
+        math.abs(relativeX * cos1 + relativeY * sin1) - (w1 / 2 + w2 / 2) < 0 and
+            math.abs(-relativeX * sin1 + relativeY * cos1) - (h1 / 2 + h2 / 2)
 end
 
 local Basic = Object:extend()

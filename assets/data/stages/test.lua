@@ -11,10 +11,8 @@ function ParallaxImage:new(x, y, width, height)
     self.width = width
     self.height = height
 
-    local vertices = {
-        {0, 0, 0, 0},
-        {self.width, 0, 1, 0},
-        {self.width, self.height, 1, 1},
+    self.vertices = {
+        {0, 0, 0, 0}, {self.width, 0, 1, 0}, {self.width, self.height, 1, 1},
         {0, self.height, 0, 1}
     }
 
@@ -29,50 +27,45 @@ function ParallaxImage:new(x, y, width, height)
 
     self.color = {1, 1, 1}
 
-    self.mesh = love.graphics.newMesh(vertices, "fan")
+    self.mesh = love.graphics.newMesh(self.vertices, "fan")
     self.mesh:setTexture(paths.getImage('menus/mainmenu/menuDesat'))
 end
 
-function ParallaxImage:draw()
-    ParallaxImage.super.draw(self)
-end
+function ParallaxImage:draw() ParallaxImage.super.draw(self) end
 
 function ParallaxImage:__render(camera)
     local xBack, yBack = self.x, self.y
     xBack, yBack = xBack - (camera.scroll.x * self.scrollFactorBack.x),
-           yBack - (camera.scroll.y * self.scrollFactorBack.y)
+                   yBack - (camera.scroll.y * self.scrollFactorBack.y)
 
     local xFront, yFront = self.x, self.y
     xFront, yFront = xFront - (camera.scroll.x * self.scrollFactorFront.x),
-            yFront - (camera.scroll.y * self.scrollFactorFront.y)
+                     yFront - (camera.scroll.y * self.scrollFactorFront.y)
 
     xBack = xBack + self.width / 2
     xFront = xFront + self.width / 2
 
-    local vertices = {{
-            (-self.width*self.scaleBack/2) + xBack - self.offsetBack.x,
-            yBack - self.offsetBack.y,
-            0,
-            0
-        },{
-            (-self.width*self.scaleBack/2) + xBack + (self.width*self.scaleBack) -
-                                                      self.offsetBack.x,
-            yBack - self.offsetBack.y,
-            1,
-            0
-        },{
-            (-self.width*self.scaleFront/2) + xFront + (self.width*self.scaleFront) -
-                                                        self.offsetFront.x,
-            yFront + self.height - self.offsetFront.y,
-            1,
-            1
-        },{
-            (-self.width*self.scaleFront/2) + xFront - self.offsetFront.x,
-            yFront + self.height - self.offsetFront.y,
-            0,
-            1
-    }}
-    self.mesh:setVertices(vertices)
+    local size, pos = -self.width * self.scaleBack / 2,
+                      yBack - self.offsetBack.y
+
+    self.vertices[1][1] = size + xBack - self.offsetBack.x
+    self.vertices[1][2] = pos
+
+    self.vertices[2][1] = size + xBack + (self.width * self.scaleBack) -
+                              self.offsetBack.x
+    self.vertices[2][2] = pos
+
+    size, pos = -self.width * self.scaleFront / 2,
+                yFront + self.height - self.offsetFront.y
+
+    self.vertices[3][1] = size + xFront + (self.width * self.scaleFront) -
+                              self.offsetFront.x
+    self.vertices[3][2] = pos
+
+    self.vertices[4][1] = size + xFront - self.offsetFront.x
+    self.vertices[4][2] = pos
+
+    self.mesh:setVertices(self.vertices)
 
     local r, g, b, a = love.graphics.getColor()
     love.graphics.setColor(self.color[1], self.color[2], self.color[3])
@@ -109,6 +102,4 @@ function create()
     self:add(testF)
 end
 
-function postCreate()
-    game.camera.bgColor = {0.5, 0.5, 0.5}
-end
+function postCreate() game.camera.bgColor = {0.5, 0.5, 0.5} end
