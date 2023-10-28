@@ -5,7 +5,7 @@
         "needsVoices": true,
         "player1": "bf",
         "player2": "bf-pixel",
-        "stage": "stage",
+        "stage": "test",
         "gfVersion": "gf",
         "speed": 1.6,
         "notes": [

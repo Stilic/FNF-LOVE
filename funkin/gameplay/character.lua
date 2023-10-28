@@ -7,7 +7,7 @@ function Character:new(x, y, char, isPlayer)
 
     if not Character.editorMode then
         self.script = Script("characters/" .. char)
-        self.script.variables["self"] = self
+        self.script:set("self", self)
 
         self.script:call("create")
     end
