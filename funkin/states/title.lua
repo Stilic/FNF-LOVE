@@ -50,9 +50,6 @@ end
 function TitleState:update(dt)
     TitleState.music:update(dt)
 
-    self.gfDance.angle = self.gfDance.angle + 0.6
-    self.gfDance.x = self.gfDance.x + 1.5
-
     if controls:pressed("debug_1") then game.switchState(ChartingState()) end
     if controls:pressed("debug_2") then game.switchState(CharacterEditor()) end
     if not self.confirmed and controls:pressed("accept") then
