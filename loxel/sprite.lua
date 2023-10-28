@@ -1,5 +1,12 @@
 local parseXml = require "loxel.lib.xml"
 
+local function sortFramesByIndices(prefix, postfix)
+    local s, e = #prefix + 1, -#postfix - 1
+    return function(a, b)
+        return string.sub(a.name, s, e) < string.sub(b.name, s, e)
+    end
+end
+
 local stencilSprite, stencilX, stencilY = {}, 0, 0
 local function stencil()
     if stencilSprite then
@@ -377,11 +384,15 @@ function Sprite:addAnimByPrefix(name, prefix, framerate, looped)
         if f.name:startsWith(prefix) then table.insert(anim.frames, f) end
     end
 
+    table.sort(anim.frames, sortFramesByIndices(prefix, ""))
+
     if not self.__animations then self.__animations = {} end
     self.__animations[name] = anim
 end
 
-function Sprite:addAnimByIndices(name, prefix, indices, framerate, looped)
+function Sprite:addAnimByIndices(name, prefix, indices, postfix, framerate,
+                                 looped)
+    if postfix == nil then postfix = "" end
     if framerate == nil then framerate = 30 end
     if looped == nil then looped = true end
 
@@ -391,15 +402,20 @@ function Sprite:addAnimByIndices(name, prefix, indices, framerate, looped)
         looped = looped,
         frames = {}
     }
-    local subEnd = #prefix + 1
-    for _, i in ipairs(indices) do
-        for _, f in ipairs(self.__frames) do
-            if f.name:startsWith(prefix) and
-                tonumber(string.sub(f.name, subEnd)) == i then
-                table.insert(anim.frames, f)
-                break
-            end
+
+    local allFrames = {}
+    local notPostfix = #postfix <= 0
+    for _, f in ipairs(self.__frames) do
+        if f.name:startsWith(prefix) and
+            (notPostfix or f.name:endsWith(postfix)) then
+            table.insert(allFrames, f)
         end
+    end
+    table.sort(allFrames, sortFramesByIndices(prefix, postfix))
+
+    for _, i in ipairs(indices) do
+        local f = allFrames[i + 1]
+        if f then table.insert(anim.frames, f) end
     end
 
     if not self.__animations then self.__animations = {} end
