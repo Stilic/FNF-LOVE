@@ -888,7 +888,7 @@ function PlayState:recalculateRating()
                                  math.max(0, self.totalHit / self.totalPlayed))
     end
 
-    self.scoreTxt:setContent("Score: " .. self.score .. " // Misses: " ..
+    self.scoreTxt:setContent("Score: " .. self.score .. " // Combo Breaks: " ..
                                  self.misses .. " // " ..
                                  util.floorDecimal(self.accuracy * 100, 2) ..
                                  "%")
