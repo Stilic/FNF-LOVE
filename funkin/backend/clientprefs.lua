@@ -4,6 +4,7 @@ ClientPrefs.data = {
     noteSplash = true,
     scrollType = 'upscroll',
     pauseMusic = 'railways',
+    screenQuality = 1,
     antialiasing = true
 }
 
