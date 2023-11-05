@@ -265,6 +265,8 @@ function PlayState:enter()
     }
     self.timeArcBG:updateDimensions()
 
+    self.timeTxt.y = self.timeArcBG.y - (self.timeArcBG.height / 2)
+
     self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 100, 100,
                            {1, 1, 1}, "arc", "line")
     self.timeArc.outWidth = 2
