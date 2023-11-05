@@ -1,5 +1,6 @@
 local PauseSubState = require "funkin.substates.pause"
 
+---@class PlayState:State
 local PlayState = State:extend()
 
 PlayState.controlDirs = {
@@ -353,6 +354,10 @@ function PlayState:enter()
             self.dad:beat(swagCounter)
         end)
     end
+
+    self.scripts:set("bpm", PlayState.conductor.bpm)
+    self.scripts:set("crochet", PlayState.conductor.crochet)
+    self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
 
     self.scripts:call("postCreate")
 end
@@ -775,7 +780,8 @@ function PlayState:step(s)
         PlayState.notePosition = time * 1000
     end
 
-    self.scripts:call("step", s)
+    self.scripts:set("curStep", s)
+    self.scripts:call("step")
 
     self.boyfriend:step(s)
     self.gf:step(s)
@@ -785,7 +791,8 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
-    self.scripts:call("beat", b)
+    self.scripts:set("curBeat", b)
+    self.scripts:call("beat")
 
     local section = self:getCurrentSection()
     if section and b %
@@ -794,6 +801,9 @@ function PlayState:beat(b)
             print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
                       ", NEW BPM: " .. section.bpm)
             PlayState.conductor:setBPM(section.bpm)
+            self.scripts:set("bpm", PlayState.conductor.bpm)
+            self.scripts:set("crochet", PlayState.conductor.crochet)
+            self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
         end
 
         if self.camZooming and game.camera.zoom < 1.35 then

@@ -112,7 +112,7 @@ function Camera:draw()
                                 self.bgColor[3], self.bgColor[4])
             love.graphics.push()
 
-            local w2, h2 = self.width * (0.5 / ClientPrefs.data.screenQuality)
+            local w2, h2 = self.width * (0.5 / ClientPrefs.data.screenQuality),
                            self.height * (0.5 / ClientPrefs.data.screenQuality)
             love.graphics.translate(w2 - self.x + self.__shakeX,
                                     h2 - self.y + self.__shakeY)

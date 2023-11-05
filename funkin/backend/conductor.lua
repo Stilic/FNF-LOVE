@@ -1,3 +1,4 @@
+---@class Conductor:Object
 local Conductor = Object:extend()
 
 function Conductor:new(sound, bpm)

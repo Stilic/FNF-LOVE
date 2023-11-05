@@ -22,20 +22,16 @@ function postDraw() end
 function songStart() end
 
 --- gets called every stepHit
----@param step integer
-function step(step) end
+function step() end
 
 --- gets called every stepHit AFTER beat.super()
----@param step integer
-function postStep(step) end
+function postStep() end
 
 --- gets called every beatHit
----@param beat integer
-function beat(beat) end
+function beat() end
 
 --- gets called every beatHit AFTER beat.super()
----@param beat integer
-function postBeat(beat) end
+function postBeat() end
 
 --- gets called every noteHit
 ---@param note table
