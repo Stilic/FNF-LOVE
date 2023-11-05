@@ -498,13 +498,13 @@ function PlayState:update(dt)
 
     local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
     local ogStepCrochet = ogCrochet / 4
-    for i, n in ipairs(self.allNotes.members) do
+    for _, n in ipairs(self.allNotes.members) do
         if not self.startingSong and not n.tooLate and
             ((not n.mustPress or PlayState.botPlay) and
+                (not n.isSustain or not n.parentNote or n.parentNote.wasGoodHit) and
                 ((n.isSustain and n.canBeHit) or n.time <=
                     PlayState.notePosition) or
-                (n.isSustain and self.keysPressed[n.data] and n.parentNote and
-                    n.parentNote.wasGoodHit and n.canBeHit)) then
+                (n.isSustain and n.canBeHit and self.keysPressed[n.data])) then
             self:goodNoteHit(n)
         end
 

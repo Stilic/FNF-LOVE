@@ -5,8 +5,6 @@ local canvasTable = {canvas, stencil = true}
 
 Camera.__defaultCameras = {}
 
-local w2, h2
-
 function Camera:new(x, y, width, height)
     Camera.super.new(self)
 
@@ -41,9 +39,6 @@ function Camera:new(x, y, width, height)
     self.__shakeIntensity = 0
     self.__shakeDuration = 0
     self.__shakeComplete = nil
-
-    w2 = self.width * 0.5
-    h2 = self.height * 0.5
 end
 
 function Camera:update(dt)
@@ -110,10 +105,11 @@ function Camera:draw()
         if next(self.__renderQueue) then
             local cv = love.graphics.getCanvas()
             love.graphics.setCanvas(canvasTable)
-            love.graphics.clear(self.bgColor[1], self.bgColor[2], self.bgColor[3],
-                                self.bgColor[4])
-
+            love.graphics.clear(self.bgColor[1], self.bgColor[2],
+                                self.bgColor[3], self.bgColor[4])
             love.graphics.push()
+
+            local w2, h2 = self.width * 0.5, self.height * 0.5
             love.graphics.translate(w2 - self.x + self.__shakeX,
                                     h2 - self.y + self.__shakeY)
             love.graphics.rotate(math.rad(-self.angle))
@@ -146,7 +142,8 @@ function Camera:draw()
             love.graphics.setBlendMode("alpha", "premultiplied")
 
             local winWidth, winHeight = love.graphics.getDimensions()
-            local scale = math.min(winWidth / game.width, winHeight / game.height)
+            local scale = math.min(winWidth / game.width,
+                                   winHeight / game.height)
             love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
                                (winHeight - scale * game.height) / 2, 0, scale,
                                scale)
