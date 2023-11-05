@@ -1,7 +1,9 @@
 ---@class Camera:Basic
 local Camera = Basic:extend()
 
-local canvas = love.graphics.newCanvas(game.width, game.height)
+local ClientPrefs = require "funkin.backend.clientprefs"
+local canvas = love.graphics.newCanvas(game.width / ClientPrefs.data.screenQuality,
+                                       game.height / ClientPrefs.data.screenQuality)
 local canvasTable = {canvas, stencil = true}
 
 Camera.__defaultCameras = {}
@@ -110,12 +112,14 @@ function Camera:draw()
                                 self.bgColor[3], self.bgColor[4])
             love.graphics.push()
 
-            local w2, h2 = self.width * 0.5, self.height * 0.5
+            local w2, h2 = self.width * (0.5 / ClientPrefs.data.screenQuality)
+                           self.height * (0.5 / ClientPrefs.data.screenQuality)
             love.graphics.translate(w2 - self.x + self.__shakeX,
                                     h2 - self.y + self.__shakeY)
             love.graphics.rotate(math.rad(-self.angle))
-            love.graphics.scale(self.zoom)
-            love.graphics.translate(-w2, -h2)
+            love.graphics.scale(self.zoom / ClientPrefs.data.screenQuality)
+            love.graphics.translate(-w2 * ClientPrefs.data.screenQuality,
+                                    -h2 * ClientPrefs.data.screenQuality)
 
             for i, o in ipairs(self.__renderQueue) do
                 if type(o) == "function" then
@@ -146,8 +150,8 @@ function Camera:draw()
             local scale = math.min(winWidth / game.width,
                                    winHeight / game.height)
             love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
-                               (winHeight - scale * game.height) / 2, 0, scale,
-                               scale)
+                               (winHeight - scale * game.height) / 2, 0,
+                               scale * ClientPrefs.data.screenQuality)
 
             love.graphics.setShader(shader)
             love.graphics.setColor(r, g, b, a)
