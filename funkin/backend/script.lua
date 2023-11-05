@@ -7,7 +7,7 @@ function Script:new(path)
     self.variables = {}
     self.closed = false
 
-    local p = "data/" .. path
+    local p = path
 
     local chunk = paths.getLua(p)
     if chunk then

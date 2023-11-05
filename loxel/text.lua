@@ -1,3 +1,4 @@
+---@class Text:Basic
 local Text = Basic:extend()
 
 function Text:new(x, y, content, font, color, align, limit)

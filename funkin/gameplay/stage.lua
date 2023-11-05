@@ -19,8 +19,9 @@ function Stage:new(name)
     self.foreground = Group()
 
     local path = "stages/" .. name
-    self.script = Script(path)
-    self.script.variables["self"] = self
+    self.script = Script("data/" .. path)
+    self.script:set("SCRIPT_PATH", path .. "/")
+    self.script:set("self", self)
 
     self.script:call("create")
 end

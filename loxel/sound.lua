@@ -1,3 +1,4 @@
+---@class Sound:Basic
 local Sound = Basic:extend()
 
 function Sound:new()

@@ -1,3 +1,4 @@
+---@class Bar:Basic
 local Bar = Basic:extend()
 
 function Bar:new(x, y, width, height, maxValue, color, filledBar, opColor)

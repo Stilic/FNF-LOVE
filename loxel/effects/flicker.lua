@@ -1,3 +1,4 @@
+---@class Flicker:Object
 local Flicker = Object:extend()
 
 Flicker.instances = {}

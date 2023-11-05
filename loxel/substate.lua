@@ -1,3 +1,4 @@
+---@class SubState:State
 local SubState = State:extend()
 
 function SubState:new() SubState.super.new(self) end

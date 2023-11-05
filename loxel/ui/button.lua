@@ -1,3 +1,4 @@
+---@class Button:Basic
 local Button = Basic:extend()
 
 function Button:new(x, y, width, height, text, callback)

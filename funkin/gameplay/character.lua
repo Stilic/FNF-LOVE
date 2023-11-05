@@ -6,7 +6,7 @@ function Character:new(x, y, char, isPlayer)
     Character.super.new(self, x, y)
 
     if not Character.editorMode then
-        self.script = Script("characters/" .. char)
+        self.script = Script("data/characters/" .. char)
         self.script:set("self", self)
 
         self.script:call("create")

@@ -1,3 +1,4 @@
+---@class Camera:Basic
 local Camera = Basic:extend()
 
 local canvas = love.graphics.newCanvas(game.width, game.height)

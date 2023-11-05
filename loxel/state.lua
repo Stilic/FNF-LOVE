@@ -1,5 +1,6 @@
 local Gamestate = require "loxel.lib.gamestate"
 
+---@class State:Group
 local State = Group:extend()
 
 function State:new()

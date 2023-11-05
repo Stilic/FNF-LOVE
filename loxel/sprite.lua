@@ -26,6 +26,7 @@ local function stencil()
     end
 end
 
+---@class Sprite:Basic
 local Sprite = Basic:extend()
 
 function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)

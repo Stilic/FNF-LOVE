@@ -10,6 +10,7 @@ local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2)
             math.abs(-relativeX * sin1 + relativeY * cos1) - (h1 / 2 + h2 / 2)
 end
 
+---@class Basic:Object
 local Basic = Object:extend()
 
 function Basic:new()

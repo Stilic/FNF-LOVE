@@ -1,3 +1,4 @@
+---@class Group:Basic
 local Group = Basic:extend()
 
 function Group:new()
