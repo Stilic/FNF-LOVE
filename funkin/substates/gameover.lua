@@ -33,21 +33,22 @@ function GameOverSubstate:new(x, y)
 
     self.music = Sound():load(paths.getMusic(GameOverSubstate.loopSoundName))
 
-    local boyfriendMidpointX, boyfriendMidpointY = self.boyfriend:getGraphicMidpoint()
+    local boyfriendMidpointX, boyfriendMidpointY =
+        self.boyfriend:getGraphicMidpoint()
     self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
 end
 
 function GameOverSubstate:update(dt)
     GameOverSubstate.super.update(self, dt)
 
-    if controls:pressed('accept') then
-        self:endBullshit()
-    end
+    if controls:pressed('back') then game.switchState(FreeplayState()) end
+
+    if controls:pressed('accept') then self:endBullshit() end
 
     if self.boyfriend.curAnim ~= nil then
         if self.boyfriend.curAnim.name == 'firstDeath' and
             self.boyfriend.animFinished and self.startedDeath then
-			self.boyfriend:playAnim('deathLoop')
+            self.boyfriend:playAnim('deathLoop')
         end
 
         if self.boyfriend.curAnim.name == 'firstDeath' then
@@ -85,9 +86,8 @@ function GameOverSubstate:endBullshit()
         self.music:stop()
         game.sound.play(paths.getMusic(GameOverSubstate.endSoundName))
         Timer.after(0.7, function()
-            Timer.tween(2, self.boyfriend, {alpha = 0}, "linear", function()
-                game.resetState()
-            end)
+            Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
+                        function() game.resetState() end)
         end)
         Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
     end

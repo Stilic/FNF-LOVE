@@ -519,15 +519,15 @@ function PlayState:update(dt)
         Timer.tween(2, self.gf, {alpha = 0}, 'in-out-sine')
         Timer.tween(2, self.dad, {alpha = 0}, 'in-out-sine')
         for _, spritesBG in ipairs(self.stage.members) do
+            print(spritesBG)
             Timer.tween(2, spritesBG, {alpha = 0}, 'in-out-sine')
         end
         for _, spritesFG in ipairs(self.stage.foreground.members) do
             Timer.tween(2, spritesFG, {alpha = 0}, 'in-out-sine')
         end
 
-        local gameover = GameOverSubstate(self.stage.boyfriendPos.x,
-                                          self.stage.boyfriendPos.y)
-        self:openSubState(gameover)
+        self:openSubState(GameOverSubstate(self.stage.boyfriendPos.x,
+        self.stage.boyfriendPos.y))
         self.isDead = true
     end
 
