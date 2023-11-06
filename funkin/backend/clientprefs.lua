@@ -6,8 +6,7 @@ ClientPrefs.data = {
     pauseMusic = 'railways',
     screenQuality = 1,
     antialiasing = true,
-    botplayMode = true,
-    directionalCam = true
+    botplayMode = true
 }
 
 ClientPrefs.controls = {

@@ -29,8 +29,9 @@ function Note:new(time, data, prevNote, sustain, parentNote)
             self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'))
             self.width = self.width / 4
             self.height = self.height / 2
-            self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'), true,
-                      math.floor(self.width), math.floor(self.height))
+            self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'),
+                             true, math.floor(self.width),
+                             math.floor(self.height))
 
             self:addAnim(color .. 'holdend', Note.pixelAnim[data + 1][1])
             self:addAnim(color .. 'hold', Note.pixelAnim[data + 1][2])
@@ -39,7 +40,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
             self.width = self.width / 4
             self.height = self.height / 5
             self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true,
-                      math.floor(self.width), math.floor(self.height))
+                             math.floor(self.width), math.floor(self.height))
 
             self:addAnim(color .. 'Scroll', Note.pixelAnim[data + 1][1])
         end
@@ -50,7 +51,11 @@ function Note:new(time, data, prevNote, sustain, parentNote)
         self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
 
         if sustain then
-            self:addAnimByPrefix(color .. "holdend", color .. " hold end")
+            if data == 0 then
+                self:addAnimByPrefix(color .. "holdend", "pruple end hold")
+            else
+                self:addAnimByPrefix(color .. "holdend", color .. " hold end")
+            end
             self:addAnimByPrefix(color .. "hold", color .. " hold piece")
         else
             self:addAnimByPrefix(color .. "Scroll", color .. "0")
@@ -102,19 +107,21 @@ end
 local safeZoneOffset = (10 / 60) * 1000
 
 function Note:checkDiff()
-    local instTime = (Note.chartingMode and ChartingState or PlayState).conductor.time
-    return self.time > instTime - safeZoneOffset *
-               self.lateHitMult and self.time < instTime +
-               safeZoneOffset * self.earlyHitMult
+    local instTime =
+        (Note.chartingMode and ChartingState or PlayState).conductor.time
+    return self.time > instTime - safeZoneOffset * self.lateHitMult and
+               self.time < instTime + safeZoneOffset * self.earlyHitMult
 end
 
 function Note:update(dt)
-    local instTime = (Note.chartingMode and ChartingState or PlayState).conductor.time
+    local instTime =
+        (Note.chartingMode and ChartingState or PlayState).conductor.time
     self.canBeHit = self:checkDiff()
 
     if self.mustPress then
-        if not self.wasGoodHit and self.time < instTime -
-            safeZoneOffset then self.tooLate = true end
+        if not self.wasGoodHit and self.time < instTime - safeZoneOffset then
+            self.tooLate = true
+        end
     end
 
     if self.tooLate and self.alpha > 0.3 then self.alpha = 0.3 end

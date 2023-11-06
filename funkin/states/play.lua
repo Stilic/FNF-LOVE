@@ -477,30 +477,6 @@ function PlayState:update(dt)
                                            self.stage.dadCam.y)
             end
         end
-
-        if ClientPrefs.data.directionalCam then
-            local anims, add = {l = {-1, 0}, r = {1, 0}, u = {0, -1}, d = {0, 1}}, 18
-
-            local char
-            if not section.mustHitSection then
-                char = self.dad
-            else
-                char = self.boyfriend
-            end
-            local idx
-            if char.curAnim and #char.curAnim.name > 4 then
-                idx = string.sub(char.curAnim.name, 5, 5)
-            end
-            if idx ~= nil then
-                idx = string.lower(idx)
-                local anim = anims[idx]
-                if anim then
-                    self.camFollow.x, self.camFollow.y =
-                        self.camFollow.x + add * anim[1],
-                        self.camFollow.y + add * anim[2]
-                end
-            end
-        end
     end
 
     if self.camZooming then
