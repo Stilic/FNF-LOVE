@@ -233,6 +233,16 @@ function PlayState:enter()
     self:add(self.stage.foreground)
     self:add(self.judgeSprites)
 
+    if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
+        if section.mustHitSection then
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1},
+                        'in-out-elastic')
+        else
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1.3},
+                        'in-out-elastic')
+        end
+    end
+
     self.healthBarBG = Sprite()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
