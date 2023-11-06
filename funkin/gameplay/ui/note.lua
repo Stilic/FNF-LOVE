@@ -50,11 +50,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
         self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
 
         if sustain then
-            if data == 0 then
-                self:addAnimByPrefix(color .. "holdend", "pruple end hold")
-            else
-                self:addAnimByPrefix(color .. "holdend", color .. " hold end")
-            end
+            self:addAnimByPrefix(color .. "holdend", color .. " hold end")
             self:addAnimByPrefix(color .. "hold", color .. " hold piece")
         else
             self:addAnimByPrefix(color .. "Scroll", color .. "0")

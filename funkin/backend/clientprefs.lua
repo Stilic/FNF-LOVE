@@ -5,7 +5,8 @@ ClientPrefs.data = {
     scrollType = 'upscroll',
     pauseMusic = 'railways',
     screenQuality = 1,
-    antialiasing = true
+    antialiasing = true,
+    botplayMode = true
 }
 
 ClientPrefs.controls = {

@@ -59,6 +59,8 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
+    self.botPlay = ClientPrefs.data.botplayMode
+
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
         if songName == 'spookeez' or songName == 'south' or songName ==

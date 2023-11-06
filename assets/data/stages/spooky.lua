@@ -21,7 +21,7 @@ function beat()
         game.camera:shake(0.001, 1.4)
         state.camHUD:shake(0.001, 1.4)
 
-        lightningStrikeBeat = b
+        lightningStrikeBeat = curBeat
         lightningOffset = love.math.random(8, 24)
 
         state.boyfriend:playAnim('scared', true)
