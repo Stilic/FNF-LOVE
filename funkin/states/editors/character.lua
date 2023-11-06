@@ -276,13 +276,13 @@ function CharacterEditor:update(dt)
                          '\nOffsets: [' .. self.curAnim.offsets[1] .. ', ' ..
                          self.curAnim.offsets[2] .. ']' .. '\nFPS: ' ..
                          self.curAnim.fps
-    self.animInfoTxt:setContent(animInfo)
+    self.animInfoTxt.content = animInfo
 
     local charInfo = 'Current Character\n' .. '\nName: ' .. self.curChar ..
                          '\nImage: ' .. self.char.imageFile .. '\nIcon: ' ..
                          self.char.icon .. '\nFlip X: ' ..
                          tostring(self.char.jsonFlipX)
-    self.charInfoTxt:setContent(charInfo)
+    self.charInfoTxt.content = charInfo
 end
 
 function CharacterEditor:loadCharacter()

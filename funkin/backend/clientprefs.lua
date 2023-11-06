@@ -2,11 +2,11 @@ local ClientPrefs = {}
 
 ClientPrefs.data = {
     noteSplash = true,
-    scrollType = 'upscroll',
+    downScroll = false,
+    botplayMode = false,
     pauseMusic = 'railways',
     screenQuality = 1,
-    antialiasing = true,
-    botplayMode = true
+    antialiasing = true
 }
 
 ClientPrefs.controls = {

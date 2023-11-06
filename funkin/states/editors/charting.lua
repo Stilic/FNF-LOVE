@@ -74,8 +74,8 @@ function ChartingState:enter()
 
     local testText = Text((self.gridBox.x - 50), self.gridBox.y, '',
                           paths.getFont("vcr.ttf", 16), {1, 1, 1})
-    testText:setContent(tostring(self.gridSize * 4) .. '\n' ..
-                            tostring((self.gridSize * 4) + self.gridBox.height))
+    testText.content = tostring(self.gridSize * 4) .. '\n' ..
+                           tostring((self.gridSize * 4) + self.gridBox.height)
     self:add(testText)
 
     self.iconLeft = HealthIcon('dad')
@@ -437,7 +437,7 @@ function ChartingState:update(dt)
                        (self.gridBox.height + self.strumOffset) .. '\n' ..
                        util.floorDecimal(self.strumLine.y, 2) .. ' >= ' ..
                        (self.gridBox.height + self.strumOffset)
-    self.infoTxt:setContent(daText)
+    self.infoTxt.content = daText
 
     ChartingState.super.update(self, dt)
 end

@@ -136,8 +136,7 @@ function OptionsState:update(dt)
             self.waitInputTxt.visible = false
         elseif self.onTab then
             self.onTab = false
-            self.titleTxt:setContent('< ' .. self.optionsTab[self.curTab] ..
-                                         ' >')
+            self.titleTxt.content = '< ' .. self.optionsTab[self.curTab] .. ' >'
             self.optionsCursor.visible = false
             self.controlsCursor.visible =
                 (self.optionsTab[self.curTab] == 'Controls' and false)
@@ -161,7 +160,7 @@ function OptionsState:update(dt)
 
             if Keyboard.justPressed.ENTER then
                 self.onTab = true
-                self.titleTxt:setContent(self.optionsTab[self.curTab])
+                self.titleTxt.content = self.optionsTab[self.curTab]
                 self.curSelect = 1
                 self:changeSelection(nil, self.allTabs.members[self.curTab])
                 self.optionsCursor.visible = true
@@ -221,13 +220,13 @@ function OptionsState:update(dt)
 
         self:reset_Tabs()
 
-        self.waitInputTxt:setContent('Configuring..\nPlease Wait')
+        self.waitInputTxt.content = 'Configuring..\nPlease Wait'
         Timer.after(1, function()
             self.block_input = false
             self.waiting_input = false
             self.blackFG.alpha = 0
             self.waitInputTxt.visible = false
-            self.waitInputTxt:setContent('Rebinding..')
+            self.waitInputTxt.content = 'Rebinding..'
 
             ClientPrefs.controls = table.clone(self.controls)
             controls = (require "lib.baton").new({
@@ -281,7 +280,7 @@ function OptionsState:changeTab(huh)
         self.curTab = #self.optionsTab
     end
 
-    self.titleTxt:setContent('< ' .. self.optionsTab[self.curTab] .. ' >')
+    self.titleTxt.content = '< ' .. self.optionsTab[self.curTab] .. ' >'
 
     for i, grp in ipairs(self.allTabs.members) do
         for j, obj in ipairs(grp.members) do
