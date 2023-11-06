@@ -20,11 +20,14 @@ Character = require "funkin.gameplay.character"
 Alphabet = require "funkin.ui.alphabet"
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
+ParallaxImage = require "funkin.parallax"
 
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
+
+GameOverSubstate = require "funkin.substates.gameover"
 
 OptionsState = require "funkin.states.options.options"
 

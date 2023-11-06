@@ -59,6 +59,9 @@ function PlayState:enter()
     self.notesGroup = Group()
     self.sustainsGroup = Group()
 
+    self.isDead = false
+    GameOverSubstate:resetVars()
+
     self.botPlay = ClientPrefs.data.botplayMode
 
     local curStage = PlayState.SONG.stage
@@ -212,15 +215,20 @@ function PlayState:enter()
                         self.SONG.gfVersion, false)
     self.gf:setScrollFactor(0.95, 0.95)
 
+    self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
+                         self.SONG.player2, false)
     self.boyfriend = Character(self.stage.boyfriendPos.x,
                                self.stage.boyfriendPos.y, self.SONG.player1,
                                true)
-    self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
-                         self.SONG.player2, false)
 
     self:add(self.gf)
-    self:add(self.boyfriend)
     self:add(self.dad)
+    self:add(self.boyfriend)
+
+    if self.SONG.player2:startsWith('gf') then
+        self.gf.visible = false
+        self.dad:setPosition(self.gf.x, self.gf.y)
+    end
 
     self:add(self.stage.foreground)
     self:add(self.judgeSprites)
@@ -459,6 +467,30 @@ function PlayState:update(dt)
                                            self.stage.dadCam.y)
             end
         end
+
+        if ClientPrefs.data.directionalCam then
+            local anims, add = {l = {-1, 0}, r = {1, 0}, u = {0, -1}, d = {0, 1}}, 18
+
+            local char
+            if not section.mustHitSection then
+                char = self.dad
+            else
+                char = self.boyfriend
+            end
+            local idx
+            if char.curAnim and #char.curAnim.name > 4 then
+                idx = string.sub(char.curAnim.name, 5, 5)
+            end
+            if idx ~= nil then
+                idx = string.lower(idx)
+                local anim = anims[idx]
+                if anim then
+                    self.camFollow.x, self.camFollow.y =
+                        self.camFollow.x + add * anim[1],
+                        self.camFollow.y + add * anim[2]
+                end
+            end
+        end
     end
 
     if self.camZooming then
@@ -487,6 +519,31 @@ function PlayState:update(dt)
         if self.vocals then self.vocals:pause() end
         CharacterEditor.onPlayState = true
         game.switchState(CharacterEditor())
+    end
+    if controls:pressed("reset") then self.health = 0 end
+
+    if self.health <= 0 and not self.isDead then
+        self.paused = true
+
+        PlayState.conductor.sound:pause()
+        if self.vocals then self.vocals:pause() end
+
+        self.camHUD.visible = false
+        self.boyfriend.visible = false
+
+        Timer.tween(2, self.gf, {alpha = 0}, 'in-out-sine')
+        Timer.tween(2, self.dad, {alpha = 0}, 'in-out-sine')
+        for _, spritesBG in ipairs(self.stage.members) do
+            Timer.tween(2, spritesBG, {alpha = 0}, 'in-out-sine')
+        end
+        for _, spritesFG in ipairs(self.stage.foreground.members) do
+            Timer.tween(2, spritesFG, {alpha = 0}, 'in-out-sine')
+        end
+
+        local gameover = GameOverSubstate(self.stage.boyfriendPos.x,
+                                          self.stage.boyfriendPos.y)
+        self:openSubState(gameover)
+        self.isDead = true
     end
 
     if self.unspawnNotes[1] then
@@ -710,7 +767,9 @@ function PlayState:goodNoteHit(n)
         local char = (n.mustPress and self.boyfriend or self.dad)
         char:sing(n.data, false)
 
-        if not n.mustPress then self.camZooming = true end
+        if paths.formatToSongPath(self.SONG.song) ~= 'tutorial' then
+            if not n.mustPress then self.camZooming = true end
+        end
 
         local time = 0
         if not n.mustPress or PlayState.botPlay then
@@ -811,6 +870,16 @@ function PlayState:beat(b)
         if self.camZooming and game.camera.zoom < 1.35 then
             game.camera.zoom = game.camera.zoom + 0.015
             self.camHUD.zoom = self.camHUD.zoom + 0.03
+        end
+
+        if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
+            if section.mustHitSection then
+                Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1},
+                            'in-out-elastic')
+            else
+                Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1.3},
+                            'in-out-elastic')
+            end
         end
     end
 

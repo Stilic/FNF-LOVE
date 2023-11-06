@@ -14,6 +14,11 @@ function create()
 
     PlayState.pixelStage = true
 
+    GameOverSubstate.characterName = 'bf-pixel-dead'
+    GameOverSubstate.deathSoundName = 'gameplay/fnf_loss_sfx-pixel'
+    GameOverSubstate.loopSoundName = 'gameOver-pixel'
+    GameOverSubstate.endSoundName = 'gameOverend-pixel'
+
     if state.SONG.song:lower() == 'thorns' then
         local posX = 400
         local posY = 200
