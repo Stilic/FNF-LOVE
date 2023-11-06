@@ -93,10 +93,10 @@ function update(dt)
     end
 end
 
-function beat(b)
+function beat()
     if not trainMoving then trainCooldown = trainCooldown + 1 end
 
-    if b % 4 == 0 then
+    if curBeat % 4 == 0 then
         curLight = love.math.random(1, #lightColors)
         phillyWindow.color = {
             lightColors[curLight][1] / 255, lightColors[curLight][2] / 255,
@@ -105,7 +105,7 @@ function beat(b)
         phillyWindow.alpha = 1
     end
 
-    if b % 8 == 4 and love.math.randomBool(30) and not trainMoving and
+    if curBeat % 8 == 4 and love.math.randomBool(30) and not trainMoving and
         trainCooldown > 8 then
         trainCooldown = love.math.random(-4, 0)
         trainMoving = true
