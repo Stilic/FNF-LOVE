@@ -36,21 +36,23 @@ end
 function GameOverSubstate:update(dt)
     GameOverSubstate.super.update(self, dt)
 
-    if controls:pressed('back') then
-        game.sound.music:stop()
-        game.switchState(FreeplayState())
-    end
+    if not self.isEnding then
+        if controls:pressed('back') then
+            game.sound.music:stop()
+            game.switchState(FreeplayState())
+        end
 
-    if not self.isEnding and controls:pressed('accept') then
-        self.isEnding = true
-        self.boyfriend:playAnim('deathConfirm', true)
-        game.sound.music:stop()
-        game.sound.play(paths.getMusic(GameOverSubstate.endSoundName))
-        Timer.after(0.7, function()
-            Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
-                        function() game.resetState() end)
-        end)
-        Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
+        if controls:pressed('accept') then
+            self.isEnding = true
+            self.boyfriend:playAnim('deathConfirm', true)
+            game.sound.music:stop()
+            game.sound.play(paths.getMusic(GameOverSubstate.endSoundName))
+            Timer.after(0.7, function()
+                Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
+                            function() game.resetState() end)
+            end)
+            Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
+        end
     end
 
     if self.boyfriend.curAnim ~= nil then
