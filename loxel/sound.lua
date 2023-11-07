@@ -12,7 +12,7 @@ end
 
 function Sound:reset(destroySound)
     if self.__source and (destroySound ~= nil and destroySound or true) then
-        pcall(self.__source.stop, self.__source)
+        self:stop()
         self.__source = nil
         self.__indexFuncs = {}
     end
@@ -40,21 +40,24 @@ end
 
 function Sound:play()
     self.__paused = false
-    return self.__source:play()
+    pcall(self.__source.play, self.__source)
+    return self
 end
 
 function Sound:pause()
     self.__paused = true
-    return self.__source:pause()
+    pcall(self.__source.pause, self.__source)
+    return self
 end
 
 function Sound:stop()
     self.__paused = true
-    self.__source:stop()
+    pcall(self.__source.stop, self.__source)
+    return self
 end
 
 function Sound:isFinished()
-    return not self.__source:isLooping() and not self.__paused and
+    return not self.__paused and not self.__source:isLooping() and
                not self.__source:isPlaying()
 end
 
@@ -72,11 +75,13 @@ function Sound:update()
 end
 
 function Sound:onFocus(focus)
-    if focus then
-        if self.__wasPlaying then self:play() end
-    else
-        self.__wasPlaying = self.__source:isPlaying()
-        if self.__wasPlaying then self:pause() end
+    if not self:isFinished() then
+        if focus then
+            if self.__wasPlaying then self:play() end
+        else
+            self.__wasPlaying = self.__source:isPlaying()
+            if self.__wasPlaying then self:pause() end
+        end
     end
 end
 
@@ -87,7 +92,7 @@ end
 
 function Sound:destroy()
     if self.__source then
-        pcall(self.__source.stop, self.__source)
+        self:stop()
         self.__source = nil
         self.__indexFuncs = {}
     end

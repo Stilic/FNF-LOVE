@@ -597,8 +597,7 @@ function ChartingState:leave()
     love.mouse.setVisible(false)
 
     ChartingState.conductor = nil
-    game.sound.music:destroy()
-    game.sound.music = nil
+    game.sound.music:stop()
 
     Note.chartingMode = false
 end

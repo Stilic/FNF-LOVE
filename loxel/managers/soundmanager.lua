@@ -11,13 +11,22 @@ function SoundManager.play(asset, volume, looped, autoDestroy, onComplete)
 end
 
 function SoundManager.playMusic(asset, volume, looped)
-    local sound = Sound():load(asset)
-    if volume ~= nil then sound:setVolume(volume) end
-    if looped ~= nil then sound:setLooping(looped) end
-    sound.persist = true
-    SoundManager.music = sound
-    sound:play()
-    return sound
+    if SoundManager.music then
+        SoundManager.music:stop()
+    else
+        SoundManager.music = Sound()
+        SoundManager.music.persist = true
+    end
+
+    SoundManager.music:load(asset)
+    if volume ~= nil then SoundManager.music:setVolume(volume) end
+    if looped == nil then
+        SoundManager.music:setLooping(true)
+    else
+        SoundManager.music:setLooping(looped)
+    end
+    SoundManager.music:play()
+    return SoundManager.music
 end
 
 function SoundManager.update()
