@@ -26,6 +26,7 @@ function ParallaxImage:new(x, y, width, height)
     self.scaleFront = 1
 
     self.color = {1, 1, 1}
+    self.alpha = 1
 
     self.mesh = love.graphics.newMesh(self.vertices, "fan")
     self.mesh:setTexture(paths.getImage('menus/mainmenu/menuDesat'))
@@ -68,7 +69,8 @@ function ParallaxImage:__render(camera)
     self.mesh:setVertices(self.vertices)
 
     local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3])
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+                            self.alpha)
 
     love.graphics.draw(self.mesh, 0, 0)
 
