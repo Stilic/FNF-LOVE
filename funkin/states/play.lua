@@ -15,6 +15,8 @@ PlayState.ratings = {
     {name = "bad", time = 125, score = 100, splash = false, mod = 0.4},
     {name = "shit", time = 150, score = 50, splash = false, mod = 0.2}
 }
+PlayState.downscroll = false
+PlayState.botPlay = false
 PlayState.notePosition = 0
 
 PlayState.SONG = nil
@@ -61,7 +63,6 @@ function PlayState:enter()
     GameOverSubstate:resetVars()
 
     self.botPlay = ClientPrefs.data.botplayMode
-    self.downScroll = ClientPrefs.data.downScroll
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
@@ -172,7 +173,7 @@ function PlayState:enter()
     self.enemyReceptors = Group()
 
     local rx, ry = game.width / 2, 50
-    if self.downScroll then ry = game.height - 100 - ry end
+    if PlayState.downscroll then ry = game.height - 100 - ry end
     for i = 0, 1 do
         for j = 0, 3 do
             local rep = Receptor(rx + (game.width / 4) * (i == 1 and 1 or -1),
@@ -235,11 +236,11 @@ function PlayState:enter()
     if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
         local section = self:getCurrentSection()
         if section.mustHitSection then
-            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera,
-                        {zoom = 1}, 'in-out-elastic')
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1},
+                        'in-out-elastic')
         else
-            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera,
-                        {zoom = 1.3}, 'in-out-elastic')
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1.3},
+                        'in-out-elastic')
         end
     end
 
@@ -247,7 +248,7 @@ function PlayState:enter()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter("x")
-    self.healthBarBG.y = (self.downScroll and game.height * 0.1 or
+    self.healthBarBG.y = (PlayState.downscroll and game.height * 0.1 or
                              game.height * 0.9)
     self.healthBarBG:setScrollFactor()
 
@@ -263,7 +264,7 @@ function PlayState:enter()
     self.iconP2.y = self.healthBar.y - 75
 
     local textOffset = 30
-    if self.downScroll then textOffset = -textOffset end
+    if PlayState.downscroll then textOffset = -textOffset end
 
     local font = paths.getFont("vcr.ttf", 16)
     self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", font,
@@ -434,7 +435,7 @@ function PlayState:update(dt)
         songTime = PlayState.conductor.sound:getDuration() - songTime
     end
 
-    self.timeTxt.content = util.getFormattedTime(songTime)
+    self.timeTxt:setContent(util.getFormattedTime(songTime))
 
     self.timeTxt:screenCenter("x")
     self.timeTxt.x = self.timeTxt.x + (self.timeArcBG.width + 5)
@@ -475,6 +476,30 @@ function PlayState:update(dt)
                 self.camFollow.y = y - 100 +
                                        (self.dad.cameraPosition.y +
                                            self.stage.dadCam.y)
+            end
+        end
+
+        if ClientPrefs.data.directionalCam then
+            local anims, add = {l = {-1, 0}, r = {1, 0}, u = {0, -1}, d = {0, 1}}, 18
+
+            local char
+            if not section.mustHitSection then
+                char = self.dad
+            else
+                char = self.boyfriend
+            end
+            local idx
+            if char.curAnim and #char.curAnim.name > 4 then
+                idx = string.sub(char.curAnim.name, 5, 5)
+            end
+            if idx ~= nil then
+                idx = string.lower(idx)
+                local anim = anims[idx]
+                if anim then
+                    self.camFollow.x, self.camFollow.y =
+                        self.camFollow.x + add * anim[1],
+                        self.camFollow.y + add * anim[2]
+                end
             end
         end
     end
@@ -520,15 +545,15 @@ function PlayState:update(dt)
         Timer.tween(2, self.gf, {alpha = 0}, 'in-out-sine')
         Timer.tween(2, self.dad, {alpha = 0}, 'in-out-sine')
         for _, spritesBG in ipairs(self.stage.members) do
-            print(spritesBG)
             Timer.tween(2, spritesBG, {alpha = 0}, 'in-out-sine')
         end
         for _, spritesFG in ipairs(self.stage.foreground.members) do
             Timer.tween(2, spritesFG, {alpha = 0}, 'in-out-sine')
         end
 
-        self:openSubState(GameOverSubstate(self.stage.boyfriendPos.x,
-        self.stage.boyfriendPos.y))
+        local gameover = GameOverSubstate(self.stage.boyfriendPos.x,
+                                          self.stage.boyfriendPos.y)
+        self:openSubState(gameover)
         self.isDead = true
     end
 
@@ -550,7 +575,7 @@ function PlayState:update(dt)
     local ogStepCrochet = ogCrochet / 4
     for _, n in ipairs(self.allNotes.members) do
         if not self.startingSong and not n.tooLate and
-            ((not n.mustPress or self.botPlay) and
+            ((not n.mustPress or PlayState.botPlay) and
                 (not n.isSustain or not n.parentNote or n.parentNote.wasGoodHit) and
                 ((n.isSustain and n.canBeHit) or n.time <=
                     PlayState.notePosition) or
@@ -571,10 +596,10 @@ function PlayState:update(dt)
         n.x = r.x + n.scrollOffset.x
         n.y = sy - (PlayState.notePosition - time) *
                   (0.45 * PlayState.SONG.speed) *
-                  (self.downScroll and -1 or 1)
+                  (PlayState.downscroll and -1 or 1)
 
         if n.isSustain then
-            n.flipY = self.downScroll
+            n.flipY = PlayState.downscroll
             if n.flipY then
                 if n.isSustainEnd then
                     n.y = n.y + (43.5 * 0.7) *
@@ -591,11 +616,11 @@ function PlayState:update(dt)
             end
 
             if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-                (not n.mustPress or self.botPlay or self.keysPressed[n.data] or
-                    n.isSustainEnd) then
+                (not n.mustPress or PlayState.botPlay or
+                    self.keysPressed[n.data] or n.isSustainEnd) then
                 local center = sy + Note.swagWidth / 2
                 local vert = center - n.y
-                if self.downScroll then
+                if PlayState.downscroll then
                     if n.y - n.offset.y + n:getFrameHeight() * n.scale.y >=
                         center then
                         if not n.clipRect then
@@ -681,7 +706,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type)
-    if not self.botPlay and (not self.subState or self.persistentUpdate) then
+    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -727,7 +752,7 @@ function PlayState:onKeyPress(key, type)
 end
 
 function PlayState:onKeyRelease(key, type)
-    if not self.botPlay and (not self.subState or self.persistentUpdate) then
+    if not PlayState.botPlay and (not self.subState or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -758,7 +783,7 @@ function PlayState:goodNoteHit(n)
         end
 
         local time = 0
-        if not n.mustPress or self.botPlay then
+        if not n.mustPress or PlayState.botPlay then
             time = 0.15
             if n.isSustain and not n.isSustainEnd then
                 time = time * 2
@@ -860,11 +885,11 @@ function PlayState:beat(b)
 
         if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
             if section.mustHitSection then
-                Timer.tween((self.conductor.stepCrochet * 4 / 1000),
-                            game.camera, {zoom = 1}, 'in-out-elastic')
+                Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1},
+                            'in-out-elastic')
             else
-                Timer.tween((self.conductor.stepCrochet * 4 / 1000),
-                            game.camera, {zoom = 1.3}, 'in-out-elastic')
+                Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1.3},
+                            'in-out-elastic')
             end
         end
     end
@@ -957,10 +982,10 @@ function PlayState:recalculateRating()
                                  math.max(0, self.totalHit / self.totalPlayed))
     end
 
-    self.scoreTxt.content = "Score: " .. self.score .. " // Combo Breaks: " ..
+    self.scoreTxt:setContent("Score: " .. self.score .. " // Combo Breaks: " ..
                                  self.misses .. " // " ..
                                  util.floorDecimal(self.accuracy * 100, 2) ..
-                                 "%"
+                                 "%")
     self.scoreTxt:screenCenter("x")
 end
 
