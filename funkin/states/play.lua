@@ -234,6 +234,7 @@ function PlayState:enter()
     self:add(self.judgeSprites)
 
     if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
+        local section = self:getCurrentSection()
         if section.mustHitSection then
             Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera, {zoom = 1},
                         'in-out-elastic')
