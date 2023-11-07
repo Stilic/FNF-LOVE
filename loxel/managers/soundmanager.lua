@@ -10,7 +10,7 @@ function SoundManager.play(asset, volume, looped, autoDestroy, onComplete)
     return sound
 end
 
-function SoundManager.playMusic(asset, volume, looped)
+function SoundManager.loadMusic(asset, volume, looped)
     if SoundManager.music then
         SoundManager.music:stop()
     else
@@ -25,9 +25,10 @@ function SoundManager.playMusic(asset, volume, looped)
     else
         SoundManager.music:setLooping(looped)
     end
-    SoundManager.music:play()
     return SoundManager.music
 end
+
+function SoundManager.playMusic(...) return SoundManager.loadMusic(...):play() end
 
 function SoundManager.update()
     if SoundManager.music and SoundManager.music.exists and

@@ -68,13 +68,12 @@ function GameOverSubstate:update(dt)
 
             if self.boyfriend.animFinished then
                 self.startedDeath = true
+                game.sound.playMusic(paths.getMusic(
+                                         GameOverSubstate.loopSoundName))
                 if PlayState.SONG.stage == 'tank' then
                     self.playingDeathSound = true
 
                     -- uhh
-                else
-                    game.sound.playMusic(paths.getMusic(
-                                             GameOverSubstate.loopSoundName))
                 end
             end
         end

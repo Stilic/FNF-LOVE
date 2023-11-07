@@ -443,7 +443,7 @@ function ChartingState:update(dt)
 end
 
 function ChartingState:loadSong(song)
-    game.sound.music = Sound():load(paths.getInst(song))
+    game.sound.loadMusic(paths.getInst(songName))
     ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
     ChartingState.conductor.sound:setLooping(true)
     if self.__song.needsVoices then
