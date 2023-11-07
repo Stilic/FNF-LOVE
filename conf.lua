@@ -2,7 +2,7 @@ local dimensions = require "dimensions"
 
 function love.conf(t)
     t.identity = "funkin"
-    -- t.console = true
+    t.console = true
 
     t.window.title = "Friday Night Funkin' LÖVE"
     t.window.icon = "art/icon.png"

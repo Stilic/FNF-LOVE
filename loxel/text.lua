@@ -27,8 +27,6 @@ function Text:new(x, y, content, font, color, align, limit)
     self.outWidth = 0
 end
 
-function Text:setContent(content) self.content = content or "" end
-
 function Text:getWidth() return self.font:getWidth(self.content) end
 
 function Text:getHeight() return self.font:getHeight(self.content) end
