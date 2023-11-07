@@ -1,6 +1,6 @@
 local ParallaxImage = Basic:extend()
 
-function ParallaxImage:new(x, y, width, height)
+function ParallaxImage:new(x, y, width, height, texture)
     ParallaxImage.super.new(self)
 
     if x == nil then x = 0 end
@@ -29,10 +29,8 @@ function ParallaxImage:new(x, y, width, height)
     self.alpha = 1
 
     self.mesh = love.graphics.newMesh(self.vertices, "fan")
-    self.mesh:setTexture(paths.getImage('menus/mainmenu/menuDesat'))
+    self.mesh:setTexture(texture)
 end
-
-function ParallaxImage:draw() ParallaxImage.super.draw(self) end
 
 function ParallaxImage:__render(camera)
     local xBack, yBack = self.x, self.y
@@ -70,7 +68,7 @@ function ParallaxImage:__render(camera)
 
     local r, g, b, a = love.graphics.getColor()
     love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-                            self.alpha)
+                           self.alpha)
 
     love.graphics.draw(self.mesh, 0, 0)
 

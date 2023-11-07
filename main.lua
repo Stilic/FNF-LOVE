@@ -20,7 +20,7 @@ Character = require "funkin.gameplay.character"
 Alphabet = require "funkin.ui.alphabet"
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
-ParallaxImage = require "funkin.parallax"
+ParallaxImage = require "loxel.effects.parallax"
 
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"

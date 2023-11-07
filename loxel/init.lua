@@ -74,49 +74,14 @@ local function fadeIn(time, callback)
     end
 end
 
+local requestedState, transition = nil, false
 game.isSwitchingState = false
-function game.switchState(state, transition)
-    if transition == nil then transition = true end
-
-    game.isSwitchingState = true
-
-    local function switch()
-        Timer.clear()
-
-        game.cameras.reset()
-        game.sound.destroy()
-
-        for _, s in ipairs(Gamestate.stack) do
-            for _, o in ipairs(s.members) do
-                if type(o) == "table" and o.destroy then
-                    o:destroy()
-                end
-            end
-            if s.subState then
-                Gamestate.pop(table.find(Gamestate.stack, s.subState))
-                s.subState = nil
-            end
-        end
-
-        paths.clearCache()
-
-        Gamestate.switch(state)
-        game.isSwitchingState = false
-
-        collectgarbage()
-    end
-
-    if transition then
-        fadeOut(0.7, function()
-            switch()
-            fadeIn(0.6)
-        end)
-    else
-        switch()
-    end
+function game.switchState(state, showTransition)
+    requestedState = state
+    transition = showTransition ~= nil and showTransition or true
 end
-function game.resetState(transition, ...)
-    game.switchState(getmetatable(Gamestate.stack[1])(...), transition)
+function game.resetState(showTransition, ...)
+    game.switchState(getmetatable(Gamestate.stack[1])(...), showTransition)
 end
 function game.getState() return Gamestate.current() end
 
@@ -154,7 +119,44 @@ function game.mousemoved(x, y) Mouse.onMoved(x, y) end
 function game.mousepressed(x, y, button) Mouse.onPressed(button) end
 function game.mousereleased(x, y, button) Mouse.onReleased(button) end
 
+local function switch(state)
+    Timer.clear()
+
+    game.cameras.reset()
+    game.sound.destroy()
+
+    for _, s in ipairs(Gamestate.stack) do
+        for _, o in ipairs(s.members) do
+            if type(o) == "table" and o.destroy then o:destroy() end
+        end
+        if s.subState then
+            Gamestate.pop(table.find(Gamestate.stack, s.subState))
+            s.subState = nil
+        end
+    end
+
+    paths.clearCache()
+
+    Gamestate.switch(state)
+    game.isSwitchingState = false
+
+    collectgarbage()
+end
 function game.update(dt)
+    if requestedState ~= nil then
+        game.isSwitchingState = true
+        if transition then
+            local state = requestedState
+            fadeOut(0.7, function()
+                switch(state)
+                fadeIn(0.6)
+            end)
+        else
+            switch(requestedState)
+        end
+        requestedState = nil
+    end
+
     for _, o in ipairs(Flicker.instances) do o:update(dt) end
     game.cameras.update(dt)
     game.sound.update()
