@@ -1,3 +1,5 @@
+local pcall = _G.pcall
+
 ---@class Sound:Basic
 local Sound = Basic:extend()
 
@@ -54,6 +56,12 @@ function Sound:stop()
     self.__paused = true
     pcall(self.__source.stop, self.__source)
     return self
+end
+
+function Sound:isPlaying()
+    local success, isPlaying = pcall(self.__source.isPlaying, self.__source)
+    if success then return isPlaying end
+    return false
 end
 
 function Sound:isFinished()
