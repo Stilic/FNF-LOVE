@@ -35,7 +35,7 @@ function PlayState:enter()
     self.scripts:loadDirectory("songs/" .. songName)
     self.scripts:call("create")
 
-    game.sound.loadMusic(paths.getInst(songName))
+    game.sound.loadMusic(paths.getInst(songName), nil, false)
     game.sound.music.onComplete = function()
         game.switchState(FreeplayState())
     end
