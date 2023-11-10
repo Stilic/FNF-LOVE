@@ -1,13 +1,16 @@
 local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2)
-    local cos1 = math.cos(a1)
-    local sin1 = math.sin(a1)
+    local cos = math.cos(a1)
+    local sin = math.sin(a1)
 
-    local relativeX = (x2 + w2 / 2) - (x1 + w1 / 2)
-    local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
+    local halfW1, halfH1 = w1 / 2, h1 / 2
+    local halfW2, halfH2 = w2 / 2, h2 / 2
+
+    local relativeX = (x2 + halfW2) - (x1 + halfW1)
+    local relativeY = (y2 + halfH2) - (y1 + halfH1)
 
     return
-        math.abs(relativeX * cos1 + relativeY * sin1) - (w1 / 2 + w2 / 2) < 0 and
-            math.abs(-relativeX * sin1 + relativeY * cos1) - (h1 / 2 + h2 / 2)
+        math.abs(relativeX * cos + relativeY * sin) - (halfW1 + halfW2) < 0 and
+            math.abs(-relativeX * sin + relativeY * cos) - (halfH1 + halfH2)
 end
 
 ---@class Basic:Object
@@ -45,21 +48,16 @@ function Basic:isOnScreen(camera)
     if self.scrollFactor ~= nil then
         x1, y1 = x1 * self.scrollFactor.x, y1 * self.scrollFactor.y
     end
-    x1, y1 = x1 * camera.zoom, y1 * camera.zoom
+    x1, y1 = ((self.x or 0) - x1) * camera.zoom,
+             ((self.y or 0) - y1) * camera.zoom
 
-    local x2, y2 = self.x or 0, self.y or 0
-    x2, y2 = x2 * camera.zoom, y2 * camera.zoom
+    local w1, h1 = self.width or 0, self.height or 0
+    if self:is(Text) then w1, h1 = self:getWidth(), self:getHeight() end
+    w1, h1 = w1 * camera.zoom, h1 * camera.zoom
 
-    local w1, h1 = camera.width * camera.zoom,
-                   camera.height * camera.zoom
-
-    local w2, h2 = self.width or 0, self.height or 0
-    if self:is(Text) then
-        w2, h2 = self:getWidth(), self:getHeight()
-    end
-    w2, h2 = w2 * camera.zoom, h2 * camera.zoom
-
-    return checkCollision(x1, y1, w1, h1, 0, x2, y2, w2, h2)
+    return checkCollision(x1, y1, w1, h1, 0, camera.x * camera.zoom,
+                          camera.y * camera.zoom, camera.width * camera.zoom,
+                          camera.height * camera.zoom)
 end
 
 function Basic:draw()

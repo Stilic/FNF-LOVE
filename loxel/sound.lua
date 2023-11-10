@@ -61,12 +61,12 @@ end
 function Sound:isPlaying()
     local success, isPlaying = pcall(self.__source.isPlaying, self.__source)
     if success then return isPlaying end
-    return false
+    return nil
 end
 
 function Sound:isFinished()
     return not self.__paused and not self.__source:isLooping() and
-               not self.__source:isPlaying()
+               not self:isPlaying()
 end
 
 function Sound:update()
@@ -85,10 +85,14 @@ end
 function Sound:onFocus(focus)
     if not self:isFinished() then
         if focus then
-            if self.__wasPlaying then self:play() end
+            if self.__wasPlaying ~= nil and self.__wasPlaying then
+                self:play()
+            end
         else
-            self.__wasPlaying = self.__source:isPlaying()
-            if self.__wasPlaying then self:pause() end
+            self.__wasPlaying = self:isPlaying()
+            if self.__wasPlaying ~= nil and self.__wasPlaying then
+                self:pause()
+            end
         end
     end
 end
