@@ -51,8 +51,17 @@ function Basic:isOnScreen(camera)
     x1, y1 = ((self.x or 0) - x1) * camera.zoom,
              ((self.y or 0) - y1) * camera.zoom
 
-    local w1, h1 = self.width or 0, self.height or 0
-    if self:is(Text) then w1, h1 = self:getWidth(), self:getHeight() end
+    local w1, h1 = 0, 0
+    if self:is(Text) then
+        w1, h1 = self:getWidth(), self:getHeight()
+    else
+        w1, h1 = self.getFrameWidth and
+                     (self:getFrameWidth() * math.abs(self.scale.x)) or
+                     (self.width or 0),
+                 self.getFrameHeight and
+                     (self:getFrameHeight() * math.abs(self.scale.y)) or
+                     (self.height or 0)
+    end
     w1, h1 = w1 * camera.zoom, h1 * camera.zoom
 
     return checkCollision(x1, y1, w1, h1, 0, camera.x * camera.zoom,
