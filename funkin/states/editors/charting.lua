@@ -443,7 +443,7 @@ function ChartingState:update(dt)
 end
 
 function ChartingState:loadSong(song)
-    game.sound.music = Sound():load(paths.getInst(song))
+    game.sound.loadMusic(paths.getInst(songName), nil, false)
     ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
     ChartingState.conductor.sound:setLooping(true)
     if self.__song.needsVoices then
@@ -597,8 +597,7 @@ function ChartingState:leave()
     love.mouse.setVisible(false)
 
     ChartingState.conductor = nil
-    game.sound.music:destroy()
-    game.sound.music = nil
+    game.sound.music:stop()
 
     Note.chartingMode = false
 end

@@ -30,10 +30,10 @@ function TitleState:enter()
     self.titleText:updateHitbox()
     self:add(self.titleText)
 
-    TitleState.music = Conductor(not game.sound.music and
+    TitleState.music = Conductor((not game.sound.music or
+                                     not game.sound.music:isPlaying()) and
                                      game.sound
-                                         .playMusic(
-                                         paths.getMusic("freakyMenu"), nil, true) or
+                                         .playMusic(paths.getMusic("freakyMenu")) or
                                      game.sound.music, 102)
     TitleState.music.onBeat = function()
         self.logoBl:play("bump", true)

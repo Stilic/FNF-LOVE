@@ -9,8 +9,8 @@ function FreeplayState:enter()
         'Thorns', 'Ugh', 'Guns', 'Stress'
     }
 
-    if not game.sound.music then
-        game.sound.playMusic(paths.getMusic("freakyMenu"), nil, true)
+    if not game.sound.music or not game.sound.music:isPlaying() then
+        game.sound.playMusic(paths.getMusic("freakyMenu"))
     end
 
     self.bg = Sprite()

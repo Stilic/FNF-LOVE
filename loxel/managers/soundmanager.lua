@@ -10,15 +10,25 @@ function SoundManager.play(asset, volume, looped, autoDestroy, onComplete)
     return sound
 end
 
-function SoundManager.playMusic(asset, volume, looped)
-    local sound = Sound():load(asset)
-    if volume ~= nil then sound:setVolume(volume) end
-    if looped ~= nil then sound:setLooping(looped) end
-    sound.persist = true
-    SoundManager.music = sound
-    sound:play()
-    return sound
+function SoundManager.loadMusic(asset, volume, looped)
+    if SoundManager.music then
+        SoundManager.music:stop()
+    else
+        SoundManager.music = Sound()
+        SoundManager.music.persist = true
+    end
+
+    SoundManager.music:load(asset)
+    if volume ~= nil then SoundManager.music:setVolume(volume) end
+    if looped == nil then
+        SoundManager.music:setLooping(true)
+    else
+        SoundManager.music:setLooping(looped)
+    end
+    return SoundManager.music
 end
+
+function SoundManager.playMusic(...) return SoundManager.loadMusic(...):play() end
 
 function SoundManager.update()
     if SoundManager.music and SoundManager.music.exists and

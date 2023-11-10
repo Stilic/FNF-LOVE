@@ -35,9 +35,7 @@ function PlayState:enter()
     self.scripts:loadDirectory("songs/" .. songName)
     self.scripts:call("create")
 
-    if game.sound.music then game.sound.music:stop() end
-
-    game.sound.music = Sound():load(paths.getInst(songName))
+    game.sound.loadMusic(paths.getInst(songName), nil, false)
     game.sound.music.onComplete = function()
         game.switchState(FreeplayState())
     end
@@ -58,7 +56,7 @@ function PlayState:enter()
     self.sustainsGroup = Group()
 
     self.isDead = false
-    GameOverSubstate:resetVars()
+    GameOverSubstate.resetVars()
 
     self.botPlay = ClientPrefs.data.botplayMode
     self.downScroll = ClientPrefs.data.downScroll
@@ -247,8 +245,8 @@ function PlayState:enter()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter("x")
-    self.healthBarBG.y = (self.downScroll and game.height * 0.1 or
-                             game.height * 0.9)
+    self.healthBarBG.y = (self.downScroll and game.height * 0.1 or game.height *
+                             0.9)
     self.healthBarBG:setScrollFactor()
 
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
@@ -519,19 +517,19 @@ function PlayState:update(dt)
 
         Timer.tween(2, self.gf, {alpha = 0}, 'in-out-sine')
         Timer.tween(2, self.dad, {alpha = 0}, 'in-out-sine')
-        for _, spritesBG in ipairs(self.stage.members) do
-            if spritesBG.alpha ~= nil then
-                Timer.tween(2, spritesBG, {alpha = 0}, 'in-out-sine')
+        for _, s in ipairs(self.stage.members) do
+            if s.alpha ~= nil then
+                Timer.tween(2, s, {alpha = 0}, 'in-out-sine')
             end
         end
-        for _, spritesFG in ipairs(self.stage.foreground.members) do
-            if spritesFG.alpha ~= nil then
-                Timer.tween(2, spritesFG, {alpha = 0}, 'in-out-sine')
+        for _, s in ipairs(self.stage.foreground.members) do
+            if s.alpha ~= nil then
+                Timer.tween(2, s, {alpha = 0}, 'in-out-sine')
             end
         end
 
         self:openSubState(GameOverSubstate(self.stage.boyfriendPos.x,
-        self.stage.boyfriendPos.y))
+                                           self.stage.boyfriendPos.y))
         self.isDead = true
     end
 
@@ -573,8 +571,7 @@ function PlayState:update(dt)
 
         n.x = r.x + n.scrollOffset.x
         n.y = sy - (PlayState.notePosition - time) *
-                  (0.45 * PlayState.SONG.speed) *
-                  (self.downScroll and -1 or 1)
+                  (0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
 
         if n.isSustain then
             n.flipY = self.downScroll
@@ -961,9 +958,8 @@ function PlayState:recalculateRating()
     end
 
     self.scoreTxt.content = "Score: " .. self.score .. " // Combo Breaks: " ..
-                                 self.misses .. " // " ..
-                                 util.floorDecimal(self.accuracy * 100, 2) ..
-                                 "%"
+                                self.misses .. " // " ..
+                                util.floorDecimal(self.accuracy * 100, 2) .. "%"
     self.scoreTxt:screenCenter("x")
 end
 
@@ -971,8 +967,7 @@ function PlayState:leave()
     self.scripts:call("leave")
 
     PlayState.conductor = nil
-    game.sound.music:destroy()
-    game.sound.music = nil
+    game.sound.music:stop()
 
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)

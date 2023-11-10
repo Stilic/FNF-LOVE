@@ -42,7 +42,6 @@ function Graphic:setSize(width, height)
     if self.type ~= ("rectangle" or "polygon") then
         self.config.radius = self.width
     end
-    if self.type == "polygon" then self.outWidth = self.width end
 end
 
 function Graphic:setScrollFactor(x, y)
