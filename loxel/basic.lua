@@ -40,9 +40,26 @@ end
 
 function Basic:isOnScreen(camera)
     camera = camera or game.camera
-    return checkCollision(0, 0, camera.width * camera.zoom,
-                          camera.height * camera.zoom, 0, self.x, self.y,
-                          self.width or 0, self.height or 0, self.angle or 0)
+
+    local x1, y1 = camera.scroll.x, camera.scroll.y
+    if self.scrollFactor ~= nil then
+        x1, y1 = x1 * self.scrollFactor.x, y1 * self.scrollFactor.y
+    end
+    x1, y1 = x1 * camera.zoom, y1 * camera.zoom
+
+    local x2, y2 = self.x or 0, self.y or 0
+    x2, y2 = x2 * camera.zoom, y2 * camera.zoom
+
+    local w1, h1 = camera.width * camera.zoom,
+                   camera.height * camera.zoom
+
+    local w2, h2 = self.width or 0, self.height or 0
+    if self:is(Text) then
+        w2, h2 = self:getWidth(), self:getHeight()
+    end
+    w2, h2 = w2 * camera.zoom, h2 * camera.zoom
+
+    return checkCollision(x1, y1, w1, h1, 0, x2, y2, w2, h2)
 end
 
 function Basic:draw()

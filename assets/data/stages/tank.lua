@@ -4,7 +4,6 @@ local tankAngle = love.math.random(-90, 45)
 local tankSpeed = love.math.random(5, 7)
 
 local tankmanRun
-local foregroundSprites
 
 function create()
     self.camZoom = 0.9
@@ -73,9 +72,6 @@ function create()
     tankmanRun = Group()
     self:add(tankmanRun)
 
-    foregroundSprites = Group()
-    self.foreground:add(foregroundSprites)
-
     local tankGround = Sprite(-420, -150)
     tankGround:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankGround'))
     tankGround:setGraphicSize(math.floor(tankGround.width * 1.15))
@@ -87,42 +83,42 @@ function create()
     fgTank0:setScrollFactor(1.7, 1.5)
     fgTank0:addAnimByPrefix('fg', 'fg', 24, false)
     fgTank0:play('fg', true)
-    foregroundSprites:add(fgTank0)
+    self.foreground:add(fgTank0)
 
     local fgTank1 = Sprite(-300, 750)
     fgTank1:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank1'))
     fgTank1:setScrollFactor(2, 0.2)
     fgTank1:addAnimByPrefix('fg', 'fg', 24, false)
     fgTank1:play('fg', true)
-    foregroundSprites:add(fgTank1)
+    self.foreground:add(fgTank1)
 
     local fgTank2 = Sprite(450, 940)
     fgTank2:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank2'))
     fgTank2:setScrollFactor(1.5, 1.5)
     fgTank2:addAnimByPrefix('fg', 'fg', 24, false)
     fgTank2:play('fg', true)
-    foregroundSprites:add(fgTank2)
+    self.foreground:add(fgTank2)
 
     local fgTank4 = Sprite(1300, 900)
     fgTank4:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank4'))
     fgTank4:setScrollFactor(1.5, 1.5)
     fgTank4:addAnimByPrefix('fg', 'fg', 24, false)
     fgTank4:play('fg', true)
-    foregroundSprites:add(fgTank4)
+    self.foreground:add(fgTank4)
 
     local fgTank5 = Sprite(1620, 700)
     fgTank5:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank5'))
     fgTank5:setScrollFactor(1.5, 1.5)
     fgTank5:addAnimByPrefix('fg', 'fg', 24, false)
     fgTank5:play('fg', true)
-    foregroundSprites:add(fgTank5)
+    self.foreground:add(fgTank5)
 
     local fgTank3 = Sprite(1300, 1200)
     fgTank3:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank3'))
     fgTank3:setScrollFactor(3.5, 2.5)
     fgTank3:addAnimByPrefix('fg', 'fg', 24, false)
     fgTank3:play('fg', true)
-    foregroundSprites:add(fgTank3)
+    self.foreground:add(fgTank3)
 end
 
 function update(dt)
@@ -136,7 +132,7 @@ end
 function beat(b)
     tankWatchtower:play('watchtower gradient color', true)
 
-    for _, fgTank in ipairs(foregroundSprites.members) do
+    for _, fgTank in ipairs(self.foreground.members) do
         fgTank:play('fg', true)
     end
 end

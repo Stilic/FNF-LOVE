@@ -63,7 +63,17 @@ function GameOverSubstate:update(dt)
                 if PlayState.SONG.stage == 'tank' then
                     self.playingDeathSound = true
 
-                    -- uhh
+                    self.music:setVolume(0.2)
+                    self.music:setLooping(true)
+                    self.music:play()
+
+                    local tankmanLines = 'jeffGameover-'..love.math.random(1, 25)
+                    game.sound.play(paths.getSound('gameplay/jeffGameover/'..tankmanLines),
+                                    1, false, true, function()
+                        if not self.isEnding then
+                            self.music:setVolume(1)
+                        end
+                    end)
                 else
                     self.music:setLooping(true)
                     self.music:play()
