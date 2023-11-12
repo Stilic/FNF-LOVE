@@ -1,16 +1,23 @@
-local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2)
-    local cos = math.cos(a1)
-    local sin = math.sin(a1)
+local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2, camera)
+    local rad = math.rad(a1)
+    local cos1 = math.cos(rad)
+    local sin1 = math.sin(rad)
 
-    local halfW1, halfH1 = w1 / 2, h1 / 2
-    local halfW2, halfH2 = w2 / 2, h2 / 2
+    local worldToScreen = function(wx, wy)
+        local screenX = (wx - camera.scroll.x)
+        local screenY = (wy - camera.scroll.y)
+        return screenX, screenY
+    end
 
-    local relativeX = (x2 + halfW2) - (x1 + halfW1)
-    local relativeY = (y2 + halfH2) - (y1 + halfH1)
+    local screenX1, screenY1 = worldToScreen(x1, y1)
+    local screenX2, screenY2 = worldToScreen(x2, y2)
+
+    local relativeX = screenX2 + w2 / 2 - (screenX1 + w1 / 2)
+    local relativeY = screenY2 + h2 / 2 - (screenY1 + h1 / 2)
 
     return
-        math.abs(relativeX * cos + relativeY * sin) - (halfW1 + halfW2) < 0 and
-            math.abs(-relativeX * sin + relativeY * cos) - (halfH1 + halfH2)
+        math.abs(relativeX * cos1 + relativeY * sin1) - (w1 / (2 * camera.zoom) + w2 / (2 * camera.zoom)) < 0 and
+        math.abs(-relativeX * sin1 + relativeY * cos1) - (h1 / (2 * camera.zoom) + h2 / (2 * camera.zoom)) < 0
 end
 
 ---@class Basic:Object
@@ -64,9 +71,9 @@ function Basic:isOnScreen(camera)
     end
     w1, h1 = w1 * camera.zoom, h1 * camera.zoom
 
-    return checkCollision(x1, y1, w1, h1, 0, camera.x * camera.zoom,
+    return checkCollision(x1, y1, w1, h1, self.angle or 0, camera.x * camera.zoom,
                           camera.y * camera.zoom, camera.width * camera.zoom,
-                          camera.height * camera.zoom)
+                          camera.height * camera.zoom, camera)
 end
 
 function Basic:draw()
