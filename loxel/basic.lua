@@ -1,16 +1,13 @@
+local function toScreen(c, wx, wy)
+    return wx - c.scroll.x, wy - c.scroll.y
+end
 local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
     local rad = math.rad(a)
 
     local cos, sin = math.cos(rad), math.sin(rad)
 
-    local to_screen = function(wx, wy)
-        local x = (wx - c.scroll.x)
-        local y = (wy - c.scroll.y)
-        return x, y
-    end
-
-    x1, y1 = to_screen(x1, y1)
-    x2, y2 = to_screen(x2, y2)
+    x1, y1 = toScreen(c, x1, y1)
+    x2, y2 = toScreen(c, x2, y2)
 
     local relativeX = x2 + w2 / 2 - (x1 + w1 / 2)
     local relativeY = y2 + h2 / 2 - (y1 + h1 / 2)
