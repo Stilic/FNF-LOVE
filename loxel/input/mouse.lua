@@ -53,9 +53,7 @@ function Mouse.overlaps(obj)
     if obj and obj:is(Group) then
         for _, o in ipairs(obj.members) do
             if o and (o.x and o.y and o.width and o.height) then
-                return
-                    (Mouse.x >= o.x and Mouse.x <= o.x + o.width and Mouse.y >=
-                        o.y and Mouse.y <= o.y + o.height)
+                Mouse.overlaps(o)
             end
         end
     elseif obj and obj:is(Sprite) then

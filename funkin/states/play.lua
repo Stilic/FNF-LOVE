@@ -509,6 +509,19 @@ function PlayState:update(dt)
     if self.health <= 0 and not self.isDead then
         self.paused = true
 
+        function fadeStageSprites(obj)
+            if obj and obj:is(Group) then
+                for _, o in ipairs(obj.members) do
+                    fadeStageSprites(o)
+                end
+            else
+                if obj and obj.alpha then
+                    return Timer.tween(2, obj, {alpha = 0}, 'in-out-sine')
+                end
+            end
+            return false
+        end
+
         PlayState.conductor.sound:pause()
         if self.vocals then self.vocals:pause() end
 
@@ -517,16 +530,9 @@ function PlayState:update(dt)
 
         Timer.tween(2, self.gf, {alpha = 0}, 'in-out-sine')
         Timer.tween(2, self.dad, {alpha = 0}, 'in-out-sine')
-        for _, s in ipairs(self.stage.members) do
-            if s.alpha ~= nil then
-                Timer.tween(2, s, {alpha = 0}, 'in-out-sine')
-            end
-        end
-        for _, s in ipairs(self.stage.foreground.members) do
-            if s.alpha ~= nil then
-                Timer.tween(2, s, {alpha = 0}, 'in-out-sine')
-            end
-        end
+
+        fadeStageSprites(self.stage)
+        fadeStageSprites(self.stage.foreground)
 
         self:openSubState(GameOverSubstate(self.stage.boyfriendPos.x,
                                            self.stage.boyfriendPos.y))

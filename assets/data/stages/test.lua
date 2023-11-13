@@ -16,4 +16,4 @@ function create()
     self:add(ground)
 end
 
-function postCreate() game.camera.bgColor = {0.5, 0.5, 0.5} end
+function postCreate() game.camera.bgColor = {0.5, 0.5, 0.5} close() end

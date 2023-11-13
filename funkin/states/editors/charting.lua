@@ -319,7 +319,7 @@ function ChartingState:update(dt)
     if not isTyping then
 
         if Mouse.justPressed then
-            if Mouse.overlaps() then
+            if Mouse.overlaps(self.curRenderedNotes) then
                 --
             else
                 if Mouse.x > self.gridBox.x and Mouse.x < self.gridBox.x +
@@ -329,7 +329,9 @@ function ChartingState:update(dt)
                     (self.gridSize * self:getSectionBeats() * 4) +
                     (self.gridSize * 9) then
 
-                    -- print('added note')
+                    if Mouse.pressedLeft then
+                        self:setupNote()
+                    end
                 end
             end
         end
@@ -443,7 +445,7 @@ function ChartingState:update(dt)
 end
 
 function ChartingState:loadSong(song)
-    game.sound.loadMusic(paths.getInst(songName), nil, false)
+    game.sound.loadMusic(paths.getInst(song), nil, false)
     ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
     ChartingState.conductor.sound:setLooping(true)
     if self.__song.needsVoices then

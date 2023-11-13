@@ -1,8 +1,8 @@
 local OptionsState = State:extend()
 
 local tabs = {
-    controls = require "funkin.states.options.controls",
-    gameplay = require "funkin.states.options.gameplay"
+    gameplay = require "funkin.states.options.gameplay",
+    controls = require "funkin.states.options.controls"
 }
 
 OptionsState.onPlayState = false
@@ -18,7 +18,7 @@ function OptionsState:enter()
     bg:screenCenter()
     self:add(bg)
 
-    self.optionsTab = {'Controls', 'Gameplay'}
+    self.optionsTab = {'Gameplay', 'Controls'}
 
     self.titleTabBG = Sprite(0, 20):make(game.width * 0.8, 65, {0, 0, 0})
     self.titleTabBG.alpha = 0.7
@@ -79,8 +79,8 @@ function OptionsState:reset_Tabs()
     self.allTabs:clear()
     self.textGroup:clear()
 
-    tabs.controls.add(self)
     tabs.gameplay.add(self)
+    tabs.controls.add(self)
 
     for i, grp in ipairs(self.allTabs.members) do
         for j, obj in ipairs(grp.members) do
@@ -93,36 +93,6 @@ function OptionsState:reset_Tabs()
         end
     end
     self.allTabs:add(controlsTab)
-end
-
-function OptionsState:add_GameplayTab()
-    local gameplayTab = Group()
-    gameplayTab.name = 'Gameplay'
-
-    local optionsVar = {'scrollType', 'noteSplash', 'pauseMusic'}
-    local options = {'Scroll Type', 'Note Splash', 'Pause Music'}
-
-    local type_table = {["string"] = true, ["boolean"] = false, ["number"] = 0}
-
-    for i, text in ipairs(options) do
-        local daGroup = Group()
-
-        local yPos = (i * 45) + 80
-        local control = Text(145, yPos, text,
-                             paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
-        daGroup:add(control)
-
-        local realvalue = ClientPrefs.data[optionsVar[i]]
-        local value = type_table[type(realvalue)] and '< ' ..
-                          tostring(realvalue) .. ' >' or tostring(realvalue)
-        local valueTxt = Text(382, yPos, value,
-                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
-        daGroup:add(valueTxt)
-
-        gameplayTab:add(daGroup)
-    end
-
-    self.allTabs:add(gameplayTab)
 end
 
 function OptionsState:update(dt)
@@ -171,13 +141,19 @@ function OptionsState:update(dt)
             end
         else
             if Keyboard.justPressed.ENTER then
-                if self.optionsTab[self.curTab] == 'Controls' then
-                    if not self.waiting_input then
-                        self.waiting_input = true
-                        self.blackFG.alpha = 0.5
-                        self.waitInputTxt.visible = true
+                local selectedTab = self.optionsTab[self.curTab]
+                switch(selectedTab, {
+                    ['Controls'] = function()
+                        if not self.waiting_input then
+                            self.waiting_input = true
+                            self.blackFG.alpha = 0.5
+                            self.waitInputTxt.visible = true
+                        end
+                    end,
+                    ['Gameplay'] = function()
+                        --
                     end
-                end
+                })
             end
             if controls:pressed('ui_left') then
                 if self.optionsTab[self.curTab] == 'Controls' then

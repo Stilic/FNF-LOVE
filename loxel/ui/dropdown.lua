@@ -41,6 +41,7 @@ function Dropdown:update(dt)
         elseif self.__curScroll > #self.options - self.__maxShow then
             self.__curScroll = #self.options - self.__maxShow
         end
+        self.__slider.value = self.__curScroll
     end
 
     self.__openButton:update(dt)
