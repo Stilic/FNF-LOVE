@@ -1,16 +1,10 @@
-local function toScreen(c, wx, wy)
-    return wx - c.scroll.x, wy - c.scroll.y
-end
 local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
     local rad = math.rad(a)
 
     local cos, sin = math.cos(rad), math.sin(rad)
 
-    x1, y1 = toScreen(c, x1, y1)
-    x2, y2 = toScreen(c, x2, y2)
-
-    local relativeX = x2 + w2 / 2 - (x1 + w1 / 2)
-    local relativeY = y2 + h2 / 2 - (y1 + h1 / 2)
+    local relativeX = (x2 + w2 / 2) - (x1 + w1 / 2)
+    local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
 
     return
         math.abs(relativeX * cos + relativeY * sin) -
@@ -18,7 +12,7 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
 
         math.abs(-relativeX * sin + relativeY * cos) -
             (h1 / (2 * c.zoom) + h2 / (2 * c.zoom)) < 0
-    end
+end
 
 ---@class Basic:Object
 local Basic = Object:extend()
@@ -51,29 +45,37 @@ end
 function Basic:isOnScreen(camera)
     camera = camera or game.camera
 
-    local x1, y1 = camera.scroll.x, camera.scroll.y
+    local x, y, ox, oy = camera.scroll.x, camera.scroll.y, 0, 0
     if self.scrollFactor ~= nil then
-        x1, y1 = x1 * self.scrollFactor.x, y1 * self.scrollFactor.y
+        x, y = x * self.scrollFactor.x, y * self.scrollFactor.y
     end
-    x1, y1 = ((self.x or 0) - x1) * camera.zoom,
-             ((self.y or 0) - y1) * camera.zoom
+    if self.offset ~= nil then
+        ox, oy = ox - self.offset.x, oy - self.offset.y
+    end
+    if self.getCurrentFrame then
+        local f = self:getCurrentFrame()
+        if f then
+          ox, oy = ox - f.offset.x, oy - f.offset.y
+        end
+    end
+    x, y = ((self.x or 0) - ox - x),
+             ((self.y or 0) - ox - y)
 
-    local w1, h1 = 0, 0
+    local w, h = 0, 0
     if self:is(Text) then
-        w1, h1 = self:getWidth(), self:getHeight()
+        w, h = self:getWidth(), self:getHeight()
     else
-        w1, h1 = self.getFrameWidth and
+        w, h = self.getFrameWidth and
                      (self:getFrameWidth() * math.abs(self.scale.x)) or
                      (self.width or 0),
                  self.getFrameHeight and
                      (self:getFrameHeight() * math.abs(self.scale.y)) or
                      (self.height or 0)
     end
-    w1, h1 = w1 * camera.zoom, h1 * camera.zoom
 
-    return checkCollision(x1, y1, w1, h1, self.angle or 0, camera.x * camera.zoom,
-                          camera.y * camera.zoom, camera.width * camera.zoom,
-                          camera.height * camera.zoom, camera)
+    return checkCollision(x, y, w, h, self.angle or 0, camera.x,
+                          camera.y, camera.width,
+                          camera.height, camera)
 end
 
 function Basic:draw()
