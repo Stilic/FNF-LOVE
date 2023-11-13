@@ -1,6 +1,7 @@
 local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
+local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
     local rad = math.rad(a)
-
+    local zoom = (math.abs(c.zoom) < 1 and 2 * c.zoom or 2 / c.zoom)
     local cos, sin = math.cos(rad), math.sin(rad)
 
     local relativeX = (x2 + w2 / 2) - (x1 + w1 / 2)
@@ -8,10 +9,10 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
 
     return
         math.abs(relativeX * cos + relativeY * sin) -
-            (w1 / (2 * c.zoom) + w2 / (2 * c.zoom)) < 0 and
+            (w1 / zoom + w2 / zoom) < 0 and
 
         math.abs(-relativeX * sin + relativeY * cos) -
-            (h1 / (2 * c.zoom) + h2 / (2 * c.zoom)) < 0
+            (h1 / zoom + h2 / zoom) < 0
 end
 
 ---@class Basic:Object
