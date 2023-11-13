@@ -1,24 +1,27 @@
-local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2, camera)
-    local rad = math.rad(a1)
-    local cos1 = math.cos(rad)
-    local sin1 = math.sin(rad)
+local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
+    local rad = math.rad(a)
 
-    local worldToScreen = function(wx, wy)
-        local screenX = (wx - camera.scroll.x)
-        local screenY = (wy - camera.scroll.y)
-        return screenX, screenY
+    local cos, sin = math.cos(rad), math.sin(rad)
+
+    local to_screen = function(wx, wy)
+        local x = (wx - c.scroll.x)
+        local y = (wy - c.scroll.y)
+        return x, y
     end
 
-    local screenX1, screenY1 = worldToScreen(x1, y1)
-    local screenX2, screenY2 = worldToScreen(x2, y2)
+    x1, y1 = to_screen(x1, y1)
+    x2, y2 = to_screen(x2, y2)
 
-    local relativeX = screenX2 + w2 / 2 - (screenX1 + w1 / 2)
-    local relativeY = screenY2 + h2 / 2 - (screenY1 + h1 / 2)
+    local relativeX = x2 + w2 / 2 - (x1 + w1 / 2)
+    local relativeY = y2 + h2 / 2 - (y1 + h1 / 2)
 
     return
-        math.abs(relativeX * cos1 + relativeY * sin1) - (w1 / (2 * camera.zoom) + w2 / (2 * camera.zoom)) < 0 and
-        math.abs(-relativeX * sin1 + relativeY * cos1) - (h1 / (2 * camera.zoom) + h2 / (2 * camera.zoom)) < 0
-end
+        math.abs(relativeX * cos + relativeY * sin) -
+            (w1 / (2 * c.zoom) + w2 / (2 * c.zoom)) < 0 and
+
+        math.abs(-relativeX * sin + relativeY * cos) -
+            (h1 / (2 * c.zoom) + h2 / (2 * c.zoom)) < 0
+    end
 
 ---@class Basic:Object
 local Basic = Object:extend()
