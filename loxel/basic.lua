@@ -1,5 +1,4 @@
 local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
-local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
     local rad = math.rad(a)
     local zoom = (math.abs(c.zoom) < 1 and 2 * c.zoom or 2 / c.zoom)
     local cos, sin = math.cos(rad), math.sin(rad)
