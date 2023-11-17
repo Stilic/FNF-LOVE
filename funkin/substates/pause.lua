@@ -50,6 +50,7 @@ function PauseSubState:update(dt)
                 game.switchState(OptionsState())
             end,
             ["Exit to menu"] = function()
+                game.sound.playMusic(paths.getMusic("freakyMenu"))
                 game.switchState(FreeplayState())
             end
         })

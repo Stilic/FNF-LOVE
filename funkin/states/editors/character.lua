@@ -53,10 +53,10 @@ function CharacterEditor:enter()
     self.charTab.height = game.height * 0.4
     self:add(self.charTab)
 
-    self.animInfoTxt = Text(20, 230, '', paths.getFont('phantommuff.ttf', 20))
+    self.animInfoTxt = Text(20, 260, '', paths.getFont('phantommuff.ttf', 20))
     self:add(self.animInfoTxt)
 
-    self.charInfoTxt = Text(20, 20, '', paths.getFont('phantommuff.ttf', 14))
+    self.charInfoTxt = Text(20, 50, '', paths.getFont('phantommuff.ttf', 14))
     self:add(self.charInfoTxt)
 
     self:add_UI_Character()
@@ -88,8 +88,8 @@ function CharacterEditor:add_UI_Character()
         self.char.y = 100 + self.char.positionTable.y
         game.camera.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
 
-        if self.char.curAnim.name:find('LEFT') or
-            self.char.curAnim.name:find('RIGHT') then
+        if self.char.curAnim.name:find('LEFT')
+            or self.char.curAnim.name:find('RIGHT') then
             self.char:playAnim(self.curAnim.anim, true)
         end
     end
@@ -103,7 +103,7 @@ function CharacterEditor:add_UI_Character()
         if self.isPlayer then self.char.flipX = not self.char.flipX end
     end
 
-    local camX_stepper = ui.UINumericStepper(10, 130, 10,
+    local camX_stepper = ui.UINumericStepper(10, 168, 10,
                                              self.char.cameraPosition.x, -9000,
                                              9000)
     camX_stepper.onChanged = function(value)
@@ -135,6 +135,21 @@ function CharacterEditor:add_UI_Character()
         self.char.y = 100 + self.char.positionTable.y
     end
 
+    local healthIcon_input = ui.UIInputTextBox(10, 118, 80, 20)
+    healthIcon_input.text = self.char.icon
+    healthIcon_input.onChanged = function(value)
+        self.char.icon = value
+
+        self.charLayer:add(self.healthIcon)
+        self.healthIcon:destroy()
+        self.healthIcon = HealthIcon(self.char.icon, false)
+        self.healthIcon.cameras = {self.camMenu}
+        self.healthIcon:setPosition(20, 157)
+        self.healthIcon.scale = {x = 0.6, y = 0.6}
+        self.healthIcon:updateHitbox()
+        self.charLayer:add(self.healthIcon)
+    end
+
     local optionsChar = {}
     for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
                                                               'data/characters'))) do
@@ -153,6 +168,8 @@ function CharacterEditor:add_UI_Character()
         self.curChar = value
         self:loadCharacter()
 
+        healthIcon_input.text = self.char.icon
+
         camX_stepper.value = tostring(self.char.cameraPosition.x)
         camY_stepper.value = tostring(self.char.cameraPosition.y)
 
@@ -167,6 +184,7 @@ function CharacterEditor:add_UI_Character()
 
     tab_char:add(Text(38, 43, 'Playable Character'))
     tab_char:add(Text(38, 73, 'flipX'))
+    tab_char:add(Text(10, 98, 'Icon'))
     tab_char:add(Text(10, camX_stepper.y - 20, 'Camera X/Y'))
     tab_char:add(Text(10, posX_stepper.y - 20, 'Position X/Y'))
     tab_char:add(flipX_check)
@@ -176,8 +194,10 @@ function CharacterEditor:add_UI_Character()
     tab_char:add(posX_stepper)
     tab_char:add(posY_stepper)
     tab_char:add(save_char)
+    tab_char:add(healthIcon_input)
     tab_char:add(char_dropdown)
 
+    table.insert(self.blockInput, healthIcon_input)
     table.insert(self.blockInput, camX_stepper)
     table.insert(self.blockInput, camY_stepper)
     table.insert(self.blockInput, posX_stepper)
@@ -265,6 +285,7 @@ function CharacterEditor:update(dt)
                 CharacterEditor.onPlayState = false
                 game.switchState(PlayState())
             else
+                game.sound.playMusic(paths.getMusic("freakyMenu"))
                 game.switchState(MainMenuState())
             end
         end
@@ -292,6 +313,13 @@ function CharacterEditor:loadCharacter()
     if self.char.animationsTable[1] ~= nil then
         self.char:playAnim(self.char.animationsTable[1].anim, true)
     end
+
+    self.healthIcon = HealthIcon(self.char.icon, false)
+    self.healthIcon.cameras = {self.camMenu}
+    self.healthIcon:setPosition(20, 157)
+    self.healthIcon.scale = {x = 0.6, y = 0.6}
+    self.healthIcon:updateHitbox()
+    self.charLayer:add(self.healthIcon)
 
     self.curSelected = 1
     self.curAnim = self.char.animationsTable[self.curSelected]

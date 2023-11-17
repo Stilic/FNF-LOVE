@@ -38,7 +38,7 @@ function GameOverSubstate:update(dt)
 
     if not self.isEnding then
         if controls:pressed('back') then
-            game.sound.music:stop()
+            game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(FreeplayState())
         end
 

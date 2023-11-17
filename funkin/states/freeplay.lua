@@ -9,10 +9,6 @@ function FreeplayState:enter()
         'Thorns', 'Ugh', 'Guns', 'Stress'
     }
 
-    if not game.sound.music or not game.sound.music:isPlaying() then
-        game.sound.playMusic(paths.getMusic("freakyMenu"))
-    end
-
     self.bg = Sprite()
     self.bg:loadTexture(paths.getImage('menus/mainmenu/menuBGBlue'))
     self:add(self.bg)

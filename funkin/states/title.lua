@@ -30,12 +30,12 @@ function TitleState:enter()
     self.titleText:updateHitbox()
     self:add(self.titleText)
 
-    TitleState.music = Conductor((not game.sound.music or
+    self.music = Conductor((not game.sound.music or
                                      not game.sound.music:isPlaying()) and
                                      game.sound
                                          .playMusic(paths.getMusic("freakyMenu")) or
                                      game.sound.music, 102)
-    TitleState.music.onBeat = function()
+    self.music.onBeat = function()
         self.logoBl:play("bump", true)
 
         self.danceLeft = not self.danceLeft
@@ -48,10 +48,13 @@ function TitleState:enter()
 end
 
 function TitleState:update(dt)
-    TitleState.music:update(dt)
+    self.music:update(dt)
 
     if controls:pressed("debug_1") then game.switchState(ChartingState()) end
-    if controls:pressed("debug_2") then game.switchState(CharacterEditor()) end
+    if controls:pressed("debug_2") then
+        game.sound.music:stop()
+        game.switchState(CharacterEditor())
+    end
     if not self.confirmed and controls:pressed("accept") then
         self.confirmed = true
         self.titleText:play("press")
@@ -62,6 +65,6 @@ function TitleState:update(dt)
     TitleState.super.update(self, dt)
 end
 
-function TitleState:leave() TitleState.music = nil end
+function TitleState:leave() self.music = nil end
 
 return TitleState

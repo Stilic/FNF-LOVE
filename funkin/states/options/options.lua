@@ -73,6 +73,12 @@ function OptionsState:enter()
     self.waitInputTxt:screenCenter('y')
     self.waitInputTxt.visible = false
     self:add(self.waitInputTxt)
+
+    if OptionsState.onPlayState then
+        local music = paths.getMusic(ClientPrefs.data.pauseMusic)
+        music:seek(math.random(0, music:getDuration()))
+        game.sound.playMusic(music, 0)
+    end
 end
 
 function OptionsState:reset_Tabs()
@@ -98,6 +104,10 @@ end
 function OptionsState:update(dt)
     OptionsState.super.update(self, dt)
 
+    if game.sound.music:getVolume() <= 0.5 then
+        game.sound.music:setVolume(game.sound.music:getVolume() + 0.05)
+    end
+
     if controls:pressed('back') then
         game.sound.play(paths.getSound('cancelMenu'))
         if self.waiting_input then
@@ -112,6 +122,7 @@ function OptionsState:update(dt)
                 (self.optionsTab[self.curTab] == 'Controls' and false)
         else
             if OptionsState.onPlayState then
+                game.sound.music:stop()
                 game.switchState(PlayState())
                 OptionsState.onPlayState = false
             else

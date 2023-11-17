@@ -37,6 +37,7 @@ function PlayState:enter()
 
     game.sound.loadMusic(paths.getInst(songName), nil, false)
     game.sound.music.onComplete = function()
+        game.sound.playMusic(paths.getMusic("freakyMenu"))
         game.switchState(FreeplayState())
     end
     PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
@@ -973,7 +974,6 @@ function PlayState:leave()
     self.scripts:call("leave")
 
     PlayState.conductor = nil
-    game.sound.music:stop()
 
     controls:unbindPress(self.bindedKeyPress)
     controls:unbindRelease(self.bindedKeyRelease)

@@ -154,6 +154,7 @@ function InputTextBox:update(dt)
                                          self.__prevTextWidth -
                                                 (self.width - 10))
             end
+            if self.onChanged then self.onChanged(self.text) end
         end
 
         self.__cursorBlinkTimer = self.__cursorBlinkTimer + dt

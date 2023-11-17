@@ -21,7 +21,7 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
 
         math.abs(-relativeX * sin + relativeY * cos) -
             (h1 / (2 * c.zoom) + h2 / (2 * c.zoom)) < 0
-    end
+end
 
 ---@class Basic:Object
 local Basic = Object:extend()

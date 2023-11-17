@@ -104,4 +104,77 @@ function create()
     end
 end
 
+function postCreate()
+    tvShader = love.graphics.newShader[[
+        extern number time;
+        extern number bulgeFactor;
+        extern number rgbSplit;
+        extern number blurAmount;
+        extern number lineDensity;
+        extern number vignetteIntensity;
+
+        vec4 blur(vec2 uv, Image texture) {
+            vec4 sum = vec4(0.0);
+            sum += Texel(texture, uv - 4.0 * blurAmount);
+            sum += Texel(texture, uv - 3.0 * blurAmount);
+            sum += Texel(texture, uv - 2.0 * blurAmount);
+            sum += Texel(texture, uv - blurAmount);
+            sum += Texel(texture, uv);
+            sum += Texel(texture, uv + blurAmount);
+            sum += Texel(texture, uv + 2.0 * blurAmount);
+            sum += Texel(texture, uv + 3.0 * blurAmount);
+            sum += Texel(texture, uv + 4.0 * blurAmount);
+            return sum / 9.0;
+        }
+
+        vec4 addLines(vec2 uv) {
+            number lines = sin((uv.y - time) * lineDensity) * 0.05 + 0.5;
+            vec4 linesColor = vec4(lines, lines, lines, lines);
+            return linesColor;
+        }
+
+        vec4 addVignette(vec2 uv) {
+            number vignette = smoothstep(vignetteIntensity * 1.0, -1.0, length(uv - 0.5) * 2.0) + 3.0;
+            vignette *= smoothstep(vignetteIntensity * 4.0, -1.0, length(uv - 0.5) * 2.0);
+            vec4 vignetteColor = vec4(vignette, vignette, vignette, vignette);
+            return vignetteColor;
+        }
+
+        vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+            vec2 center = vec2(0.5, 0.5);
+            vec2 offset = texture_coords - center;
+            number distance = length(offset);
+            vec2 bulgeCoords = center + offset * (1.0 + bulgeFactor * pow(distance, 2.0));
+            vec4 bulgeColor = Texel(texture, bulgeCoords);
+
+            vec2 rgbOffset = vec2(rgbSplit, 0.0);
+            vec4 redChannel = Texel(texture, bulgeCoords - rgbOffset);
+            vec4 blueChannel = Texel(texture, bulgeCoords + rgbOffset);
+
+            vec4 finalColor = vec4(bulgeColor.r, bulgeColor.g, bulgeColor.b, bulgeColor.a);
+
+            finalColor = blur(bulgeCoords, texture);
+            finalColor *= addLines(bulgeCoords);
+            finalColor *= addVignette(bulgeCoords);
+            return finalColor * color;
+        }
+    ]]
+
+    tvShader:send("bulgeFactor", 0.15)
+    tvShader:send("rgbSplit", 0.002)
+    tvShader:send("blurAmount", 0.0005)
+    tvShader:send("lineDensity", 280)
+    tvShader:send("vignetteIntensity", 0.5)
+
+    game.camera.shader = tvShader
+    state.camHUD.shader = tvShader
+    state.camOther.shader = tvShader
+end
+
+local time = 0
+function update(dt)
+    time = time + dt
+    tvShader:send("time", time*0.8)
+end
+
 function beat(b) if state.SONG.song:lower() ~= 'thorns' then bgGirls:dance() end end
