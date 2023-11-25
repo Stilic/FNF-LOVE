@@ -157,6 +157,8 @@ function Sprite:new(x, y, texture)
     self.width, self.height = 0, 0
     self.antialiasing = true
 
+    self.__width, self.__height = self.width, self.height
+
     self.origin = {x = 0, y = 0}
     self.offset = {x = 0, y = 0}
     self.scale = {x = 1, y = 1}
@@ -228,6 +230,8 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     end
     self.height = frameHeight
 
+    self.__width, self.__height = self.width, self.height
+
     if animated then
         self.__frames = Sprite.getTiles(texture,
                                         {x = frameWidth, y = frameHeight})
@@ -255,6 +259,7 @@ function Sprite:setFrames(frames)
 
     self:loadTexture(frames.texture)
     self.width, self.height = self:getFrameDimensions()
+    self.__width, self.__height = self.width, self.height
     self:centerOrigin()
 end
 
@@ -310,6 +315,7 @@ function Sprite:updateHitbox()
 
     self.width = math.abs(self.scale.x) * w
     self.height = math.abs(self.scale.y) * h
+    self.__width, self.__height = self.width, self.height
 
     self.offset = {x = -0.5 * (self.width - w), y = -0.5 * (self.height - h)}
     self:centerOrigin()
@@ -478,6 +484,11 @@ function Sprite:destroy()
 end
 
 function Sprite:update(dt)
+    if self.__width ~= self.width or self.__height ~= self.height then
+        self:setGraphicSize(self.width, self.height)
+        self.__width, self.__height = self.width, self.height
+    end
+
     if self.curAnim and not self.animFinished and not self.animPaused then
         self.curFrame = self.curFrame + dt * self.curAnim.framerate
         if self.curFrame >= #self.curAnim.frames then

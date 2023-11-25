@@ -3,6 +3,14 @@ local MainMenuState = State:extend()
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
+
+    -- Update Presence
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({
+            details = "In the Menus"
+        })
+    end
+
     self.optionShit = {'story_mode', 'freeplay', 'donate', 'options'}
 
     self.selectedSomethin = false
@@ -11,7 +19,7 @@ function MainMenuState:enter()
 
     local yScroll = math.max(0.25 - (0.05 * (#self.optionShit - 4)), 0.1)
     self.menuBg = Sprite()
-    self.menuBg:loadTexture(paths.getImage('menus/mainmenu/menuBG'))
+    self.menuBg:loadTexture(paths.getImage('menus/menuBG'))
     self.menuBg:setScrollFactor(0, yScroll)
     self.menuBg:setGraphicSize(math.floor(self.menuBg.width * 1.175))
     self.menuBg:updateHitbox()
@@ -19,7 +27,7 @@ function MainMenuState:enter()
     self:add(self.menuBg)
 
     self.magentaBg = Sprite()
-    self.magentaBg:loadTexture(paths.getImage('menus/mainmenu/menuBGMagenta'))
+    self.magentaBg:loadTexture(paths.getImage('menus/menuBGMagenta'))
     self.magentaBg.visible = false
     self.magentaBg:setScrollFactor(0, yScroll)
     self.magentaBg:setGraphicSize(math.floor(self.magentaBg.width * 1.175))
@@ -36,7 +44,7 @@ function MainMenuState:enter()
         local menuItem = Sprite(0, (i * 140) + offset)
         menuItem.scale = {x = scale, y = scale}
         menuItem:setFrames(paths.getSparrowAtlas(
-                               'menus/mainmenu/menuoptions/menu_' ..
+                               'menus/mainmenu/menu_' ..
                                    self.optionShit[i + 1]))
         menuItem:addAnimByPrefix('idle', self.optionShit[i + 1] .. ' basic', 24)
         menuItem:addAnimByPrefix('selected', self.optionShit[i + 1] .. ' white',
@@ -53,11 +61,17 @@ function MainMenuState:enter()
 
     self.camFollow = {x = 0, y = 0}
 
-    self.daText = Text(12, game.height - 24, "FNF-LOVE v0.5",
+    self.engineVersion = Text(12, game.height - 42, "FNF LÖVE v" .. Application.meta.version,
                        paths.getFont("vcr.ttf", 16), {255, 255, 255})
-    self.daText.outWidth = 2
-    self.daText:setScrollFactor()
-    self:add(self.daText)
+    self.engineVersion.outWidth = 2
+    self.engineVersion:setScrollFactor()
+    self:add(self.engineVersion)
+
+    self.engineCreated = Text(12, game.height - 24, "Created By Stilic",
+                       paths.getFont("vcr.ttf", 16), {255, 255, 255})
+    self.engineCreated.outWidth = 2
+    self.engineCreated:setScrollFactor()
+    self:add(self.engineCreated)
 
     -- funny popup
     self.gf_popup = SpriteGroup(game.width - 460, game.height)
@@ -82,8 +96,8 @@ end
 
 function MainMenuState:update(dt)
     game.camera.target.x, game.camera.target.y =
-        util.coolLerp(game.camera.target.x, self.camFollow.x, 1),
-        util.coolLerp(game.camera.target.y, self.camFollow.y, 1)
+        util.coolLerp(game.camera.target.x, self.camFollow.x, 0.2),
+        util.coolLerp(game.camera.target.y, self.camFollow.y, 0.2)
 
     if not self.selectedSomethin then
         if controls:pressed('ui_up') then self:changeSelection(-1) end

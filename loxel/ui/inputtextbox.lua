@@ -138,6 +138,7 @@ function InputTextBox:update(dt)
                     end
                 end
                 self.__removeTimer = self.__removeTime - 0.02
+                if self.onChanged then self.onChanged(self.text) end
             end
             self.__newTextWidth = self.font:getWidth(self.text)
             if self.__newTextWidth > self.__prevTextWidth then
@@ -154,7 +155,6 @@ function InputTextBox:update(dt)
                                          self.__prevTextWidth -
                                                 (self.width - 10))
             end
-            if self.onChanged then self.onChanged(self.text) end
         end
 
         self.__cursorBlinkTimer = self.__cursorBlinkTimer + dt
@@ -176,10 +176,20 @@ function InputTextBox:update(dt)
             self.__scrollTextX = 0
         end
     end
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
 end
 
 function InputTextBox:mousepressed(x, y, button, istouch, presses)
-    if button == 1 then
+    if button == Mouse.LEFT then
         if x >= self.x and x <= self.x + self.width and y >= self.y and y <=
             self.y + self.height then
             self.active = true
@@ -228,6 +238,7 @@ function InputTextBox:keypressed(key, scancode, isrepeat)
                                          self.__prevTextWidth -
                                                 (self.width - 10))
             end
+            if self.onChanged then self.onChanged(self.text) end
         elseif key == "delete" then
             if self.__cursorPos < utf8.len(self.text) then
                 local byteoffset = utf8.offset(self.text, 1,
@@ -239,6 +250,7 @@ function InputTextBox:keypressed(key, scancode, isrepeat)
             end
             self.__removePressed = true
             self.__removeType = RemoveType.DELETE
+            if self.onChanged then self.onChanged(self.text) end
         elseif key == "left" then
             if self.__cursorPos > 0 then
                 self.__cursorPos = self.__cursorPos - 1
@@ -269,7 +281,7 @@ function InputTextBox:keyreleased(key, scancode)
 end
 
 function InputTextBox:textinput(text)
-    if self.active then
+    if not self.__removePressed and self.active then
         self.__typing = true
         self.__input = self.__input .. text
     end

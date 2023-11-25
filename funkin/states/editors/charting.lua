@@ -9,7 +9,7 @@ function ChartingState:enter()
     Note.chartingMode = true
 
     self.bg = Sprite()
-    self.bg:loadTexture(paths.getImage("menus/mainmenu/menuDesat"))
+    self.bg:loadTexture(paths.getImage("menus/menuDesat"))
     self.bg:screenCenter()
     self.bg.color = {0.1, 0.1, 0.1}
     self.bg:setScrollFactor()

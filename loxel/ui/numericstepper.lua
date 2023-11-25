@@ -183,6 +183,9 @@ function NumericStepper:update(dt)
                     end
                 end
                 self.__removeTimer = self.__removeTime - 0.02
+                if self.onChanged then
+                    self.onChanged(tonumber(self.value))
+                end
             end
             self.__newTextWidth = self.font:getWidth(self.value)
             if self.__newTextWidth > self.__prevTextWidth then
@@ -198,9 +201,6 @@ function NumericStepper:update(dt)
                                                  self.__newTextWidth),
                                          self.__prevTextWidth -
                                                 (self.width - 10))
-            end
-            if self.onChanged then
-                self.onChanged(tonumber(self.value))
             end
         end
 
@@ -225,10 +225,20 @@ function NumericStepper:update(dt)
     end
     self.increaseButton:update(dt)
     self.decreaseButton:update(dt)
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
 end
 
 function NumericStepper:mousepressed(x, y, button, istouch, presses)
-    if button == 1 then
+    if button == Mouse.LEFT then
         if x >= self.x and x <= self.x + self.width and y >= self.y and y <=
             self.y + self.height then
             self.active = true
@@ -328,7 +338,7 @@ end
 local function isNumber(str) return string.match(str, "[0123456789%.]+") == str end
 
 function NumericStepper:textinput(text)
-    if self.active then
+    if not self.__removePressed and self.active then
         if isNumber(text) then
             self.__typing = true
             self.__input = self.__input .. text

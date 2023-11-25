@@ -231,22 +231,11 @@ function PlayState:enter()
     self:add(self.stage.foreground)
     self:add(self.judgeSprites)
 
-    if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
-        local section = self:getCurrentSection()
-        if section.mustHitSection then
-            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera,
-                        {zoom = 1}, 'in-out-elastic')
-        else
-            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera,
-                        {zoom = 1.3}, 'in-out-elastic')
-        end
-    end
-
     self.healthBarBG = Sprite()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter("x")
-    self.healthBarBG.y = (self.downScroll and game.height * 0.1 or game.height *
+    self.healthBarBG.y = (self.downScroll and game.height * 0.08 or game.height *
                              0.9)
     self.healthBarBG:setScrollFactor()
 
@@ -261,23 +250,20 @@ function PlayState:enter()
     self.iconP2 = HealthIcon(self.dad.icon, false)
     self.iconP2.y = self.healthBar.y - 75
 
-    local textOffset = 30
+    local textOffset = 36
     if self.downScroll then textOffset = -textOffset end
 
-    local font = paths.getFont("vcr.ttf", 16)
-    self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", font,
+    local fontScore = paths.getFont("vcr.ttf", 17)
+    self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", fontScore,
                          {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
 
-    self.timeTxt = Text(0, self.healthBar.y - textOffset, "", font, {1, 1, 1},
-                        "center")
-    self.timeTxt.outWidth = 1
-
-    self.timeArcBG = Graphic(self.timeTxt.x - 20, self.timeTxt.y + 6, 100, 100,
+    self.timeArcBG = Graphic(45, game.height - 45, 100, 100,
                              {0, 0, 0}, "arc", "line")
-    self.timeArcBG.outWidth = 7
+    if self.downScroll then self.timeArcBG.y = 45 end
+    self.timeArcBG.outWidth = 18
     self.timeArcBG.config = {
-        radius = 8,
+        radius = 24,
         arctype = "closed",
         angle1 = 0,
         angle2 = 360,
@@ -285,19 +271,23 @@ function PlayState:enter()
     }
     self.timeArcBG:updateDimensions()
 
-    self.timeTxt.y = self.timeArcBG.y - (self.timeArcBG.height / 2)
-
     self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 100, 100,
                            {1, 1, 1}, "arc", "line")
-    self.timeArc.outWidth = 2
+    self.timeArc.outWidth = 10
     self.timeArc.config = {
-        radius = 8,
+        radius = 24,
         arctype = "open",
         angle1 = -90,
         angle2 = 0,
         segments = 40
     }
     self.timeArc:updateDimensions()
+
+    local fontTime = paths.getFont("vcr.ttf", 24)
+    self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "", fontTime, {1, 1, 1},
+                        "left")
+    self.timeTxt.outWidth = 2
+    if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
     self:add(self.receptors)
     self:add(self.sustainsGroup)
@@ -393,6 +383,7 @@ local function fadeGroupSprites(obj)
     end
     return false
 end
+
 function PlayState:update(dt)
     self.scripts:call("update", dt)
 
@@ -405,6 +396,21 @@ function PlayState:update(dt)
         if self.vocals then self.vocals:play() end
         PlayState.notePosition = PlayState.conductor.time
         self.scripts:call("songStart")
+
+        if not self.startingSong and love.system.getDevice() == "Desktop" then
+            local detailsText = "Freeplay"
+            if self.storyMode then detailsText = "Story Mode: " end
+
+            local startTimestamp = os.time(os.date("*t"))
+            local endTimestamp = startTimestamp + PlayState.conductor.sound:getDuration()
+
+            Discord.changePresence({
+                details = detailsText,
+                state = self.SONG.song,
+                startTimestamp = math.floor(startTimestamp),
+                endTimestamp = math.floor(endTimestamp),
+            })
+        end
     end
 
     PlayState.super.update(self, dt)
@@ -447,13 +453,7 @@ function PlayState:update(dt)
 
     self.timeTxt.content = util.getFormattedTime(songTime)
 
-    self.timeTxt:screenCenter("x")
-    self.timeTxt.x = self.timeTxt.x + (self.timeArcBG.width + 5)
-
-    self.timeArcBG:screenCenter("x")
-    self.timeArcBG.x = self.timeTxt.x - self.timeArcBG.width - 5
     self.timeArc.x = self.timeArcBG.x
-
     local timeAngle = ((PlayState.conductor.time / 1000) /
                           (PlayState.conductor.sound:getDuration() / 1000)) *
                           0.36
@@ -501,6 +501,16 @@ function PlayState:update(dt)
         if self.vocals then self.vocals:pause() end
 
         self.paused = true
+
+        if love.system.getDevice() == 'Desktop' then
+            local detailsText = "Freeplay"
+            if self.storyMode then detailsText = "Story Mode: " end
+
+            Discord.changePresence({
+                details = "Paused - " .. detailsText,
+                state = self.SONG.song
+            })
+        end
 
         local pause = PauseSubState()
         pause.cameras = {self.camOther}
@@ -667,6 +677,22 @@ function PlayState:closeSubState()
         end
         PlayState.conductor.sound:play()
         if self.vocals then self.vocals:play() end
+
+        if love.system.getDevice() == 'Desktop' then
+            local detailsText = "Freeplay"
+            if self.storyMode then detailsText = "Story Mode: " end
+
+            local startTimestamp = os.time(os.date("*t"))
+            local endTimestamp = startTimestamp + PlayState.conductor.sound:getDuration()
+            endTimestamp = endTimestamp - PlayState.notePosition/1000
+
+            Discord.changePresence({
+                details = detailsText,
+                state = self.SONG.song,
+                startTimestamp = math.floor(startTimestamp),
+                endTimestamp = math.floor(endTimestamp)
+            })
+        end
     end
 end
 
@@ -953,6 +979,34 @@ function PlayState:popUpScore(rating)
             end)
 
             lastSpr = numScore
+        end
+    end
+end
+
+function PlayState:focus(f)
+    if love.system.getDevice() == 'Desktop' then
+        if f then
+            local detailsText = "Freeplay"
+            if self.storyMode then detailsText = "Story Mode: " end
+
+            local startTimestamp = os.time(os.date("*t"))
+            local endTimestamp = startTimestamp + PlayState.conductor.sound:getDuration()
+            endTimestamp = endTimestamp - PlayState.notePosition/1000
+
+            Discord.changePresence({
+                details = detailsText,
+                state = self.SONG.song,
+                startTimestamp = math.floor(startTimestamp),
+                endTimestamp = math.floor(endTimestamp)
+            })
+        else
+            local detailsText = "Freeplay"
+            if self.storyMode then detailsText = "Story Mode: " end
+
+            Discord.changePresence({
+                details = "Paused - " .. detailsText,
+                state = self.SONG.song
+            })
         end
     end
 end

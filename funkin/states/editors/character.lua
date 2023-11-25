@@ -21,23 +21,34 @@ function CharacterEditor:enter()
 
     game.camera.scroll = {x = 0, y = 0}
 
+    self.camChar = Camera()
+    self.camChar.scroll = {x = 0, y = 0}
     self.camMenu = Camera()
+    game.cameras.add(self.camChar, false)
     game.cameras.add(self.camMenu, false)
 
-    self.stageLayer = Stage('stage')
-    self:add(self.stageLayer)
+    local bg = Sprite()
+    bg:loadTexture(paths.getImage('editor/josh_hutcherson'))
+    bg.color = {0.4, 0.4, 0.4}
+    bg:setScrollFactor()
+    self:add(bg)
 
     self.charLayer = Group()
     self:add(self.charLayer)
 
     self:loadCharacter()
 
+    self.startTimestamp = os.time(os.date("*t"))
+    self:updatePresence()
+
     self:changeAnim()
 
     self.camPoint1 = Sprite():make(5, 30, {1, 1, 1})
+    self.camPoint1.cameras = {self.camChar}
     self:add(self.camPoint1)
 
     self.camPoint2 = Sprite():make(30, 5, {1, 1, 1})
+    self.camPoint2.cameras = {self.camChar}
     self:add(self.camPoint2)
 
     self.blockInput = {}
@@ -86,7 +97,7 @@ function CharacterEditor:add_UI_Character()
 
         self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
         self.char.y = 100 + self.char.positionTable.y
-        game.camera.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
+        self.camChar.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
 
         if self.char.curAnim.name:find('LEFT')
             or self.char.curAnim.name:find('RIGHT') then
@@ -168,6 +179,8 @@ function CharacterEditor:add_UI_Character()
         self.curChar = value
         self:loadCharacter()
 
+        self:updatePresence()
+
         healthIcon_input.text = self.char.icon
 
         camX_stepper.value = tostring(self.char.cameraPosition.x)
@@ -244,19 +257,19 @@ function CharacterEditor:update(dt)
         local shiftMult = Keyboard.pressed.SHIFT and 10 or 1
 
         if Keyboard.pressed.J then
-            game.camera.scroll.x = game.camera.scroll.x - (2 + shiftMult)
+            self.camChar.scroll.x = self.camChar.scroll.x - (2 + shiftMult)
         elseif Keyboard.pressed.L then
-            game.camera.scroll.x = game.camera.scroll.x + (2 + shiftMult)
+            self.camChar.scroll.x = self.camChar.scroll.x + (2 + shiftMult)
         end
         if Keyboard.pressed.I then
-            game.camera.scroll.y = game.camera.scroll.y - (2 + shiftMult)
+            self.camChar.scroll.y = self.camChar.scroll.y - (2 + shiftMult)
         elseif Keyboard.pressed.K then
-            game.camera.scroll.y = game.camera.scroll.y + (2 + shiftMult)
+            self.camChar.scroll.y = self.camChar.scroll.y + (2 + shiftMult)
         end
         if Keyboard.pressed.U then
-            game.camera.zoom = game.camera.zoom - 0.01
+            self.camChar.zoom = self.camChar.zoom - 0.01
         elseif Keyboard.pressed.O then
-            game.camera.zoom = game.camera.zoom + 0.01
+            self.camChar.zoom = self.camChar.zoom + 0.01
         end
 
         if Keyboard.justPressed.LEFT then
@@ -309,6 +322,7 @@ end
 function CharacterEditor:loadCharacter()
     self.charLayer:clear()
     self.char = Character(0, 0, self.curChar, self.isPlayer)
+    self.char.cameras = {self.camChar}
     self.charLayer:add(self.char)
     if self.char.animationsTable[1] ~= nil then
         self.char:playAnim(self.char.animationsTable[1].anim, true)
@@ -326,7 +340,8 @@ function CharacterEditor:loadCharacter()
 
     self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
     self.char.y = 100 + self.char.positionTable.y
-    game.camera.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
+
+    self.camChar.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
 end
 
 function CharacterEditor:changeOffsets(x, y)
@@ -346,6 +361,16 @@ function CharacterEditor:changeAnim(huh)
 
     self.curAnim = self.char.animationsTable[self.curSelected]
     self.char:playAnim(self.curAnim.anim, true)
+end
+
+function CharacterEditor:updatePresence()
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({
+            details = "Character Editor",
+            state = "Character: " .. self.curChar,
+            startTimestamp = self.startTimestamp
+        })
+    end
 end
 
 function CharacterEditor:saveCharacter()
@@ -376,6 +401,7 @@ end
 function CharacterEditor:leave()
     love.mouse.setVisible(false)
     Character.editorMode = false
+    love.window.setTitle(Application.meta.title)
 end
 
 return CharacterEditor

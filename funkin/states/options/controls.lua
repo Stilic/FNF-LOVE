@@ -1,6 +1,9 @@
 local Controls = {}
 
-local lastID = 0
+Controls.curSelected = 1
+Controls.members = {}
+Controls.membersValue = {}
+
 function Controls.add(options)
     local controlsTab = Group()
     controlsTab.name = 'Controls'
@@ -36,7 +39,6 @@ function Controls.add(options)
     local titleTxtGroup = Group()
     titleTxtGroup.name = 'Controls'
 
-    local myID = 0
     for i = 1, #binds do
         local bind = binds[i]
         if bind[1] then
@@ -72,6 +74,19 @@ function Controls.add(options)
     end
     options.textGroup:add(titleTxtGroup)
     options.allTabs:add(controlsTab)
+end
+
+function Controls.update(dt)
+    if controls:pressed('ui_left') then
+        Controls.changeBindSelection(-1)
+    end
+    if controls:pressed('ui_right') then
+        Controls.changeBindSelection(1)
+    end
+end
+
+function Controls.changeBindSelection()
+    
 end
 
 return Controls

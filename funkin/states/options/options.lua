@@ -1,24 +1,35 @@
 local OptionsState = State:extend()
 
 local tabs = {
-    gameplay = require "funkin.states.options.gameplay",
-    controls = require "funkin.states.options.controls"
+    --Gameplay = require "funkin.states.options.gameplay",
+    Controls = require "funkin.states.options.controls"
 }
 
 OptionsState.onPlayState = false
 
 function OptionsState:enter()
+
+    -- Update Presence
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({
+            details = "In the Menus"
+        })
+    end
+
     self.curTab = 1
     self.curSelect = 1
     self.controls = table.clone(ClientPrefs.controls)
 
     local bg = Sprite()
-    bg:loadTexture(paths.getImage('menus/mainmenu/menuBGBlue'))
+    bg:loadTexture(paths.getImage('menus/menuBGBlue'))
     bg.color = {0.5, 0.5, 0.5}
     bg:screenCenter()
     self:add(bg)
 
-    self.optionsTab = {'Gameplay', 'Controls'}
+    self.optionsTab = {
+        --'Gameplay',
+        'Controls'
+    }
 
     self.titleTabBG = Sprite(0, 20):make(game.width * 0.8, 65, {0, 0, 0})
     self.titleTabBG.alpha = 0.7
@@ -85,8 +96,8 @@ function OptionsState:reset_Tabs()
     self.allTabs:clear()
     self.textGroup:clear()
 
-    tabs.gameplay.add(self)
-    tabs.controls.add(self)
+    --tabs.gameplay.add(self)
+    tabs.Controls.add(self)
 
     for i, grp in ipairs(self.allTabs.members) do
         for j, obj in ipairs(grp.members) do
@@ -151,8 +162,10 @@ function OptionsState:update(dt)
                 end
             end
         else
+            local selectedTab = self.optionsTab[self.curTab]
+            tabs[selectedTab].update(dt)
+
             if Keyboard.justPressed.ENTER then
-                local selectedTab = self.optionsTab[self.curTab]
                 switch(selectedTab, {
                     ['Controls'] = function()
                         if not self.waiting_input then

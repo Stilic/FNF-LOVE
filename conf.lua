@@ -1,13 +1,13 @@
-local dimensions = require "dimensions"
+local App = require "project"
 
 function love.conf(t)
-    t.identity = "funkin"
-    -- t.console = true
+    t.identity = App.package
+    t.console = App.DEBUG_MODE
 
-    t.window.title = "Friday Night Funkin' LÖVE"
-    t.window.icon = "art/icon.png"
-    t.window.width = dimensions.width
-    t.window.height = dimensions.height
+    t.window.title = App.title
+    t.window.icon = App.icon
+    t.window.width = App.width
+    t.window.height = App.height
     t.window.resizable = true
     t.window.vsync = false
 

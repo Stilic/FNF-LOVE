@@ -16,6 +16,16 @@ function Checkbox:update(dt)
     self.hovered =
         (mx >= self.x and mx <= self.x + self.size and my >= self.y and my <=
             self.y + self.size)
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
 end
 
 function Checkbox:__render()
@@ -55,7 +65,7 @@ function Checkbox:__render()
     love.graphics.setColor(r, g, b, a)
 end
 
-function Checkbox:mousepressed(x, y, button, istouch, presses)
+function Checkbox:mousepressed(x, y, button)
     if self.hovered then
         self.checked = not self.checked
         if self.callback then self.callback() end

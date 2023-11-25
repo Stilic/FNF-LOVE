@@ -1,7 +1,5 @@
 local Slider = Basic:extend()
 
-Slider.instances = {}
-
 function Slider:new(x, y, width, height, value, sliderType, min, max)
     Slider.super.new(self)
 
@@ -25,8 +23,6 @@ function Slider:new(x, y, width, height, value, sliderType, min, max)
         local clampedY = math.max(self.min, math.min(self.height - self.width, self.y))
         self.value = self.min + (clampedY / (self.height - self.width)) * (self.max - self.min)
     end
-
-    table.insert(Slider.instances, self)
 end
 
 function Slider:update()
@@ -39,6 +35,25 @@ function Slider:update()
             local relativeY = (Mouse.y - self.width/2) - self.y
             local clampedY = math.max(self.min, math.min(self.height - self.width, relativeY))
             self.value = self.min + (clampedY / (self.height - self.width)) * (self.max - self.min)
+        end
+    end
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
+    if Mouse.justReleased then
+        if Mouse.justReleasedLeft then
+            self:mousereleased(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justReleasedRight then
+            self:mousereleased(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justReleasedMiddle then
+            self:mousereleased(Mouse.x, Mouse.y, Mouse.MIDDLE)
         end
     end
 end
@@ -65,11 +80,11 @@ function isInside(self, x, y)
 end
 
 function Slider:mousepressed(x, y, button)
-    self.isDragging = (button == 1 and isInside(self, Mouse.x, Mouse.y))
+    self.isDragging = (button == Mouse.LEFT and isInside(self, Mouse.x, Mouse.y))
 end
 
 function Slider:mousereleased(x, y, button)
-    if button == 1 then self.isDragging = false end
+    if button == Mouse.LEFT then self.isDragging = false end
 end
 
 return Slider

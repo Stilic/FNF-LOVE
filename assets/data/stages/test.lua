@@ -6,7 +6,7 @@ function create()
     self.boyfriendPos = {x = 1100, y = 100}
 
     local ground = ParallaxImage(100, 100, 1280, 720,
-                                 paths.getImage('menus/mainmenu/menuDesat'))
+                                 paths.getImage('menus/menuDesat'))
     ground.offsetBack = {x = 0, y = -300}
     ground.offsetFront = {x = 0, y = -150}
     ground.scrollFactorBack = {x = 0.4, y = 0.4}

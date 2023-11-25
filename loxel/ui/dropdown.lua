@@ -46,9 +46,19 @@ function Dropdown:update(dt)
 
     self.__openButton:update(dt)
     self.__slider:update()
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
 end
 
-function drawBoid(mode, x, y, length, width, angle)
+local function drawBoid(mode, x, y, length, width, angle)
     love.graphics.push()
     love.graphics.translate(x, y)
     love.graphics.rotate(math.rad(angle))
@@ -166,12 +176,6 @@ function Dropdown:mousepressed(x, y, button)
     if self.isOpen and optionClicked then
         self:selectOption(optionClicked + self.__curScroll)
     end
-    self.__openButton:mousepressed(x, y, button)
-    self.__slider:mousepressed(x, y, button)
-end
-
-function Dropdown:mousereleased(x, y, button)
-    self.__slider:mousereleased(x, y, button)
 end
 
 return Dropdown

@@ -3,6 +3,14 @@ local FreeplayState = State:extend()
 FreeplayState.curSelected = 1
 
 function FreeplayState:enter()
+
+    -- Update Presence
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({
+            details = "In the Menus"
+        })
+    end
+
     self.songs = {
         'Test', 'Tutorial', 'Bopeebo', 'Fresh', 'Dad Battle', 'Spookeez',
         'South', 'Monster', 'Pico', 'Philly Nice', 'Blammed', 'Senpai', 'Roses',
@@ -10,7 +18,7 @@ function FreeplayState:enter()
     }
 
     self.bg = Sprite()
-    self.bg:loadTexture(paths.getImage('menus/mainmenu/menuBGBlue'))
+    self.bg:loadTexture(paths.getImage('menus/menuBGBlue'))
     self:add(self.bg)
     self.bg:screenCenter()
 

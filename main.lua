@@ -1,10 +1,14 @@
 io.stdout:setvbuf("no")
 
+Application = { meta = require "project" }
+
 require "loxel"
 
 Timer = require "lib.timer"
 
-WindowDialogue = require "lib.windowdialogue"
+Discord = require "funkin.backend.discord"
+
+WindowDialogue = require "lib.windows.dialogue"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
@@ -100,6 +104,19 @@ function love.run()
     end
 end
 
+-- Gets the current device
+---@return string -- The current device. 'Desktop' or 'Mobile'
+function love.system.getDevice()
+    if love.system.getOS() == "Android" or love.system.getOS() == "iOS" then
+        return "Mobile"
+    elseif love.system.getOS() == "OS X" or love.system.getOS() == "Windows"
+        or love.system.getOS() == "Linux" then
+        return "Desktop"
+    end
+
+    return ""
+end
+
 function love.load()
     -- for the joystick, i'll remake it later
     controls = (require "lib.baton").new({
@@ -107,6 +124,8 @@ function love.load()
     })
 
     game.init(TitleState)
+
+    if love.system.getDevice() == "Desktop" then Discord.init() end
 end
 
 function love.resize(w, h) game.resize(w, h) end
@@ -133,8 +152,12 @@ function love.update(dt)
     controls:update()
 
     game.update(dt)
+
+    if love.system.getDevice() == "Desktop" then Discord.update() end
 end
 
 function love.draw() game.draw() end
 
 function love.focus(f) game.focus(f) end
+
+function love.quit() Discord.shutdown() end

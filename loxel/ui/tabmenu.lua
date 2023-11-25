@@ -56,24 +56,6 @@ function TabMenu:removeGroup(group)
 end
 
 function TabMenu:update(dt)
-    if Mouse.justPressed then
-        if Mouse.justPressedLeft then
-            self:mousepressed(Mouse.x, Mouse.y, 1)
-        elseif Mouse.justPressedRight then
-            self:mousepressed(Mouse.x, Mouse.y, 2)
-        elseif Mouse.justPressedMiddle then
-            self:mousepressed(Mouse.x, Mouse.y, 3)
-        end
-    end
-    if Mouse.justReleased then
-        if Mouse.justReleasedLeft then
-            self:mousereleased(Mouse.x, Mouse.y, 1)
-        elseif Mouse.justReleasedRight then
-            self:mousereleased(Mouse.x, Mouse.y, 2)
-        elseif Mouse.justReleasedMiddle then
-            self:mousereleased(Mouse.x, Mouse.y, 3)
-        end
-    end
     if self.__x ~= self.x then
         tranformChildren(self, xTransform, self.x - self.__x)
         self.__x = self.x
@@ -146,15 +128,6 @@ end
 function TabMenu:mousepressed(x, y, button)
     local tabClicked = isMouseOverTab(self, x, y)
     if tabClicked then self:selectTab(tabClicked) end
-    if self.tabs then callChildren(self, 'mousepressed', x, y, button) end
-end
-function TabMenu:mousemoved(x, y, dx, dy, istouch)
-    if self.tabs then callChildren(self, 'mousemoved', x, y, dx, dy, istouch) end
-end
-function TabMenu:mousereleased(x, y, button, istouch, presses)
-    if self.tabs then
-        callChildren(self, 'mousereleased', x, y, button, istouch, presses)
-    end
 end
 
 function TabMenu:keypressed(key, scancode, isrepeat)

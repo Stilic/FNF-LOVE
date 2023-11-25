@@ -1,4 +1,5 @@
 local Keyboard = {
+    ---@class Keys
     keys = {
         A = "a",
         B = "b",
@@ -101,12 +102,19 @@ local Keyboard = {
         NUMPADSLASH = "kp/"
     },
 
+    ---@class justPressed:Keys
     justPressed = {},
+
+    ---@class pressed:Keys
     pressed = {},
 
+    ---@class justReleased:Keys
     justReleased = {},
+
+    ---@class released:Keys
     released = {},
 
+    ---@type string
     input = nil
 }
 

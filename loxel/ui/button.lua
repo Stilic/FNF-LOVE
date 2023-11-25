@@ -17,11 +17,21 @@ function Button:new(x, y, width, height, text, callback)
     self.textColor = {1, 1, 1}
 end
 
-function Button:update(dt)
+function Button:update()
     local mx, my = Mouse.x, Mouse.y
     self.hovered =
         (mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
             self.y + self.height)
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
 end
 
 function Button:__render()
@@ -47,7 +57,7 @@ function Button:__render()
     love.graphics.setColor(r, g, b, a)
 end
 
-function Button:mousepressed(x, y, button, istouch, presses)
+function Button:mousepressed(x, y, button)
     if self.hovered and self.callback then self.callback() end
 end
 

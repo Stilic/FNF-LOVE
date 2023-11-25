@@ -1,7 +1,9 @@
 require "loxel.lib.override"
 
-local dimensions = require "dimensions"
-game = {width = dimensions.width, height = dimensions.height}
+game = {
+    width = Application.meta.width,
+    height = Application.meta.height
+}
 
 Object = require "loxel.lib.classic"
 local Gamestate = require "loxel.lib.gamestate"
