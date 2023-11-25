@@ -5,5 +5,4 @@
 </picture>
 
 ### A LÖVE port of Friday Night Funkin'
-
-you must add discord-rpc.dll on your LÖVE Folder -fellynn
+you must add [discord-rpc.dll](https://www.dll-files.com/discord-rpc.dll.html) on your LÖVE Folder -fellynn
