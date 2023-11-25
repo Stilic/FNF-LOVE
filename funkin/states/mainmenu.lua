@@ -73,24 +73,6 @@ function MainMenuState:enter()
     self.engineCreated:setScrollFactor()
     self:add(self.engineCreated)
 
-    -- funny popup
-    self.gf_popup = SpriteGroup(game.width - 460, game.height)
-    self.gf_popup:setScrollFactor()
-
-    local popup_bg = Sprite(100):make(350, 130, {0, 0, 0})
-    popup_bg.alpha = 0.7
-
-    local wip_text = Text(116, 34, 'Work In\nProgress..',
-                          paths.getFont("vcr.ttf", 34), {255, 255, 255})
-    local gf_icon = HealthIcon('gf', true)
-    gf_icon.x = 150
-    self.gf_popup:add(popup_bg)
-    self.gf_popup:add(wip_text)
-    self.gf_popup:add(gf_icon)
-
-    self:add(self.gf_popup)
-    self.popupAppears = false
-
     self:changeSelection()
 end
 
@@ -112,24 +94,7 @@ function MainMenuState:update(dt)
             local selected = self.optionShit[MainMenuState.curSelected]
             if selected == 'donate' then
                 love.system.openURL('https://ninja-muffin24.itch.io/funkin')
-            elseif not self.popupAppears and selected == 'story_mode' then
-                self.popupAppears = true
-                game.sound.play(paths.getSound('gameplay/GF_' ..
-                                                   love.math.random(1, 4)))
-                game.sound.play(paths.getSound('gameplay/ANGRY'))
-                game.camera:shake(0.003, 0.2)
-
-                Timer.tween(0.5, self.gf_popup, {y = game.height - 140},
-                            "out-cubic", function()
-                    Timer.after(1.5, function()
-                        Timer.tween(0.5, self.gf_popup, {y = game.height},
-                                    "in-cubic",
-                                    function()
-                            self.popupAppears = false
-                        end)
-                    end)
-                end)
-            elseif selected == 'freeplay' or selected == 'options' then
+            else
                 self.selectedSomethin = true
                 game.sound.play(paths.getSound('confirmMenu'))
 
@@ -147,7 +112,7 @@ function MainMenuState:update(dt)
                                 self.optionShit[MainMenuState.curSelected]
 
                             if daChoice == 'story_mode' then
-                                --
+                                game.switchState(StoryMenuState())
                             elseif daChoice == 'freeplay' then
                                 game.switchState(FreeplayState())
                             elseif daChoice == 'options' then

@@ -1,10 +1,1 @@
-{
-	"idle_anim": "M Pico Idle",
-	"image": "Menu_Pico",
-	"position": [
-		0,
-		-120
-	],
-	"scale": 1,
-	"confirm_anim": "M Dad Idle"
-}
+{"sprite":"pico","position":[0,-120],"scale":1,"idle_anim":"Pico Idle Dance","confirm_anim":""}

@@ -1,10 +1,1 @@
-{
-	"idle_anim": "M Spooky Kids Idle",
-	"image": "Menu_Spooky_Kids",
-	"position": [
-		0,
-		-80
-	],
-	"scale": 1,
-	"confirm_anim": "M Dad Idle"
-}
+{"sprite":"spooky","position":[0,-80],"scale":1,"idle_anim":"spooky dance idle BLACK LINES","confirm_anim":""}

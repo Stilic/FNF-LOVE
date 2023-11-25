@@ -20,6 +20,7 @@ SpriteGroup = require "loxel.group.spritegroup"
 State = require "loxel.state"
 SubState = require "loxel.substate"
 Flicker = require "loxel.effects.flicker"
+Color = require "loxel.util.color"
 
 Keyboard = require "loxel.input.keyboard"
 Mouse = require "loxel.input.mouse"

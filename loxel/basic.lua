@@ -58,8 +58,8 @@ function Basic:isOnScreen(camera)
           ox, oy = ox - f.offset.x, oy - f.offset.y
         end
     end
-    x, y = ((self.x or 0) - ox - x),
-             ((self.y or 0) - ox - y)
+    x, y = ((self.x or 0) + ox - x),
+             ((self.y or 0) + ox - y)
 
     local w, h = 0, 0
     if self:is(Text) then

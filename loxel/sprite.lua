@@ -274,7 +274,7 @@ end
 
 function Sprite:getFrameWidth()
     local f = self:getCurrentFrame()
-    if f then
+    if f and not self.__rectangleMode then
         return f.width
     else
         return self.texture:getWidth()
@@ -283,7 +283,7 @@ end
 
 function Sprite:getFrameHeight()
     local f = self:getCurrentFrame()
-    if f then
+    if f and not self.__rectangleMode then
         return f.height
     else
         return self.texture:getHeight()
