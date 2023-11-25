@@ -73,7 +73,7 @@ end
 function TitleState:getIntroTextShit()
     local fullText = paths.getText('introText')
 	local firstArray = fullText:split('\n')
-	local swagGoodArray = firstArray[math.random(1, #firstArray)]
+	local swagGoodArray = firstArray[love.math.random(1, #firstArray)]
 
 	return swagGoodArray:split('--')
 end
