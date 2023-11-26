@@ -45,21 +45,21 @@ end
 function Basic:isOnScreen(camera)
     camera = camera or game.camera
 
-    local x, y, ox, oy = camera.scroll.x, camera.scroll.y, 0, 0
-    if self.scrollFactor ~= nil then
-        x, y = x * self.scrollFactor.x, y * self.scrollFactor.y
-    end
+    local x, y = camera.scroll.x, camera.scroll.y
     if self.offset ~= nil then
-        ox, oy = ox - self.offset.x, oy - self.offset.y
+        x, y = x - self.offset.x, y - self.offset.y
     end
     if self.getCurrentFrame then
         local f = self:getCurrentFrame()
         if f then
-          ox, oy = ox - f.offset.x, oy - f.offset.y
+            x, y = x - f.offset.x, y - f.offset.y
         end
     end
-    x, y = ((self.x or 0) + ox - x),
-             ((self.y or 0) + ox - y)
+    if self.scrollFactor ~= nil then
+        x, y = x * self.scrollFactor.x, y * self.scrollFactor.y
+    end
+    x, y = ((self.x or 0) - x),
+             ((self.y or 0) - y)
 
     local w, h = 0, 0
     if self:is(Text) then
