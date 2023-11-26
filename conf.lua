@@ -1,13 +1,13 @@
-local App = require "project"
+local Application = require "project"
 
 function love.conf(t)
-    t.identity = App.package
-    t.console = App.DEBUG_MODE
+    t.identity = Application.package
+    t.console = Application.DEBUG_MODE
 
-    t.window.title = App.title
-    t.window.icon = App.icon
-    t.window.width = App.width
-    t.window.height = App.height
+    t.window.title = Application.title
+    t.window.icon = Application.icon
+    t.window.width = Application.width
+    t.window.height = Application.height
     t.window.resizable = true
     t.window.vsync = false
 

@@ -11,8 +11,8 @@ function HealthIcon:new(icon, flip)
 
     if self.width > 150 and self.width ~= self.height then
         self.width = self.width / 2
-        self:loadTexture(paths.getImage("icons/" .. icon),
-                         true, math.floor(self.width), math.floor(self.height))
+        self:loadTexture(paths.getImage("icons/" .. icon), true,
+                         math.floor(self.width), math.floor(self.height))
         self:addAnim("i", {0, 1}, 0)
         self:play("i")
 
@@ -31,8 +31,8 @@ function HealthIcon:update(dt)
     HealthIcon.super.update(self, dt)
 
     if self.sprTracker ~= nil then
-        self:setPosition(self.sprTracker.x + self.sprTracker:getWidth()
-                         - self.sprTracker.x + 10, self.sprTracker.y - 30)
+        self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() -
+                             self.sprTracker.x + 10, self.sprTracker.y - 30)
     end
 end
 

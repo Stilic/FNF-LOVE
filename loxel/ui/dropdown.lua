@@ -24,9 +24,8 @@ function Dropdown:new(x, y, options)
 
     self.__openButton = ui.UIButton(0, 0, self.height, self.height, "",
                                     function() self.isOpen = not self.isOpen end)
-    self.__slider = ui.UISlider(0, 0, self.height,
-                                self.height*10, 0, "vertical", 0,
-                                #self.options - self.__maxShow)
+    self.__slider = ui.UISlider(0, 0, self.height, self.height * 10, 0,
+                                "vertical", 0, #self.options - self.__maxShow)
 
     table.insert(Dropdown.instances, self)
 end
@@ -82,8 +81,8 @@ function Dropdown:__render(camera)
                 love.graphics.setColor(0, 0, 0)
 
                 love.graphics.push()
-                love.graphics.setScissor(optionX + 2, optionY,
-                                         self.width - 7, self.height)
+                love.graphics.setScissor(optionX + 2, optionY, self.width - 7,
+                                         self.height)
                 love.graphics.print(option, optionX + 5, optionY +
                                         (self.height - self.font:getHeight()) /
                                         2)
@@ -101,7 +100,8 @@ function Dropdown:__render(camera)
                     love.graphics.print(option, optionX + 5, optionY +
                                             (self.height - self.font:getHeight()) /
                                             2)
-                    love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w, ogScis_h)
+                    love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w,
+                                             ogScis_h)
                     love.graphics.pop()
                 end
             end
@@ -115,8 +115,7 @@ function Dropdown:__render(camera)
 
     love.graphics.setColor(0, 0, 0)
     love.graphics.push()
-    love.graphics.setScissor(self.x + 2, self.y,
-                             self.width - 7, self.height)
+    love.graphics.setScissor(self.x + 2, self.y, self.width - 7, self.height)
     love.graphics.print(self.selectedLabel, self.x + 5,
                         self.y + (self.height - self.font:getHeight()) / 2)
     love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w, ogScis_h)
@@ -129,8 +128,8 @@ function Dropdown:__render(camera)
         self.__curScroll = math.floor(self.__slider.value)
 
         love.graphics.setColor(0, 0, 0)
-        love.graphics.rectangle("fill", self.__slider.x, self.__slider.y,
-                                1, self.height*self.__maxShow)
+        love.graphics.rectangle("fill", self.__slider.x, self.__slider.y, 1,
+                                self.height * self.__maxShow)
     end
 
     self.__openButton.x = self.x + self.width

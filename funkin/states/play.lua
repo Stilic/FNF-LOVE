@@ -242,8 +242,8 @@ function PlayState:enter()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
     self.healthBarBG:updateHitbox()
     self.healthBarBG:screenCenter("x")
-    self.healthBarBG.y = (self.downScroll and game.height * 0.08 or game.height *
-                             0.9)
+    self.healthBarBG.y =
+        (self.downScroll and game.height * 0.08 or game.height * 0.9)
     self.healthBarBG:setScrollFactor()
 
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
@@ -265,8 +265,8 @@ function PlayState:enter()
                          {1, 1, 1}, "center")
     self.scoreTxt.outWidth = 1
 
-    self.timeArcBG = Graphic(45, game.height - 45, 100, 100,
-                             {0, 0, 0}, "arc", "line")
+    self.timeArcBG = Graphic(45, game.height - 45, 100, 100, {0, 0, 0}, "arc",
+                             "line")
     if self.downScroll then self.timeArcBG.y = 45 end
     self.timeArcBG.outWidth = 18
     self.timeArcBG.config = {
@@ -291,8 +291,8 @@ function PlayState:enter()
     self.timeArc:updateDimensions()
 
     local fontTime = paths.getFont("vcr.ttf", 24)
-    self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "", fontTime, {1, 1, 1},
-                        "left")
+    self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "",
+                        fontTime, {1, 1, 1}, "left")
     self.timeTxt.outWidth = 2
     if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
@@ -381,9 +381,7 @@ end
 local function fadeGroupSprites(obj)
     if obj then
         if obj:is(Group) then
-            for _, o in ipairs(obj.members) do
-                fadeGroupSprites(o)
-            end
+            for _, o in ipairs(obj.members) do fadeGroupSprites(o) end
         elseif obj.alpha then
             return Timer.tween(2, obj, {alpha = 0}, 'in-out-sine')
         end
@@ -409,13 +407,14 @@ function PlayState:update(dt)
             if self.storyMode then detailsText = "Story Mode: " end
 
             local startTimestamp = os.time(os.date("*t"))
-            local endTimestamp = startTimestamp + PlayState.conductor.sound:getDuration()
+            local endTimestamp = startTimestamp +
+                                     PlayState.conductor.sound:getDuration()
 
             Discord.changePresence({
                 details = detailsText,
                 state = self.SONG.song,
                 startTimestamp = math.floor(startTimestamp),
-                endTimestamp = math.floor(endTimestamp),
+                endTimestamp = math.floor(endTimestamp)
             })
         end
     end
@@ -667,10 +666,8 @@ function PlayState:update(dt)
         end
     end
 
-    if Application.meta.DEBUG_MODE then
-        if Keyboard.justPressed.TWO then
-            self:endSong()
-        end
+    if Application.DEBUG_MODE then
+        if Keyboard.justPressed.TWO then self:endSong() end
     end
 
     self.scripts:call("postUpdate", dt)
@@ -696,8 +693,9 @@ function PlayState:closeSubState()
             if self.storyMode then detailsText = "Story Mode: " end
 
             local startTimestamp = os.time(os.date("*t"))
-            local endTimestamp = startTimestamp + PlayState.conductor.sound:getDuration()
-            endTimestamp = endTimestamp - PlayState.notePosition/1000
+            local endTimestamp = startTimestamp +
+                                     PlayState.conductor.sound:getDuration()
+            endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
             Discord.changePresence({
                 details = detailsText,
@@ -862,8 +860,9 @@ function PlayState:endSong()
         else
             PlayState.prevCamFollow = game.camera.target
 
-            PlayState.SONG = paths.getJSON("songs/"..PlayState.storyPlaylist[1]..
-                                           "/"..PlayState.storyPlaylist[1]).song
+            PlayState.SONG = paths.getJSON("songs/" ..
+                                               PlayState.storyPlaylist[1] .. "/" ..
+                                               PlayState.storyPlaylist[1]).song
             PlayState.conductor.sound:stop()
 
             game.resetState(true)
@@ -1025,8 +1024,9 @@ function PlayState:focus(f)
             if self.storyMode then detailsText = "Story Mode: " end
 
             local startTimestamp = os.time(os.date("*t"))
-            local endTimestamp = startTimestamp + PlayState.conductor.sound:getDuration()
-            endTimestamp = endTimestamp - PlayState.notePosition/1000
+            local endTimestamp = startTimestamp +
+                                     PlayState.conductor.sound:getDuration()
+            endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
             Discord.changePresence({
                 details = detailsText,

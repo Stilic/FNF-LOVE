@@ -7,10 +7,8 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
     local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
 
     return
-        math.abs(relativeX * cos + relativeY * sin) -
-            (w1 / zoom + w2 / zoom) < 0 and
-
-        math.abs(-relativeX * sin + relativeY * cos) -
+        math.abs(relativeX * cos + relativeY * sin) - (w1 / zoom + w2 / zoom) <
+            0 and math.abs(-relativeX * sin + relativeY * cos) -
             (h1 / zoom + h2 / zoom) < 0
 end
 
@@ -46,36 +44,30 @@ function Basic:isOnScreen(camera)
     camera = camera or game.camera
 
     local x, y = camera.scroll.x, camera.scroll.y
-    if self.offset ~= nil then
-        x, y = x - self.offset.x, y - self.offset.y
-    end
+    if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
     if self.getCurrentFrame then
         local f = self:getCurrentFrame()
-        if f then
-            x, y = x - f.offset.x, y - f.offset.y
-        end
+        if f then x, y = x - f.offset.x, y - f.offset.y end
     end
     if self.scrollFactor ~= nil then
         x, y = x * self.scrollFactor.x, y * self.scrollFactor.y
     end
-    x, y = ((self.x or 0) - x),
-             ((self.y or 0) - y)
+    x, y = ((self.x or 0) - x), ((self.y or 0) - y)
 
     local w, h = 0, 0
     if self:is(Text) then
         w, h = self:getWidth(), self:getHeight()
     else
         w, h = self.getFrameWidth and
-                     (self:getFrameWidth() * math.abs(self.scale.x)) or
-                     (self.width or 0),
-                 self.getFrameHeight and
-                     (self:getFrameHeight() * math.abs(self.scale.y)) or
-                     (self.height or 0)
+                   (self:getFrameWidth() * math.abs(self.scale.x)) or
+                   (self.width or 0),
+               self.getFrameHeight and
+                   (self:getFrameHeight() * math.abs(self.scale.y)) or
+                   (self.height or 0)
     end
 
-    return checkCollision(x, y, w, h, self.angle or 0, camera.x,
-                          camera.y, camera.width,
-                          camera.height, camera)
+    return checkCollision(x, y, w, h, self.angle or 0, camera.x, camera.y,
+                          camera.width, camera.height, camera)
 end
 
 function Basic:draw()

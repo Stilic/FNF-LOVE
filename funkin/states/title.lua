@@ -3,12 +3,9 @@ local TitleState = State:extend()
 TitleState.initialized = false
 
 function TitleState:enter()
-
     -- Update Presence
     if love.system.getDevice() == "Desktop" then
-        Discord.changePresence({
-            details = "In the Menus"
-        })
+        Discord.changePresence({details = "In the Menus"})
     end
 
     self.curWacky = self:getIntroTextShit()
@@ -49,12 +46,13 @@ function TitleState:enter()
     self.textGroup = Group()
     self:add(self.textGroup)
 
-    self.ngSpr = Sprite(0, game.height * 0.52):loadTexture(paths.getImage('menus/title/newgrounds_logo'))
-	self:add(self.ngSpr)
-	self.ngSpr.visible = false
-	self.ngSpr:setGraphicSize(math.floor(self.ngSpr.width * 0.8))
-	self.ngSpr:updateHitbox()
-	self.ngSpr:screenCenter("x")
+    self.ngSpr = Sprite(0, game.height * 0.52):loadTexture(paths.getImage(
+                                                               'menus/title/newgrounds_logo'))
+    self:add(self.ngSpr)
+    self.ngSpr.visible = false
+    self.ngSpr:setGraphicSize(math.floor(self.ngSpr.width * 0.8))
+    self.ngSpr:updateHitbox()
+    self.ngSpr:screenCenter("x")
 
     if TitleState.initialized then
         self:skipIntro()
@@ -63,19 +61,19 @@ function TitleState:enter()
     end
 
     self.music = Conductor((not game.sound.music or
-                                     not game.sound.music:isPlaying()) and
-                                     game.sound
-                                         .playMusic(paths.getMusic("freakyMenu")) or
-                                     game.sound.music, 102)
+                               not game.sound.music:isPlaying()) and
+                               game.sound
+                                   .playMusic(paths.getMusic("freakyMenu")) or
+                               game.sound.music, 102)
     self.music.onBeat = function(b) self:beat(b) end
 end
 
 function TitleState:getIntroTextShit()
     local fullText = paths.getText('introText')
-	local firstArray = fullText:split('\n')
-	local swagGoodArray = firstArray[love.math.random(1, #firstArray)]
+    local firstArray = fullText:split('\n')
+    local swagGoodArray = firstArray[love.math.random(1, #firstArray)]
 
-	return swagGoodArray:split('--')
+    return swagGoodArray:split('--')
 end
 
 function TitleState:update(dt)
@@ -84,7 +82,9 @@ function TitleState:update(dt)
     local pressedEnter = controls:pressed("accept")
 
     if self.skippedIntro then
-        if controls:pressed("debug_1") then game.switchState(ChartingState()) end
+        if controls:pressed("debug_1") then
+            game.switchState(ChartingState())
+        end
         if controls:pressed("debug_2") then
             game.sound.music:stop()
             game.switchState(CharacterEditor())
@@ -139,7 +139,9 @@ function TitleState:beat(b)
     end
 
     if b == 1 then
-        self:createCoolText({'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'})
+        self:createCoolText({
+            'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
+        })
     elseif b == 3 then
         self:addMoreText('present')
     elseif b == 4 then

@@ -99,8 +99,8 @@ function CharacterEditor:add_UI_Character()
         self.char.y = 100 + self.char.positionTable.y
         self.camChar.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
 
-        if self.char.curAnim.name:find('LEFT')
-            or self.char.curAnim.name:find('RIGHT') then
+        if self.char.curAnim.name:find('LEFT') or
+            self.char.curAnim.name:find('RIGHT') then
             self.char:playAnim(self.curAnim.anim, true)
         end
     end
@@ -401,7 +401,7 @@ end
 function CharacterEditor:leave()
     love.mouse.setVisible(false)
     Character.editorMode = false
-    love.window.setTitle(Application.meta.title)
+    love.window.setTitle(Application.title)
 end
 
 return CharacterEditor

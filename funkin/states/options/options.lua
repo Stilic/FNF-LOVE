@@ -1,7 +1,7 @@
 local OptionsState = State:extend()
 
 local tabs = {
-    --Gameplay = require "funkin.states.options.gameplay",
+    -- Gameplay = require "funkin.states.options.gameplay",
     Controls = require "funkin.states.options.controls"
 }
 
@@ -11,9 +11,7 @@ function OptionsState:enter()
 
     -- Update Presence
     if love.system.getDevice() == "Desktop" then
-        Discord.changePresence({
-            details = "In the Menus"
-        })
+        Discord.changePresence({details = "In the Menus"})
     end
 
     self.curTab = 1
@@ -27,7 +25,7 @@ function OptionsState:enter()
     self:add(bg)
 
     self.optionsTab = {
-        --'Gameplay',
+        -- 'Gameplay',
         'Controls'
     }
 
@@ -96,7 +94,7 @@ function OptionsState:reset_Tabs()
     self.allTabs:clear()
     self.textGroup:clear()
 
-    --tabs.gameplay.add(self)
+    -- tabs.gameplay.add(self)
     tabs.Controls.add(self)
 
     for i, grp in ipairs(self.allTabs.members) do

@@ -86,7 +86,8 @@ function Graphic:__render(camera)
     love.graphics.setBlendMode(self.blend)
 
     local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+                           self.alpha)
 
     local angle = math.rad(self.angle)
     local w, h = self.width, self.height

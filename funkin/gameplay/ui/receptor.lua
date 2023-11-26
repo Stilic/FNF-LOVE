@@ -1,9 +1,7 @@
 local Receptor = Sprite:extend()
 
-Receptor.pixelAnim = { --{static, pressed, confirm}
-    {{0}, {4, 8}, {12, 16}},
-    {{1}, {5, 9}, {13, 17}},
-    {{2}, {6, 10}, {14, 18}},
+Receptor.pixelAnim = { -- {static, pressed, confirm}
+    {{0}, {4, 8}, {12, 16}}, {{1}, {5, 9}, {13, 17}}, {{2}, {6, 10}, {14, 18}},
     {{3}, {7, 11}, {15, 19}}
 }
 
@@ -19,7 +17,8 @@ function Receptor:new(x, y, data, player)
         self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
         self.width = self.width / 4
         self.height = self.height / 5
-        self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true, math.floor(self.width), math.floor(self.height))
+        self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true,
+                         math.floor(self.width), math.floor(self.height))
 
         self.antialiasing = false
         self:setGraphicSize(math.floor(self.width * 6))

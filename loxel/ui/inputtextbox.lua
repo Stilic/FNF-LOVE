@@ -153,7 +153,7 @@ function InputTextBox:update(dt)
                                              (self.__prevTextWidth -
                                                  self.__newTextWidth),
                                          self.__prevTextWidth -
-                                                (self.width - 10))
+                                             (self.width - 10))
             end
         end
 
@@ -236,7 +236,7 @@ function InputTextBox:keypressed(key, scancode, isrepeat)
                                              (self.__prevTextWidth -
                                                  self.__newTextWidth),
                                          self.__prevTextWidth -
-                                                (self.width - 10))
+                                             (self.width - 10))
             end
             if self.onChanged then self.onChanged(self.text) end
         elseif key == "delete" then

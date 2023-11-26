@@ -17,12 +17,8 @@ local __options = {
 }
 
 function discordRPC.ready(userId, username, discriminator, avatar)
-    print(string.format("Discord: ready (%s, %s, %s, %s)",
-                         userId,
-                         username,
-                         discriminator,
-                         avatar
-    ))
+    print(string.format("Discord: ready (%s, %s, %s, %s)", userId, username,
+                        discriminator, avatar))
 
     discordRPC.updatePresence(__options)
 end
@@ -39,7 +35,7 @@ function Discord.init()
     discordRPC.initialize(Discord.clientID, true)
 
     print("Discord Client initialized")
-	Discord.isInitialized = true
+    Discord.isInitialized = true
 end
 
 function Discord.shutdown() discordRPC.shutdown() end

@@ -18,10 +18,8 @@ function MenuCharacter:changeCharacter(char)
     self:updateHitbox()
 
     self.hasConfirmAnimation = false
-    switch(self.character,{
-        [''] = function()
-            self.visible = false
-        end,
+    switch(self.character, {
+        [''] = function() self.visible = false end,
         default = function()
             local path = 'data/weeks/characters/' .. self.character
             if not paths.exists(paths.getPath(path .. '.json'), "file") then
@@ -29,12 +27,13 @@ function MenuCharacter:changeCharacter(char)
             end
 
             local charFile = paths.getJSON(path)
-            self:setFrames(paths.getSparrowAtlas('menus/storymenu/characters/' .. charFile.sprite))
+            self:setFrames(paths.getSparrowAtlas(
+                               'menus/storymenu/characters/' .. charFile.sprite))
             self:addAnimByPrefix('idle', charFile.idle_anim, 24)
 
             local confirmAnim = charFile.confirm_anim
-            if confirmAnim ~= nil and confirmAnim:len() > 0
-                and confirmAnim ~= charFile.idle_anim then
+            if confirmAnim ~= nil and confirmAnim:len() > 0 and confirmAnim ~=
+                charFile.idle_anim then
                 self:addAnimByPrefix('confirm', confirmAnim, 24, false)
                 if self.__animations['confirm'] then
                     self.hasConfirmAnimation = true
@@ -45,9 +44,10 @@ function MenuCharacter:changeCharacter(char)
 
             if charFile.scale ~= 1 then
                 self.scale = {x = charFile.scale, y = charFile.scale}
-				self:updateHitbox()
+                self:updateHitbox()
             end
-            self.offset.x, self.offset.y = charFile.position[1], charFile.position[2]
+            self.offset.x, self.offset.y = charFile.position[1],
+                                           charFile.position[2]
             self:play('idle')
         end
     })

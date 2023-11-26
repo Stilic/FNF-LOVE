@@ -1,6 +1,6 @@
 io.stdout:setvbuf("no")
 
-Application = { meta = require "project" }
+Application = require "project"
 
 require "loxel"
 
@@ -8,7 +8,7 @@ Timer = require "lib.timer"
 
 Discord = require "funkin.backend.discord"
 
-WindowDialogue = require "lib.windows.dialogue"
+-- WindowDialogue = require "lib.windows.dialogue"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
@@ -112,11 +112,10 @@ end
 function love.system.getDevice()
     if love.system.getOS() == "Android" or love.system.getOS() == "iOS" then
         return "Mobile"
-    elseif love.system.getOS() == "OS X" or love.system.getOS() == "Windows"
-        or love.system.getOS() == "Linux" then
+    elseif love.system.getOS() == "OS X" or love.system.getOS() == "Windows" or
+        love.system.getOS() == "Linux" then
         return "Desktop"
     end
-
     return ""
 end
 
@@ -126,7 +125,7 @@ function love.load()
         controls = table.clone(ClientPrefs.controls)
     })
 
-    game.init(TitleState)
+    game.init(Application, TitleState)
 
     if love.system.getDevice() == "Desktop" then Discord.init() end
 end

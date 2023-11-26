@@ -1,9 +1,6 @@
 require "loxel.lib.override"
 
-game = {
-    width = Application.meta.width,
-    height = Application.meta.height
-}
+game = {}
 
 Object = require "loxel.lib.classic"
 local Gamestate = require "loxel.lib.gamestate"
@@ -82,15 +79,22 @@ game.isSwitchingState = false
 function game.switchState(state, skipTrans)
     requestedState = state
 
-    if skipTrans == nil then skipTransition = false
-    else skipTransition = skipTrans end
+    if skipTrans == nil then
+        skipTransition = false
+    else
+        skipTransition = skipTrans
+    end
 end
 function game.resetState(skipTrans, ...)
     game.switchState(getmetatable(Gamestate.stack[1])(...), skipTrans)
 end
 function game.getState() return Gamestate.current() end
 
-function game.init(state)
+function game.init(app, state)
+    game.width = app.width
+    game.height = app.height
+    Camera.__init(love.graphics.newCanvas(app.width, app.height))
+
     love.mouse.setVisible(false)
 
     local os = love.system.getOS()

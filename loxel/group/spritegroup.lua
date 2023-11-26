@@ -234,9 +234,7 @@ end
 function SpriteGroup:screenCenter(axes)
     if axes == nil then axes = "xy" end
     if axes:find("x") then self.x = (game.width - self:getWidth()) * 0.5 end
-    if axes:find("y") then
-        self.y = (game.height - self:getHeight()) * 0.5
-    end
+    if axes:find("y") then self.y = (game.height - self:getHeight()) * 0.5 end
     return self
 end
 

@@ -13,7 +13,8 @@ end
 local lightningStrikeBeat = 0
 local lightningOffset = love.math.random(8, 24)
 function beat()
-    if love.math.randomBool(10) and curBeat > lightningStrikeBeat + lightningOffset then
+    if love.math.randomBool(10) and curBeat > lightningStrikeBeat +
+        lightningOffset then
         game.sound.play(paths.getSound('gameplay/thunder_' ..
                                            love.math.random(1, 2)))
         hallowBG:play('lightning')

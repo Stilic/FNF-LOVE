@@ -136,7 +136,5 @@ end
 function beat(b)
     tankWatchtower:play('watchtower gradient color', true)
 
-    for _, fgTank in ipairs(fgSprites.members) do
-        fgTank:play('fg', true)
-    end
+    for _, fgTank in ipairs(fgSprites.members) do fgTank:play('fg', true) end
 end

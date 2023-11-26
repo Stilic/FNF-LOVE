@@ -122,8 +122,9 @@ function Alphabet:update(dt)
         local scaledY = math.remapToRange(self.targetY, 0, 1, 0, 1.3)
 
         local lerpVal = math.bound(dt * 9.6, 0, 1)
-        self.y = math.lerp(self.y, (scaledY * self.yMult) +
-                               (game.height * 0.48) + self.yAdd, lerpVal)
+        self.y = math.lerp(self.y,
+                           (scaledY * self.yMult) + (game.height * 0.48) +
+                               self.yAdd, lerpVal)
         if self.forceX ~= math.negative_infinity then
             self.x = self.forceX
         else

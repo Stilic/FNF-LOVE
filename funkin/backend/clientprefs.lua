@@ -5,7 +5,6 @@ ClientPrefs.data = {
     downScroll = false,
     botplayMode = false,
     pauseMusic = 'railways',
-    screenQuality = 1,
     antialiasing = true
 }
 

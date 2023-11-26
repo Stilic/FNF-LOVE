@@ -3,12 +3,9 @@ local MainMenuState = State:extend()
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
-
     -- Update Presence
     if love.system.getDevice() == "Desktop" then
-        Discord.changePresence({
-            details = "In the Menus"
-        })
+        Discord.changePresence({details = "In the Menus"})
     end
 
     self.optionShit = {'story_mode', 'freeplay', 'donate', 'options'}
@@ -44,8 +41,7 @@ function MainMenuState:enter()
         local menuItem = Sprite(0, (i * 140) + offset)
         menuItem.scale = {x = scale, y = scale}
         menuItem:setFrames(paths.getSparrowAtlas(
-                               'menus/mainmenu/menu_' ..
-                                   self.optionShit[i + 1]))
+                               'menus/mainmenu/menu_' .. self.optionShit[i + 1]))
         menuItem:addAnimByPrefix('idle', self.optionShit[i + 1] .. ' basic', 24)
         menuItem:addAnimByPrefix('selected', self.optionShit[i + 1] .. ' white',
                                  24)
@@ -61,14 +57,15 @@ function MainMenuState:enter()
 
     self.camFollow = {x = 0, y = 0}
 
-    self.engineVersion = Text(12, game.height - 42, "FNF LÖVE v" .. Application.meta.version,
-                       paths.getFont("vcr.ttf", 16), {255, 255, 255})
+    self.engineVersion = Text(12, game.height - 42,
+                              "FNF LÖVE v" .. Application.version,
+                              paths.getFont("vcr.ttf", 16), {255, 255, 255})
     self.engineVersion.outWidth = 2
     self.engineVersion:setScrollFactor()
     self:add(self.engineVersion)
 
     self.engineCreated = Text(12, game.height - 24, "Created By Stilic",
-                       paths.getFont("vcr.ttf", 16), {255, 255, 255})
+                              paths.getFont("vcr.ttf", 16), {255, 255, 255})
     self.engineCreated.outWidth = 2
     self.engineCreated:setScrollFactor()
     self:add(self.engineCreated)

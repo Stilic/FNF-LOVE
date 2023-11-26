@@ -77,8 +77,10 @@ function GameOverSubstate:update(dt)
 
                     game.sound.music:setVolume(0.2)
 
-                    local tankmanLines = 'jeffGameover-'..love.math.random(1, 25)
-                    game.sound.play(paths.getSound('gameplay/jeffGameover/'..tankmanLines),
+                    local tankmanLines = 'jeffGameover-' ..
+                                             love.math.random(1, 25)
+                    game.sound.play(paths.getSound(
+                                        'gameplay/jeffGameover/' .. tankmanLines),
                                     1, false, true, function()
                         if not self.isEnding then
                             game.sound.music:setVolume(1)

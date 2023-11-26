@@ -1,12 +1,15 @@
 ---@class Camera:Basic
 local Camera = Basic:extend()
 
-local ClientPrefs = require "funkin.backend.clientprefs"
-local canvas = love.graphics.newCanvas(game.width / ClientPrefs.data.screenQuality,
-                                       game.height / ClientPrefs.data.screenQuality)
-local canvasTable = {canvas, stencil = true}
+local canvas
+local canvasTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
+
+function Camera.__init(canv)
+    canvas = canv
+    canvasTable[1] = canv
+end
 
 function Camera:new(x, y, width, height)
     Camera.super.new(self)
@@ -112,14 +115,12 @@ function Camera:draw()
                                 self.bgColor[3], self.bgColor[4])
             love.graphics.push()
 
-            local w2, h2 = self.width * (0.5 / ClientPrefs.data.screenQuality),
-                           self.height * (0.5 / ClientPrefs.data.screenQuality)
+            local w2, h2 = self.width * 0.5, self.height * 0.5
             love.graphics.translate(w2 - self.x + self.__shakeX,
                                     h2 - self.y + self.__shakeY)
             love.graphics.rotate(math.rad(-self.angle))
-            love.graphics.scale(self.zoom / ClientPrefs.data.screenQuality)
-            love.graphics.translate(-w2 * ClientPrefs.data.screenQuality,
-                                    -h2 * ClientPrefs.data.screenQuality)
+            love.graphics.scale(self.zoom)
+            love.graphics.translate(-w2, -h2)
 
             for i, o in ipairs(self.__renderQueue) do
                 if type(o) == "function" then
@@ -150,8 +151,7 @@ function Camera:draw()
             local scale = math.min(winWidth / game.width,
                                    winHeight / game.height)
             love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
-                               (winHeight - scale * game.height) / 2, 0,
-                               scale * ClientPrefs.data.screenQuality)
+                               (winHeight - scale * game.height) / 2, 0, scale)
 
             love.graphics.setShader(shader)
             love.graphics.setColor(r, g, b, a)

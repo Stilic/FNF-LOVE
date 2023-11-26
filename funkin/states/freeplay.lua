@@ -3,20 +3,16 @@ local FreeplayState = State:extend()
 FreeplayState.curSelected = 1
 
 function FreeplayState:enter()
-
     -- Update Presence
     if love.system.getDevice() == "Desktop" then
-        Discord.changePresence({
-            details = "In the Menus"
-        })
+        Discord.changePresence({details = "In the Menus"})
     end
 
     self.songsData = {}
-    for i, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                              'data/weeks/weeks'))) do
+    for _, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                                  'data/weeks/weeks'))) do
         local data = paths.getJSON('data/weeks/weeks/' .. weekStr:withoutExt())
-        local isLocked = (data.locked == true)
-        if not isLocked then
+        if not data.locked then
             for _, song in pairs(data.songs) do
                 table.insert(self.songsData, song)
             end
@@ -30,10 +26,9 @@ function FreeplayState:enter()
 
     -- SHITTY STUFF :(
     local colorBG = Color.fromRGB(
-        self.songsData[FreeplayState.curSelected][3][1],
-        self.songsData[FreeplayState.curSelected][3][2],
-        self.songsData[FreeplayState.curSelected][3][3]
-    )
+                        self.songsData[FreeplayState.curSelected][3][1],
+                        self.songsData[FreeplayState.curSelected][3][2],
+                        self.songsData[FreeplayState.curSelected][3][3])
     self.bg.color = colorBG
 
     self.grpSongs = Group()
@@ -41,8 +36,8 @@ function FreeplayState:enter()
 
     self.iconTable = {}
     for i = 0, #self.songsData - 1 do
-        local songText = Alphabet(0, (70 * i) + 30, self.songsData[i+1][1], true,
-                                  false)
+        local songText = Alphabet(0, (70 * i) + 30, self.songsData[i + 1][1],
+                                  true, false)
         songText.isMenuItem = true
         songText.targetY = i
         self.grpSongs:add(songText)
@@ -56,7 +51,7 @@ function FreeplayState:enter()
             end
         end
 
-        local icon = HealthIcon(self.songsData[i+1][2])
+        local icon = HealthIcon(self.songsData[i + 1][2])
         icon.sprTracker = songText
 
         table.insert(self.iconTable, icon)
@@ -78,16 +73,15 @@ function FreeplayState:update(dt)
         local daSong = paths.formatToSongPath(
                            self.songsData[FreeplayState.curSelected][1])
         PlayState.storyMode = false
-        PlayState.SONG = paths.getJSON("songs/"..daSong.."/"..daSong).song
+        PlayState.SONG = paths.getJSON("songs/" .. daSong .. "/" .. daSong).song
         game.switchState(PlayState())
     end
 
     -- SHITTY STUFF :(
     local colorBG = Color.fromRGB(
-        self.songsData[FreeplayState.curSelected][3][1],
-        self.songsData[FreeplayState.curSelected][3][2],
-        self.songsData[FreeplayState.curSelected][3][3]
-    )
+                        self.songsData[FreeplayState.curSelected][3][1],
+                        self.songsData[FreeplayState.curSelected][3][2],
+                        self.songsData[FreeplayState.curSelected][3][3])
     self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
     self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
     self.bg.color[3] = util.coolLerp(self.bg.color[3], colorBG[3], 0.05)
