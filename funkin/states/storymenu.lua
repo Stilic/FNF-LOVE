@@ -3,6 +3,11 @@ local StoryMenuState = State:extend()
 StoryMenuState.curWeek = 1
 
 function StoryMenuState:enter()
+    -- Update Presence
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({details = "In the Menus"})
+    end
+
     self.curDifficulty = 2
     self.movedBack = false
     self.selectedWeek = false

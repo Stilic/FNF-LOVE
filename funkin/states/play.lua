@@ -399,6 +399,22 @@ function PlayState:enter()
         end)
     end
 
+    if love.system.getDevice() == 'Desktop' then
+        local detailsText = "Freeplay"
+        if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+        local diff = "Normal"
+        switch(PlayState.storyDifficulty, {
+            ["easy"] = function() diff = "Easy" end,
+            ["hard"] = function() diff = "Hard" end
+        })
+
+        Discord.changePresence({
+            details = detailsText,
+            state = self.SONG.song..' - ['..diff..']'
+        })
+    end
+
     self.scripts:set("bpm", PlayState.conductor.bpm)
     self.scripts:set("crochet", PlayState.conductor.crochet)
     self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
@@ -432,15 +448,21 @@ function PlayState:update(dt)
 
         if not self.startingSong and love.system.getDevice() == "Desktop" then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: " end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
                                      PlayState.conductor.sound:getDuration()
 
+            local diff = "Normal"
+            switch(PlayState.storyDifficulty, {
+                ["easy"] = function() diff = "Easy" end,
+                ["hard"] = function() diff = "Hard" end
+            })
+
             Discord.changePresence({
                 details = detailsText,
-                state = self.SONG.song,
+                state = self.SONG.song..' - ['..diff..']',
                 startTimestamp = math.floor(startTimestamp),
                 endTimestamp = math.floor(endTimestamp)
             })
@@ -538,11 +560,17 @@ function PlayState:update(dt)
 
         if love.system.getDevice() == 'Desktop' then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: " end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+            local diff = "Normal"
+            switch(PlayState.storyDifficulty, {
+                ["easy"] = function() diff = "Easy" end,
+                ["hard"] = function() diff = "Hard" end
+            })
 
             Discord.changePresence({
                 details = "Paused - " .. detailsText,
-                state = self.SONG.song
+                state = self.SONG.song..' - ['..diff..']'
             })
         end
 
@@ -568,6 +596,22 @@ function PlayState:update(dt)
 
         PlayState.conductor.sound:pause()
         if self.vocals then self.vocals:pause() end
+
+        if love.system.getDevice() == 'Desktop' then
+            local detailsText = "Freeplay"
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+            local diff = "Normal"
+            switch(PlayState.storyDifficulty, {
+                ["easy"] = function() diff = "Easy" end,
+                ["hard"] = function() diff = "Hard" end
+            })
+
+            Discord.changePresence({
+                details = "Game Over - "..detailsText,
+                state = self.SONG.song..' - ['..diff..']'
+            })
+        end
 
         self.camHUD.visible = false
         self.boyfriend.visible = false
@@ -696,6 +740,7 @@ function PlayState:update(dt)
 
     if Application.DEBUG_MODE then
         if Keyboard.justPressed.TWO then self:endSong() end
+        if Keyboard.justPressed.ONE then self.botPlay = not self.botPlay end
     end
 
     self.scripts:call("postUpdate", dt)
@@ -718,16 +763,22 @@ function PlayState:closeSubState()
 
         if love.system.getDevice() == 'Desktop' then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: " end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
                                      PlayState.conductor.sound:getDuration()
             endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
+            local diff = "Normal"
+            switch(PlayState.storyDifficulty, {
+                ["easy"] = function() diff = "Easy" end,
+                ["hard"] = function() diff = "Hard" end
+            })
+
             Discord.changePresence({
                 details = detailsText,
-                state = self.SONG.song,
+                state = self.SONG.song..' - ['..diff..']',
                 startTimestamp = math.floor(startTimestamp),
                 endTimestamp = math.floor(endTimestamp)
             })
@@ -885,6 +936,17 @@ function PlayState:endSong()
         if #PlayState.storyPlaylist > 0 then
             PlayState.prevCamFollow = game.camera.target
             PlayState.conductor.sound:stop()
+            if self.vocals then self.vocals:stop() end
+
+            if love.system.getDevice() == 'Desktop' then
+                local detailsText = "Freeplay"
+                if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+                Discord.changePresence({
+                    details = detailsText,
+                    state = 'Loading next song..'
+                })
+            end
 
             PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
             game.resetState(true)
@@ -1046,26 +1108,38 @@ function PlayState:focus(f)
     if love.system.getDevice() == 'Desktop' then
         if f then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: " end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
                                      PlayState.conductor.sound:getDuration()
             endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
+            local diff = "Normal"
+            switch(PlayState.storyDifficulty, {
+                ["easy"] = function() diff = "Easy" end,
+                ["hard"] = function() diff = "Hard" end
+            })
+
             Discord.changePresence({
                 details = detailsText,
-                state = self.SONG.song,
+                state = self.SONG.song..' - ['..diff..']',
                 startTimestamp = math.floor(startTimestamp),
                 endTimestamp = math.floor(endTimestamp)
             })
         else
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: " end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+            local diff = "Normal"
+            switch(PlayState.storyDifficulty, {
+                ["easy"] = function() diff = "Easy" end,
+                ["hard"] = function() diff = "Hard" end
+            })
 
             Discord.changePresence({
                 details = "Paused - " .. detailsText,
-                state = self.SONG.song
+                state = self.SONG.song..' - ['..diff..']'
             })
         end
     end

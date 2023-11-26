@@ -128,6 +128,7 @@ function TitleState:deleteCoolText()
     end
 end
 
+local sickBeats = 0
 function TitleState:beat(b)
     self.logoBl:play("bump", true)
 
@@ -138,35 +139,36 @@ function TitleState:beat(b)
         self.gfDance:play("danceRight")
     end
 
-    if b == 1 then
+    sickBeats = sickBeats + 1
+    if sickBeats == 1 then
         self:createCoolText({
             'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
         })
-    elseif b == 3 then
+    elseif sickBeats == 3 then
         self:addMoreText('present')
-    elseif b == 4 then
+    elseif sickBeats == 4 then
         self:deleteCoolText()
-    elseif b == 5 then
+    elseif sickBeats == 5 then
         self:createCoolText({'In association', 'with'})
-    elseif b == 7 then
+    elseif sickBeats == 7 then
         self:addMoreText('newgrounds')
         self.ngSpr.visible = true
-    elseif b == 8 then
+    elseif sickBeats == 8 then
         self:deleteCoolText()
         self.ngSpr.visible = false
-    elseif b == 9 then
+    elseif sickBeats == 9 then
         self:createCoolText({self.curWacky[1]})
-    elseif b == 11 then
+    elseif sickBeats == 11 then
         self:addMoreText(self.curWacky[2])
-    elseif b == 12 then
+    elseif sickBeats == 12 then
         self:deleteCoolText()
-    elseif b == 13 then
+    elseif sickBeats == 13 then
         self:addMoreText('Friday')
-    elseif b == 14 then
+    elseif sickBeats == 14 then
         self:addMoreText('Night')
-    elseif b == 15 then
+    elseif sickBeats == 15 then
         self:addMoreText('Funkin')
-    elseif b == 16 then
+    elseif sickBeats == 16 then
         self:skipIntro()
     end
 end
