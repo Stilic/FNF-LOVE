@@ -124,7 +124,6 @@ function game.mousemoved(x, y) Mouse.onMoved(x, y) end
 function game.mousepressed(x, y, button) Mouse.onPressed(button) end
 function game.mousereleased(x, y, button) Mouse.onReleased(button) end
 
-local firstUpdateSwitch = false
 local function switch(state)
     Timer.clear()
 
@@ -145,7 +144,6 @@ local function switch(state)
 
     Gamestate.switch(state)
     game.isSwitchingState = false
-    firstUpdateSwitch = true
 
     collectgarbage()
 end
@@ -163,8 +161,6 @@ function game.update(dt)
         end
         requestedState = nil
     end
-
-    if firstUpdateSwitch then dt = 0; firstUpdateSwitch = false end
 
     for _, o in ipairs(Flicker.instances) do o:update(dt) end
     game.cameras.update(dt)

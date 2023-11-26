@@ -67,6 +67,7 @@ function love.run()
         end
 
         focused = firstTime or not love.window or love.window.hasFocus()
+        dt = love.timer and love.timer.step() or 0
 
         if focused then
             if love.update then love.update(dt) end
@@ -93,8 +94,6 @@ function love.run()
                                  (focused and love.FPScap or
                                      love.unfocusedFPScap) - dt)
         end
-
-        dt = love.timer and love.timer.step() or 0
 
         if focused then
             collectgarbage("step")
@@ -150,7 +149,7 @@ function love.mousepressed(x, y, button) game.mousepressed(x, y, button) end
 function love.mousereleased(x, y, button) game.mousereleased(x, y, button) end
 
 function love.update(dt)
-    --dt = math.min(dt, 1 / 15)
+    dt = math.min(dt, 1 / 30) -- temporary workaround until we can detect when freezes started smh
 
     Timer.update(dt)
     controls:update()
