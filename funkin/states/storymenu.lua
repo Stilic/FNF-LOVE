@@ -162,8 +162,8 @@ function StoryMenuState:selectWeek()
 
         local diff = ""
         switch(self.curDifficulty, {
-            [0] = function() diff = "easy" end,
-            [2] = function() diff = "hard" end
+            [1] = function() diff = "easy" end,
+            [3] = function() diff = "hard" end
         })
 
         local toState = PlayState(PlayState.storyPlaylist[1], diff)
