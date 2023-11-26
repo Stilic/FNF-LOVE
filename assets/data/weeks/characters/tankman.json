@@ -1,1 +1,1 @@
-{"sprite":"tankman","position":[0,-95],"scale":1,"idle_anim":"Tankman Menu BLACK","confirm_anim":""}
+{"sprite":"tankman","position":[26,-45],"flipX":false,"scale":1,"idle_anim":"Tankman Menu BLACK","confirm_anim":""}

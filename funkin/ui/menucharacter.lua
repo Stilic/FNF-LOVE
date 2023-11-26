@@ -23,10 +23,8 @@ function MenuCharacter:changeCharacter(char)
             self.visible = false
         end,
         default = function()
-            local charPath = 'data/weeks/characters/' .. self.character
-
-            local path = charPath
-            if not paths.exists(path, "file") then
+            local path = 'data/weeks/characters/' .. self.character
+            if not paths.exists(paths.getPath(path .. '.json'), "file") then
                 path = 'data/weeks/characters/bf'
             end
 

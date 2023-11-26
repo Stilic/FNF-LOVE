@@ -20,6 +20,8 @@ PlayState.notePosition = 0
 PlayState.SONG = nil
 
 PlayState.storyMode = false
+PlayState.storyWeek = ''
+
 PlayState.pixelStage = false
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
