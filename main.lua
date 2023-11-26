@@ -54,7 +54,7 @@ function love.run()
     collectgarbage()
     collectgarbage("stop")
 
-    local firstTime, fullGC = true, true
+    local firstTime, fullGC, focused, dt = true, true, false, 0
     return function()
         if love.event then
             love.event.pump()
@@ -66,8 +66,7 @@ function love.run()
             end
         end
 
-        local dt, focused = love.timer and love.timer.step() or 0, firstTime or
-                                not love.window or love.window.hasFocus()
+        focused = firstTime or not love.window or love.window.hasFocus()
 
         if focused then
             if love.update then love.update(dt) end
@@ -94,6 +93,8 @@ function love.run()
                                  (focused and love.FPScap or
                                      love.unfocusedFPScap) - dt)
         end
+
+        dt = love.timer and love.timer.step() or 0
 
         if focused then
             collectgarbage("step")
@@ -149,7 +150,7 @@ function love.mousepressed(x, y, button) game.mousepressed(x, y, button) end
 function love.mousereleased(x, y, button) game.mousereleased(x, y, button) end
 
 function love.update(dt)
-    dt = math.min(dt, 1 / 30)
+    --dt = math.min(dt, 1 / 15)
 
     Timer.update(dt)
     controls:update()
