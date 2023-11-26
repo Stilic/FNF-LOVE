@@ -58,11 +58,10 @@ function table.delete(list, object)
     return false
 end
 
-function math.clamp(x, min, max) return math.max(min, math.min(x, max)) end
+function math.clamp(value, min, max) return math.max(min, math.min(value, max)) end
+math.bound = math.clamp
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
-
-function math.bound(value, min, max) return math.max(min, math.min(max, value)) end
 
 bit32, iter = bit, ipairs(math)
 
@@ -157,11 +156,6 @@ end
 
 function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
 
-function math.roundDecimal(number, decimals)
-    local multiplier = 10 ^ (decimals or 0)
-    return math.floor(number * multiplier + 0.5) / multiplier
-end
-
 function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
 function math.lerp(x, y, i) return x + (y - x) * i end
@@ -174,6 +168,7 @@ function math.truncate(x, precision, round)
     end
     return round(x)
 end
+math.roundDecimal = math.truncate
 
 function math.remapToRange(x, start1, stop1, start2, stop2)
     return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
