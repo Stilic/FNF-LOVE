@@ -43,16 +43,20 @@ end
 function PlayState:new(storyMode, song, diff)
     PlayState.super.new(self)
 
-    -- storyWeek should be manually set after this function
-    PlayState.storyDifficulty = diff
-    PlayState.storyMode = storyMode
-    PlayState.storyWeek = ""
-
-    if storyMode and type(song) == "table" and #song > 0 then
-        PlayState.storyPlaylist = song
-        song = song[1]
+    if storyMode ~= nil then
+        -- storyWeek should be manually set after this function
+        PlayState.storyDifficulty = diff
+        PlayState.storyMode = storyMode
+        PlayState.storyWeek = ""
     end
-    PlayState.loadSong(song, diff)
+
+    if song ~= nil then
+        if storyMode and type(song) == "table" and #song > 0 then
+            PlayState.storyPlaylist = song
+            song = song[1]
+        end
+        PlayState.loadSong(song, diff)
+    end
 end
 
 function PlayState:enter()
@@ -878,15 +882,15 @@ function PlayState:endSong()
     if self.storyMode then
         table.remove(PlayState.storyPlaylist, 1)
 
-        if #PlayState.storyPlaylist <= 0 then
-            game.sound.playMusic(paths.getMusic("freakyMenu"))
-            game.switchState(StoryMenuState())
-        else
+        if #PlayState.storyPlaylist > 0 then
             PlayState.prevCamFollow = game.camera.target
             PlayState.conductor.sound:stop()
 
             PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
             game.resetState(true)
+        else
+            game.sound.playMusic(paths.getMusic("freakyMenu"))
+            game.switchState(StoryMenuState())
         end
     else
         game.sound.playMusic(paths.getMusic("freakyMenu"))
