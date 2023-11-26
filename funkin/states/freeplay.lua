@@ -72,7 +72,7 @@ function FreeplayState:update(dt)
     if controls:pressed('accept') then
         local daSong = paths.formatToSongPath(self.songsData[FreeplayState.curSelected][1])
         PlayState.storyMode = false
-        game.switchState(PlayState(daSong))
+        game.switchState(PlayState(false, daSong))
     end
 
     -- SHITTY STUFF :(

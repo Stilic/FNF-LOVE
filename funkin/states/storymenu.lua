@@ -157,16 +157,14 @@ function StoryMenuState:selectWeek()
             table.insert(songTable, paths.formatToSongPath(leWeek[i][1]))
         end
 
-        PlayState.storyPlaylist = songTable
-        PlayState.storyMode = true
-
         local diff = ""
         switch(self.curDifficulty, {
             [1] = function() diff = "easy" end,
             [3] = function() diff = "hard" end
         })
 
-        local toState = PlayState(PlayState.storyPlaylist[1], diff)
+        local toState = PlayState(true, songTable, diff)
+        PlayState.storyWeek = self.weekData[StoryMenuState.curWeek].name
 
         if not self.selectedWeek then
             game.sound.play(paths.getSound('confirmMenu'))

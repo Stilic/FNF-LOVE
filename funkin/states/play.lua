@@ -22,8 +22,9 @@ PlayState.notePosition = 0
 PlayState.SONG = nil
 
 PlayState.storyPlaylist = {}
+PlayState.storyDifficulty = ""
 PlayState.storyMode = false
-PlayState.storyWeek = ''
+PlayState.storyWeek = ""
 
 PlayState.pixelStage = false
 
@@ -31,17 +32,31 @@ PlayState.prevCamFollow = nil
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
-function PlayState:new(song, diff)
+function PlayState.loadSong(song, diff)
+    if type(diff) ~= "string" or diff == PlayState.defaultDifficulty then diff = "" end
+    local path = "songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")
+    print(path)
+
+    PlayState.SONG = paths.getJSON(path).song
+end
+
+function PlayState:new(storyMode, song, diff)
     PlayState.super.new(self)
 
-    if type(diff) ~= "string" or diff == PlayState.defaultDifficulty then diff = "" end
-    PlayState.SONG = paths.getJSON("songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")).song
+    -- storyWeek should be manually set after this function
+    PlayState.storyDifficulty = diff
+    PlayState.storyMode = storyMode
+    PlayState.storyWeek = ""
+
+    if storyMode and type(song) == "table" and #song > 0 then
+        PlayState.storyPlaylist = song
+        song = song[1]
+    end
+    PlayState.loadSong(song, diff)
 end
 
 function PlayState:enter()
-    if PlayState.SONG == nil then
-        PlayState.SONG = paths.getJSON("songs/tutorial/tutorial").song
-    end
+    if PlayState.SONG == nil then PlayState.loadSong("tutorial") end
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
@@ -868,12 +883,9 @@ function PlayState:endSong()
             game.switchState(StoryMenuState())
         else
             PlayState.prevCamFollow = game.camera.target
-
-            PlayState.SONG = paths.getJSON("songs/" ..
-                                               PlayState.storyPlaylist[1] .. "/" ..
-                                               PlayState.storyPlaylist[1]).song
             PlayState.conductor.sound:stop()
 
+            PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
             game.resetState(true)
         end
     else
