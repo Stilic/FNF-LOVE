@@ -77,14 +77,16 @@ local function fadeIn(time, callback)
     end
 end
 
-local requestedState, transition = nil, false
+local requestedState, skipTransition = nil, false
 game.isSwitchingState = false
-function game.switchState(state, showTransition)
+function game.switchState(state, skipTrans)
     requestedState = state
-    transition = showTransition ~= nil and showTransition or true
+
+    if skipTrans == nil then skipTransition = false
+    else skipTransition = skipTrans end
 end
-function game.resetState(showTransition, ...)
-    game.switchState(getmetatable(Gamestate.stack[1])(...), showTransition)
+function game.resetState(skipTrans, ...)
+    game.switchState(getmetatable(Gamestate.stack[1])(...), skipTrans)
 end
 function game.getState() return Gamestate.current() end
 
@@ -148,7 +150,7 @@ end
 function game.update(dt)
     if requestedState ~= nil then
         game.isSwitchingState = true
-        if transition then
+        if not skipTransition then
             local state = requestedState
             fadeOut(0.7, function()
                 switch(state)

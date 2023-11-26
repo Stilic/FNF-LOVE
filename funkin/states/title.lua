@@ -171,9 +171,10 @@ end
 
 function TitleState:skipIntro()
     if not self.skippedIntro then
+        self:remove(self.ngSpr)
         self:remove(self.blackScreen)
-        game.camera:flash({1, 1, 1}, 4)
         self:remove(self.textGroup)
+        game.camera:flash({1, 1, 1}, 4)
         self.skippedIntro = true
     end
 end

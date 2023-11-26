@@ -5,6 +5,10 @@ StoryMenuState.curWeek = 1
 function StoryMenuState:enter()
     paths.clearCache()
 
+    self.curDifficulty = 2
+    self.movedBack = false
+    self.selectedWeek = false
+
     PlayState.storyMode = true
 
     self.scoreText = Text(10, 10, "SCORE: 49324858",
@@ -16,6 +20,7 @@ function StoryMenuState:enter()
                              'right')
     self.txtWeekTitle.alpha = 0.7
 
+    local ui_tex = paths.getSparrowAtlas('menus/storymenu/campaign_menu_UI_assets');
     local bgYellow = Sprite(0, 56):make(game.width, 386, Color.fromRGB(249, 207, 81))
 
     self.grpWeekText = Group()
@@ -24,23 +29,34 @@ function StoryMenuState:enter()
     local blackBar = Sprite():make(game.width, 56, Color.BLACK)
     self:add(blackBar)
 
-    self.groupCharacters = Group()
+    self.grpWeekCharacters = Group()
 
-    local num = 0
+    self.grpLocks = Group()
+    self:add(self.grpLocks)
+
     self.weekData = {}
-    for _, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+    for i, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
                                                               'data/weeks/weeks'))) do
         local data = paths.getJSON('data/weeks/weeks/' .. weekStr:withoutExt())
 
+        local isLocked = (data.locked == true)
         local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10, data.sprite)
-        weekThing.y = weekThing.y + ((weekThing.height + 20) * num)
+        weekThing.y = weekThing.y + ((weekThing.height + 20) * (i-1))
         weekThing.targetY = num
         self.grpWeekText:add(weekThing)
 
         weekThing:screenCenter("x")
 
+        if isLocked then
+            local lock = Sprite(weekThing.width + 10 + weekThing.x)
+            lock:setFrames(ui_tex)
+            lock:addAnimByPrefix('lock', 'lock')
+            lock:play('lock')
+            lock.ID = i
+            self.grpLocks:add(lock)
+        end
+
         table.insert(self.weekData, data)
-        num = num + 1
     end
 
     local charTable = self.weekData[StoryMenuState.curWeek].characters
@@ -48,11 +64,32 @@ function StoryMenuState:enter()
         local weekCharThing = MenuCharacter((game.width * 0.25) * (1 + char) - 150,
                                              charTable[char+1])
         weekCharThing.y = weekCharThing.y + 70
-        self.groupCharacters:add(weekCharThing)
+        self.grpWeekCharacters:add(weekCharThing)
     end
 
+    self.difficultySelector = Group()
+    self:add(self.difficultySelector)
+
+    self.leftArrow = Sprite(self.grpWeekText.members[1].x + self.grpWeekText.members[1].width
+                            + 10, self.grpWeekText.members[1].y + 10);
+	self.leftArrow:setFrames(ui_tex)
+	self.leftArrow:addAnimByPrefix('idle', "arrow left")
+	self.leftArrow:addAnimByPrefix('press', "arrow push left")
+	self.leftArrow:play('idle')
+    self.difficultySelector:add(self.leftArrow)
+
+    self.sprDifficulty = Sprite(0, self.leftArrow.y);
+	self.difficultySelector:add(self.sprDifficulty);
+
+    self.rightArrow = Sprite(self.leftArrow.x + 376, self.leftArrow.y);
+	self.rightArrow:setFrames(ui_tex)
+	self.rightArrow:addAnimByPrefix('idle', "arrow right")
+	self.rightArrow:addAnimByPrefix('press', "arrow push right")
+	self.rightArrow:play('idle')
+    self.difficultySelector:add(self.rightArrow)
+
     self:add(bgYellow)
-    self:add(self.groupCharacters)
+    self:add(self.grpWeekCharacters)
 
     self.txtTrackList = Text(game.width * 0.05, bgYellow.x + bgYellow.height + 100,
                              "TRACKS", paths.getFont('vcr.ttf', 32),
@@ -62,22 +99,128 @@ function StoryMenuState:enter()
     self:add(self.txtWeekTitle)
 
     self:changeWeek()
-
+    self:changeDifficulty()
 end
 
+local lerpScore = 0
+local intendedScore = 0
+
+local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
+    lerpScore = util.coolLerp(lerpScore, intendedScore, 0.5)
+    self.scoreText.content = 'WEEK SCORE:' .. math.round(lerpScore)
+
+    if not self.movedBack and not self.selectedWeek then
+        if controls:pressed("ui_up") then
+            self:changeWeek(-1)
+        end
+        if controls:pressed("ui_down") then
+            self:changeWeek(1)
+        end
+
+        if controls:down("ui_left") then
+            self.leftArrow:play('press')
+        else
+            self.leftArrow:play('idle')
+        end
+        if controls:down("ui_right") then
+            self.rightArrow:play('press')
+        else
+            self.rightArrow:play('idle')
+        end
+
+        if controls:pressed("ui_left") then
+            self:changeDifficulty(-1)
+        end
+        if controls:pressed("ui_right") then
+            self:changeDifficulty(1)
+        end
+
+        if controls:pressed("accept") then
+            self:selectWeek()
+        end
+    end
+
+    if controls:pressed("back") and not self.movedBack and not self.selectedWeek then
+        game.sound.play(paths.getSound("cancelMenu"))
+        self.movedBack = true
+        game.switchState(MainMenuState())
+    end
+
     StoryMenuState.super.update(self, dt)
 
-    if controls:pressed("ui_up") then
-        self:changeWeek(-1)
+    tweenDifficulty:update(dt)
+
+    for _, lock in pairs(self.grpLocks.members) do
+        lock.y = self.grpWeekText.members[lock.ID].y
+        lock.visible = (lock.y > game.height / 2)
     end
-    if controls:pressed("ui_down") then
-        self:changeWeek(1)
+end
+
+function StoryMenuState:selectWeek()
+    if not self.weekData[StoryMenuState.curWeek].locked then
+        local songTable = {}
+        local leWeek = self.weekData[StoryMenuState.curWeek].songs
+        for i = 1,#leWeek do
+            table.insert(songTable, paths.formatToSongPath(leWeek[i][1]))
+        end
+
+        PlayState.storyPlaylist = songTable
+        PlayState.storyMode = true
+
+        local diffic = ""
+        switch(self.curDifficulty,{
+            [0]=function() diffic = "-easy" end,
+            [2]=function() diffic = "-hard" end
+        })
+
+        PlayState.SONG = paths.getJSON("songs/"..PlayState.storyPlaylist[1]..
+                                       "/"..PlayState.storyPlaylist[1]..diffic).song
+
+        if not self.selectedWeek then
+            game.sound.play(paths.getSound('confirmMenu'))
+            self.grpWeekText.members[StoryMenuState.curWeek]:startFlashing()
+            for _, char in pairs(self.grpWeekCharacters.members) do
+                if char.character ~= '' and char.hasConfirmAnimation then
+                    char:play('confirm')
+                end
+            end
+            self.selectedWeek = true
+        end
+
+        Timer.after(1, function()
+            game.switchState(PlayState())
+        end)
+    else
+        game.sound.play(paths.getSound('cancelMenu'))
+    end
+end
+
+function StoryMenuState:changeDifficulty(change)
+    if change == nil then change = 0 end
+
+    self.curDifficulty = self.curDifficulty + change
+
+    if self.curDifficulty > 3 then
+        self.curDifficulty = 1
+    elseif self.curDifficulty < 1 then
+        self.curDifficulty = 3
     end
 
-    if controls:pressed("back") then
-        game.sound.play(paths.getSound("cancelMenu"))
-        game.switchState(MainMenuState())
+    local diffString = {'Easy', 'Normal', 'Hard'}
+    local diff = diffString[self.curDifficulty]
+    local newImage = paths.getImage('menus/storymenu/difficulties/'
+                                    .. paths.formatToSongPath(diff))
+
+    if self.sprDifficulty.texture ~= newImage then
+        self.sprDifficulty:loadTexture(newImage)
+		self.sprDifficulty.x = self.leftArrow.x + 60
+		self.sprDifficulty.x = self.sprDifficulty.x + ((308 - self.sprDifficulty.width) / 3)
+		self.sprDifficulty.alpha = 0
+		self.sprDifficulty.y = self.leftArrow.y - 15
+
+		Timer:cancelTweensOf(tweenDifficulty)
+		tweenDifficulty:tween(0.07, self.sprDifficulty, {y = self.leftArrow.y + 15, alpha = 1})
     end
 end
 
@@ -108,13 +251,17 @@ function StoryMenuState:changeWeek(change)
         if item.targetY == 0 then item.alpha = 1 end
     end
 
+    for _, spr in pairs(self.difficultySelector.members) do
+        spr.visible = not leWeek.locked
+    end
+
     self:updateText()
 end
 
 function StoryMenuState:updateText()
     local weekTable = self.weekData[StoryMenuState.curWeek].characters
     for i = 1,#weekTable do
-        self.groupCharacters.members[i]:changeCharacter(weekTable[i])
+        self.grpWeekCharacters.members[i]:changeCharacter(weekTable[i])
     end
 
     local leWeek = self.weekData[StoryMenuState.curWeek]

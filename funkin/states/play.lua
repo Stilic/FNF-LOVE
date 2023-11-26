@@ -19,10 +19,13 @@ PlayState.notePosition = 0
 
 PlayState.SONG = nil
 
+PlayState.storyPlaylist = {}
 PlayState.storyMode = false
 PlayState.storyWeek = ''
 
 PlayState.pixelStage = false
+
+PlayState.prevCamFollow = nil
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
@@ -38,10 +41,7 @@ function PlayState:enter()
     self.scripts:call("create")
 
     game.sound.loadMusic(paths.getInst(songName), nil, false)
-    game.sound.music.onComplete = function()
-        game.sound.playMusic(paths.getMusic("freakyMenu"))
-        game.switchState(FreeplayState())
-    end
+    game.sound.music.onComplete = function() self:endSong() end
     PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
     PlayState.conductor:mapBPMChanges(PlayState.SONG)
     PlayState.conductor.onBeat = function(b) self:beat(b) end
@@ -197,6 +197,11 @@ function PlayState:enter()
     self.judgeSprites = Group()
 
     self.camFollow = {x = 0, y = 0}
+    if PlayState.prevCamFollow ~= nil then
+        game.camera.target.x = PlayState.prevCamFollow.x
+        game.camera.target.y = PlayState.prevCamFollow.y
+        PlayState.prevCamFollow = nil
+    end
     self.camZooming = false
 
     game.camera.zoom = self.stage.camZoom
@@ -662,6 +667,12 @@ function PlayState:update(dt)
         end
     end
 
+    if Application.meta.DEBUG_MODE then
+        if Keyboard.justPressed.TWO then
+            self:endSong()
+        end
+    end
+
     self.scripts:call("postUpdate", dt)
 end
 
@@ -838,6 +849,28 @@ function PlayState:goodNoteHit(n)
 
             self.scripts:call("postGoodNoteHit", n)
         end
+    end
+end
+
+function PlayState:endSong()
+    if self.storyMode then
+        table.remove(PlayState.storyPlaylist, 1)
+
+        if #PlayState.storyPlaylist <= 0 then
+            game.sound.playMusic(paths.getMusic("freakyMenu"))
+            game.switchState(StoryMenuState())
+        else
+            PlayState.prevCamFollow = game.camera.target
+
+            PlayState.SONG = paths.getJSON("songs/"..PlayState.storyPlaylist[1]..
+                                           "/"..PlayState.storyPlaylist[1]).song
+            PlayState.conductor.sound:stop()
+
+            game.resetState(true)
+        end
+    else
+        game.sound.playMusic(paths.getMusic("freakyMenu"))
+        game.switchState(FreeplayState())
     end
 end
 

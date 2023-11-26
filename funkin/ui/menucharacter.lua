@@ -33,9 +33,10 @@ function MenuCharacter:changeCharacter(char)
             self:addAnimByPrefix('idle', charFile.idle_anim, 24)
 
             local confirmAnim = charFile.confirm_anim
-            if confirmAnim ~= nil and confirmAnim:len() > 0 and confirmAnim ~= charFile.idle_anim then
+            if confirmAnim ~= nil and confirmAnim:len() > 0
+                and confirmAnim ~= charFile.idle_anim then
                 self:addAnimByPrefix('confirm', confirmAnim, 24, false)
-                if self.__animations['confirm'] ~= nil then
+                if self.__animations['confirm'] then
                     self.hasConfirmAnimation = true
                 end
             end

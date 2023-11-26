@@ -11,22 +11,37 @@ function FreeplayState:enter()
         })
     end
 
-    self.songs = {
-        'Test', 'Tutorial', 'Bopeebo', 'Fresh', 'Dad Battle', 'Spookeez',
-        'South', 'Monster', 'Pico', 'Philly Nice', 'Blammed', 'Senpai', 'Roses',
-        'Thorns', 'Ugh', 'Guns', 'Stress'
-    }
+    self.songsData = {}
+    for i, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                              'data/weeks/weeks'))) do
+        local data = paths.getJSON('data/weeks/weeks/' .. weekStr:withoutExt())
+        local isLocked = (data.locked == true)
+        if not isLocked then
+            for _, song in pairs(data.songs) do
+                table.insert(self.songsData, song)
+            end
+        end
+    end
 
     self.bg = Sprite()
-    self.bg:loadTexture(paths.getImage('menus/menuBGBlue'))
+    self.bg:loadTexture(paths.getImage('menus/menuDesat'))
     self:add(self.bg)
     self.bg:screenCenter()
+
+    -- SHITTY STUFF :(
+    local colorBG = Color.fromRGB(
+        self.songsData[FreeplayState.curSelected][3][1],
+        self.songsData[FreeplayState.curSelected][3][2],
+        self.songsData[FreeplayState.curSelected][3][3]
+    )
+    self.bg.color = colorBG
 
     self.grpSongs = Group()
     self:add(self.grpSongs)
 
-    for i = 0, #self.songs - 1 do
-        local songText = Alphabet(0, (70 * i) + 30, self.songs[i + 1], true,
+    self.iconTable = {}
+    for i = 0, #self.songsData - 1 do
+        local songText = Alphabet(0, (70 * i) + 30, self.songsData[i+1][1], true,
                                   false)
         songText.isMenuItem = true
         songText.targetY = i
@@ -40,6 +55,12 @@ function FreeplayState:enter()
                 letter.offset.x = letter.offset.x * textScale
             end
         end
+
+        local icon = HealthIcon(self.songsData[i+1][2])
+        icon.sprTracker = songText
+
+        table.insert(self.iconTable, icon)
+        self:add(icon)
     end
 
     self:changeSelection()
@@ -55,10 +76,21 @@ function FreeplayState:update(dt)
     end
     if controls:pressed('accept') then
         local daSong = paths.formatToSongPath(
-                           self.songs[FreeplayState.curSelected])
-        PlayState.SONG = paths.getJSON("songs/" .. daSong .. "/" .. daSong).song
+                           self.songsData[FreeplayState.curSelected][1])
+        PlayState.storyMode = false
+        PlayState.SONG = paths.getJSON("songs/"..daSong.."/"..daSong).song
         game.switchState(PlayState())
     end
+
+    -- SHITTY STUFF :(
+    local colorBG = Color.fromRGB(
+        self.songsData[FreeplayState.curSelected][3][1],
+        self.songsData[FreeplayState.curSelected][3][2],
+        self.songsData[FreeplayState.curSelected][3][3]
+    )
+    self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
+    self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
+    self.bg.color[3] = util.coolLerp(self.bg.color[3], colorBG[3], 0.05)
 
     FreeplayState.super.update(self, dt)
 end
@@ -69,10 +101,10 @@ function FreeplayState:changeSelection(huh)
 
     FreeplayState.curSelected = FreeplayState.curSelected + huh
 
-    if FreeplayState.curSelected > #self.songs then
+    if FreeplayState.curSelected > #self.songsData then
         FreeplayState.curSelected = 1
     elseif FreeplayState.curSelected < 1 then
-        FreeplayState.curSelected = #self.songs
+        FreeplayState.curSelected = #self.songsData
     end
 
     local bullShit = 0
