@@ -1,6 +1,7 @@
 require "loxel.lib.override"
 
 game = {}
+flags = require "loxel.flags"
 
 Object = require "loxel.lib.classic"
 local Gamestate = require "loxel.lib.gamestate"

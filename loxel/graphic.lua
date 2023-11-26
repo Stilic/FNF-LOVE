@@ -78,6 +78,8 @@ function Graphic:draw()
 end
 
 function Graphic:__render(camera)
+    if flags.DontRenderTransparentGraphics and self.alpha <= 0 then return end
+
     local shader = love.graphics.getShader()
     local lineWidth = love.graphics.getLineWidth()
     local lineStyle = love.graphics.getLineStyle()

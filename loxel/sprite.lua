@@ -517,6 +517,8 @@ function Sprite:draw()
 end
 
 function Sprite:__render(camera)
+    if (flags.DontRenderTransparentGraphics and self.alpha <= 0) or self.texture == nil then return end
+
     local min, mag, anisotropy = self.texture:getFilter()
     local mode = self.antialiasing and "linear" or "nearest"
     self.texture:setFilter(mode, mode, anisotropy)
