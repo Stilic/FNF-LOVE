@@ -160,16 +160,13 @@ function StoryMenuState:selectWeek()
         PlayState.storyPlaylist = songTable
         PlayState.storyMode = true
 
-        local diffic = ""
-        switch(self.curDifficulty,
-               {
-            [0] = function() diffic = "-easy" end,
-            [2] = function() diffic = "-hard" end
+        local diff = ""
+        switch(self.curDifficulty, {
+            [0] = function() diff = "easy" end,
+            [2] = function() diff = "hard" end
         })
 
-        PlayState.SONG = paths.getJSON("songs/" .. PlayState.storyPlaylist[1] ..
-                                           "/" .. PlayState.storyPlaylist[1] ..
-                                           diffic).song
+        local toState = PlayState(PlayState.storyPlaylist[1], diff)
 
         if not self.selectedWeek then
             game.sound.play(paths.getSound('confirmMenu'))
@@ -182,11 +179,13 @@ function StoryMenuState:selectWeek()
             self.selectedWeek = true
         end
 
-        Timer.after(1, function() game.switchState(PlayState()) end)
+        Timer.after(1, function() game.switchState(toState) end)
     else
         game.sound.play(paths.getSound('cancelMenu'))
     end
 end
+
+local diffString = {'Easy', 'Normal', 'Hard'}
 
 function StoryMenuState:changeDifficulty(change)
     if change == nil then change = 0 end
@@ -199,7 +198,6 @@ function StoryMenuState:changeDifficulty(change)
         self.curDifficulty = 3
     end
 
-    local diffString = {'Easy', 'Normal', 'Hard'}
     local diff = diffString[self.curDifficulty]
     local newImage = paths.getImage('menus/storymenu/difficulties/' ..
                                         paths.formatToSongPath(diff))

@@ -70,11 +70,9 @@ function FreeplayState:update(dt)
         game.switchState(MainMenuState())
     end
     if controls:pressed('accept') then
-        local daSong = paths.formatToSongPath(
-                           self.songsData[FreeplayState.curSelected][1])
+        local daSong = paths.formatToSongPath(self.songsData[FreeplayState.curSelected][1])
         PlayState.storyMode = false
-        PlayState.SONG = paths.getJSON("songs/" .. daSong .. "/" .. daSong).song
-        game.switchState(PlayState())
+        game.switchState(PlayState(daSong))
     end
 
     -- SHITTY STUFF :(

@@ -3,6 +3,8 @@ local PauseSubState = require "funkin.substates.pause"
 ---@class PlayState:State
 local PlayState = State:extend()
 
+PlayState.defaultDifficulty = "normal"
+
 PlayState.controlDirs = {
     note_left = 0,
     note_down = 1,
@@ -28,6 +30,13 @@ PlayState.pixelStage = false
 PlayState.prevCamFollow = nil
 
 function PlayState.sortByShit(a, b) return a.time < b.time end
+
+function PlayState:new(song, diff)
+    PlayState.super.new(self)
+
+    if type(diff) ~= "string" or diff == PlayState.defaultDifficulty then diff = "" end
+    PlayState.SONG = paths.getJSON("songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")).song
+end
 
 function PlayState:enter()
     if PlayState.SONG == nil then
