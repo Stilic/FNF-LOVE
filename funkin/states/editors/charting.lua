@@ -536,8 +536,8 @@ function ChartingState:updateIcon()
     local iconLeft = getIconFromCharacter(self.__song.player2)
     local iconRight = getIconFromCharacter(self.__song.player1)
 
-    self.iconLeft.texture = paths.getImage('icons/icon-' .. iconLeft)
-    self.iconRight.texture = paths.getImage('icons/icon-' .. iconRight)
+    self.iconLeft.texture = paths.getImage('icons/' .. iconLeft)
+    self.iconRight.texture = paths.getImage('icons/' .. iconRight)
 end
 
 function ChartingState:updateGrid()
