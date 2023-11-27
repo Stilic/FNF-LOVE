@@ -37,6 +37,13 @@ function Splash:startSplash()
     self.love2d.visible = false
     self:add(self.love2d)
 
+    self.skipText = Text(0, game.height * 0.95, 'Press ACCEPT to skip.',
+                            paths.getFont('phantommuff.ttf', 24))
+    self.skipText.alpha = 0
+    self:add(self.skipText)
+
+    Timer.after(3, function() Timer.tween(0.5, self.skipText, {alpha = 1}) end)
+
     Timer.script(function(setTimer)
         self.funkinLogo.alpha = 0
         self.funkinLogo.visible = true
@@ -72,7 +79,7 @@ function Splash:startSplash()
     end)
 
     game.sound.play(paths.getMusic('titleShoot'), 0.5, false, true, function()
-        game.switchState(TitleState())
+        game.switchState(TitleState(), true)
     end)
 end
 
