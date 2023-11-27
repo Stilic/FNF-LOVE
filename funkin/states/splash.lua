@@ -17,14 +17,6 @@ function Splash:startSplash()
     self.funkinLogo:screenCenter()
     self:add(self.funkinLogo)
 
-    self.funkinLogoBump = Sprite():loadTexture(
-                        paths.getImage('menus/splashScreen/FNFLOVE_logo'))
-    self.funkinLogoBump.scale = {x = 0.7, y = 0.7}
-    self.funkinLogoBump.visible = false
-    self.funkinLogoBump:updateHitbox()
-    self.funkinLogoBump:screenCenter()
-    self:add(self.funkinLogoBump)
-
     self.stilicIcon = HealthIcon('stilic')
     self.stilicIcon.scale = {x = 1.8, y = 1.8}
     self.stilicIcon.visible = false
@@ -49,11 +41,7 @@ function Splash:startSplash()
         self.funkinLogo.alpha = 0
         self.funkinLogo.visible = true
         Timer.tween(5, self.funkinLogo.scale, {x = 0.65, y = 0.65})
-        Timer.tween(0.1, self.funkinLogo, {alpha = 1})
-        self.funkinLogoBump.alpha = 0.5
-        self.funkinLogoBump.visible = true
-        Timer.tween(1, self.funkinLogoBump.scale, {x = 1.4, y = 1.4}, 'out-sine')
-        Timer.tween(1, self.funkinLogoBump, {alpha = 0}, 'out-sine')
+        Timer.tween(0.2, self.funkinLogo, {alpha = 1})
 
         setTimer(2)
 
