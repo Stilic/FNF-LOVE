@@ -35,7 +35,7 @@ PlayState.prevCamFollow = nil
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState.loadSong(song, diff)
-    if type(diff) ~= "string" or diff == PlayState.defaultDifficulty then diff = "" end
+    if type(diff) ~= "string" or diff == "normal" then diff = "" end
     local path = "songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")
 
     PlayState.SONG = paths.getJSON(path).song
@@ -60,7 +60,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-    if PlayState.SONG == nil then PlayState.loadSong("tutorial") end
+    if PlayState.SONG == nil then PlayState.loadSong("high") end
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
