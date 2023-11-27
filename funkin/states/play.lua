@@ -3,7 +3,7 @@ local PauseSubState = require "funkin.substates.pause"
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
 
-PlayState.defaultDifficulty = "normal"
+PlayState.defaultDifficulty = "hard"
 
 PlayState.controlDirs = {
     note_left = 0,
@@ -60,7 +60,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-    if PlayState.SONG == nil then PlayState.loadSong("test") end
+    if PlayState.SONG == nil then PlayState.loadSong("test", PlayState.defaultDifficulty) end
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
