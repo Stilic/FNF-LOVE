@@ -39,7 +39,13 @@ function CharacterEditor:enter()
     self:loadCharacter()
 
     self.startTimestamp = os.time(os.date("*t"))
-    self:updatePresence()
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({
+            details = "Character Editor",
+            state = "Character: " .. self.curChar,
+            startTimestamp = self.startTimestamp
+        })
+    end
 
     self:changeAnim()
 
@@ -179,7 +185,13 @@ function CharacterEditor:add_UI_Character()
         self.curChar = value
         self:loadCharacter()
 
-        self:updatePresence()
+        if love.system.getDevice() == "Desktop" then
+            Discord.changePresence({
+                details = "Character Editor",
+                state = "Character: " .. self.curChar,
+                startTimestamp = self.startTimestamp
+            })
+        end
 
         healthIcon_input.text = self.char.icon
 
@@ -361,16 +373,6 @@ function CharacterEditor:changeAnim(huh)
 
     self.curAnim = self.char.animationsTable[self.curSelected]
     self.char:playAnim(self.curAnim.anim, true)
-end
-
-function CharacterEditor:updatePresence()
-    if love.system.getDevice() == "Desktop" then
-        Discord.changePresence({
-            details = "Character Editor",
-            state = "Character: " .. self.curChar,
-            startTimestamp = self.startTimestamp
-        })
-    end
 end
 
 function CharacterEditor:saveCharacter()

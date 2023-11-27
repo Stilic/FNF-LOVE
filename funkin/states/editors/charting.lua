@@ -52,6 +52,15 @@ function ChartingState:enter()
     -- self:add(self.gridBG)
     -- self:add(self.gridBG_highlight)
 
+    self.startTimestamp = os.time(os.date("*t"))
+    if love.system.getDevice() == "Desktop" then
+        Discord.changePresence({
+            details = "Charting",
+            state = "Song: " .. self.__song.song,
+            startTimestamp = self.startTimestamp
+        })
+    end
+
     self.curRenderedNotes = Group()
     self:add(self.curRenderedNotes)
 

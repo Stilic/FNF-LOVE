@@ -65,6 +65,16 @@ function TabMenu:update(dt)
         self.__y = self.y
     end
     if self.tabs then callChildren(self, 'update', dt) end
+
+    if Mouse.justPressed then
+        if Mouse.justPressedLeft then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
+        elseif Mouse.justPressedRight then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
+        elseif Mouse.justPressedMiddle then
+            self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+        end
+    end
 end
 
 function TabMenu:__render(camera)
