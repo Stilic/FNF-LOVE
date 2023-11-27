@@ -25,6 +25,8 @@ PlayState.storyPlaylist = {}
 PlayState.storyDifficulty = ""
 PlayState.storyMode = false
 PlayState.storyWeek = ""
+PlayState.storyScore = 0
+PlayState.storyWeekFile = ""
 
 PlayState.pixelStage = false
 
@@ -35,7 +37,6 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 function PlayState.loadSong(song, diff)
     if type(diff) ~= "string" or diff == PlayState.defaultDifficulty then diff = "" end
     local path = "songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")
-    print(path)
 
     PlayState.SONG = paths.getJSON(path).song
 end
@@ -44,7 +45,6 @@ function PlayState:new(storyMode, song, diff)
     PlayState.super.new(self)
 
     if storyMode ~= nil then
-        -- storyWeek should be manually set after this function
         PlayState.storyDifficulty = diff
         PlayState.storyMode = storyMode
         PlayState.storyWeek = ""
@@ -930,7 +930,12 @@ function PlayState:goodNoteHit(n)
 end
 
 function PlayState:endSong()
+    local formatSong = paths.formatToSongPath(self.SONG.song)
+    Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
+
     if self.storyMode then
+        PlayState.storyScore = PlayState.storyScore + self.score
+
         table.remove(PlayState.storyPlaylist, 1)
 
         if #PlayState.storyPlaylist > 0 then
@@ -951,6 +956,7 @@ function PlayState:endSong()
             PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
             game.resetState(true)
         else
+            Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.storyDifficulty)
             game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(StoryMenuState())
         end

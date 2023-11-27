@@ -2,9 +2,10 @@ local Script = Object:extend()
 
 local chunkMt = {__index = _G}
 
-function Script:new(path)
+function Script:new(path, notFoundMsg)
     self.path = path
     self.variables = {}
+    self.notFoundMsg = (notFoundMsg == nil and true or false)
     self.closed = false
 
     local p = path
@@ -14,6 +15,7 @@ function Script:new(path)
         setfenv(chunk, setmetatable(self.variables, chunkMt))
         chunk()
     else
+        if not self.notFoundMsg then return end
         print("script not found for " .. paths.getPath(p))
         self.closed = true
         return

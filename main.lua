@@ -14,6 +14,8 @@ Discord = require "funkin.backend.discord"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
+Highscore = require "funkin.backend.highscore"
+
 ClientPrefs = require "funkin.backend.clientprefs"
 Script = require "funkin.backend.script"
 ScriptsHandler = require "funkin.backend.scriptshandler"

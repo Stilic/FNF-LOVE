@@ -12,22 +12,7 @@ function Controls.add(options)
         {true, 'NOTES'}, {true, 'Left', 'note_left', 'UI Left'},
         {true, 'Down', 'note_down', 'UI Down'},
         {true, 'Up', 'note_up', 'UI Up'},
-        {true, 'Right', 'note_right', 'UI Right'}, {true}, {true, 'UI'},
-        {true, 'Left', 'ui_left', 'UI Left'},
-        {true, 'Down', 'ui_down', 'UI Down'}, {true, 'Up', 'ui_up', 'UI Up'},
-        {true, 'Right', 'ui_right', 'UI Right'}, {true},
-        -- {true, 'Reset', 'reset', 'Reset'},
-        {true, 'Accept', 'accept', 'Accept'}, {true, 'Back', 'back', 'Back'},
-        {true, 'Pause', 'pause', 'Pause'}
-        --[[{false},
-		{false, 'VOLUME'},
-		{false, 'Mute', 'volume_mute', 'Volume Mute'},
-		{false, 'Up', 'volume_up', 'Volume Up'},
-		{false, 'Down', 'volume_down', 'Volume Down'},
-		{false},
-		{false, 'DEBUG'},
-		{false, 'Key 1', 'debug_1', 'Debug Key #1'},
-		{false, 'Key 2', 'debug_2', 'Debug Key #2'}]]
+        {true, 'Right', 'note_right', 'UI Right'}
     }
 
     local titleTxtGroup = Group()

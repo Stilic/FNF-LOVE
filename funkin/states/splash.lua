@@ -37,11 +37,12 @@ function Splash:startSplash()
     self.love2d.visible = false
     self:add(self.love2d)
 
-    self.skipText = Text(0, game.height * 0.95, 'Press ACCEPT to skip.',
+    self.skipText = Text(6, game.height * 0.96, 'Press ACCEPT to skip.',
                             paths.getFont('phantommuff.ttf', 24))
     self.skipText.alpha = 0
     self:add(self.skipText)
 
+    game.sound.play(paths.getMusic('titleShoot'), 0.5)
     Timer.after(3, function() Timer.tween(0.5, self.skipText, {alpha = 1}) end)
 
     Timer.script(function(setTimer)
@@ -76,9 +77,9 @@ function Splash:startSplash()
         setTimer(2)
 
         Timer.tween(1, self.stilicIcon, {alpha = 0})
-    end)
 
-    game.sound.play(paths.getMusic('titleShoot'), 0.5, false, true, function()
+        setTimer(1)
+
         game.switchState(TitleState(), true)
     end)
 end

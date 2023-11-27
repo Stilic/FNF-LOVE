@@ -7,5 +7,10 @@ local Color = {
 }
 
 function Color.fromRGB(r, g, b) return {r / 255, g / 255, b / 255} end
+function Color.convert(rgb)
+    return {rgb[1] / 255,
+            rgb[2] / 255,
+            rgb[3] / 255}
+end
 
 return Color

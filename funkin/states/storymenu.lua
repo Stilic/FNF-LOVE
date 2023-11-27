@@ -1,6 +1,7 @@
 local StoryMenuState = State:extend()
 
 StoryMenuState.curWeek = 1
+StoryMenuState.curDifficulty = 2
 
 function StoryMenuState:enter()
     -- Update Presence
@@ -8,7 +9,9 @@ function StoryMenuState:enter()
         Discord.changePresence({details = "In the Menus"})
     end
 
-    self.curDifficulty = 2
+    self.lerpScore = 0
+    self.intendedScore = 0
+
     self.movedBack = false
     self.selectedWeek = false
 
@@ -41,6 +44,7 @@ function StoryMenuState:enter()
     for i, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
                                                                   'data/weeks/weeks'))) do
         local data = paths.getJSON('data/weeks/weeks/' .. weekStr:withoutExt())
+        data.file = weekStr:withoutExt()
 
         local isLocked = (data.locked == true)
         local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10,
@@ -109,13 +113,10 @@ function StoryMenuState:enter()
     self:changeDifficulty()
 end
 
-local lerpScore = 0
-local intendedScore = 0
-
 local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
-    lerpScore = util.coolLerp(lerpScore, intendedScore, 0.5)
-    self.scoreText.content = 'WEEK SCORE:' .. math.round(lerpScore)
+    self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 0.5)
+    self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
     if not self.movedBack and not self.selectedWeek then
         if controls:pressed("ui_up") then self:changeWeek(-1) end
@@ -163,13 +164,14 @@ function StoryMenuState:selectWeek()
         end
 
         local diff = ""
-        switch(self.curDifficulty, {
+        switch(StoryMenuState.curDifficulty, {
             [1] = function() diff = "easy" end,
             [3] = function() diff = "hard" end
         })
 
         local toState = PlayState(true, songTable, diff)
         PlayState.storyWeek = self.weekData[StoryMenuState.curWeek].name
+        PlayState.storyWeekFile = self.weekData[StoryMenuState.curWeek].file
 
         if not self.selectedWeek then
             game.sound.play(paths.getSound('confirmMenu'))
@@ -193,17 +195,17 @@ local diffString = {'Easy', 'Normal', 'Hard'}
 function StoryMenuState:changeDifficulty(change)
     if change == nil then change = 0 end
 
-    self.curDifficulty = self.curDifficulty + change
+    StoryMenuState.curDifficulty = StoryMenuState.curDifficulty + change
 
-    if self.curDifficulty > 3 then
-        self.curDifficulty = 1
-    elseif self.curDifficulty < 1 then
-        self.curDifficulty = 3
+    if StoryMenuState.curDifficulty > 3 then
+        StoryMenuState.curDifficulty = 1
+    elseif StoryMenuState.curDifficulty < 1 then
+        StoryMenuState.curDifficulty = 3
     end
 
-    local diff = diffString[self.curDifficulty]
+    local storyDiff = diffString[StoryMenuState.curDifficulty]
     local newImage = paths.getImage('menus/storymenu/difficulties/' ..
-                                        paths.formatToSongPath(diff))
+                                        paths.formatToSongPath(storyDiff))
 
     if self.sprDifficulty.texture ~= newImage then
         self.sprDifficulty:loadTexture(newImage)
@@ -217,6 +219,15 @@ function StoryMenuState:changeDifficulty(change)
         tweenDifficulty:tween(0.07, self.sprDifficulty,
                               {y = self.leftArrow.y + 15, alpha = 1})
     end
+
+    local diff = ""
+    switch(StoryMenuState.curDifficulty, {
+        [1] = function() diff = "easy" end,
+        [3] = function() diff = "hard" end
+    })
+
+    local weekName = self.weekData[StoryMenuState.curWeek].file
+    self.intendedScore = Highscore.getWeekScore(weekName, diff)
 end
 
 function StoryMenuState:changeWeek(change)
@@ -271,6 +282,15 @@ function StoryMenuState:updateText()
 
     self.txtTrackList:screenCenter("x")
     self.txtTrackList.x = self.txtTrackList.x - game.width * 0.35
+
+    local diff = ""
+    switch(StoryMenuState.curDifficulty, {
+        [1] = function() diff = "easy" end,
+        [3] = function() diff = "hard" end
+    })
+
+    local weekName = self.weekData[StoryMenuState.curWeek].file
+    self.intendedScore = Highscore.getWeekScore(weekName, diff)
 end
 
 return StoryMenuState
