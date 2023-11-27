@@ -9,8 +9,6 @@ require "loxel"
 
 Timer = require "lib.timer"
 
-Discord = require "funkin.backend.discord"
-
 -- WindowDialogue = require "lib.windows.dialogue"
 paths = require "funkin.paths"
 util = require "funkin.util"
@@ -136,7 +134,10 @@ function love.load()
 
     game.init(Application, SplashScreen)
 
-    if love.system.getDevice() == "Desktop" then Discord.init() end
+    if love.system.getDevice() == "Desktop" then 
+      Discord = require "funkin.backend.discord"
+      Discord.init()
+    end
 end
 
 function love.resize(w, h) game.resize(w, h) end
