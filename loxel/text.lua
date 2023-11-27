@@ -76,7 +76,7 @@ function Text:__render(camera)
 
     love.graphics.setFont(self.font)
     love.graphics.setColor(self.outColor[1], self.outColor[2], self.outColor[3],
-                           alpha)
+                           self.alpha)
 
     if self.outWidth > 0 then
         for dx = -self.outWidth, self.outWidth do
@@ -88,7 +88,7 @@ function Text:__render(camera)
         end
     end
 
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3], alpha)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
     love.graphics.printf(self.content, x, y, (self.limit or self:getWidth()),
                          self.alignment)
 

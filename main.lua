@@ -41,6 +41,8 @@ OptionsState = require "funkin.states.options.options"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
+local SplashScreen = require "funkin.states.splash"
+
 function love.run()
     local _, _, flags = love.window.getMode()
     love.FPScap, love.unfocusedFPScap = math.max(flags.refreshrate, 120), 8
@@ -125,7 +127,7 @@ function love.load()
         controls = table.clone(ClientPrefs.controls)
     })
 
-    game.init(Application, TitleState)
+    game.init(Application, SplashScreen)
 
     if love.system.getDevice() == "Desktop" then Discord.init() end
 end
