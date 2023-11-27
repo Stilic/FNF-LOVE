@@ -1,4 +1,4 @@
-local OptionsState = State:extend()
+local OptionsState = State:extend("OptionsState")
 
 local tabs = {
     -- Gameplay = require "funkin.states.options.gameplay",

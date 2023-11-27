@@ -1,4 +1,4 @@
-local BackgroundGirls = Sprite:extend()
+local BackgroundGirls = Sprite:extend("BackgroundGirls")
 
 BackgroundGirls.isPissed = false
 function BackgroundGirls:new(x, y, isPissed)

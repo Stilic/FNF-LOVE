@@ -1,4 +1,4 @@
-local Checkbox = Basic:extend()
+local Checkbox = Basic:extend("Checkbox")
 
 function Checkbox:new(x, y, size, callback)
     Checkbox.super.new(self)

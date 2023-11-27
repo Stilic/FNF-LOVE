@@ -1,6 +1,6 @@
 local encodeJson = require('lib.json').encode
 
-local CharacterEditor = State:extend()
+local CharacterEditor = State:extend("CharacterEditor")
 
 CharacterEditor.onPlayState = false
 

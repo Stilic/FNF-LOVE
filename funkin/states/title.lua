@@ -1,4 +1,4 @@
-local TitleState = State:extend()
+local TitleState = State:extend("TitleState")
 
 TitleState.initialized = false
 
@@ -40,7 +40,7 @@ function TitleState:enter()
     self.titleText:updateHitbox()
     self:add(self.titleText)
 
-    self.blackScreen = Sprite():make(game.width, game.height, {0, 0, 0})
+    self.blackScreen = Graphic(0, 0, game.width, game.height, {0, 0, 0})
     self:add(self.blackScreen)
 
     self.textGroup = Group()

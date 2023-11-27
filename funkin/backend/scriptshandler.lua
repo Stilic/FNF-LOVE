@@ -1,5 +1,5 @@
----@class ScriptsHandler:Object
-local ScriptsHandler = Object:extend()
+---@class ScriptsHandler:Classic
+local ScriptsHandler = Classic:extend("ScriptsHandler")
 
 ---Creates a new script handler
 function ScriptsHandler:new() self.scripts = {} end

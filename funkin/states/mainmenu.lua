@@ -1,4 +1,4 @@
-local MainMenuState = State:extend()
+local MainMenuState = State:extend("MainMenuState")
 
 MainMenuState.curSelected = 1
 
@@ -60,13 +60,13 @@ function MainMenuState:enter()
     self.engineVersion = Text(12, game.height - 42,
                               "FNF LÖVE v" .. Application.version,
                               paths.getFont("vcr.ttf", 16), {255, 255, 255})
-    self.engineVersion.outWidth = 2
+    self.engineVersion.outWidth = 1
     self.engineVersion:setScrollFactor()
     self:add(self.engineVersion)
 
     self.engineCreated = Text(12, game.height - 24, "Created By Stilic",
                               paths.getFont("vcr.ttf", 16), {255, 255, 255})
-    self.engineCreated.outWidth = 2
+    self.engineCreated.outWidth = 1
     self.engineCreated:setScrollFactor()
     self:add(self.engineCreated)
 

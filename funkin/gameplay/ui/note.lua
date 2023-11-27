@@ -1,4 +1,4 @@
-local Note = Sprite:extend()
+local Note = Sprite:extend("Note")
 
 Note.swagWidth = 160 * 0.7
 Note.colors = {"purple", "blue", "green", "red"}

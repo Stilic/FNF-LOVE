@@ -1,6 +1,7 @@
 io.stdout:setvbuf("no")
 
 Application = require "project"
+flags = Application.flags
 
 utf8 = require "utf8"
 

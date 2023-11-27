@@ -26,8 +26,8 @@ local function stencil()
     end
 end
 
----@class Sprite:Basic
-local Sprite = Basic:extend()
+---@class Sprite:Object
+local Sprite = Object:extend("Sprite")
 
 function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
     local aw, ah = x + w, y + h
@@ -146,37 +146,15 @@ end
 local defaultTexture = love.graphics.newImage('art/default.png')
 
 function Sprite:new(x, y, texture)
-    Sprite.super.new(self)
-
-    if x == nil then x = 0 end
-    if y == nil then y = 0 end
-    self.x = x
-    self.y = y
-
-    self.texture = defaultTexture
-    self.width, self.height = 0, 0
-    self.antialiasing = true
-
-    self.__width, self.__height = self.width, self.height
+    Sprite.super.new(self, x, y)
 
     self.origin = {x = 0, y = 0}
-    self.offset = {x = 0, y = 0}
-    self.scale = {x = 1, y = 1}
-    self.scrollFactor = {x = 1, y = 1}
+    self.__width, self.__height = self.width, self.height
+
+    self.texture = defaultTexture
+    self.antialiasing = true
+
     self.clipRect = nil
-    self.flipX = false
-    self.flipY = false
-
-    self.moves = false
-    self.velocity = {x = 0, y = 0}
-    self.acceleration = {x = 0, y = 0}
-
-    self.color = {1, 1, 1}
-    self.alpha = 1
-    self.angle = 0
-
-    self.shader = nil
-    self.blend = "alpha"
 
     self.__frames = nil
     self.__animations = nil
@@ -191,6 +169,20 @@ function Sprite:new(x, y, texture)
     if texture then self:loadTexture(texture) end
 end
 
+function Sprite:destroy()
+    Sprite.super.destroy(self)
+
+    self.texture = nil
+
+    self.__frames = nil
+    self.__animations = nil
+
+    self.curAnim = nil
+    self.curFrame = nil
+    self.animFinished = nil
+    self.animPaused = false
+end
+
 function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     if animated == nil then animated = false end
 
@@ -198,7 +190,6 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
         texture = love.graphics.newImage(texture) or defaultTexture
     end
     self.texture = texture
-
     self.__rectangleMode = false
 
     self.curAnim = nil
@@ -208,13 +199,13 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     if frameWidth == nil then frameWidth = 0 end
     if frameWidth == 0 then
         frameWidth = animated and self.texture:getHeight() or
-                         self.texture:getWidth()
+                     self.texture:getWidth()
         frameWidth = (frameWidth > self.texture:getWidth()) or
-                         self.texture:getWidth() or frameWidth
+                     self.texture:getWidth() or frameWidth
     elseif frameWidth > self.texture:getWidth() then
         print('frameWidth:' .. frameWidth ..
-                  ' is larger than the graphic\'s width:' ..
-                  self.texture:getWidth())
+              ' is larger than the graphic\'s width:' ..
+              self.texture:getWidth())
     end
     self.width = frameWidth
 
@@ -222,11 +213,11 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     if frameHeight == 0 then
         frameHeight = animated and frameWidth or self.texture:getHeight()
         frameHeight = (frameHeight > self.texture:getHeight()) or
-                          self.texture:getHeight() or frameHeight
+                      self.texture:getHeight() or frameHeight
     elseif frameHeight > self.texture:getHeight() then
         print('frameHeight:' .. frameHeight ..
-                  ' is larger than the graphic\'s height:' ..
-                  self.texture:getHeight())
+              ' is larger than the graphic\'s height:' ..
+              self.texture:getHeight())
     end
     self.height = frameHeight
 
@@ -240,124 +231,6 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     return self
 end
 
-function Sprite:make(width, height, color)
-    if width == nil then width = 10 end
-    if height == nil then height = 10 end
-    if color == nil then color = {255, 255, 255} end
-
-    self:setGraphicSize(width, height)
-    self.color = color
-    self.__rectangleMode = true
-    self:updateHitbox()
-
-    return self
-end
-
-function Sprite:setFrames(frames)
-    self.__frames = frames.frames
-    self.texture = frames.texture
-
-    self:loadTexture(frames.texture)
-    self.width, self.height = self:getFrameDimensions()
-    self.__width, self.__height = self.width, self.height
-    self:centerOrigin()
-end
-
-function Sprite:getCurrentFrame()
-    if self.curAnim then
-        return self.curAnim.frames[math.floor(self.curFrame)]
-    elseif self.__frames then
-        return self.__frames[1]
-    end
-    return nil
-end
-
-function Sprite:getFrameWidth()
-    local f = self:getCurrentFrame()
-    if f and not self.__rectangleMode then
-        return f.width
-    else
-        return self.texture:getWidth()
-    end
-end
-
-function Sprite:getFrameHeight()
-    local f = self:getCurrentFrame()
-    if f and not self.__rectangleMode then
-        return f.height
-    else
-        return self.texture:getHeight()
-    end
-end
-
-function Sprite:getFrameDimensions()
-    return self:getFrameWidth(), self:getFrameHeight()
-end
-
-function Sprite:setGraphicSize(width, height)
-    if width == nil then width = 0 end
-    if height == nil then height = 0 end
-
-    self.scale = {
-        x = width / self:getFrameWidth(),
-        y = height / self:getFrameHeight()
-    }
-
-    if width <= 0 then
-        self.scale.x = self.scale.y
-    elseif height <= 0 then
-        self.scale.y = self.scale.x
-    end
-end
-
-function Sprite:updateHitbox()
-    local w, h = self:getFrameDimensions()
-
-    self.width = math.abs(self.scale.x) * w
-    self.height = math.abs(self.scale.y) * h
-    self.__width, self.__height = self.width, self.height
-
-    self.offset = {x = -0.5 * (self.width - w), y = -0.5 * (self.height - h)}
-    self:centerOrigin()
-end
-
-function Sprite:centerOffsets()
-    self.offset.x, self.offset.y = (self:getFrameWidth() - self.width) * 0.5,
-                                   (self:getFrameHeight() - self.height) * 0.5
-end
-
-function Sprite:centerOrigin()
-    self.origin.x, self.origin.y = self:getFrameWidth() * 0.5,
-                                   self:getFrameHeight() * 0.5
-end
-
-function Sprite:setScrollFactor(x, y)
-    if x == nil then x = 0 end
-    if y == nil then y = 0 end
-    self.scrollFactor.x, self.scrollFactor.y = x, y
-end
-
-function Sprite:getMidpoint()
-    return self.x + self.width * 0.5, self.y + self.height * 0.5
-end
-
-function Sprite:getGraphicMidpoint()
-    return self.x + self:getFrameWidth() * 0.5,
-           self.y + self:getFrameHeight() * 0.5
-end
-
-function Sprite:setPosition(x, y)
-    if x == nil then x = self.x end
-    if y == nil then y = self.y end
-    self.x, self.y = x, y
-end
-
-function Sprite:screenCenter(axes)
-    if axes == nil then axes = "xy" end
-    if axes:find("x") then self.x = (game.width - self.width) * 0.5 end
-    if axes:find("y") then self.y = (game.height - self.height) * 0.5 end
-    return self
-end
 
 function Sprite:addAnim(name, frames, framerate, looped)
     if framerate == nil then framerate = 30 end
@@ -465,22 +338,89 @@ function Sprite:finish()
     end
 end
 
-function Sprite:destroy()
-    Sprite.super.destroy(self)
+function Sprite:make(width, height, color)
+    self.__rectangleMode = true
 
-    self.texture = nil
+    self:setGraphicSize(width or 10, height or 10)
+    self.color = color or {1, 1, 1}
+    self:updateHitbox()
 
-    self.origin.x, self.origin.y = 0, 0
-    self.offset.x, self.offset.y = 0, 0
-    self.scale.x, self.scale.y = 1, 1
+    return self
+end
 
-    self.__frames = nil
-    self.__animations = nil
+function Sprite:setFrames(frames)
+    self.__frames = frames.frames
+    self.texture = frames.texture
 
-    self.curAnim = nil
-    self.curFrame = nil
-    self.animFinished = nil
-    self.animPaused = false
+    self:loadTexture(frames.texture)
+    self.width, self.height = self:getFrameDimensions()
+    self.__width, self.__height = self.width, self.height
+    self:centerOrigin()
+end
+
+function Sprite:getCurrentFrame()
+    if self.curAnim then
+        return self.curAnim.frames[math.floor(self.curFrame)]
+    elseif self.__frames then
+        return self.__frames[1]
+    end
+    return nil
+end
+
+function Sprite:getFrameWidth()
+    local f = self:getCurrentFrame()
+    return f and f.width or self.texture and self.texture:getWidth()
+end
+
+function Sprite:getFrameHeight()
+    local f = self:getCurrentFrame()
+    return f and f.height or self.texture and self.texture:getHeight()
+end
+
+function Sprite:getFrameDimensions()
+    return self:getFrameWidth(), self:getFrameHeight()
+end
+
+function Sprite:getGraphicMidpoint()
+    return self.x + self:getFrameWidth() / 2,
+           self.y + self:getFrameHeight() / 2
+end
+
+function Sprite:setGraphicSize(width, height)
+    if width == nil then width = 0 end
+    if height == nil then height = 0 end
+
+    self.scale = {
+        x = width / self:getFrameWidth(),
+        y = height / self:getFrameHeight()
+    }
+
+    if width <= 0 then
+        self.scale.x = self.scale.y
+    elseif height <= 0 then
+        self.scale.y = self.scale.x
+    end
+end
+
+function Sprite:updateHitbox()
+    local w, h = self:getFrameDimensions()
+
+    self.width = math.abs(self.scale.x) * w
+    self.height = math.abs(self.scale.y) * h
+    self.__width, self.__height = self.width, self.height
+
+    self.offset = {x = -0.5 * (self.width - w), y = -0.5 * (self.height - h)}
+    self:centerOrigin()
+end
+
+function Sprite:centerOffsets()
+    self.offset.x, self.offset.y = (self:getFrameWidth() - self.width) * 0.5,
+                                   (self:getFrameHeight() - self.height) * 0.5
+end
+
+function Sprite:centerOrigin()
+    self.origin.x, self.origin.y = self:getFrameWidth() * 0.5,
+                                   self:getFrameHeight() * 0.5
 end
 
 function Sprite:update(dt)
@@ -511,52 +451,54 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
-    if self.alpha ~= 0 and (self.scale.x ~= 0 or self.scale.y ~= 0) then
+    if self.texture ~= nil and (self.width ~= 0 or self.height ~= 0) then
         Sprite.super.draw(self)
     end
 end
 
 function Sprite:__render(camera)
-    if (flags.DontRenderTransparentGraphics and self.alpha <= 0) or self.texture == nil then return end
+    local r, g, b, a = love.graphics.getColor()
+    local shader = self.shader and love.graphics.getShader()
+    local blendMode, alphaMode = love.graphics.getBlendMode()
+    local lineStyle, min, mag, anisotropy
 
-    local min, mag, anisotropy = self.texture:getFilter()
     local mode = self.antialiasing and "linear" or "nearest"
-    self.texture:setFilter(mode, mode, anisotropy)
+    if not self.__rectangleMode then
+        min, mag, anisotropy = self.texture:getFilter()
+        self.texture:setFilter(mode, mode, anisotropy)
+    else
+        mode = self.antialiasing and "smooth" or "rough"
+        lineStyle = love.graphics.getLineStyle()
+    end
 
     local f = self:getCurrentFrame()
 
-    local shader = love.graphics.getShader()
-    if self.shader then love.graphics.setShader(self.shader) end
-
-    local blendMode, alphaMode = love.graphics.getBlendMode()
-    love.graphics.setBlendMode(self.blend)
-
-    if self.clipRect then love.graphics.setStencilTest("greater", 0) end
-
     local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
-                                      self.scale.x, self.scale.y, self.origin.x,
-                                      self.origin.y
+                                      self.scale.x, self.scale.y,
+                                      self.origin.x, self.origin.y
 
     if self.flipX then sx = -sx end
     if self.flipY then sy = -sy end
 
-    local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-                           self.alpha)
-
-    x, y = x + ox - self.offset.x, y + oy - self.offset.y
+    x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+           y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
 
     if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
 
-    x, y = x - (camera.scroll.x * self.scrollFactor.x),
-           y - (camera.scroll.y * self.scrollFactor.y)
+    love.graphics.setShader(self.shader)
+    love.graphics.setBlendMode(self.blend)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+                           self.alpha)
 
     if self.clipRect then
+        love.graphics.setStencilTest("greater", 0)
         stencilSprite, stencilX, stencilY = self, x, y
         love.graphics.stencil(stencil, "replace", 1, false)
     end
 
     if self.__rectangleMode then
+        love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
+
         local w, h = self:getFrameDimensions()
         w, h = math.abs(self.scale.x) * w, math.abs(self.scale.y) * h
 
@@ -565,18 +507,19 @@ function Sprite:__render(camera)
         love.graphics.rotate(rad)
         love.graphics.rectangle('fill', -w / 2, -h / 2, w, h)
         love.graphics.pop()
-    elseif not f then
-        love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
-    else
+    elseif f then
         love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy)
+    else
+        love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
     end
 
-    love.graphics.setColor(r, g, b, a)
+    if not self.__rectangleMode then self.texture:setFilter(min, mag, anisotropy) end
 
-    self.texture:setFilter(min, mag, anisotropy)
+    love.graphics.setColor(r, g, b, a)
+    love.graphics.setBlendMode(blendMode, alphaMode)
     if self.clipRect then love.graphics.setStencilTest() end
     if self.shader then love.graphics.setShader(shader) end
-    love.graphics.setBlendMode(blendMode, alphaMode)
+    if self.__rectangleMode then love.graphics.setLineStyle(lineStyle) end
 end
 
 return Sprite

@@ -1,7 +1,7 @@
 local Gamestate = require "loxel.lib.gamestate"
 
 ---@class State:Group
-local State = Group:extend()
+local State = Group:extend("State")
 
 function State:new()
     State.super.new(self)

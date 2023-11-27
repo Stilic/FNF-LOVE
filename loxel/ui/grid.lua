@@ -1,4 +1,4 @@
-local Grid = Basic:extend()
+local Grid = Basic:extend("Grid")
 
 function Grid:new(x, y, rows, cols, cellSize, color1, color2)
     Grid.super.new(self)

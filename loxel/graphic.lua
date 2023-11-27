@@ -1,11 +1,13 @@
-local Graphic = Basic:extend()
+---@class Graphic:Object
+local Graphic = Object:extend("Graphic")
 
 function Graphic:new(x, y, width, height, color, type, fill)
-    Graphic.super.new(self)
+    Graphic.super.new(self, x, y)
 
-    self.x = x or 0
-    self.y = y or 0
+    self.width = width or 0
+    self.height = height or 0
 
+    self.color = color or {0, 0, 0}
     self.type = type or "rectangle"
     self.fill = fill or "fill"
 
@@ -18,121 +20,84 @@ function Graphic:new(x, y, width, height, color, type, fill)
         vertices = nil
     }
 
-    self.width = width or 0
-    self.height = height or 0
-
     self.outWidth = 6
+end
 
-    self.antialiasing = false
-
-    self.scrollFactor = {x = 1, y = 1}
-
-    self.color = color or {0, 0, 0}
-    self.alpha = 1
-    self.angle = 0
-
-    self.shader = nil
-    self.blend = "alpha"
+function Graphic:getGraphicMidpoint()
+    return self.x + self.width / 2,
+           self.y + self.height / 2
 end
 
 function Graphic:setSize(width, height)
     self.width = width or 0
     self.height = height or 0
 
-    if self.type ~= ("rectangle" or "polygon") then
+    if self.type == "arc" or self.type == "circle" then
         self.config.radius = self.width
     end
 end
 
-function Graphic:setScrollFactor(x, y)
-    self.scrollFactor.x = x or 0
-    self.scrollFactor.y = y or 0
-end
-
-function Graphic:getMidpoint()
-    return self.x + self.width * 0.5, self.y + self.height * 0.5
-end
-
-function Graphic:setPosition(x, y)
-    self.x = x or 0
-    self.y = y or 0
-end
-
 function Graphic:updateDimensions()
-    if self.type ~= ("rectangle" or "polygon") then
+    if self.type == "arc" or self.type == "circle" then
         self.width = 2 * self.config.radius
         self.height = 2 * self.config.radius
     end
 end
 
-function Graphic:screenCenter(axes)
-    if axes == nil then axes = "xy" end
-    if axes:find("x") then self.x = (game.width - self.width) * 0.5 end
-    if axes:find("y") then self.y = (game.height - self.height) * 0.5 end
-    return self
-end
-
 function Graphic:draw()
-    if self.width > 0 or self.height > 0 or self.config.radius > 0 or
-        self.points then Graphic.super.draw(self) end
+    if self.alpha > 0 and (
+            self.width > 0 or self.height > 0 or
+            self.config.radius > 0 or self.points
+        ) then
+        Graphic.super.draw(self)
+    end
 end
 
 function Graphic:__render(camera)
-    if flags.DontRenderTransparentGraphics and self.alpha <= 0 then return end
-
-    local shader = love.graphics.getShader()
-    local lineWidth = love.graphics.getLineWidth()
-    local lineStyle = love.graphics.getLineStyle()
-
-    if self.shader then love.graphics.setShader(self.shader) end
-    love.graphics.setBlendMode(self.blend)
-
     local r, g, b, a = love.graphics.getColor()
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-                           self.alpha)
+    local shader = self.shader and love.graphics.getShader()
+    local blendMode, alphaMode = love.graphics.getBlendMode()
+    local lineStyle = love.graphics.getLineStyle()
+    local lineWidth = love.graphics.getLineWidth()
 
-    local angle = math.rad(self.angle)
-    local w, h = self.width, self.height
+    love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
+    love.graphics.setLineWidth(self.outWidth)
+
+    local x, y, w, h = self.x, self.y, self.width, self.height
+
+    x, y = x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+           y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
 
     local ang1, ang2 = self.config.angle1 * (math.pi / 180),
                        self.config.angle2 * (math.pi / 180)
 
-    x, y = self.x - (camera.scroll.x * self.scrollFactor.x),
-           self.y - (camera.scroll.y * self.scrollFactor.y)
-
     local rad, seg, type = self.config.radius, self.config.segments,
                            self.config.arctype
 
-    love.graphics.setLineWidth(self.outWidth)
-
-    local antialiasing = (self.antialiasing and "rough" or "smooth")
-    love.graphics.setLineStyle(antialiasing)
+    love.graphics.setShader(self.shader)
+    love.graphics.setBlendMode(self.blend)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+                           self.alpha)
 
     love.graphics.push()
-    love.graphics.rotate(angle)
+    love.graphics.rotate(math.rad(self.angle))
     if self.type == "rectangle" then
         love.graphics.rectangle(self.fill, x, y, w, h)
-
-    elseif self.type == "polygon" then
-        if self.config.vertices then
-            love.graphics.translate(x, y)
-            love.graphics.polygon(self.fill, unpack(self.config.vertices))
-        end
-
+    elseif self.type == "polygon" and self.config.vertices then
+        love.graphics.translate(x, y)
+        love.graphics.polygon(self.fill, self.config.vertices)
     elseif self.type == "circle" then
         love.graphics.circle(self.fill, x, y, rad, seg)
-
     elseif self.type == "arc" then
         love.graphics.arc(self.fill, type, x, y, rad, ang1, ang2, seg)
     end
     love.graphics.pop()
 
     love.graphics.setColor(r, g, b, a)
-
-    if self.shader then love.graphics.setShader(shader) end
-    love.graphics.setBlendMode("alpha")
-    love.graphics.setLineWidth(lineWidth)
+    love.graphics.setBlendMode(blendMode, alphaMode)
     love.graphics.setLineStyle(lineStyle)
+    love.graphics.setLineWidth(lineWidth)
+    if self.shader then love.graphics.setShader(shader) end
 end
 
 return Graphic

@@ -12,8 +12,8 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
             (h1 / zoom + h2 / zoom) < 0
 end
 
----@class Basic:Object
-local Basic = Object:extend()
+---@class Basic:Classic
+local Basic = Classic:extend()
 
 function Basic:new()
     self.active = true
@@ -71,8 +71,9 @@ function Basic:isOnScreen(camera)
 end
 
 function Basic:draw()
-    if self.__render then
-        for _, c in ipairs(self.cameras or Camera.__defaultCameras) do
+    if self.__render and self.visible and self.exists then
+        local cams = self.cameras or Camera.__defaultCameras
+        for _, c in next, cams do
             if c.visible and c.exists and self:isOnScreen(c) then
                 table.insert(c.__renderQueue, self)
             end

@@ -7,23 +7,24 @@
 -- the terms of the MIT license. See LICENSE for details.
 --
 
----@class Object
+---@class Classic
 ---@operator call:fun(...:any)
-local Object = {}
-Object.__index = Object
+local Classic = {__class = "Classic"}
+Classic.__index = Classic
 
----base function that can be called with Object() or Object:new()
-function Object:new() end
+---base function that can be called with Classic() or Classic:new()
+function Classic:new() end
 
 ---returns the class with the tables functions and variables
----@return Object
-function Object:extend()
+---@return Classic
+function Classic:extend(type)
     local cls = {}
 
     for k, v in pairs(self) do 
         if k:find("__") == 1 then cls[k] = v end 
     end
 
+    cls.__class = type or "Unknown"
     cls.__index = cls
     cls.super = self
     setmetatable(cls, self)
@@ -33,7 +34,7 @@ end
 
 ---implements functions to the class??? 
 ---@param ... unknown
-function Object:implement(...)
+function Classic:implement(...)
     for _, cls in pairs({...}) do
         for k, v in pairs(cls) do
             if self[k] == nil and type(v) == "function" then
@@ -45,7 +46,7 @@ end
 
 ---no clue
 ---@param T any
-function Object:is(T)
+function Classic:is(T)
     local mt = getmetatable(self)
     while mt do
         if mt == T then return true end
@@ -54,17 +55,17 @@ function Object:is(T)
     return false
 end
 
-function Object:__tostring()
-    return "Object"
+function Classic:__tostring()
+    return self.__class
 end
 
 ---calls the new function with args
 ---@param ... any
 ---@return any
-function Object:__call(...)
+function Classic:__call(...)
     local obj = setmetatable({}, self)
     obj:new(...)
     return obj
 end
 
-return Object
+return Classic

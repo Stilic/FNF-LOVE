@@ -1,5 +1,6 @@
-local Alphabet = SpriteGroup:extend()
 local AlphaCharacter = require "funkin.ui.alphacharacter"
+
+local Alphabet = SpriteGroup:extend("Alphabet")
 
 Alphabet.delay = 0.05
 Alphabet.paused = false

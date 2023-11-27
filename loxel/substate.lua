@@ -1,5 +1,5 @@
 ---@class SubState:State
-local SubState = State:extend()
+local SubState = State:extend("SubState")
 
 function SubState:new() SubState.super.new(self) end
 

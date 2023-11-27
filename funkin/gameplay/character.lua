@@ -1,4 +1,4 @@
-local Character = Sprite:extend()
+local Character = Sprite:extend("Character")
 
 Character.editorMode = false
 

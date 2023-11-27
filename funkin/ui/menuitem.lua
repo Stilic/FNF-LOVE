@@ -1,5 +1,5 @@
 ---@class MenuItem:Sprite
-local MenuItem = Sprite:extend()
+local MenuItem = Sprite:extend("MenuItemn")
 
 function MenuItem:new(x, y, weekName)
     MenuItem.super.new(self, x, y)

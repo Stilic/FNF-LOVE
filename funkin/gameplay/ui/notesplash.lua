@@ -1,4 +1,4 @@
-local NoteSplash = Sprite:extend()
+local NoteSplash = Sprite:extend("NoteSplash")
 
 function NoteSplash:new(x, y)
     NoteSplash.super.new(self, x, y)

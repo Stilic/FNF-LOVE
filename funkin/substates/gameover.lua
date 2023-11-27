@@ -1,4 +1,4 @@
-local GameOverSubstate = SubState:extend()
+local GameOverSubstate = SubState:extend("GameOverSubstate")
 
 function GameOverSubstate.resetVars()
     GameOverSubstate.characterName = 'bf-dead'

@@ -1,5 +1,5 @@
 ---@class Group:Basic
-local Group = Basic:extend()
+local Group = Basic:extend("Group")
 
 function Group:new()
     Group.super.new(self)

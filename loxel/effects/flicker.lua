@@ -1,5 +1,5 @@
----@class Flicker:Object
-local Flicker = Object:extend()
+---@class Flicker:Classic
+local Flicker = Classic:extend("Flicker")
 
 Flicker.instances = {}
 

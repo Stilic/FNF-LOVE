@@ -1,4 +1,4 @@
-local FreeplayState = State:extend()
+local FreeplayState = State:extend("FreeplayState")
 
 FreeplayState.curSelected = 1
 FreeplayState.curDifficulty = 2
@@ -91,7 +91,6 @@ function FreeplayState:update(dt)
     if controls:pressed('accept') then
         local daSong = paths.formatToSongPath(self.songsData[FreeplayState.curSelected][1])
         PlayState.storyMode = false
-
         local diff = ""
         switch(FreeplayState.curDifficulty, {
             [1] = function() diff = "easy" end,

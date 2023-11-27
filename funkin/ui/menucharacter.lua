@@ -1,5 +1,5 @@
 ---@class MenuCharacter:Sprite
-local MenuCharacter = Sprite:extend()
+local MenuCharacter = Sprite:extend("MenuCharacter")
 
 function MenuCharacter:new(x, char)
     MenuCharacter.super.new(self, x)

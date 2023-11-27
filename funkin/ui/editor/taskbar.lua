@@ -1,4 +1,4 @@
-local FunkUITaskbar = Basic:extend()
+local FunkUITaskbar = Basic:extend("FunkUITaskbar")
 
 function FunkUITaskbar:new() FunkUITaskbar.super.new(self) end
 

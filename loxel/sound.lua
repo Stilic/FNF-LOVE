@@ -1,7 +1,7 @@
 local pcall = _G.pcall
 
 ---@class Sound:Basic
-local Sound = Basic:extend()
+local Sound = Basic:extend("Sound")
 
 function Sound:new()
     Sound.super.new(self)

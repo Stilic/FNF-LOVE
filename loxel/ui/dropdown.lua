@@ -1,4 +1,4 @@
-local Dropdown = Basic:extend()
+local Dropdown = Basic:extend("Dropdown")
 
 Dropdown.instances = {}
 

@@ -1,4 +1,4 @@
-local ParallaxImage = Basic:extend()
+local ParallaxImage = Basic:extend("ParallaxImage")
 
 function ParallaxImage:new(x, y, width, height, texture)
     ParallaxImage.super.new(self)

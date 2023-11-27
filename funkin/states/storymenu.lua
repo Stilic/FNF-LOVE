@@ -1,4 +1,4 @@
-local StoryMenuState = State:extend()
+local StoryMenuState = State:extend("StoryMenuState")
 
 StoryMenuState.curWeek = 1
 StoryMenuState.curDifficulty = 2
@@ -26,13 +26,12 @@ function StoryMenuState:enter()
 
     local ui_tex = paths.getSparrowAtlas(
                        'menus/storymenu/campaign_menu_UI_assets');
-    local bgYellow = Sprite(0, 56):make(game.width, 386,
-                                        Color.fromRGB(249, 207, 81))
+    local bgYellow = Graphic(0, 56, game.width, 386, Color.fromRGB(249, 207, 81))
 
     self.grpWeekText = Group()
     self:add(self.grpWeekText)
 
-    local blackBar = Sprite():make(game.width, 56, Color.BLACK)
+    local blackBar = Graphic(0, 0, game.width, 56, Color.BLACK)
     self:add(blackBar)
 
     self.grpWeekCharacters = Group()

@@ -38,7 +38,7 @@ end
 --------------
 
 ---@class SpriteGroup:Sprite
-local SpriteGroup = Sprite:extend()
+local SpriteGroup = Sprite:extend("SpriteGroup")
 
 function SpriteGroup:new(x, y)
     SpriteGroup.super.new(self, x, y)

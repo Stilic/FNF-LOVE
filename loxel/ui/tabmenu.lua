@@ -22,7 +22,7 @@ local function yTransform(obj, y) obj.y = obj.y + y end
 
 -----------------------------------------------------------------------------------------------
 
-local TabMenu = Basic:extend()
+local TabMenu = Basic:extend("TabMenu")
 
 function TabMenu:new(x, y, tabs, font)
     TabMenu.super.new(self)

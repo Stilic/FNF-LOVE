@@ -1,4 +1,5 @@
-local Script = Object:extend()
+---@class Script:Classic
+local Script = Classic:extend("Script")
 
 local chunkMt = {__index = _G}
 

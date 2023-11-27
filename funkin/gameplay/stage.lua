@@ -1,4 +1,4 @@
-local Stage = Group:extend()
+local Stage = Group:extend("Stage")
 
 function Stage:new(name)
     Stage.super.new(self)

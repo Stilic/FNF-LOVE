@@ -1,17 +1,18 @@
 require "loxel.lib.override"
 
 game = {}
-flags = require "loxel.flags"
+if flags == nil then flags = {} end
 
-Object = require "loxel.lib.classic"
+Classic = require "loxel.lib.classic"
 local Gamestate = require "loxel.lib.gamestate"
 
 Basic = require "loxel.basic"
-Camera = require "loxel.camera"
-Sprite = require "loxel.sprite"
+Object = require "loxel.object"
 Sound = require "loxel.sound"
-Text = require "loxel.text"
 Graphic = require "loxel.graphic"
+Sprite = require "loxel.sprite"
+Camera = require "loxel.camera"
+Text = require "loxel.text"
 Bar = require "loxel.ui.bar"
 Group = require "loxel.group.group"
 SpriteGroup = require "loxel.group.spritegroup"

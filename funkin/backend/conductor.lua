@@ -1,5 +1,5 @@
----@class Conductor:Object
-local Conductor = Object:extend()
+---@class Conductor:Classic
+local Conductor = Classic:extend("Conductor")
 
 function Conductor:new(sound, bpm)
     self.sound = sound

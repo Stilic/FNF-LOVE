@@ -1,4 +1,4 @@
-local ChartingState = State:extend()
+local ChartingState = State:extend("ChartingState")
 
 ChartingState.songPosition = 0
 

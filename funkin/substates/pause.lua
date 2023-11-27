@@ -1,4 +1,4 @@
-local PauseSubState = SubState:extend()
+local PauseSubState = SubState:extend("PauseSubState")
 
 function PauseSubState:new()
     PauseSubState.super.new(self)
@@ -9,7 +9,7 @@ function PauseSubState:new()
     self.music = game.sound.play(paths.getMusic(ClientPrefs.data.pauseMusic), 0,
                                  true)
 
-    self.bg = Sprite():make(game.width, game.height, {0, 0, 0})
+    self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
     self.bg.alpha = 0
     self.bg:setScrollFactor()
     self:add(self.bg)

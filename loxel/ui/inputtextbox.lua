@@ -1,6 +1,6 @@
 local utf8 = require "utf8"
 
-local InputTextBox = Basic:extend()
+local InputTextBox = Basic:extend("InputTextBox")
 
 InputTextBox.instances = {}
 

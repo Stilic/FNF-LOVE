@@ -1,4 +1,4 @@
-local HealthIcon = Sprite:extend()
+local HealthIcon = Sprite:extend("HealthIcon")
 
 function HealthIcon:new(icon, flip)
     HealthIcon.super.new(self, 0, 0)

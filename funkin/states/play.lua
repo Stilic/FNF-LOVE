@@ -1,7 +1,7 @@
 local PauseSubState = require "funkin.substates.pause"
 
 ---@class PlayState:State
-local PlayState = State:extend()
+local PlayState = State:extend("PlayState")
 
 PlayState.defaultDifficulty = "normal"
 

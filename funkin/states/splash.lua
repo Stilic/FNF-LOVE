@@ -1,4 +1,4 @@
-local Splash = State:extend()
+local Splash = State:extend("Splash")
 
 function Splash:enter()
     if Application.splashScreen then

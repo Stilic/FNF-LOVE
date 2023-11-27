@@ -1,4 +1,4 @@
-local Slider = Basic:extend()
+local Slider = Basic:extend("Slider")
 
 function Slider:new(x, y, width, height, value, sliderType, min, max)
     Slider.super.new(self)

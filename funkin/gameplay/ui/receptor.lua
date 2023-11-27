@@ -1,4 +1,4 @@
-local Receptor = Sprite:extend()
+local Receptor = Sprite:extend("Receptor")
 
 Receptor.pixelAnim = { -- {static, pressed, confirm}
     {{0}, {4, 8}, {12, 16}}, {{1}, {5, 9}, {13, 17}}, {{2}, {6, 10}, {14, 18}},
