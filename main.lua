@@ -58,7 +58,7 @@ function love.run()
     collectgarbage()
     collectgarbage("step")
 
-    if not love.quit then love.quit = function()end
+    if not love.quit then love.quit = function()end end
 
     local firstTime, fullGC, focused, dt = true, true, false, 0
     return function()
@@ -325,5 +325,4 @@ function love.errorhandler(msg)
 			love.timer.sleep(0.1)
 		end
 	end
-
 end
