@@ -122,6 +122,10 @@ function love.system.getDevice()
 end
 
 function love.load()
+    if Application.bgColor then
+        love.graphics.setBackgroundColor(Application.bgColor)
+    end
+
     -- for the joystick, i'll remake it later
     controls = (require "lib.baton").new({
         controls = table.clone(ClientPrefs.controls)

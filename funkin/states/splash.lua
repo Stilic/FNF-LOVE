@@ -76,4 +76,12 @@ function Splash:startSplash()
     end)
 end
 
+function Splash:update(dt)
+    Splash.super.update(self, dt)
+
+    if controls:pressed("accept") then
+        game.switchState(TitleState(), true)
+    end
+end
+
 return Splash
