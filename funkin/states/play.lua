@@ -60,7 +60,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-    if PlayState.SONG == nil then PlayState.loadSong("high") end
+    if PlayState.SONG == nil then PlayState.loadSong("test") end
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
