@@ -38,7 +38,12 @@ function PlayState.loadSong(song, diff)
     if type(diff) ~= "string" or diff == "normal" then diff = "" end
     local path = "songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")
 
-    PlayState.SONG = paths.getJSON(path).song
+    local data = paths.getJSON(path)
+    if data then
+      PlayState.SONG = data.song
+    else
+      PlayState.loadSong(song)
+    end
 end
 
 function PlayState:new(storyMode, song, diff)
