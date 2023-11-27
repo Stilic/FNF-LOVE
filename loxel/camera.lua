@@ -105,60 +105,58 @@ function Camera:flash(color, duration, onComplete, force)
 end
 
 function Camera:draw()
-	if not self.visible or not self.exists or self.alpha <= 0 or self.zoom == 0 then return end
+	if not self.visible or not self.exists or self.alpha <= 0 or self.zoom == 0 or not next(self.__renderQueue) then return end
 	local r, g, b, a = love.graphics.getColor()
+	local cv = love.graphics.getCanvas()
 
-	if next(self.__renderQueue) then
-		local cv = love.graphics.getCanvas()
-		love.graphics.setCanvas(canvasTable)
-		love.graphics.clear(self.bgColor[1], self.bgColor[2],
-							self.bgColor[3], self.bgColor[4])
-		love.graphics.push()
+	love.graphics.setCanvas(canvasTable)
+	love.graphics.clear(self.bgColor[1], self.bgColor[2],
+						self.bgColor[3], self.bgColor[4])
+	love.graphics.push()
 
-		local w2, h2 = self.width * 0.5, self.height * 0.5
-		love.graphics.translate(w2 - self.x + self.__shakeX,
-								h2 - self.y + self.__shakeY)
-		love.graphics.rotate(math.rad(-self.angle))
-		love.graphics.scale(self.zoom)
-		love.graphics.translate(-w2, -h2)
+	local w2, h2 = self.width * 0.5, self.height * 0.5
+	love.graphics.translate(w2 - self.x + self.__shakeX,
+							h2 - self.y + self.__shakeY)
+	love.graphics.rotate(math.rad(-self.angle))
+	love.graphics.scale(self.zoom)
+	love.graphics.translate(-w2, -h2)
 
-		for i, o in ipairs(self.__renderQueue) do
-			if type(o) == "function" then
-				o(self)
-			else
-				o:__render(self)
-			end
-			self.__renderQueue[i] = nil
+	for i, o in ipairs(self.__renderQueue) do
+		if type(o) == "function" then
+			o(self)
+		else
+			o:__render(self)
 		end
-
-		if self.__flashAlpha > 0 then
-			love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
-								   self.__flashColor[3], self.__flashAlpha)
-			love.graphics.rectangle("fill", 0, 0, self.width, self.height)
-			love.graphics.setColor(r, g, b, a)
-		end
-
-		love.graphics.pop()
-		love.graphics.setCanvas(cv)
-
-		local shader = love.graphics.getShader()
-		love.graphics.setShader(self.shader)
-
-		love.graphics.setColor(1, 1, 1, self.alpha)
-
-		local blendMode, alphaMode = love.graphics.getBlendMode()
-		love.graphics.setBlendMode("alpha", "premultiplied")
-
-		local winWidth, winHeight = love.graphics.getDimensions()
-		local scale = math.min(winWidth / game.width,
-								   winHeight / game.height)
-		love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
-						   (winHeight - scale * game.height) / 2, 0, scale)
-
-		love.graphics.setShader(shader)
-		love.graphics.setColor(r, g, b, a)
-		love.graphics.setBlendMode(blendMode, alphaMode)
+		self.__renderQueue[i] = nil
 	end
+
+	if self.__flashAlpha > 0 then
+		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
+							   self.__flashColor[3], self.__flashAlpha)
+		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+		love.graphics.setColor(r, g, b, a)
+	end
+
+	love.graphics.pop()
+	love.graphics.setCanvas(cv)
+
+	local shader = love.graphics.getShader()
+	love.graphics.setShader(self.shader)
+
+	love.graphics.setColor(1, 1, 1, self.alpha)
+
+	local blendMode, alphaMode = love.graphics.getBlendMode()
+	love.graphics.setBlendMode("alpha", "premultiplied")
+
+	local winWidth, winHeight = love.graphics.getDimensions()
+	local scale = math.min(winWidth / game.width,
+						   winHeight / game.height)
+	love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
+					   (winHeight - scale * game.height) / 2, 0, scale)
+
+	love.graphics.setShader(shader)
+	love.graphics.setColor(r, g, b, a)
+	love.graphics.setBlendMode(blendMode, alphaMode)
 end
 
 return Camera

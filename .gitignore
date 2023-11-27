@@ -40,4 +40,4 @@ luac.out
 *.hex
 
 # Ignore
-_run.bat
+*.sublime-workspace

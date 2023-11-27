@@ -2,6 +2,8 @@ io.stdout:setvbuf("no")
 
 Application = require "project"
 
+utf8 = require "utf8"
+
 require "loxel"
 
 Timer = require "lib.timer"
@@ -47,37 +49,39 @@ function love.run()
     local _, _, flags = love.window.getMode()
     love.FPScap, love.unfocusedFPScap = math.max(flags.refreshrate, 120), 8
 
-    love.graphics.clear(0, 0, 0, 0, false, false)
-    love.graphics.present()
-
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
 
+    love.graphics.clear(love.graphics.getBackgroundColor())
+    love.graphics.present()
+
     collectgarbage()
-    collectgarbage("stop")
+    collectgarbage("step")
+
+    if not love.quit then love.quit = function()end end
 
     local firstTime, fullGC, focused, dt = true, true, false, 0
     return function()
         if love.event then
             love.event.pump()
             for name, a, b, c, d, e, f in love.event.poll() do
-                if name == "quit" and (not love.quit or not love.quit()) then
+                if name == "quit" and (not love.quit()) then
                     return a or 0
                 end
                 love.handlers[name](a, b, c, d, e, f)
             end
         end
 
-        focused = firstTime or not love.window or love.window.hasFocus()
-        dt = love.timer and love.timer.step() or 0
+        focused = firstTime or love.window.hasFocus()
+        dt = love.timer.step() or 0
 
         if focused then
-            if love.update then love.update(dt) end
+            love.update(dt)
 
-            if love.graphics and love.graphics.isActive() then
+            if love.graphics.isActive() then
                 love.graphics.origin()
                 love.graphics.clear(love.graphics.getBackgroundColor())
-                if love.draw then love.draw() end
+                love.draw()
 
                 local stats = love.graphics.getStats()
                 love.graphics.printf("FPS: " ..
@@ -91,11 +95,7 @@ function love.run()
             end
         end
 
-        if love.timer then
-            love.timer.sleep(1 /
-                                 (focused and love.FPScap or
-                                     love.unfocusedFPScap) - dt)
-        end
+        love.timer.sleep(1 / (focused and love.FPScap or love.unfocusedFPScap) - dt)
 
         if focused then
             collectgarbage("step")
@@ -169,9 +169,6 @@ function love.draw() game.draw() end
 function love.focus(f) game.focus(f) end
 
 function love.quit() Discord.shutdown() end
-
-
-local utf8 = require "utf8"
 
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
@@ -328,5 +325,4 @@ function love.errorhandler(msg)
 			love.timer.sleep(0.1)
 		end
 	end
-
 end
