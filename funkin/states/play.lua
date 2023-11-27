@@ -3,7 +3,7 @@ local PauseSubState = require "funkin.substates.pause"
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
 
-PlayState.defaultDifficulty = "hard"
+PlayState.defaultDifficulty = "normal"
 
 PlayState.controlDirs = {
     note_left = 0,
