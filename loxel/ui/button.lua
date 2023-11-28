@@ -8,8 +8,8 @@ function Button:new(x, y, width, height, text, callback)
 	self.height = height or 20
 
 	self.text = text or "Button"
-	--self.font = love.graphics.getFont() TODO
-	--self.font:setFilter("nearest", "nearest") TODO
+	self.font = love.graphics.getFont()
+	self.font:setFilter("nearest", "nearest")
 
 	self.hovered = false
 	self.callback = callback
