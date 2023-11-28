@@ -35,7 +35,12 @@ PlayState.prevCamFollow = nil
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState.loadSong(song, diff)
-    if type(diff) ~= "string" or diff == PlayState.defaultDifficulty then diff = "" end
+    if type(diff) ~= "string" then
+      diff = PlayState.defaultDifficulty
+    end
+    if diff == "normal" then
+      diff = ""
+    end
     local path = "songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")
 
     local data = paths.getJSON(path)
