@@ -44,7 +44,6 @@ local function change_state(stack_offset, to, ...)
 	initialized_states[to] = __NULL__
 
 	stack[#stack+stack_offset] = to
-	state_is_dirty = true
 	return (to.enter or __NULL__)(to, pre, ...)
 end
 
@@ -52,6 +51,7 @@ function GS.switch(to, ...)
 	assert(to, "Missing argument: Gamestate to switch to")
 	assert(to ~= GS, "Can't call switch with colon operator")
 	;(stack[#stack].leave or __NULL__)(stack[#stack])
+	state_is_dirty = true
 	return change_state(0, to, ...)
 end
 
