@@ -113,6 +113,8 @@ function Camera:drawSimple()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
 	local xc, yc, wc, hc = love.graphics.getScissor()
 
+	love.graphics.push()
+
 	local winWidth, winHeight = love.graphics.getDimensions()
 	local scale = math.min(winWidth / game.width, winHeight / game.height)
 	local x, y = (winWidth - scale * game.width) / 2,
@@ -144,6 +146,8 @@ function Camera:drawSimple()
 							   self.__flashColor[3], self.__flashAlpha)
 		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
 	end
+
+	love.graphics.pop()
 
 	love.graphics.setScissor(xc, yc, wc, hc)
 
