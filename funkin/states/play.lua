@@ -14,7 +14,7 @@ PlayState.controlDirs = {
 PlayState.ratings = {
     {name = "sick", time = 45, score = 350, splash = true, mod = 1},
     {name = "good", time = 90, score = 200, splash = false, mod = 0.67},
-    {name = "bad", time = 135, score = 100, splash = false, mod = 0.34},
+    {name = "bad", time = 125, score = 100, splash = false, mod = 0.34},
     {name = "shit", time = math.huge, score = 50, splash = false, mod = 0.13}
 }
 PlayState.notePosition = 0
