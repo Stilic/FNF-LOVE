@@ -67,7 +67,7 @@ function GS.pop(index, ...)
 	local pre, to = stack[index], stack[index-1]
 	stack[index] = nil
 	;(pre.leave or __NULL__)(pre)
-	state_is_dirty = true
+	--state_is_dirty = true
 	return (to.resume or __NULL__)(to, pre, ...)
 end
 
