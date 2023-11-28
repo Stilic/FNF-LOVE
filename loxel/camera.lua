@@ -14,6 +14,8 @@ end
 function Camera:new(x, y, width, height)
 	Camera.super.new(self, x, y)
 
+	self.simple = true
+
 	self.width = width and (width > 0 and width) or game.width
 	self.height = height and (height > 0 and height) or game.height
 
@@ -97,16 +99,68 @@ function Camera:flash(color, duration, onComplete, force)
 	self.__flashAlpha = 1
 end
 
-function Camera:canDraw()
-	return self.alpha > 0 and self.zoom ~= 0 and Camera.super.canDraw(self)
+function Camera:draw()
+	if self.alpha <= 0 then return end
+	if self.shader or self.alpha < 1 or not self.simple then
+		self:drawComplex()
+	else
+		self:drawSimple()
+	end
 end
 
-function Camera:draw()
+function Camera:drawSimple()
+	local r, g, b, a = love.graphics.getColor()
+	local blendMode, alphaMode = love.graphics.getBlendMode()
+	local xc, yc, wc, hc = love.graphics.getScissor()
+
+	love.graphics.push()
+
+	local winWidth, winHeight = love.graphics.getDimensions()
+	local scale = math.min(winWidth / game.width, winHeight / game.height)
+	local x, y = (winWidth - scale * game.width) / 2,
+				 (winHeight - scale * game.height) / 2
+	love.graphics.translate(x, y)
+	love.graphics.setScissor(x, y, game.width * scale, game.height * scale)
+	love.graphics.scale(scale)
+
+	local w2, h2 = self.width * 0.5, self.height * 0.5
+	love.graphics.translate(w2 - self.x + self.__shakeX,
+							h2 - self.y + self.__shakeY)
+	love.graphics.rotate(math.rad(-self.angle))
+	love.graphics.scale(self.zoom)
+	love.graphics.translate(-w2, -h2)
+
+	love.graphics.setBlendMode("alpha", "alphamultiply")
+
+	for i, o in next, self.__renderQueue do
+		if type(o) == "function" then
+			o(self)
+		else
+			o:__render(self)
+		end
+		self.__renderQueue[i] = nil
+	end
+
+	if self.__flashAlpha > 0 then
+		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
+							   self.__flashColor[3], self.__flashAlpha)
+		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+	end
+
+	love.graphics.pop()
+
+	love.graphics.setScissor(xc, yc, wc, hc)
+
+	love.graphics.setColor(r, g, b, a)
+	love.graphics.setBlendMode(blendMode, alphaMode)
+end
+
+function Camera:drawComplex()
 	local r, g, b, a = love.graphics.getColor()
 	local shader = self.shader and love.graphics.getShader()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
 	local lineStyle = love.graphics.getLineStyle()
-    local lineWidth = love.graphics.getLineWidth()
+	local lineWidth = love.graphics.getLineWidth()
 
 	local cv = love.graphics.getCanvas()
 
@@ -121,6 +175,8 @@ function Camera:draw()
 	love.graphics.rotate(math.rad(-self.angle))
 	love.graphics.scale(self.zoom)
 	love.graphics.translate(-w2, -h2)
+
+	love.graphics.setBlendMode("alpha", "alphamultiply")
 
 	for i, o in next, self.__renderQueue do
 		if type(o) == "function" then
@@ -141,8 +197,7 @@ function Camera:draw()
 	love.graphics.setCanvas(cv)
 
 	love.graphics.setShader(self.shader)
-	love.graphics.setColor(1, 1, 1, self.alpha)
-
+	love.graphics.setColor(self.alpha, self.alpha, self.alpha, self.alpha)
 	love.graphics.setBlendMode("alpha", "premultiplied")
 
 	local winWidth, winHeight = love.graphics.getDimensions()
