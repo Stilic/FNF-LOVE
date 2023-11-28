@@ -46,8 +46,8 @@ function PlayState.loadSong(song, diff)
     local data = paths.getJSON(path)
     if data then
       PlayState.SONG = data.song
-    else
-      PlayState.loadSong(song)
+    elseif diff ~= PlayState.defaultDifficulty then
+      PlayState.loadSong(song, PlayState.defaultDifficulty)
     end
 end
 
@@ -70,7 +70,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-    if PlayState.SONG == nil then PlayState.loadSong("test", PlayState.defaultDifficulty) end
+    if PlayState.SONG == nil then PlayState.loadSong("test") end
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
