@@ -228,8 +228,8 @@ function Camera:drawComplex(_skipCheck)
 		love.graphics.draw(canvas,
 						   (winWidth / 2) + ((self.x + self.__shakeX) * scale),
 						   (winHeight / 2) + ((self.y + self.__shakeY) * scale),
-                    	   math.rad(self.rotation), scale, scale,
-                    	   game.width / 2, game.height / 2)
+						   math.rad(self.rotation), scale, scale,
+						   game.width / 2, game.height / 2)
 	else
 		love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
 						   (winHeight - scale * game.height) / 2,
