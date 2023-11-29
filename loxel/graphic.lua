@@ -47,7 +47,7 @@ end
 function Graphic:draw()
     if self.alpha > 0 and (
             self.width > 0 or self.height > 0 or
-            self.config.radius > 0 or self.points
+            self.config.radius > 0 or self.config.vertices
         ) then
         Graphic.super.draw(self)
     end
