@@ -1,5 +1,5 @@
----@class Camera:Basic
-local Camera = Basic:extend()
+---@class Camera:Object
+local Camera = Object:extend("Camera")
 
 local canvas
 local canvasTable = {nil, stencil = true}
@@ -12,25 +12,21 @@ function Camera.__init(canv)
 end
 
 function Camera:new(x, y, width, height)
-	Camera.super.new(self)
+	Camera.super.new(self, x, y)
 
-	if x == nil then x = 0 end
-	if y == nil then y = 0 end
-	if width == nil then width = 0 end
-	if width <= 0 then width = game.width end
-	if height == nil then height = 0 end
-	if height <= 0 then height = game.height end
-	self.x = x
-	self.y = y
+	self.simple = true
+
+	self.width = width and (width > 0 and width) or game.width
+	self.height = height and (height > 0 and height) or game.height
+
 	self.scroll = {x = 0, y = 0}
 	self.target = nil
-	self.width = width
-	self.height = height
 	self.alpha = 1
 	self.angle = 0
 	self.zoom = 1
+	
 	self.bgColor = {0, 0, 0, 0}
-	self.shader = nil
+
 	self.clipCam = true
 
 	self.__renderQueue = {}
@@ -106,13 +102,65 @@ function Camera:flash(color, duration, onComplete, force)
 end
 
 function Camera:draw()
-	if not self.visible or not self.exists or self.alpha <= 0 or self.zoom == 0 or not next(self.__renderQueue) then return end
+	if self.alpha <= 0 then return end
+	if self.shader or self.alpha < 1 or not self.simple then
+		self:drawComplex()
+	else
+		self:drawSimple()
+	end
+end
+
+function Camera:drawSimple()
 	local r, g, b, a = love.graphics.getColor()
-	local cv = love.graphics.getCanvas()
+	local blendMode, alphaMode = love.graphics.getBlendMode()
+
+	love.graphics.push()
 
 	local winWidth, winHeight = love.graphics.getDimensions()
-	local scale = math.min(winWidth / game.width,
-						   winHeight / game.height)
+	local scale = math.min(winWidth / game.width, winHeight / game.height)
+	local x, y = (winWidth - scale * game.width) / 2,
+				 (winHeight - scale * game.height) / 2
+	love.graphics.translate(x, y)
+	love.graphics.scale(scale)
+
+	local w2, h2 = self.width * 0.5, self.height * 0.5
+	love.graphics.translate(w2 - self.x + self.__shakeX,
+							h2 - self.y + self.__shakeY)
+	love.graphics.rotate(math.rad(-self.angle))
+	love.graphics.scale(self.zoom)
+	love.graphics.translate(-w2, -h2)
+
+	love.graphics.setBlendMode("alpha", "alphamultiply")
+
+	for i, o in next, self.__renderQueue do
+		if type(o) == "function" then
+			o(self)
+		else
+			o:__render(self)
+		end
+		self.__renderQueue[i] = nil
+	end
+
+	if self.__flashAlpha > 0 then
+		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
+							   self.__flashColor[3], self.__flashAlpha)
+		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+	end
+
+	love.graphics.pop()
+
+	love.graphics.setColor(r, g, b, a)
+	love.graphics.setBlendMode(blendMode, alphaMode)
+end
+
+function Camera:drawComplex()
+	local r, g, b, a = love.graphics.getColor()
+	local shader = self.shader and love.graphics.getShader()
+	local blendMode, alphaMode = love.graphics.getBlendMode()
+	local lineStyle = love.graphics.getLineStyle()
+	local lineWidth = love.graphics.getLineWidth()
+
+	local cv = love.graphics.getCanvas()
 
 	love.graphics.setCanvas(canvasTable)
 	love.graphics.clear(self.bgColor[1], self.bgColor[2],
@@ -122,15 +170,17 @@ function Camera:draw()
 	local w2, h2 = self.width * 0.5, self.height * 0.5
 	if not self.clipCam then
 		love.graphics.translate(w2 + self.x + self.__shakeX,
-							h2 + self.y + self.__shakeY)
-		love.graphics.rotate(math.rad(self.angle))
+								h2 + self.y + self.__shakeY)
 	else
 		love.graphics.translate(w2, h2)
 	end
+	love.graphics.rotate(math.rad(-self.angle))
 	love.graphics.scale(self.zoom)
 	love.graphics.translate(-w2, -h2)
 
-	for i, o in ipairs(self.__renderQueue) do
+	love.graphics.setBlendMode("alpha", "alphamultiply")
+
+	for i, o in next, self.__renderQueue do
 		if type(o) == "function" then
 			o(self)
 		else
@@ -139,38 +189,38 @@ function Camera:draw()
 		self.__renderQueue[i] = nil
 	end
 
-	love.graphics.pop()
-
 	if self.__flashAlpha > 0 then
 		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
 							   self.__flashColor[3], self.__flashAlpha)
 		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
-		love.graphics.setColor(r, g, b, a)
 	end
 
+	love.graphics.pop()
 	love.graphics.setCanvas(cv)
 
-	local shader = love.graphics.getShader()
 	love.graphics.setShader(self.shader)
-
 	love.graphics.setColor(self.alpha, self.alpha, self.alpha, self.alpha)
-
-	local blendMode, alphaMode = love.graphics.getBlendMode()
 	love.graphics.setBlendMode("alpha", "premultiplied")
+
+	local winWidth, winHeight = love.graphics.getDimensions()
+	local scale = math.min(winWidth / game.width,
+						   winHeight / game.height)
 
 	if self.clipCam then
 		love.graphics.draw(canvas, (winWidth / 2) + self.x + self.__shakeX,
 					   (winHeight / 2) + self.y + self.__shakeY,
-                       math.rad(self.angle), scale, scale,
+                       math.rad(-self.rotation), scale, scale,
                        game.width / 2, game.height / 2)
 	else
 		love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
 						(winHeight - scale * game.height) / 2, 0, scale)
 	end
 
-	love.graphics.setShader(shader)
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setBlendMode(blendMode, alphaMode)
+	love.graphics.setLineStyle(lineStyle)
+	love.graphics.setLineWidth(lineWidth)
+	if self.shader then love.graphics.setShader(shader) end
 end
 
 return Camera
