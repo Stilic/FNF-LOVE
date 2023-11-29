@@ -111,7 +111,6 @@ end
 function Camera:drawSimple()
 	local r, g, b, a = love.graphics.getColor()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local xc, yc, wc, hc = love.graphics.getScissor()
 
 	love.graphics.push()
 
@@ -120,7 +119,6 @@ function Camera:drawSimple()
 	local x, y = (winWidth - scale * game.width) / 2,
 				 (winHeight - scale * game.height) / 2
 	love.graphics.translate(x, y)
-	love.graphics.setScissor(x, y, game.width * scale, game.height * scale)
 	love.graphics.scale(scale)
 
 	local w2, h2 = self.width * 0.5, self.height * 0.5
@@ -148,8 +146,6 @@ function Camera:drawSimple()
 	end
 
 	love.graphics.pop()
-
-	love.graphics.setScissor(xc, yc, wc, hc)
 
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setBlendMode(blendMode, alphaMode)
