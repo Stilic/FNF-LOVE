@@ -32,7 +32,7 @@ function Splash:startSplash()
     self:add(self.poweredBy)
 
     self.love2d = Sprite(self.poweredBy.x + self.poweredBy:getWidth(), game.height * 0.885)
-    self.love2d:loadTexture(paths.getImage('menus/splashScreen/love2d'))
+    self.love2d:loadTexture(paths.getImage('menus/splashscreen/love2d'))
     self.love2d.scale = {x = 0.17, y = 0.17}
     self.love2d.visible = false
     self:add(self.love2d)
