@@ -107,7 +107,7 @@ end
 
 function Camera:draw()
 	if not self:canDraw() then return end
-	if not self.simple or self.shader or self.antialiasing or self.alpha < 1 or
+	if not self.simple or self.shader or self.alpha < 1 or
 		self.rotation ~= 0 then
 		self:drawComplex(true)
 	else
