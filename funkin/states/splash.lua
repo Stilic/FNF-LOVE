@@ -10,7 +10,7 @@ end
 
 function Splash:startSplash()
     self.funkinLogo = Sprite():loadTexture(
-                        paths.getImage('menus/splashScreen/FNFLOVE_logo'))
+                        paths.getImage('menus/splashscreen/FNFLOVE_logo'))
     self.funkinLogo.scale = {x = 0.7, y = 0.7}
     self.funkinLogo.visible = false
     self.funkinLogo:updateHitbox()
