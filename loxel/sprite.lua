@@ -7,7 +7,7 @@ local function sortFramesByIndices(prefix, postfix)
     end
 end
 
-local stencilSprite, stencilX, stencilY = {}, 0, 0
+local stencilSprite, stencilX, stencilY = nil, 0, 0
 local function stencil()
     if stencilSprite then
         love.graphics.push()

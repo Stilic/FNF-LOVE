@@ -6,9 +6,8 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
     local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
 
     return
-        math.abs(relativeX * cos + relativeY * sin) - (w1 / c.zoom + w2 / c.zoom) <
-            0 and math.abs(-relativeX * sin + relativeY * cos) -
-            (h1 / c.zoom + h2 / c.zoom) < 0
+        math.abs(relativeX * cos + relativeY * sin) - (w1 / c.zoom + w2 / c.zoom) < 0 and
+        math.abs(-relativeX * sin + relativeY * cos) - (h1 / c.zoom + h2 / c.zoom) < 0
 end
 
 ---@class Basic:Classic

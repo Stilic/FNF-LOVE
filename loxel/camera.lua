@@ -15,19 +15,18 @@ function Camera:new(x, y, width, height)
 	Camera.super.new(self, x, y)
 
 	self.simple = true
+	self.clipCam = flags.LoxelDefaultClipCamera or false -- clipCam will turn Complex Render Mode
 
 	self.width = width and (width > 0 and width) or game.width
 	self.height = height and (height > 0 and height) or game.height
 
 	self.scroll = {x = 0, y = 0}
-	self.target = nil
-	self.alpha = 1
+	self.rotation = 0
 	self.angle = 0
+	self.target = nil
 	self.zoom = 1
 	
 	self.bgColor = {0, 0, 0, 0}
-
-	self.clipCam = true
 
 	self.__renderQueue = {}
 
@@ -46,8 +45,8 @@ end
 
 function Camera:update(dt)
 	if self.target then
-		self.scroll.x, self.scroll.y = self.target.x - self.width * 0.5,
-									   self.target.y - self.height * 0.5
+		self.scroll.x = self.target.x - self.width / 2
+		self.scroll.y = self.target.y - self.height / 2
 	end
 
 	if self.__flashAlpha > 0 then
@@ -101,32 +100,48 @@ function Camera:flash(color, duration, onComplete, force)
 	self.__flashAlpha = 1
 end
 
+function Camera:canDraw()
+	return self.visible and self.exists and self.alpha > 0 and self.zoom ~= 0 and
+		next(self.__renderQueue)
+end
+
 function Camera:draw()
-	if self.alpha <= 0 then return end
-	if self.shader or self.alpha < 1 or not self.simple then
-		self:drawComplex()
+	if not self:canDraw() then return end
+	if not self.simple or self.shader or self.antialiasing or self.alpha < 1 or
+		self.rotation ~= 0 then
+		self:drawComplex(true)
 	else
-		self:drawSimple()
+		self:drawSimple(true)
 	end
 end
 
-function Camera:drawSimple()
+function Camera:drawSimple(_skipCheck)
+	if not _skipCheck and not self:canDraw() then return end
+
 	local r, g, b, a = love.graphics.getColor()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
+	local xc, yc, wc, hc = love.graphics.getScissor()
 
 	love.graphics.push()
 
+	local w2, h2 = self.width / 2, self.height / 2
+	local tx, ty = self.x + self.__shakeX, self.y + self.__shakeY
 	local winWidth, winHeight = love.graphics.getDimensions()
 	local scale = math.min(winWidth / game.width, winHeight / game.height)
 	local x, y = (winWidth - scale * game.width) / 2,
 				 (winHeight - scale * game.height) / 2
+
 	love.graphics.translate(x, y)
+	if not flags.LoxelDisableScissorOnRenderCameraSimple then
+		if self.clipCam then
+			x, y = tx * scale + x, ty * scale + y
+		end
+		love.graphics.setScissor(x, y, game.width * scale, game.height * scale)
+	end
 	love.graphics.scale(scale)
 
-	local w2, h2 = self.width * 0.5, self.height * 0.5
-	love.graphics.translate(w2 - self.x + self.__shakeX,
-							h2 - self.y + self.__shakeY)
-	love.graphics.rotate(math.rad(-self.angle))
+	love.graphics.translate(w2 + tx, h2 + ty)
+	love.graphics.rotate(math.rad(self.angle + self.rotation))
 	love.graphics.scale(self.zoom)
 	love.graphics.translate(-w2, -h2)
 
@@ -149,11 +164,14 @@ function Camera:drawSimple()
 
 	love.graphics.pop()
 
+	love.graphics.setScissor(xc, yc, wc, hc)
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setBlendMode(blendMode, alphaMode)
 end
 
-function Camera:drawComplex()
+function Camera:drawComplex(_skipCheck)
+	if not _skipCheck and not self:canDraw() then return end
+
 	local r, g, b, a = love.graphics.getColor()
 	local shader = self.shader and love.graphics.getShader()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
@@ -174,7 +192,7 @@ function Camera:drawComplex()
 	else
 		love.graphics.translate(w2, h2)
 	end
-	love.graphics.rotate(math.rad(-self.angle))
+	love.graphics.rotate(math.rad(self.angle))
 	love.graphics.scale(self.zoom)
 	love.graphics.translate(-w2, -h2)
 
@@ -207,13 +225,15 @@ function Camera:drawComplex()
 						   winHeight / game.height)
 
 	if self.clipCam then
-		love.graphics.draw(canvas, (winWidth / 2) + self.x + self.__shakeX,
-					   (winHeight / 2) + self.y + self.__shakeY,
-                       math.rad(-self.rotation), scale, scale,
-                       game.width / 2, game.height / 2)
+		love.graphics.draw(canvas,
+						   (winWidth / 2) + ((self.x + self.__shakeX) * scale),
+						   (winHeight / 2) + ((self.y + self.__shakeY) * scale),
+                    	   math.rad(self.rotation), scale, scale,
+                    	   game.width / 2, game.height / 2)
 	else
 		love.graphics.draw(canvas, (winWidth - scale * game.width) / 2,
-						(winHeight - scale * game.height) / 2, 0, scale)
+						   (winHeight - scale * game.height) / 2,
+						   math.rad(self.rotation), scale)
 	end
 
 	love.graphics.setColor(r, g, b, a)
@@ -221,6 +241,12 @@ function Camera:drawComplex()
 	love.graphics.setLineStyle(lineStyle)
 	love.graphics.setLineWidth(lineWidth)
 	if self.shader then love.graphics.setShader(shader) end
+end
+
+if flags.LoxelForceRenderCameraComplex then
+	Camera.draw = Camera.drawComplex
+elseif flags.LoxelDisableRenderCameraComplex then
+	Camera.draw = Camera.drawSimple
 end
 
 return Camera

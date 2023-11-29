@@ -10,6 +10,10 @@ return {
 	height = 720,
 
 	flags = {
+		LoxelForceRenderCameraComplex = false,
+		LoxelDisableRenderCameraComplex = false,
+		LoxelDisableScissorOnRenderCameraSimple = false,
+		LoxelDefaultClipCamera = true,
 		--this is stupid LoxelRenderTransparentGraphics = false,
 	}
 }
