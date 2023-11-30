@@ -460,10 +460,10 @@ function Sprite:__render(camera)
     local r, g, b, a = love.graphics.getColor()
     local shader = self.shader and love.graphics.getShader()
     local blendMode, alphaMode = love.graphics.getBlendMode()
-    local lineStyle, min, mag, anisotropy
+    local lineStyle, min, mag, anisotropy, mode
 
-    local mode = self.antialiasing and "linear" or "nearest"
     if not self.__rectangleMode then
+        mode = self.antialiasing and "linear" or "nearest"
         min, mag, anisotropy = self.texture:getFilter()
         self.texture:setFilter(mode, mode, anisotropy)
     else

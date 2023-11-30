@@ -31,13 +31,15 @@ end
 function Checkbox:__render()
     local r, g, b, a = love.graphics.getColor()
 
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+                           self.alpha)
     love.graphics.rectangle("fill", self.x, self.y, self.size, self.size)
 
     if self.hovered then
-        love.graphics.setColor(0.2, 0.2, 0.2)
+        love.graphics.setColor(self.color[1] * .2, self.color[2] * .2,
+                               self.color[3] * .2, self.alpha)
     else
-        love.graphics.setColor(0, 0, 0)
+        love.graphics.setColor(0, 0, 0, self.alpha)
     end
 
     love.graphics.rectangle("line", self.x, self.y, self.size, self.size)
@@ -49,7 +51,7 @@ function Checkbox:__render()
         local checkY = self.y + self.size / 2
 
         love.graphics.translate(checkX, checkY)
-        love.graphics.setColor(0, 0, 0)
+        love.graphics.setColor(0, 0, 0, self.alpha)
 
         local logo_position = {(-self.size) * 0.3, (-self.size) * -0.3}
 

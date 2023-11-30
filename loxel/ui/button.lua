@@ -37,20 +37,22 @@ end
 function Button:__render(camera)
 	local r, g, b, a = love.graphics.getColor()
 
-	love.graphics.setColor(self.color)
+	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+						   self.alpha)
 	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
 
 	if self.hovered then
-		love.graphics.setColor(0.2, 0.2, 0.2)
+		love.graphics.setColor(0.2, 0.2, 0.2, self.alpha)
 	else
-		love.graphics.setColor(0, 0, 0)
+		love.graphics.setColor(0, 0, 0, self.alpha)
 	end
 	love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 
 	local textX = self.x + (self.width - self.font:getWidth(self.text)) / 2
 	local textY = self.y + (self.height - self.font:getHeight()) / 2
 
-	love.graphics.setColor(self.textColor)
+	love.graphics.setColor(self.textColor[1], self.textColor[2],
+						   self.textColor[3], self.alpha)
 	love.graphics.print(self.text, textX, textY)
 
 	love.graphics.setColor(r, g, b, a)

@@ -31,14 +31,15 @@ function Bar:__render(camera)
 	local r, g, b, a = love.graphics.getColor()
 
 	if self.filledBar then
-		love.graphics.setColor(self.flipX and self.color or self.opColor)
-		love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+		local color = self.flipX and self.color or self.opColor
+		love.graphics.setColor(color[1], color[2], color[3], self.alpha)
+		love.graphics.rectangle("fill", self.x + self.fillWidth, self.y,
+								self.width - self.fillWidth, self.height)
 	end
 
-	love.graphics.setColor(self.flipX and self.opColor or self.color)
-	love.graphics.rectangle("fill", self.x - camera.scroll.x,
-							self.y - camera.scroll.y, self.fillWidth,
-							self.height)
+	local color = self.flipX and self.opColor or self.color
+	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
+	love.graphics.rectangle("fill", self.x, self.y, self.fillWidth, self.height)
 
 	love.graphics.setColor(r, g, b, a)
 end
