@@ -92,7 +92,7 @@ function Text:__render(camera)
     if self.outWidth > 0 then
         for dx = -self.outWidth, self.outWidth do
             for dy = -self.outWidth, self.outWidth do
-                love.graphics.printf(self.content, x, y,
+                love.graphics.printf(self.content, x + dx, y + dy,
                                      (self.limit or self:getWidth()),
                                      self.alignment)
             end
