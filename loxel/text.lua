@@ -79,7 +79,7 @@ function Text:__render(camera)
     self.font:setFilter(mode, mode)
 
     local x, y = self.x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
-                 self.y - self.offset.x - (camera.scroll.y * self.scrollFactor.y)
+                 self.y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
 
     love.graphics.setShader(self.shader)
 
@@ -92,7 +92,7 @@ function Text:__render(camera)
     if self.outWidth > 0 then
         for dx = -self.outWidth, self.outWidth do
             for dy = -self.outWidth, self.outWidth do
-                love.graphics.printf(self.content, x + dx, y + dy,
+                love.graphics.printf(self.content, x, y,
                                      (self.limit or self:getWidth()),
                                      self.alignment)
             end
@@ -106,8 +106,8 @@ function Text:__render(camera)
     self.font:setFilter(min, mag, anisotropy)
 
     love.graphics.setColor(r, g, b, a)
-    love.graphics.setBlendMode(blendMode, alphaMode)
     love.graphics.setFont(font)
+    love.graphics.setBlendMode(blendMode, alphaMode)
     if self.shader then love.graphics.setShader(shader) end
 end
 
