@@ -7,8 +7,6 @@ function Graphic:new(x, y, width, height, color, type, fill)
     self.width = width or 0
     self.height = height or 0
 
-    self.antialiasing = false
-
     self.color = color or {0, 0, 0}
     self.type = type or "rectangle"
     self.fill = fill or "fill"

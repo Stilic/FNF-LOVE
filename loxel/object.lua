@@ -1,6 +1,8 @@
 ---@class Object:Basic
 local Object = Basic:extend("Object")
 
+Object.defaultAntialiasing = false
+
 function Object:new(x, y)
 	Object.super.new(self)
 
@@ -13,10 +15,13 @@ function Object:new(x, y)
 	self.flipX = false
 	self.flipY = false
 
+	self.shader = nil
+	self.antialiasing = Object.defaultAntialiasing or false
 	self.color = {1, 1, 1}
+	self.blend = "alpha"
+
 	self.alpha = 1
 	self.angle = 0
-	self.blend = "alpha"
 
 	self.moves = false
 	self.velocity = {x = 0, y = 0}

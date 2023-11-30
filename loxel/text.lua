@@ -12,8 +12,6 @@ function Text:new(x, y, content, font, color, align, limit)
     self.outColor = {0, 0, 0}
     self.outWidth = 0
 
-    self.antialiasing = false
-
     self.__content = nil
     self.__font = nil
     self.__width = 0
