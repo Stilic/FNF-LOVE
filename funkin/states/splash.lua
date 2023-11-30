@@ -1,10 +1,12 @@
 local Splash = State:extend("Splash")
+local UpdateState = require "funkin.states.update"
+local Https = require "https"
 
 function Splash:enter()
     if Application.splashScreen then
         Timer.after(1, function() self:startSplash() end)
     else
-        game.switchState(TitleState())
+        self:finishSplash()
     end
 end
 
@@ -80,15 +82,35 @@ function Splash:startSplash()
 
         setTimer(1)
 
-        game.switchState(TitleState(), true)
+        self:finishSplash(false)
     end)
+end
+
+function Splash:finishSplash(skip)
+    if Application.checkForUpdates and not UpdateState.closed then
+        print('Checking for updates..')
+        local code, response = Https.request("https://raw.githubusercontent.com/Stilic/FNF-LOVE/main/project.lua")
+        if code == 200 then
+            local curVersion = Application.version
+            local githubVersion = load(response)().version
+            print('Github Version: ' .. githubVersion)
+            print('Your Version: ' .. curVersion)
+            if curVersion ~= githubVersion then
+                game.switchState(UpdateState(githubVersion), true)
+                return
+            end
+        else
+            print('Error: ' .. code)
+        end
+    end
+    game.switchState(TitleState(), skip)
 end
 
 function Splash:update(dt)
     Splash.super.update(self, dt)
 
     if controls:pressed("accept") then
-        game.switchState(TitleState(), true)
+        self:finishSplash(true)
     end
 end
 
