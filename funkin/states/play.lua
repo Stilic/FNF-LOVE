@@ -286,7 +286,7 @@ function PlayState:enter()
 
     self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
                          math.floor(self.healthBarBG.width - 8),
-                         math.floor(self.healthBarBG.height - 8), 2, nil, true)
+                         math.floor(self.healthBarBG.height - 8), 0, 2, true)
     self.healthBar:setValue(self.health)
 
     self.iconP1 = HealthIcon(self.boyfriend.icon, true)
