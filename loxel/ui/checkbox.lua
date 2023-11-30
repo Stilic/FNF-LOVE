@@ -9,6 +9,8 @@ function Checkbox:new(x, y, size, callback)
     self.checked = false
     self.hovered = false
     self.callback = callback
+    self.color = {1, 1, 1}
+    self.alpha = 1
 end
 
 function Checkbox:update(dt)
