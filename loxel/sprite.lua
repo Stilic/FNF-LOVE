@@ -152,7 +152,7 @@ function Sprite:new(x, y, texture)
     self.__width, self.__height = self.width, self.height
 
     self.texture = defaultTexture
-    self.antialiasing = true
+    self.antialiasing = false
 
     self.clipRect = nil
 
