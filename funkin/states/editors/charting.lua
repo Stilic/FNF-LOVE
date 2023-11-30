@@ -405,7 +405,9 @@ function ChartingState:update(dt)
         if Keyboard.justPressed.BACKSPACE then
             ChartingState.conductor.sound:pause()
             if self.vocals then self.vocals:pause() end
+            game.sound.music:stop()
 
+            game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(MainMenuState())
         end
 
@@ -608,7 +610,6 @@ function ChartingState:leave()
     love.mouse.setVisible(false)
 
     ChartingState.conductor = nil
-    game.sound.music:stop()
 
     Note.chartingMode = false
 end

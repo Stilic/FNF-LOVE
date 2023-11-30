@@ -9,6 +9,7 @@ function Text:new(x, y, content, font, color, align, limit)
     self.color = color or {1, 1, 1}
     self.alignment = align or "left"
     self.limit = limit
+    self.scrollFactor = {x = 0, y = 0}
 
     self.outColor = {0, 0, 0}
     self.outWidth = 0
