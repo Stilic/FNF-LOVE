@@ -8,8 +8,12 @@ local canvasTable = {nil, stencil = true}
 Camera.__defaultCameras = {}
 
 local _ogSetColor, _simpleCamera
-local function setSimpleColor(...)
-	_ogSetColor(_simpleCamera:getMultColor(...))
+local function setSimpleColor(v, ...)
+	if type(v) == "table" then
+		_ogSetColor(_simpleCamera:getMultColor(unpack(v)))
+	else
+		_ogSetColor(_simpleCamera:getMultColor(v, ...))
+	end
 end
 
 function Camera.__init(canv)
@@ -118,7 +122,7 @@ end
 
 function Camera:getMultColor(r, g, b, a)
 	return self.color[1] * math.min(r, 1), self.color[2] * math.min(g, 1),
-		self.color[3] * math.min(b, 1), self.alpha * (math.min(a, 1) or 1)
+		self.color[3] * math.min(b, 1), self.alpha * (math.min(a or 1, 1))
 end
 
 function Camera:draw()
