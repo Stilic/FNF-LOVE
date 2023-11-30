@@ -1,7 +1,8 @@
 local OptionsState = State:extend("OptionsState")
 
 local tabs = {
-    -- Gameplay = require "funkin.states.options.gameplay",
+    Gameplay = require "funkin.states.options.gameplay",
+    Graphic = require "funkin.states.options.graphic",
     Controls = require "funkin.states.options.controls"
 }
 
@@ -17,15 +18,17 @@ function OptionsState:enter()
     self.curTab = 1
     self.curSelect = 1
     self.controls = table.clone(ClientPrefs.controls)
+    self.changingOption = false
 
-    local bg = Sprite()
-    bg:loadTexture(paths.getImage('menus/menuBGBlue'))
-    bg.color = {0.5, 0.5, 0.5}
-    bg:screenCenter()
-    self:add(bg)
+    self.bg = Sprite()
+    self.bg:loadTexture(paths.getImage('menus/menuBGBlue'))
+    self.bg.color = {0.5, 0.5, 0.5}
+    self.bg:screenCenter()
+    self:add(self.bg)
 
     self.optionsTab = {
-        -- 'Gameplay',
+        'Gameplay',
+        'Graphic',
         'Controls'
     }
 
@@ -48,7 +51,7 @@ function OptionsState:enter()
 
     self.curBindSelect = 1
 
-    self.controlsCursor = Sprite(377):make(125, 39, {1, 1, 1})
+    self.controlsCursor = Sprite(377):make(148, 39, {1, 1, 1})
     self.controlsCursor.alpha = 0.2
     self.controlsCursor.visible = false
     self:add(self.controlsCursor)
@@ -62,6 +65,9 @@ function OptionsState:enter()
 
     self.textGroup = Group()
     self:add(self.textGroup)
+
+    self.spriteGroup = Group()
+    self:add(self.spriteGroup)
 
     self.timerHold = 0
     self.waiting_input = false
@@ -91,20 +97,20 @@ function OptionsState:enter()
 end
 
 function OptionsState:reset_Tabs()
-    self.allTabs:clear()
-    self.textGroup:clear()
-
-    -- tabs.gameplay.add(self)
-    tabs.Controls.add(self)
-
-    for i, grp in ipairs(self.allTabs.members) do
-        for j, obj in ipairs(grp.members) do
-            obj.visible = (grp.name == self.optionsTab[self.curTab])
-        end
+    for _, idk in ipairs({self.allTabs, self.textGroup,
+                                            self.spriteGroup}) do
+        idk:clear()
     end
-    for i, grp in ipairs(self.textGroup.members) do
-        for j, obj in ipairs(grp.members) do
-            obj.visible = (grp.name == self.optionsTab[self.curTab])
+
+    for _, tab in next, self.optionsTab do
+        tabs[tab].add(self)
+    end
+
+    for _, idk in ipairs({self.allTabs, self.textGroup, self.spriteGroup}) do
+        for _, grp in ipairs(idk.members) do
+            for _, obj in ipairs(grp.members) do
+                obj.visible = (grp.name == self.optionsTab[self.curTab])
+            end
         end
     end
     self.allTabs:add(controlsTab)
@@ -124,11 +130,20 @@ function OptionsState:update(dt)
             self.blackFG.alpha = 0
             self.waitInputTxt.visible = false
         elseif self.onTab then
-            self.onTab = false
-            self.titleTxt.content = '< ' .. self.optionsTab[self.curTab] .. ' >'
-            self.optionsCursor.visible = false
-            self.controlsCursor.visible =
-                (self.optionsTab[self.curTab] == 'Controls' and false)
+            if self.changingOption then
+                if self.optionsTab[self.curTab] == 'Gameplay' or
+                    self.optionsTab[self.curTab] == 'Graphic' then
+                    tabs[self.optionsTab[self.curTab]].selectOption(self.curSelect)
+                    self:reset_Tabs()
+                    self.changingOption = false
+                end
+            else
+                self.onTab = false
+                self.titleTxt.content = '< ' .. self.optionsTab[self.curTab] .. ' >'
+                self.optionsCursor.visible = false
+                self.controlsCursor.visible =
+                    (self.optionsTab[self.curTab] == 'Controls' and false)
+            end
         else
             if OptionsState.onPlayState then
                 game.sound.music:stop()
@@ -161,45 +176,90 @@ function OptionsState:update(dt)
             end
         else
             local selectedTab = self.optionsTab[self.curTab]
-            tabs[selectedTab].update(dt)
 
             if Keyboard.justPressed.ENTER then
-                switch(selectedTab, {
-                    ['Controls'] = function()
-                        if not self.waiting_input then
-                            self.waiting_input = true
-                            self.blackFG.alpha = 0.5
-                            self.waitInputTxt.visible = true
-                        end
-                    end,
-                    ['Gameplay'] = function()
-                        --
+                if selectedTab == 'Controls' then
+                    if not self.waiting_input then
+                        self.waiting_input = true
+                        self.blackFG.alpha = 0.5
+                        self.waitInputTxt.visible = true
                     end
-                })
+                elseif selectedTab == 'Gameplay' or
+                        selectedTab == 'Graphic' then
+                    if not self.changingOption then
+                        tabs[selectedTab].selectOption(self.curSelect, true)
+                        self:reset_Tabs()
+                        self.changingOption = true
+                    end
+                end
             end
             if controls:pressed('ui_left') then
                 if self.optionsTab[self.curTab] == 'Controls' then
                     self:changeBindSelection(-1)
                 end
+                if self.changingOption then
+                    if self.optionsTab[self.curTab] == 'Gameplay' or
+                        self.optionsTab[self.curTab] == 'Graphic' then
+                        tabs[selectedTab].changeSelection(-1)
+                        self:reset_Tabs()
+
+                        if selectedTab == 'Graphic' then
+                            self.bg = ClientPrefs.data.antialiasing
+                        end
+                    end
+                end
+                self.timerHold = 0
             end
             if controls:pressed('ui_right') then
                 if self.optionsTab[self.curTab] == 'Controls' then
                     self:changeBindSelection(1)
                 end
-            end
-            if controls:pressed('ui_up') then
-                self:changeSelection(-1, self.allTabs.members[self.curTab])
+                if self.changingOption then
+                    if self.optionsTab[self.curTab] == 'Gameplay' or
+                        self.optionsTab[self.curTab] == 'Graphic' then
+                        tabs[selectedTab].changeSelection(1)
+                        self:reset_Tabs()
+
+                        if selectedTab == 'Graphic' then
+                            self.bg = ClientPrefs.data.antialiasing
+                        end
+                    end
+                end
                 self.timerHold = 0
-            elseif controls:pressed('ui_down') then
-                self:changeSelection(1, self.allTabs.members[self.curTab])
-                self.timerHold = 0
             end
-            if controls:down('ui_up') or controls:down('ui_down') then
+            if controls:down('ui_left') or controls:down('ui_right') then
                 self.timerHold = self.timerHold + dt
                 if self.timerHold > 0.5 then
-                    self.timerHold = 0.4
-                    self:changeSelection((controls:down('ui_up') and -1 or 1),
-                                         self.allTabs.members[self.curTab])
+                    self.timerHold = 0.45
+                    if self.changingOption then
+                        if self.optionsTab[self.curTab] == 'Gameplay' or
+                            self.optionsTab[self.curTab] == 'Graphic' then
+                            tabs[selectedTab].changeSelection((controls:down('ui_left')
+                                                                and -1 or 1))
+                            self:reset_Tabs()
+
+                            if selectedTab == 'Graphic' then
+                                self.bg = ClientPrefs.data.antialiasing
+                            end
+                        end
+                    end
+                end
+            end
+            if not self.changingOption then
+                if controls:pressed('ui_up') then
+                    self:changeSelection(-1, self.allTabs.members[self.curTab])
+                    self.timerHold = 0
+                elseif controls:pressed('ui_down') then
+                    self:changeSelection(1, self.allTabs.members[self.curTab])
+                    self.timerHold = 0
+                end
+                if controls:down('ui_up') or controls:down('ui_down') then
+                    self.timerHold = self.timerHold + dt
+                    if self.timerHold > 0.5 then
+                        self.timerHold = 0.4
+                        self:changeSelection((controls:down('ui_up') and -1 or 1),
+                                             self.allTabs.members[self.curTab])
+                    end
                 end
             end
         end
@@ -280,14 +340,11 @@ function OptionsState:changeTab(huh)
 
     self.titleTxt.content = '< ' .. self.optionsTab[self.curTab] .. ' >'
 
-    for i, grp in ipairs(self.allTabs.members) do
-        for j, obj in ipairs(grp.members) do
-            obj.visible = (grp.name == self.optionsTab[self.curTab])
-        end
-    end
-    for i, grp in ipairs(self.textGroup.members) do
-        for j, obj in ipairs(grp.members) do
-            obj.visible = (grp.name == self.optionsTab[self.curTab])
+    for _, idk in ipairs({self.allTabs, self.textGroup, self.spriteGroup}) do
+        for _, grp in ipairs(idk.members) do
+            for _, obj in ipairs(grp.members) do
+                obj.visible = (grp.name == self.optionsTab[self.curTab])
+            end
         end
     end
 end

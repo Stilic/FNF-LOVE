@@ -1,9 +1,5 @@
 local Controls = {}
 
-Controls.curSelected = 1
-Controls.members = {}
-Controls.membersValue = {}
-
 function Controls.add(options)
     local controlsTab = Group()
     controlsTab.name = 'Controls'
@@ -16,7 +12,7 @@ function Controls.add(options)
     }
 
     local titleTxtGroup = Group()
-    titleTxtGroup.name = 'Controls'
+    titleTxtGroup.name = controlsTab.name
 
     for i = 1, #binds do
         local bind = binds[i]
@@ -54,15 +50,24 @@ function Controls.add(options)
             end
         end
     end
+
+    local linesGroup = Group()
+    linesGroup.name = controlsTab.name
+
+    local lines = Sprite(370, 117):make(2, game.height * 0.72,
+                                            {255, 255, 255})
+    lines.alpha = 0.5
+    linesGroup:add(lines)
+
+    local lines = Sprite(530, 117):make(2, game.height * 0.72,
+                                            {255, 255, 255})
+    lines.alpha = 0.5
+    linesGroup:add(lines)
+
+    options.spriteGroup:add(linesGroup)
+
     options.textGroup:add(titleTxtGroup)
     options.allTabs:add(controlsTab)
 end
-
-function Controls.update(dt)
-    if controls:pressed('ui_left') then Controls.changeBindSelection(-1) end
-    if controls:pressed('ui_right') then Controls.changeBindSelection(1) end
-end
-
-function Controls.changeBindSelection() end
 
 return Controls

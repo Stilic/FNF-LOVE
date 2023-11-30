@@ -1,19 +1,17 @@
-local Gameplay = {}
+local Graphic = {}
 
 local optionsVar = {
-    {'downScroll', 'Down Scroll', false, 'boolean'},
-    {'noteSplash', 'Note Splash', false, 'boolean'},
-    {'pauseMusic', 'Pause Music', false, 'string', {'railways', 'breakfast'}},
-    {'botplayMode', 'Botplay', false, 'boolean'},
-    {'songOffset', 'Song Offset', false, 'number', {0, 999}}
+    {'fps', 'FPS', false, 'number', {30, 250}},
+    {'antialiasing', 'Antialiasing', false, 'boolean'},
+    {'shader', 'Shader', false, 'boolean'}
 }
 
 local curSelected = 1
 local stringSelected = 1
 
-function Gameplay.add(options)
-    local gameplayTab = Group()
-    gameplayTab.name = 'Gameplay'
+function Graphic.add(options)
+    local graphicTab = Group()
+    graphicTab.name = 'Graphic'
 
     for i, daOption in ipairs(optionsVar) do
         local daGroup = Group()
@@ -37,11 +35,11 @@ function Gameplay.add(options)
                               paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
         daGroup:add(valueTxt)
 
-        gameplayTab:add(daGroup)
+        graphicTab:add(daGroup)
     end
 
     local linesGroup = Group()
-    linesGroup.name = gameplayTab.name
+    linesGroup.name = graphicTab.name
 
     local lines = Sprite(370, 117):make(2, game.height * 0.72,
                                             {255, 255, 255})
@@ -49,10 +47,10 @@ function Gameplay.add(options)
     linesGroup:add(lines)
     options.spriteGroup:add(linesGroup)
 
-    options.allTabs:add(gameplayTab)
+    options.allTabs:add(graphicTab)
 end
 
-function Gameplay.selectOption(id, selected)
+function Graphic.selectOption(id, selected)
     game.sound.play(paths.getSound('scrollMenu'))
     for i, daOption in ipairs(optionsVar) do
         if i == id then
@@ -66,7 +64,7 @@ function Gameplay.selectOption(id, selected)
     end
 end
 
-function Gameplay.changeSelection(huh)
+function Graphic.changeSelection(huh)
     if huh == nil then huh = 0 end
     game.sound.play(paths.getSound('scrollMenu'))
 
@@ -101,4 +99,4 @@ function Gameplay.changeSelection(huh)
     end
 end
 
-return Gameplay
+return Graphic

@@ -5,7 +5,10 @@ ClientPrefs.data = {
     downScroll = false,
     botplayMode = false,
     pauseMusic = 'railways',
-    antialiasing = true
+    antialiasing = true,
+    fps = 120,
+    shader = true,
+    songOffset = 0
 }
 
 ClientPrefs.controls = {
