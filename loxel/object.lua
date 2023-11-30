@@ -13,7 +13,6 @@ function Object:new(x, y)
 	self.flipX = false
 	self.flipY = false
 
-	self.antialiasing = true
 	self.color = {1, 1, 1}
 	self.alpha = 1
 	self.angle = 0
