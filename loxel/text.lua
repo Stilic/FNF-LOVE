@@ -76,7 +76,7 @@ function Text:__render(camera)
 
     local min, mag, anisotropy = self.font:getFilter()
     local mode = self.antialiasing and "linear" or "nearest"
-    self.font:setFilter(mode, mode)
+    self.font:setFilter(mode, mode, anisotropy)
 
     local x, y = self.x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
                  self.y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
