@@ -16,7 +16,6 @@ function Object:new(x, y)
 	self.color = {1, 1, 1}
 	self.alpha = 1
 	self.angle = 0
-	self.shader = nil
 	self.blend = "alpha"
 
 	self.moves = false
