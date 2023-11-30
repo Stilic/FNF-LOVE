@@ -36,8 +36,8 @@ function Bar:__render(camera)
 	local r, g, b, a = love.graphics.getColor()
 	local shader = love.graphics.getShader()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local x, y = self.x - camera.scroll.x,
-				 self.y - camera.scroll.y
+	local x, y = self.x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+	             self.y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
 
 	if self.shader then love.graphics.setShader(self.shader) end
 	love.graphics.setBlendMode(self.blend)

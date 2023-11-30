@@ -9,7 +9,6 @@ function Text:new(x, y, content, font, color, align, limit)
     self.color = color or {1, 1, 1}
     self.alignment = align or "left"
     self.limit = limit
-    self.scrollFactor = {x = 0, y = 0}
 
     self.outColor = {0, 0, 0}
     self.outWidth = 0
@@ -78,10 +77,10 @@ function Text:__render(camera)
 
     local min, mag, anisotropy = self.font:getFilter()
     local mode = self.antialiasing and "linear" or "nearest"
-    self.font:setFilter(mode, mode)
+    self.font:setFilter(mode, mode, anisotropy)
 
     local x, y = self.x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
-                 self.y - self.offset.x - (camera.scroll.y * self.scrollFactor.y)
+                 self.y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
 
     love.graphics.setShader(self.shader)
 
@@ -108,8 +107,8 @@ function Text:__render(camera)
     self.font:setFilter(min, mag, anisotropy)
 
     love.graphics.setColor(r, g, b, a)
-    love.graphics.setBlendMode(blendMode, alphaMode)
     love.graphics.setFont(font)
+    love.graphics.setBlendMode(blendMode, alphaMode)
     if self.shader then love.graphics.setShader(shader) end
 end
 
