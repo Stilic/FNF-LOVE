@@ -913,7 +913,7 @@ function PlayState:goodNoteHit(n)
                 self.combo = self.combo + 1
                 self.score = self.score + rating.score
 
-                if rating.splash then
+                if ClientPrefs.data.noteSplash and rating.splash then
                     local splash = self.splashes:recycle(NoteSplash)
                     splash.x, splash.y = receptor.x, receptor.y
                     splash:setup(n.data)
