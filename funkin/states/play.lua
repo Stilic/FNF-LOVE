@@ -368,7 +368,6 @@ function PlayState:enter()
 
     local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
     local countdownData = {
-        nil, -- state opened
         {sound = basePath .. "/intro3", image = nil},
         {sound = basePath .. "/intro2", image = basePath .. "/ready"},
         {sound = basePath .. "/intro1", image = basePath .. "/set"},
@@ -376,9 +375,9 @@ function PlayState:enter()
     }
 
     local crochet = PlayState.conductor.crochet / 1000
-    for swagCounter = 1, 6 do
-        self.countdownTimer:after(crochet * (swagCounter - 1), function()
-            local data = countdownData[swagCounter]
+    for swagCounter = 0, 4 do
+        self.countdownTimer:after(crochet * (swagCounter+1), function()
+            local data = countdownData[swagCounter+1]
             if data then
                 if data.sound then
                     game.sound.play(paths.getSound(data.sound))
@@ -403,9 +402,7 @@ function PlayState:enter()
                 end
             end
 
-            self.boyfriend:beat(swagCounter)
-            self.gf:beat(swagCounter)
-            self.dad:beat(swagCounter)
+            self:beat(swagCounter - 4)
         end)
     end
 

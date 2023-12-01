@@ -27,8 +27,6 @@ function FreeplayState:enter()
     self.bg:loadTexture(paths.getImage('menus/menuDesat'))
     self:add(self.bg)
     self.bg:screenCenter()
-
-    -- SHITTY STUFF :(
     self.bg.color = Color.convert(self.songsData[FreeplayState.curSelected][3])
 
     self.grpSongs = Group()
@@ -100,7 +98,6 @@ function FreeplayState:update(dt)
         game.switchState(PlayState(false, daSong, diff))
     end
 
-    -- SHITTY STUFF :(
     local colorBG = Color.convert(self.songsData[FreeplayState.curSelected][3])
     self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
     self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
