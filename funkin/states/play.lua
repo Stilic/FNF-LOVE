@@ -171,7 +171,8 @@ function PlayState:enter()
                                                              (susNote + 1),
                                                          daNoteData, oldNote,
                                                          true, note)
-                                    sustain.mustPress = gottaHitNote
+                                    sustain.mustPress = note.mustPress
+                                    sustain.altNote = note.altNote
                                     sustain:setScrollFactor()
                                     table.insert(self.unspawnNotes, sustain)
                                 end
