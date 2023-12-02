@@ -3,7 +3,7 @@ local UpdateState = require "funkin.states.update"
 local Https = require "https"
 
 function Splash:enter()
-    if Application.splashScreen then
+    if Project.splashScreen then
         Timer.after(1, function() self:startSplash() end)
     else
         self:finishSplash()

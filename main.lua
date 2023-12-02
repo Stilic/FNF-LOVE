@@ -1,7 +1,7 @@
 io.stdout:setvbuf("no")
 
-Application = require "project"
-flags = Application.flags
+Project = require "project"
+flags = Project.flags
 
 require "loxel"
 
@@ -118,8 +118,8 @@ function love.system.getDevice()
 end
 
 function love.load()
-    if Application.bgColor then
-        love.graphics.setBackgroundColor(Application.bgColor)
+    if Project.bgColor then
+        love.graphics.setBackgroundColor(Project.bgColor)
     end
 
     -- for the joystick, i'll remake it later
@@ -127,7 +127,7 @@ function love.load()
         controls = table.clone(ClientPrefs.controls)
     })
 
-    game.init(Application, SplashScreen)
+    game.init(Project, SplashScreen)
 
     if love.system.getDevice() == "Desktop" then 
     	Discord = require "funkin.backend.discord"

@@ -58,7 +58,7 @@ function MainMenuState:enter()
     self.camFollow = {x = 0, y = 0}
 
     self.engineVersion = Text(12, game.height - 42,
-                              "FNF LÖVE v" .. Application.version,
+                              "FNF LÖVE v" .. Project.version,
                               paths.getFont("vcr.ttf", 16), {255, 255, 255})
     self.engineVersion.outWidth = 1
     self.engineVersion:setScrollFactor()

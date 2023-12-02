@@ -8,7 +8,7 @@ function UpdateState.check(goToState)
 		
 		local code, response = Https.request("https://raw.githubusercontent.com/Stilic/FNF-LOVE/main/project.lua")
 		if code == 200 then
-			local curVersion = Application.version
+			local curVersion = Project.version
 			local githubVersion = load(response)().version
 			print('Github Version: ' .. githubVersion)
 			print('Your Version: ' .. curVersion)
@@ -34,7 +34,7 @@ function UpdateState:enter()
 	self:add(bg)
 
 	local textmoment = "Oh look, an update! you are running an outdated version."
-					.. "\nCurrent Version: " .. Application.version
+					.. "\nCurrent Version: " .. Project.version
 					.. " - Update Version: " .. updateVersion
 					.. "\n\n Press BACK to proceed."
 

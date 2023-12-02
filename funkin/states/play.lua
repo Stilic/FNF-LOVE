@@ -740,7 +740,7 @@ function PlayState:update(dt)
         end
     end
 
-    if Application.DEBUG_MODE then
+    if Project.DEBUG_MODE then
         if Keyboard.justPressed.TWO then self:endSong() end
         if Keyboard.justPressed.ONE then self.botPlay = not self.botPlay end
     end
