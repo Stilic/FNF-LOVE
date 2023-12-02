@@ -4,25 +4,29 @@ local Gamestate = require "loxel.lib.gamestate"
 local State = Group:extend("State")
 
 function State:new()
-    State.super.new(self)
+	State.super.new(self)
 
-    self.persistentUpdate = false
-    self.persistentDraw = true
+	self.persistentUpdate = false
+	self.persistentDraw = true
+end
+
+function State:enter()
+	
 end
 
 function State:update(dt) State.super.update(self, dt) end
 
-function State:openSubState(subState)
-    self.subState = subState
-    subState.__parentState = self
-    Gamestate.push(subState)
+function State:openSubstate(substate)
+	self.substate = substate
+	substate.parent = self
+	Gamestate.push(substate)
 end
 
-function State:closeSubState()
-    if self.subState then
-        Gamestate.pop(table.find(Gamestate.stack, self.subState))
-        self.subState = nil
-    end
+function State:closeSubstate()
+	if self.substate then
+		Gamestate.pop(table.find(Gamestate.stack, self.substate))
+		self.substate = nil
+	end
 end
 
 return State

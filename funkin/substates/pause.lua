@@ -1,13 +1,12 @@
-local PauseSubState = SubState:extend("PauseSubState")
+local PauseSubstate = Substate:extend("PauseSubstate")
 
-function PauseSubState:new()
-    PauseSubState.super.new(self)
+function PauseSubstate:new()
+    PauseSubstate.super.new(self)
 
     self.menuItems = {"Resume", "Restart Song", "Options", "Exit to menu"}
     self.curSelected = 1
 
-    self.music = game.sound.play(paths.getMusic(ClientPrefs.data.pauseMusic), 0,
-                                 true)
+    self.music = game.sound.load(paths.getMusic(ClientPrefs.data.pauseMusic))
 
     self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
     self.bg.alpha = 0
@@ -24,17 +23,21 @@ function PauseSubState:new()
         item.targetY = i
         self.grpShitMenu:add(item)
     end
-
-    self:changeSelection()
-
-    Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 end
 
-function PauseSubState:update(dt)
+function PauseSubstate:enter()
+    self.music:play()
+
+    Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
+
+    self:changeSelection()
+end
+
+function PauseSubstate:update(dt)
     if self.music:getVolume() < 0.5 then
         self.music:setVolume(self.music:getVolume() + 0.01 * dt)
     end
-    PauseSubState.super.update(self, dt)
+    PauseSubstate.super.update(self, dt)
 
     if controls:pressed('ui_up') then self:changeSelection(-1) end
     if controls:pressed('ui_down') then self:changeSelection(1) end
@@ -61,7 +64,7 @@ function PauseSubState:update(dt)
     end
 end
 
-function PauseSubState:changeSelection(huh)
+function PauseSubstate:changeSelection(huh)
     if huh == nil then huh = 0 end
 
     game.sound.play(paths.getSound('scrollMenu'))
@@ -85,9 +88,9 @@ function PauseSubState:changeSelection(huh)
     end
 end
 
-function PauseSubState:close()
+function PauseSubstate:close()
     self.music:kill()
-    PauseSubState.super.close(self)
+    PauseSubstate.super.close(self)
 end
 
-return PauseSubState
+return PauseSubstate

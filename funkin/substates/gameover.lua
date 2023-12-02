@@ -1,4 +1,4 @@
-local GameOverSubstate = SubState:extend("GameOverSubstate")
+local GameOverSubstate = Substate:extend("GameOverSubstate")
 
 function GameOverSubstate.resetVars()
     GameOverSubstate.characterName = 'bf-dead'
@@ -11,8 +11,6 @@ GameOverSubstate.resetVars()
 function GameOverSubstate:new(x, y)
     GameOverSubstate.super.new(self)
 
-    PlayState.notePosition = 0
-
     self.updateCam = false
     self.isFollowing = false
 
@@ -23,14 +21,17 @@ function GameOverSubstate:new(x, y)
     self.boyfriend = Character(x, y, GameOverSubstate.characterName, true)
     self:add(self.boyfriend)
 
+    local boyfriendMidpointX, boyfriendMidpointY = self.boyfriend:getGraphicMidpoint()
+    self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
+end
+
+function GameOverSubstate:enter(x, y)
+    PlayState.notePosition = 0
+
     self.boyfriend:playAnim('firstDeath')
 
     paths.getMusic(GameOverSubstate.loopSoundName)
     game.sound.play(paths.getSound(GameOverSubstate.deathSoundName))
-
-    local boyfriendMidpointX, boyfriendMidpointY =
-        self.boyfriend:getGraphicMidpoint()
-    self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
 end
 
 function GameOverSubstate:update(dt)

@@ -450,7 +450,10 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
-    if self.texture ~= nil and (self.width ~= 0 or self.height ~= 0) then
+    if self.texture ~= nil and (
+            self.width ~= 0 or self.height ~= 0 or
+            self.scale.x ~= 0 or self.scale.y ~= 0
+        ) then
         Sprite.super.draw(self)
     end
 end

@@ -3,10 +3,7 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
-	-- Update Presence
-	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({details = "In the Menus"})
-	end
+	Discord.changePresence({details = "In the Menus"})
 
 	self.curWacky = self:getIntroTextShit()
 

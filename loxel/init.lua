@@ -17,7 +17,7 @@ Bar = require "loxel.ui.bar"
 Group = require "loxel.group.group"
 SpriteGroup = require "loxel.group.spritegroup"
 State = require "loxel.state"
-SubState = require "loxel.substate"
+Substate = require "loxel.substate"
 Flicker = require "loxel.effects.flicker"
 Color = require "loxel.util.color"
 
@@ -140,9 +140,9 @@ local function switch(state)
         for _, o in ipairs(s.members) do
             if type(o) == "table" and o.destroy then o:destroy() end
         end
-        if s.subState then
-            Gamestate.pop(table.find(Gamestate.stack, s.subState))
-            s.subState = nil
+        if s.substate then
+            Gamestate.pop(table.find(Gamestate.stack, s.substate))
+            s.substate = nil
         end
     end
 

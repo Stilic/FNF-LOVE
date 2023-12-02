@@ -1,5 +1,3 @@
-local utf8 = require "utf8"
-
 local NumericStepper = Basic:extend("NumericStepper")
 
 NumericStepper.instances = {}

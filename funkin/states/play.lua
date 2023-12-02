@@ -1,4 +1,4 @@
-local PauseSubState = require "funkin.substates.pause"
+local PauseSubstate = require "funkin.substates.pause"
 
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
@@ -582,9 +582,9 @@ function PlayState:update(dt)
             })
         end
 
-        local pause = PauseSubState()
+        local pause = PauseSubstate()
         pause.cameras = {self.camOther}
-        self:openSubState(pause)
+        self:openSubstate(pause)
     end
     if controls:pressed("debug_1") then
         PlayState.conductor.sound:pause()
@@ -624,13 +624,7 @@ function PlayState:update(dt)
         self.camHUD.visible = false
         self.boyfriend.visible = false
 
-        Timer.tween(2, self.gf, {alpha = 0}, 'in-out-sine')
-        Timer.tween(2, self.dad, {alpha = 0}, 'in-out-sine')
-
-        fadeGroupSprites(self.stage)
-        fadeGroupSprites(self.stage.foreground)
-
-        self:openSubState(GameOverSubstate(self.stage.boyfriendPos.x,
+        self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
                                            self.stage.boyfriendPos.y))
         self.isDead = true
     end
@@ -811,7 +805,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type)
-    if not self.botPlay and (not self.subState or self.persistentUpdate) then
+    if not self.botPlay and (not self.substate or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)
@@ -857,7 +851,7 @@ function PlayState:onKeyPress(key, type)
 end
 
 function PlayState:onKeyRelease(key, type)
-    if not self.botPlay and (not self.subState or self.persistentUpdate) then
+    if not self.botPlay and (not self.substate or self.persistentUpdate) then
         local controls = controls:getControlsFromSource(type .. ":" .. key)
         if not controls then return end
         key = self:getKeyFromEvent(controls)

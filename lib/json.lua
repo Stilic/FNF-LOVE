@@ -1,11 +1,8 @@
 -- json.lua from https://github.com/actboy168/json.lua
 -- Modified by Stilic for FNF LÖVE
 
-local type = type
-local next = next
-local error = error
-local tonumber = tonumber
-local tostring = tostring
+print("a")
+
 local table_concat = table.concat
 local table_sort = table.sort
 local string_char = string.char
@@ -15,14 +12,13 @@ local string_match = string.match
 local string_gsub = string.gsub
 local string_sub = string.sub
 local string_format = string.format
-local setmetatable = setmetatable
-local getmetatable = getmetatable
 local huge = math.huge
 local tiny = -huge
 
-local utf8_char
-local math_type
+local utf8_char = utf8.char
+local math_type = math.type
 
+--[[
 if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
     local math_floor = math.floor
     function utf8_char(c)
@@ -56,6 +52,7 @@ else
     utf8_char = utf8.char
     math_type = math.type
 end
+]]
 
 local json = {}
 

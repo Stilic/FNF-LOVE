@@ -9,9 +9,9 @@ return {
 	width = 1280,
 	height = 720,
 
-	checkForUpdates = true,
-
 	flags = {
+		CheckForUpdates = false,
+
 		LoxelForceRenderCameraComplex = false,
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,

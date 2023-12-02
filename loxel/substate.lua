@@ -1,28 +1,32 @@
----@class SubState:State
-local SubState = State:extend("SubState")
+---@class Substate:State
+local Substate = State:extend("Substate")
 
-function SubState:new() SubState.super.new(self) end
+function Substate:new()
+    Substate.super.new(self)
 
-function SubState:belongsToParent()
-    return self.__parentState and self.__parentState.subState == self
+    self.parent = nil
 end
 
-function SubState:update(dt)
-    if self:belongsToParent() and self.__parentState.persistentUpdate then
-        self.__parentState:update(dt)
+function Substate:belongsToParent()
+    return self.parent and self.parent.substate == self
+end
+
+function Substate:update(dt)
+    if self:belongsToParent() and self.parent.persistentUpdate then
+        self.parent:update(dt)
     end
-    SubState.super.update(self, dt)
+    Substate.super.update(self, dt)
 end
 
-function SubState:draw()
-    if self:belongsToParent() and self.__parentState.persistentDraw then
-        self.__parentState:draw()
+function Substate:draw()
+    if self:belongsToParent() and self.parent.persistentDraw then
+        self.parent:draw()
     end
-    SubState.super.draw(self)
+    Substate.super.draw(self)
 end
 
-function SubState:close()
-    if self:belongsToParent() then self.__parentState:closeSubState() end
+function Substate:close()
+    if self:belongsToParent() then self.parent:closeSubstate() end
 end
 
-return SubState
+return Substate

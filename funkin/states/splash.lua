@@ -87,23 +87,9 @@ function Splash:startSplash()
 end
 
 function Splash:finishSplash(skip)
-    if Application.checkForUpdates and not UpdateState.closed then
-        print('Checking for updates..')
-        local code, response = Https.request("https://raw.githubusercontent.com/Stilic/FNF-LOVE/main/project.lua")
-        if code == 200 then
-            local curVersion = Application.version
-            local githubVersion = load(response)().version
-            print('Github Version: ' .. githubVersion)
-            print('Your Version: ' .. curVersion)
-            if curVersion ~= githubVersion then
-                game.switchState(UpdateState(githubVersion), true)
-                return
-            end
-        else
-            print('Error: ' .. code)
-        end
+    if UpdateState.check(true) then
+        game.switchState(TitleState(), skip)
     end
-    game.switchState(TitleState(), skip)
 end
 
 function Splash:update(dt)
