@@ -1,4 +1,5 @@
-local OptionsState = State:extend("OptionsState")
+---@class OptionsSubstate:Substate
+local OptionsSubstate = Substate:extend("OptionsSubstate")
 
 local tabs = {
     Gameplay = require "funkin.states.options.gameplay",
@@ -6,7 +7,8 @@ local tabs = {
     Controls = require "funkin.states.options.controls"
 }
 
-function OptionsState:enter()
+function OptionsSubstate:new()
+    OptionsSubstate.super.new(self)
 
     -- Update Presence
     if love.system.getDevice() == "Desktop" then
@@ -17,12 +19,6 @@ function OptionsState:enter()
     self.curSelect = 1
     self.controls = table.clone(ClientPrefs.controls)
     self.changingOption = false
-
-    self.bg = Sprite()
-    self.bg:loadTexture(paths.getImage('menus/menuBGBlue'))
-    self.bg.color = {0.5, 0.5, 0.5}
-    self.bg:screenCenter()
-    self:add(self.bg)
 
     self.optionsTab = {
         'Gameplay',
@@ -88,7 +84,7 @@ function OptionsState:enter()
     self:add(self.waitInputTxt)
 end
 
-function OptionsState:reset_Tabs()
+function OptionsSubstate:reset_Tabs()
     for _, idk in ipairs({self.allTabs, self.textGroup,
                                             self.spriteGroup}) do
         idk:clear()
@@ -108,12 +104,8 @@ function OptionsState:reset_Tabs()
     self.allTabs:add(controlsTab)
 end
 
-function OptionsState:update(dt)
-    OptionsState.super.update(self, dt)
-
-    if game.sound.music:getVolume() <= 0.5 then
-        game.sound.music:setVolume(game.sound.music:getVolume() + 0.05)
-    end
+function OptionsSubstate:update(dt)
+    OptionsSubstate.super.update(self, dt)
 
     if controls:pressed('back') then
         game.sound.play(paths.getSound('cancelMenu'))
@@ -137,7 +129,8 @@ function OptionsState:update(dt)
                     (self.optionsTab[self.curTab] == 'Controls' and false)
             end
         else
-            game.switchState(MainMenuState())
+            self.parent.grpShitMenu.visible = true
+            self:close()
         end
     end
 
@@ -188,10 +181,7 @@ function OptionsState:update(dt)
                         self.optionsTab[self.curTab] == 'Graphic' then
                         tabs[selectedTab].changeSelection(-1)
                         self:reset_Tabs()
-
-                        if selectedTab == 'Graphic' then
-                            self.bg = ClientPrefs.data.antialiasing
-                        end
+                        self.applySettings('gameplay')
                     end
                 end
                 self.timerHold = 0
@@ -205,10 +195,7 @@ function OptionsState:update(dt)
                         self.optionsTab[self.curTab] == 'Graphic' then
                         tabs[selectedTab].changeSelection(1)
                         self:reset_Tabs()
-
-                        if selectedTab == 'Graphic' then
-                            self.bg = ClientPrefs.data.antialiasing
-                        end
+                        self.applySettings('gameplay')
                     end
                 end
                 self.timerHold = 0
@@ -223,10 +210,7 @@ function OptionsState:update(dt)
                             tabs[selectedTab].changeSelection((controls:down('ui_left')
                                                                 and -1 or 1))
                             self:reset_Tabs()
-
-                            if selectedTab == 'Graphic' then
-                                self.bg = ClientPrefs.data.antialiasing
-                            end
+                            self.applySettings('gameplay')
                         end
                     end
                 end
@@ -276,11 +260,12 @@ function OptionsState:update(dt)
             controls = (require "lib.baton").new({
                 controls = table.clone(self.controls)
             })
+            self.applySettings('controls')
         end)
     end
 end
 
-function OptionsState:changeBindSelection(huh)
+function OptionsSubstate:changeBindSelection(huh)
     huh = huh or 0
 
     game.sound.play(paths.getSound('scrollMenu'))
@@ -295,7 +280,7 @@ function OptionsState:changeBindSelection(huh)
                                 self.curBindSelect == 2 and 542) - 5
 end
 
-function OptionsState:changeSelection(huh, tab)
+function OptionsSubstate:changeSelection(huh, tab)
     huh = huh or 0
 
     game.sound.play(paths.getSound('scrollMenu'))
@@ -313,7 +298,7 @@ function OptionsState:changeSelection(huh, tab)
     end
 end
 
-function OptionsState:changeTab(huh)
+function OptionsSubstate:changeTab(huh)
     huh = huh or 0
 
     game.sound.play(paths.getSound('scrollMenu'))
@@ -335,4 +320,4 @@ function OptionsState:changeTab(huh)
     end
 end
 
-return OptionsState
+return OptionsSubstate

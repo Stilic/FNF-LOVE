@@ -621,6 +621,10 @@ function PlayState:update(dt)
             })
         end
 
+        fadeGroupSprites(self.stage)
+        fadeGroupSprites(self.gf)
+        fadeGroupSprites(self.dad)
+
         self.camHUD.visible = false
         self.boyfriend.visible = false
 
@@ -754,8 +758,8 @@ function PlayState:draw()
     self.scripts:call("postDraw")
 end
 
-function PlayState:closeSubState()
-    PlayState.super.closeSubState(self)
+function PlayState:closeSubstate()
+    PlayState.super.closeSubstate(self)
     if not self.startingSong then
         if self.vocals and not self.startingSong then
             self.vocals:seek(PlayState.conductor.sound:tell())
@@ -785,6 +789,103 @@ function PlayState:closeSubState()
                 endTimestamp = math.floor(endTimestamp)
             })
         end
+    end
+end
+
+function PlayState:onSettingChange(setting)
+    if setting == 'gameplay' then
+        self.downScroll = ClientPrefs.data.downScroll
+
+        local ry = 50
+        if self.downScroll then ry = game.height - 100 - ry end
+        for _, rep in ipairs(self.receptors.members) do
+            rep.y = ry
+        end
+
+        self.healthBarBG.y =
+            (self.downScroll and game.height * 0.08 or game.height * 0.9)
+        self.healthBar.y = self.healthBarBG.y + 4
+
+        self.iconP1.y = self.healthBar.y - 75
+        self.iconP2.y = self.healthBar.y - 75
+
+        local textOffset = 36
+        if self.downScroll then textOffset = -textOffset end
+        self.scoreTxt.y = self.healthBarBG.y + textOffset
+
+        self.timeArcBG.y = (self.downScroll and 45 or game.height - 45)
+        self.timeArc.y = self.timeArcBG.y
+        self.timeTxt.y = (self.downScroll and self.timeArcBG.y - 32 or
+                                                self.timeArcBG.y + 7)
+
+        local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
+        local ogStepCrochet = ogCrochet / 4
+        for _, n in ipairs(self.allNotes.members) do
+            local time = n.time
+            if n.isSustain and PlayState.SONG.speed ~= 1 then
+                time = time - ogStepCrochet + ogStepCrochet / PlayState.SONG.speed
+            end
+
+            local r =
+                (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
+                    1]
+            local sy = r.y + n.scrollOffset.y
+
+            n.x = r.x + n.scrollOffset.x
+            n.y = sy - (PlayState.notePosition - time) *
+                    (0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
+
+            if n.isSustain then
+                n.flipY = self.downScroll
+                if n.flipY then
+                    if n.isSustainEnd then
+                        n.y = n.y + (43.5 * 0.7) *
+                                (PlayState.conductor.stepCrochet / 100 * 1.5 *
+                                    PlayState.SONG.speed) - n.height
+                    end
+                    n.y = n.y + Note.swagWidth / 2 - 60.5 *
+                            (PlayState.SONG.speed - 1) + 27.5 *
+                            (PlayState.SONG.bpm / 100 - 1) *
+                            (PlayState.SONG.speed - 1)
+
+                else
+                    n.y = n.y + Note.swagWidth / 12
+                end
+
+                if (n.wasGoodHit or n.prevNote.wasGoodHit) and
+                    (not n.mustPress or self.botPlay or self.keysPressed[n.data] or
+                        n.isSustainEnd) then
+                    local center = sy + Note.swagWidth / 2
+                    local vert = center - n.y
+                    if self.downScroll then
+                        if n.y - n.offset.y + n:getFrameHeight() * n.scale.y >=
+                            center then
+                            if not n.clipRect then
+                                n.clipRect = {}
+                            end
+                            n.clipRect.x, n.clipRect.y = 0, 0
+                            n.clipRect.width, n.clipRect.height =
+                                n:getFrameWidth() * n.scale.x, vert
+                        end
+                    elseif n.y + n.offset.y <= center then
+                        if not n.clipRect then n.clipRect = {} end
+                        n.clipRect.x, n.clipRect.y = 0, vert
+                        n.clipRect.width, n.clipRect.height =
+                            n:getFrameWidth() * n.scale.x,
+                            n:getFrameHeight() * n.scale.y - vert
+                    end
+                end
+            end
+        end
+    elseif setting == 'controls' then
+        controls:unbindPress(self.bindedKeyPress)
+        controls:unbindRelease(self.bindedKeyRelease)
+
+        self.bindedKeyPress = function(...) self:onKeyPress(...) end
+        controls:bindPress(self.bindedKeyPress)
+
+        self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
+        controls:bindRelease(self.bindedKeyRelease)
     end
 end
 

@@ -1,3 +1,5 @@
+local OptionsSubstate = require "funkin.substates.options"
+
 local PauseSubstate = Substate:extend("PauseSubstate")
 
 function PauseSubstate:new()
@@ -49,8 +51,13 @@ function PauseSubstate:update(dt)
             ["Resume"] = function() self:close() end,
             ["Restart Song"] = function() game.resetState() end,
             ["Options"] = function()
-                OptionsState.onPlayState = true
-                game.switchState(OptionsState())
+                local toSubstate = OptionsSubstate()
+                toSubstate.cameras = {self.parent.camOther}
+                toSubstate.applySettings = function(setting)
+                    self.parent:onSettingChange(setting)
+                end
+                self.grpShitMenu.visible = false
+                self:openSubstate(toSubstate)
             end,
             ["Exit to menu"] = function()
                 game.sound.playMusic(paths.getMusic("freakyMenu"))
