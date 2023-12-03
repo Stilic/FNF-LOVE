@@ -755,7 +755,7 @@ function PlayState:draw()
 end
 
 function PlayState:closeSubstate()
-    PlayState.super.closeSubState(self)
+    PlayState.super.closeSubstate(self)
     if not self.startingSong then
         if self.vocals and not self.startingSong then
             self.vocals:seek(PlayState.conductor.sound:tell())
