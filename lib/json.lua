@@ -203,7 +203,7 @@ function encode_map.table(t, i)
                 max = k
             end
         end
-        if type(t[1]) == "number" then
+        if type(t[1]) ~= "table" then
             statusBuilder[#statusBuilder+1] = "[\n"..string.rep('\t', indent+1)
             encode(t[1], indent+1)
         else
@@ -211,7 +211,7 @@ function encode_map.table(t, i)
             encode(t[1], indent+1)
         end
         for i = 2, max do
-            if type(t[i]) == "number" then
+            if type(t[i]) ~= "table" then
                 statusBuilder[#statusBuilder+1] = ",\n"..string.rep('\t', indent+1)
                 encode(t[i], indent+1)
             else
