@@ -754,7 +754,7 @@ function PlayState:draw()
     self.scripts:call("postDraw")
 end
 
-function PlayState:closeSubState()
+function PlayState:closeSubstate()
     PlayState.super.closeSubState(self)
     if not self.startingSong then
         if self.vocals and not self.startingSong then

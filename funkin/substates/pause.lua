@@ -26,7 +26,7 @@ function PauseSubstate:new()
 end
 
 function PauseSubstate:enter()
-    self.music:play()
+    self.music:play(0, true)
 
     Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 

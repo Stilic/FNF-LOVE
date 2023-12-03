@@ -40,7 +40,11 @@ function Sound:load(asset)
     return self
 end
 
-function Sound:play()
+function Sound:play(volume, looped, pitch)
+    if volume ~= nil then sound:setVolume(volume) end
+    if looped ~= nil then sound:setLooping(looped) end
+    if pitch ~= nil then sound:setPitch(pitch) end
+
     self.__paused = false
     pcall(self.__source.play, self.__source)
     return self
