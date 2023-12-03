@@ -1,8 +1,6 @@
 -- json.lua from https://github.com/actboy168/json.lua
 -- Modified by Stilic for FNF LÖVE
 
-print("a")
-
 local table_concat = table.concat
 local table_sort = table.sort
 local string_char = string.char
