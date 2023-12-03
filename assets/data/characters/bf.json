@@ -1,1 +1,182 @@
-{"animations":[{"anim":"idle","fps":24,"indices":[],"loop":false,"name":"BF idle dance","offsets":[-5,0]},{"anim":"singLEFT","fps":24,"indices":[],"loop":false,"name":"BF NOTE LEFT0","offsets":[5,-6]},{"anim":"singDOWN","fps":24,"indices":[],"loop":false,"name":"BF NOTE DOWN0","offsets":[-20,-51]},{"anim":"singUP","fps":24,"indices":[],"loop":false,"name":"BF NOTE UP0","offsets":[-46,27]},{"anim":"singRIGHT","fps":24,"indices":[],"loop":false,"name":"BF NOTE RIGHT0","offsets":[-48,-7]},{"anim":"singLEFTmiss","fps":24,"indices":[],"loop":false,"name":"BF NOTE LEFT MISS","offsets":[7,19]},{"anim":"singDOWNmiss","fps":24,"indices":[],"loop":false,"name":"BF NOTE DOWN MISS","offsets":[-15,-19]},{"anim":"singUPmiss","fps":24,"indices":[],"loop":false,"name":"BF NOTE UP MISS","offsets":[-46,27]},{"anim":"singRIGHTmiss","fps":24,"indices":[],"loop":false,"name":"BF NOTE RIGHT MISS","offsets":[-44,22]},{"anim":"hey","fps":24,"indices":[],"loop":false,"name":"BF HEY","offsets":[-3,5]},{"anim":"hurt","fps":24,"indices":[],"loop":false,"name":"BF hit","offsets":[14,18]},{"anim":"scared","fps":24,"indices":[],"loop":true,"name":"BF idle shaking","offsets":[-4,0]},{"anim":"dodge","fps":24,"indices":[],"loop":false,"name":"boyfriend dodge","offsets":[-10,-16]},{"anim":"attack","fps":24,"indices":[],"loop":false,"name":"boyfriend attack","offsets":[294,267]},{"anim":"pre-attack","fps":24,"indices":[],"loop":false,"name":"bf pre attack","offsets":[-40,-40]}],"camera_position":[0,0],"flip_x":true,"healthicon":"bf","image":"characters/BOYFRIEND","no_antialiasing":false,"position":[0,350],"scale":1}
+{
+	"animations": [
+		{
+			"anim": "idle",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF idle dance",
+			"offsets": [
+				-5,
+				0
+			]
+		},
+		{
+			"anim": "singLEFT",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE LEFT0",
+			"offsets": [
+				5,
+				-6
+			]
+		},
+		{
+			"anim": "singDOWN",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE DOWN0",
+			"offsets": [
+				-20,
+				-51
+			]
+		},
+		{
+			"anim": "singUP",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE UP0",
+			"offsets": [
+				-46,
+				27
+			]
+		},
+		{
+			"anim": "singRIGHT",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE RIGHT0",
+			"offsets": [
+				-48,
+				-7
+			]
+		},
+		{
+			"anim": "singLEFTmiss",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE LEFT MISS",
+			"offsets": [
+				7,
+				19
+			]
+		},
+		{
+			"anim": "singDOWNmiss",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE DOWN MISS",
+			"offsets": [
+				-15,
+				-19
+			]
+		},
+		{
+			"anim": "singUPmiss",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE UP MISS",
+			"offsets": [
+				-46,
+				27
+			]
+		},
+		{
+			"anim": "singRIGHTmiss",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF NOTE RIGHT MISS",
+			"offsets": [
+				-44,
+				22
+			]
+		},
+		{
+			"anim": "hey",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF HEY",
+			"offsets": [
+				-3,
+				5
+			]
+		},
+		{
+			"anim": "hurt",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "BF hit",
+			"offsets": [
+				14,
+				18
+			]
+		},
+		{
+			"anim": "scared",
+			"fps": 24,
+			"indices": [],
+			"loop": true,
+			"name": "BF idle shaking",
+			"offsets": [
+				-4,
+				0
+			]
+		},
+		{
+			"anim": "dodge",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "boyfriend dodge",
+			"offsets": [
+				-10,
+				-16
+			]
+		},
+		{
+			"anim": "attack",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "boyfriend attack",
+			"offsets": [
+				294,
+				267
+			]
+		},
+		{
+			"anim": "pre-attack",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "bf pre attack",
+			"offsets": [
+				-40,
+				-40
+			]
+		}
+	],
+	"camera_position": [
+		0,
+		0
+	],
+	"flip_x": true,
+	"healthicon": "bf",
+	"image": "characters/BOYFRIEND",
+	"no_antialiasing": false,
+	"position": [
+		0,
+		350
+	],
+	"scale": 1
+}

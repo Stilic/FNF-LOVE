@@ -1,1 +1,39 @@
-{"name":"Daddy Dearest","songs":[["Bopeebo","dad",[146,113,253]],["Fresh","dad",[146,113,253]],["Dadbattle","dad",[146,113,253]]],"characters":["dad","bf","gf"],"sprite":"week1","locked":false}
+{
+    "name": "Daddy Dearest",
+    "songs": [
+        [
+            "Bopeebo",
+            "dad",
+            [
+                146,
+                113,
+                253
+            ]
+        ],
+        [
+            "Fresh",
+            "dad",
+            [
+                146,
+                113,
+                253
+            ]
+        ],
+        [
+            "Dadbattle",
+            "dad",
+            [
+                146,
+                113,
+                253
+            ]
+        ]
+    ],
+    "characters": [
+        "dad",
+        "bf",
+        "gf"
+    ],
+    "sprite": "week1",
+    "locked": false
+}

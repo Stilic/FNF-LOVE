@@ -1,1 +1,83 @@
-{"animations":[{"anim":"danceLeft","fps":24,"indices":[30,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],"loop":false,"name":"GF IDLE","offsets":[0,0]},{"anim":"danceRight","fps":24,"indices":[15,16,17,18,19,20,21,22,23,24,25,26,27,28,29],"loop":false,"name":"GF IDLE","offsets":[0,0]},{"anim":"singUP","fps":24,"indices":[],"loop":false,"name":"GF IDLE","offsets":[0,0]}],"camera_position":[-20,80],"flip_x":false,"healthicon":"gf","image":"characters/gfPixel","no_antialiasing":true,"position":[0,0],"scale":5.99999999999999}
+{
+	"animations": [
+		{
+			"anim": "danceLeft",
+			"fps": 24,
+			"indices": [
+				30,
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14
+			],
+			"loop": false,
+			"name": "GF IDLE",
+			"offsets": [
+				0,
+				0
+			]
+		},
+		{
+			"anim": "danceRight",
+			"fps": 24,
+			"indices": [
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29
+			],
+			"loop": false,
+			"name": "GF IDLE",
+			"offsets": [
+				0,
+				0
+			]
+		},
+		{
+			"anim": "singUP",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "GF IDLE",
+			"offsets": [
+				0,
+				0
+			]
+		}
+	],
+	"camera_position": [
+		-20,
+		80
+	],
+	"flip_x": false,
+	"healthicon": "gf",
+	"image": "characters/gfPixel",
+	"no_antialiasing": true,
+	"position": [
+		0,
+		0
+	],
+	"scale": 5.99999999999999
+}

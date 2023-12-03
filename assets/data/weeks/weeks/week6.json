@@ -1,1 +1,39 @@
-{"name":"hating simulator ft. moawling","songs":[["Senpai","senpai-pixel",[255,120,191]],["Roses","senpai-pixel",[255,120,191]],["Thorns","spirit-pixel",[255,120,191]]],"characters":["senpai","bf","gf"],"sprite":"week6","locked":false}
+{
+    "name": "hating simulator ft. moawling",
+    "songs": [
+        [
+            "Senpai",
+            "senpai-pixel",
+            [
+                255,
+                120,
+                191
+            ]
+        ],
+        [
+            "Roses",
+            "senpai-pixel",
+            [
+                255,
+                120,
+                191
+            ]
+        ],
+        [
+            "Thorns",
+            "spirit-pixel",
+            [
+                255,
+                120,
+                191
+            ]
+        ]
+    ],
+    "characters": [
+        "senpai",
+        "bf",
+        "gf"
+    ],
+    "sprite": "week6",
+    "locked": false
+}

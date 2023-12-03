@@ -1,1 +1,72 @@
-{"animations":[{"anim":"idle","fps":24,"indices":[],"loop":false,"name":"Angry Senpai Idle","offsets":[2,0]},{"anim":"singUP","fps":24,"indices":[],"loop":false,"name":"Angry Senpai UP NOTE","offsets":[5,37]},{"anim":"singLEFT","fps":24,"indices":[],"loop":false,"name":"Angry Senpai LEFT NOTE","offsets":[40,0]},{"anim":"singRIGHT","fps":24,"indices":[],"loop":false,"name":"Angry Senpai RIGHT NOTE","offsets":[0,0]},{"anim":"singDOWN","fps":24,"indices":[],"loop":false,"name":"Angry Senpai DOWN NOTE","offsets":[14,0]}],"camera_position":[-240,-330],"flip_x":false,"healthicon":"senpai-pixel","image":"characters/senpai","no_antialiasing":true,"position":[150,360],"scale":6}
+{
+	"animations": [
+		{
+			"anim": "idle",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "Angry Senpai Idle",
+			"offsets": [
+				2,
+				0
+			]
+		},
+		{
+			"anim": "singUP",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "Angry Senpai UP NOTE",
+			"offsets": [
+				5,
+				37
+			]
+		},
+		{
+			"anim": "singLEFT",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "Angry Senpai LEFT NOTE",
+			"offsets": [
+				40,
+				0
+			]
+		},
+		{
+			"anim": "singRIGHT",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "Angry Senpai RIGHT NOTE",
+			"offsets": [
+				0,
+				0
+			]
+		},
+		{
+			"anim": "singDOWN",
+			"fps": 24,
+			"indices": [],
+			"loop": false,
+			"name": "Angry Senpai DOWN NOTE",
+			"offsets": [
+				14,
+				0
+			]
+		}
+	],
+	"camera_position": [
+		-240,
+		-330
+	],
+	"flip_x": false,
+	"healthicon": "senpai-pixel",
+	"image": "characters/senpai",
+	"no_antialiasing": true,
+	"position": [
+		150,
+		360
+	],
+	"scale": 6
+}
