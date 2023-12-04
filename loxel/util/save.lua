@@ -27,8 +27,8 @@ function Save.bind(name)
             os.execute('mkdir -p "'..dirToMake..'"')
         end
     end
-    local saveFile = io.open(filePath, "wb")
     local encodeData = love.data.encode("string", "hex", json.encode(Save.data))
+    local saveFile = io.open(filePath, "wb")
     saveFile:write(encodeData)
     saveFile:close()
 end

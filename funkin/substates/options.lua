@@ -238,8 +238,7 @@ function OptionsSubstate:update(dt)
         self.block_input = true
 
         local arrow = {
-            'note_left', 'note_down', 'note_up', 'note_right', 'ui_left',
-            'ui_down', 'ui_up', 'ui_right', 'accept', 'back', 'pause'
+            'note_left', 'note_down', 'note_up', 'note_right'
         }
         local text = arrow[self.curSelect]
 

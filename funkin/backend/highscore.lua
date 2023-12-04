@@ -15,6 +15,7 @@ function Highscore.saveScore(song, score, diff)
     else
         Highscore.scores.songs[formatSong] = score
     end
+    game.save.data.scores = Highscore.scores
 end
 
 function Highscore.saveWeekScore(week, score, diff)
@@ -27,6 +28,7 @@ function Highscore.saveWeekScore(week, score, diff)
     else
         Highscore.scores.weeks[formatSong] = score
     end
+    game.save.data.scores = Highscore.scores
 end
 
 function Highscore.getScore(song, diff)
@@ -47,6 +49,12 @@ function Highscore.getWeekScore(week, diff)
     end
 
     return Highscore.scores.weeks[formatSong]
+end
+
+function Highscore.load()
+    if game.save.data.scores then
+        Highscore.scores = game.save.data.scores
+    end
 end
 
 return Highscore

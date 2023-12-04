@@ -5,7 +5,7 @@ local updateVersion = ''
 function UpdateState.check(goToState)
 	if flags.CheckForUpdates and not UpdateState.closed then
 		print('Checking for updates..')
-		
+
 		local code, response = Https.request("https://raw.githubusercontent.com/Stilic/FNF-LOVE/main/project.lua")
 		if code == 200 then
 			local curVersion = Project.version

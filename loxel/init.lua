@@ -98,9 +98,6 @@ function game.init(app, state)
     game.height = app.height
     Camera.__init(love.graphics.newCanvas(app.width, app.height))
 
-    game.save.init('funkin')
-    ClientPrefs.loadData()
-
     love.mouse.setVisible(false)
 
     local os = love.system.getOS()
