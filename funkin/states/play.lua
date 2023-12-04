@@ -307,24 +307,22 @@ function PlayState:enter()
     self.timeArcBG = Graphic(45, game.height - 45, 100, 100, {0, 0, 0}, "arc",
                              "line")
     if self.downScroll then self.timeArcBG.y = 45 end
-    self.timeArcBG.outWidth = 18
+    self.timeArcBG.line.width = 18
     self.timeArcBG.config = {
         radius = 24,
-        arctype = "closed",
-        angle1 = 0,
-        angle2 = 360,
+        type = "closed",
+        angle = {0, 360},
         segments = 40
     }
     self.timeArcBG:updateDimensions()
 
     self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 100, 100,
                            {1, 1, 1}, "arc", "line")
-    self.timeArc.outWidth = 10
+    self.timeArc.line.width = 10
     self.timeArc.config = {
         radius = 24,
-        arctype = "open",
-        angle1 = -90,
-        angle2 = 0,
+        type = "open",
+        angle = {-90, 0},
         segments = 40
     }
     self.timeArc:updateDimensions()
@@ -510,8 +508,7 @@ function PlayState:update(dt)
     -- time arc / text
     local songTime = PlayState.conductor.time / 1000
 
-    local mode = "left" -- for now until ClientPrefs is a thing - Vi
-    if mode == "left" then
+    if ClientPrefs.data.timeType == "left" then
         songTime = PlayState.conductor.sound:getDuration() - songTime
     end
 
@@ -521,7 +518,7 @@ function PlayState:update(dt)
     local timeAngle = ((PlayState.conductor.time / 1000) /
                           (PlayState.conductor.sound:getDuration() / 1000)) *
                           0.36
-    self.timeArc.config.angle2 = -90 + math.ceil(timeAngle)
+    self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
 
     local section = self:getCurrentSection()
     if section ~= nil then

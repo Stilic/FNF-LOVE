@@ -12,15 +12,17 @@ function Graphic:new(x, y, width, height, color, type, fill)
     self.fill = fill or "fill"
 
     self.config = {
-        arctype = "open",
+        type = "open",
         radius = 100,
-        angle1 = 0,
-        angle2 = 180,
-        segments = 20,
+        angle = {0, 180},
+        segments = 36,
         vertices = nil
     }
 
-    self.outWidth = 6
+    self.line = {
+        width = 6,
+        join = "miter"
+    }
 end
 
 function Graphic:getGraphicMidpoint()
@@ -55,22 +57,25 @@ function Graphic:__render(camera)
     local r, g, b, a = love.graphics.getColor()
     local shader = self.shader and love.graphics.getShader()
     local blendMode, alphaMode = love.graphics.getBlendMode()
+
     local lineStyle = love.graphics.getLineStyle()
     local lineWidth = love.graphics.getLineWidth()
+    local lineJoin = love.graphics.getLineJoin()
 
     love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
-    love.graphics.setLineWidth(self.outWidth)
+    love.graphics.setLineWidth(self.line.width)
+    love.graphics.setLineJoin(self.line.join)
 
     local x, y, w, h = self.x, self.y, self.width, self.height
 
     x, y = x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
            y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
 
-    local ang1, ang2 = self.config.angle1 * (math.pi / 180),
-                       self.config.angle2 * (math.pi / 180)
+    local ang1, ang2 = self.config.angle[1] * (math.pi / 180),
+                       self.config.angle[2] * (math.pi / 180)
 
     local rad, seg, type = self.config.radius, self.config.segments,
-                           self.config.arctype
+                           self.config.type
 
     love.graphics.setShader(self.shader)
     love.graphics.setBlendMode(self.blend)
@@ -79,8 +84,11 @@ function Graphic:__render(camera)
 
     love.graphics.push()
     love.graphics.rotate(math.rad(self.angle))
+
     if self.type == "rectangle" then
         love.graphics.rectangle(self.fill, x, y, w, h)
+    elseif self.type == "roundrect" then
+        -- TODO
     elseif self.type == "polygon" and self.config.vertices then
         love.graphics.translate(x, y)
         love.graphics.polygon(self.fill, self.config.vertices)
@@ -95,6 +103,7 @@ function Graphic:__render(camera)
     love.graphics.setBlendMode(blendMode, alphaMode)
     love.graphics.setLineStyle(lineStyle)
     love.graphics.setLineWidth(lineWidth)
+    love.graphics.setLineJoin(lineJoin)
     if self.shader then love.graphics.setShader(shader) end
 end
 

@@ -6,6 +6,7 @@ ClientPrefs.data = {
 	noteSplash = true,
 	pauseMusic = 'railways',
 	botplayMode = false,
+	timeType = 'left',
 	songOffset = 0,
 
 	-- display
