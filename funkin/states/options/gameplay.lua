@@ -5,6 +5,7 @@ local optionsVar = {
     {'noteSplash', 'Note Splash', false, 'boolean'},
     {'pauseMusic', 'Pause Music', false, 'string', {'railways', 'breakfast'}},
     {'botplayMode', 'Botplay', false, 'boolean'},
+    {'timeType', 'Song Time Type', false, 'string', {'left', 'elapsed'}},
     {'songOffset', 'Song Offset', false, 'number', {0, 999}}
 }
 
