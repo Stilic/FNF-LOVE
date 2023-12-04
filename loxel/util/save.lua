@@ -10,7 +10,8 @@ function Save.init(name)
     local filePath = Save.path..'/'..name..'.lox'
     local dataFile = io.open(filePath, "rb")
     if dataFile then
-        Save.data = json.decode(dataFile:read("a"))
+        local decodeData = love.data.decode("string", "hex", dataFile:read("a"))
+        Save.data = json.decode(decodeData)
         dataFile:close()
     end
 end
@@ -27,7 +28,8 @@ function Save.bind(name)
         end
     end
     local saveFile = io.open(filePath, "wb")
-    saveFile:write(json.encode(Save.data))
+    local encodeData = love.data.encode("string", "hex", json.encode(Save.data))
+    saveFile:write(encodeData)
     saveFile:close()
 end
 
