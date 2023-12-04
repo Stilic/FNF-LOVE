@@ -7,7 +7,7 @@ ClientPrefs.data = {
 	pauseMusic = 'railways',
 	botplayMode = false,
 	songOffset = 0,
-	
+
 	-- display
 	fps = 120,
 	antialiasing = true,
@@ -33,5 +33,22 @@ ClientPrefs.controls = {
 	debug_1 = {"key:7"},
 	debug_2 = {"key:8"}
 }
+
+function ClientPrefs.saveData()
+	game.save.data.prefs = ClientPrefs.data
+	game.save.data.controls = ClientPrefs.controls
+
+	game.save.bind('funkin')
+end
+
+function ClientPrefs.loadData()
+	if game.save.data.prefs then
+		ClientPrefs.data = game.save.data.prefs
+	end
+
+	if game.save.data.controls then
+		ClientPrefs.controls = game.save.data.controls
+	end
+end
 
 return ClientPrefs

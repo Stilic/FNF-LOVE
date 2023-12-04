@@ -173,4 +173,7 @@ function love.draw() game.draw() end
 
 function love.focus(f) game.focus(f) end
 
-function love.quit() Discord.shutdown() end
+function love.quit()
+    game.quit()
+    Discord.shutdown()
+end

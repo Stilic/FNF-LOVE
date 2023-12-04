@@ -1,7 +1,7 @@
 local Project = require "project"
 
 function love.conf(t)
-    t.identity = Project.package
+    t.identity = Project.company
     t.console = Project.DEBUG_MODE
 
     t.window.title = Project.title

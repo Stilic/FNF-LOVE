@@ -36,6 +36,7 @@ ui = {
 
 game.cameras = require "loxel.managers.cameramanager"
 game.sound = require "loxel.managers.soundmanager"
+game.save = require "loxel.util.save"
 
 local fade
 local function fadeOut(time, callback)
@@ -96,6 +97,9 @@ function game.init(app, state)
     game.width = app.width
     game.height = app.height
     Camera.__init(love.graphics.newCanvas(app.width, app.height))
+
+    game.save.init('funkin')
+    ClientPrefs.loadData()
 
     love.mouse.setVisible(false)
 
@@ -191,3 +195,4 @@ function game.focus(f)
     game.sound.onFocus(f)
     Gamestate.focus(f)
 end
+function game.quit() ClientPrefs.saveData() end

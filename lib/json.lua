@@ -177,7 +177,11 @@ function encode_map.table(t, i)
         table_sort(keys)
         do
             local k = keys[1]
-            statusBuilder[#statusBuilder+1] = string.rep('\t', indent)..'{\n'..string.rep('\t', indent+1)..'"'
+            if type(t[k]) == "number" or type(t[k]) == "string" then
+                statusBuilder[#statusBuilder+1] = string.rep('\t', indent)..'{\n'..string.rep('\t', indent+1)..'"'
+            else
+                statusBuilder[#statusBuilder+1] = '{\n'..string.rep('\t', indent+1)..'"'
+            end
             statusBuilder[#statusBuilder+1] = encode_string(k)
             statusBuilder[#statusBuilder+1] = '": '
             encode(t[k], indent+1)
@@ -203,19 +207,17 @@ function encode_map.table(t, i)
         end
         if type(t[1]) ~= "table" then
             statusBuilder[#statusBuilder+1] = "[\n"..string.rep('\t', indent+1)
-            encode(t[1], indent+1)
         else
             statusBuilder[#statusBuilder+1] = "[\n"
-            encode(t[1], indent+1)
         end
+        encode(t[1], indent+1)
         for i = 2, max do
             if type(t[i]) ~= "table" then
                 statusBuilder[#statusBuilder+1] = ",\n"..string.rep('\t', indent+1)
-                encode(t[i], indent+1)
             else
                 statusBuilder[#statusBuilder+1] = ",\n"
-                encode(t[i], indent+1)
             end
+            encode(t[i], indent+1)
         end
         statusVisited[t] = nil
         return '\n'..string.rep('\t', indent).."]"
