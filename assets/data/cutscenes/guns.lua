@@ -11,9 +11,8 @@ function create()
 
     tankman = Sprite(state.dad.x + 100, state.dad.y)
     tankman:setFrames(paths.getSparrowAtlas('stages/tank/cutscenes/'..songName))
-    tankman:addAnimByPrefix('wellWell', 'TANK TALK 1 P1', 24, false)
-    tankman:addAnimByPrefix('killYou', 'TANK TALK 1 P2', 24, false)
-    tankman:play('wellWell', true)
+    tankman:addAnimByPrefix('tightBars', 'TANK TALK 2', 24, false)
+    tankman:play('tightBars', true)
     table.insert(state.members, table.find(state.members, state.dad)+1, tankman)
 
     state.camFollow = {x = state.dad.x + 380, y = state.dad.y + 170}
@@ -24,35 +23,19 @@ function postCreate()
     bgMusic:play(0.5)
     game.camera.zoom = game.camera.zoom * 1.2
 
-    cutsceneTimer:after(0.1, function()
-        game.sound.play(paths.getSound('gameplay/wellWellWell'))
-    end)
+    game.sound.play(paths.getSound('gameplay/tankSong2'))
+    Timer.tween(4, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
 
-    cutsceneTimer:after(3, function()
-        state.camFollow.x = state.camFollow.x + 650
-        state.camFollow.y = state.camFollow.y + 100
+    cutsceneTimer:after(4, function()
+        Timer.tween(0.5, game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 'in-out-quad')
+        state.gf:playAnim('sad', true)
     end)
 
     cutsceneTimer:after(4.5, function()
-        state.boyfriend:playAnim('singUP', true)
-        game.sound.play(paths.getSound('gameplay/bfBeep'))
+        Timer.tween(1, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
     end)
 
-    cutsceneTimer:after(5.5, function()
-        state.boyfriend:playAnim('idle', true)
-    end)
-
-    cutsceneTimer:after(6, function()
-        state.camFollow.x = state.camFollow.x - 650
-        state.camFollow.y = state.camFollow.y - 100
-
-        tankman:play('killYou', true)
-        tankman.x = tankman.x - 36
-        tankman.y = tankman.y - 10
-        game.sound.play(paths.getSound('gameplay/killYou'))
-    end)
-
-    cutsceneTimer:after(12, function()
+    cutsceneTimer:after(11.5, function()
         tankman:destroy()
         state.dad.alpha = 1
         state.camHUD.visible = true
