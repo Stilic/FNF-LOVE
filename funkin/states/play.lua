@@ -110,9 +110,13 @@ function PlayState:enter()
         elseif songName == 'pico' or songName == 'philly-nice' or songName ==
             'blammed' then
             curStage = 'philly'
-        elseif songName == "senpai" or songName == "roses" or songName ==
-            "thorns" then
+        elseif songName == 'satin-panties' or songName == 'high' or songName ==
+            'milf' then
+            curStage = 'limo'
+        elseif songName == "senpai" or songName == "roses" then
             curStage = "school"
+        elseif songName == "thorns" then
+            curStage = "school-evil"
         elseif songName == "ugh" or songName == "guns" or songName == "stress" then
             curStage = "tank"
         else
@@ -248,8 +252,16 @@ function PlayState:enter()
     local gfVersion = PlayState.SONG.gfVersion
     if gfVersion == nil then
         switch(curStage, {
+            ["limo"] = function() gfVersion = "gf-car" end,
             ["school"] = function() gfVersion = "gf-pixel" end,
-            ["tank"] = function() gfVersion = "gf-tankmen" end,
+            ["school-evil"] = function() gfVersion = "gf-pixel" end,
+            ["tank"] = function()
+                if songName == 'stress' then
+                    gfVersion = "pico-speaker"
+                else
+                    gfVersion = "gf-tankmen"
+                end
+            end,
             default = function() gfVersion = "gf" end
         })
         PlayState.SONG.gfVersion = gfVersion

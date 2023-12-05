@@ -27,6 +27,7 @@ MenuCharacter = require "funkin.ui.menucharacter"
 MenuItem = require "funkin.ui.menuitem"
 Alphabet = require "funkin.ui.alphabet"
 HealthIcon = require "funkin.gameplay.ui.healthicon"
+BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 ParallaxImage = require "loxel.effects.parallax"
 

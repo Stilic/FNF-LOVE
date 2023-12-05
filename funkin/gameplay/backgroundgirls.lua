@@ -1,6 +1,5 @@
 local BackgroundGirls = Sprite:extend("BackgroundGirls")
 
-BackgroundGirls.isPissed = false
 function BackgroundGirls:new(x, y, isPissed)
     BackgroundGirls.super.new(self, x, y)
 
@@ -26,8 +25,6 @@ function BackgroundGirls:new(x, y, isPissed)
 end
 
 BackgroundGirls.danceDir = false
-function BackgroundGirls:swapDanceType() end
-
 function BackgroundGirls:dance()
     self.danceDir = not self.danceDir
     if self.danceDir then

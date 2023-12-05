@@ -49,6 +49,9 @@ function ClientPrefs.loadData()
 
 	if game.save.data.controls then
 		ClientPrefs.controls = game.save.data.controls
+		controls = (require "lib.baton").new({
+			controls = table.clone(ClientPrefs.controls)
+		})
 	end
 end
 
