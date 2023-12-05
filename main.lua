@@ -8,7 +8,7 @@ require "loxel"
 
 Timer = require "lib.timer"
 
--- WindowDialogue = require "lib.windows.dialogue"
+WindowDialogue = require "lib.windows.dialogue"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
@@ -29,6 +29,7 @@ Alphabet = require "funkin.ui.alphabet"
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
+TankmenBG = require "funkin.gameplay.tankmenbg"
 ParallaxImage = require "loxel.effects.parallax"
 
 TitleState = require "funkin.states.title"

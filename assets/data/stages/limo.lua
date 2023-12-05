@@ -49,9 +49,7 @@ function postCreate()
 end
 
 local updateElapsed = 0
-function update(dt)
-    updateElapsed = dt
-end
+function update(dt) updateElapsed = dt end
 
 local fastCarCanDrive = true
 function resetFastCar()

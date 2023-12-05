@@ -15,6 +15,8 @@ function loadMappedAnims()
         end
     end
     table.sort(animationNotes, sortAnims)
+
+    TankmenBG.animationNotes = animationNotes
 end
 
 function sortAnims(a, b) return a[1] < b[1] end

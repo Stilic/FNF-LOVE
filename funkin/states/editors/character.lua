@@ -403,7 +403,7 @@ end
 function CharacterEditor:leave()
     love.mouse.setVisible(false)
     Character.editorMode = false
-    love.window.setTitle(Application.title)
+    love.window.setTitle(Project.title)
 end
 
 return CharacterEditor

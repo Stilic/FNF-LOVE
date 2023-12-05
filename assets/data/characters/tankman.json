@@ -123,7 +123,7 @@
 		}
 	],
 	"camera_position": [
-		0,
+		40,
 		0
 	],
 	"flip_x": true,
@@ -131,7 +131,7 @@
 	"image": "characters/tankmanCaptain",
 	"no_antialiasing": false,
 	"position": [
-		0,
+		-40,
 		240
 	],
 	"scale": 1

@@ -28,6 +28,8 @@ PlayState.storyWeek = ""
 PlayState.storyScore = 0
 PlayState.storyWeekFile = ""
 
+PlayState.seenCutscene = false
+
 PlayState.pixelStage = false
 
 PlayState.prevCamFollow = nil
@@ -376,6 +378,47 @@ function PlayState:enter()
     self.startingSong = true
 
     self.countdownTimer = Timer.new()
+    self.startedCountdown = false
+
+    if self.storyMode and not self.seenCutscene then
+        PlayState.seenCutscene = true
+
+        if paths.exists(paths.getPath('data/cutscenes/'..songName..'.lua'), 'file') then
+            local cutsceneScript = Script('data/cutscenes/'..songName)
+            cutsceneScript:call("create")
+            table.insert(self.scripts.scripts, cutsceneScript)
+        else
+            self:startCountdown()
+        end
+    else
+        self:startCountdown()
+    end
+
+    if love.system.getDevice() == 'Desktop' then
+        local detailsText = "Freeplay"
+        if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+        local diff = "Normal"
+        switch(PlayState.storyDifficulty, {
+            ["easy"] = function() diff = "Easy" end,
+            ["hard"] = function() diff = "Hard" end
+        })
+
+        Discord.changePresence({
+            details = detailsText,
+            state = self.SONG.song..' - ['..diff..']'
+        })
+    end
+
+    self.scripts:set("bpm", PlayState.conductor.bpm)
+    self.scripts:set("crochet", PlayState.conductor.crochet)
+    self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
+
+    self.scripts:call("postCreate")
+end
+
+function PlayState:startCountdown()
+    self.startedCountdown = true
 
     local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
     local countdownData = {
@@ -416,28 +459,6 @@ function PlayState:enter()
             self:beat(swagCounter - 4)
         end)
     end
-
-    if love.system.getDevice() == 'Desktop' then
-        local detailsText = "Freeplay"
-        if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
-
-        local diff = "Normal"
-        switch(PlayState.storyDifficulty, {
-            ["easy"] = function() diff = "Easy" end,
-            ["hard"] = function() diff = "Hard" end
-        })
-
-        Discord.changePresence({
-            details = detailsText,
-            state = self.SONG.song..' - ['..diff..']'
-        })
-    end
-
-    self.scripts:set("bpm", PlayState.conductor.bpm)
-    self.scripts:set("crochet", PlayState.conductor.crochet)
-    self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
-
-    self.scripts:call("postCreate")
 end
 
 local function fadeGroupSprites(obj)
@@ -456,34 +477,36 @@ function PlayState:update(dt)
 
     self.countdownTimer:update(dt)
 
-    PlayState.notePosition = PlayState.notePosition + 1000 * dt
-    if self.startingSong and PlayState.notePosition >= 0 then
-        self.startingSong = false
-        PlayState.conductor.sound:play()
-        if self.vocals then self.vocals:play() end
-        PlayState.notePosition = PlayState.conductor.time
-        self.scripts:call("songStart")
+    if self.startedCountdown then
+        PlayState.notePosition = PlayState.notePosition + 1000 * dt
+        if self.startingSong and PlayState.notePosition >= 0 then
+            self.startingSong = false
+            PlayState.conductor.sound:play()
+            if self.vocals then self.vocals:play() end
+            PlayState.notePosition = PlayState.conductor.time
+            self.scripts:call("songStart")
 
-        if not self.startingSong and love.system.getDevice() == "Desktop" then
-            local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+            if not self.startingSong and love.system.getDevice() == "Desktop" then
+                local detailsText = "Freeplay"
+                if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
-            local startTimestamp = os.time(os.date("*t"))
-            local endTimestamp = startTimestamp +
-                                     PlayState.conductor.sound:getDuration()
+                local startTimestamp = os.time(os.date("*t"))
+                local endTimestamp = startTimestamp +
+                                        PlayState.conductor.sound:getDuration()
 
-            local diff = "Normal"
-            switch(PlayState.storyDifficulty, {
-                ["easy"] = function() diff = "Easy" end,
-                ["hard"] = function() diff = "Hard" end
-            })
+                local diff = "Normal"
+                switch(PlayState.storyDifficulty, {
+                    ["easy"] = function() diff = "Easy" end,
+                    ["hard"] = function() diff = "Hard" end
+                })
 
-            Discord.changePresence({
-                details = detailsText,
-                state = self.SONG.song..' - ['..diff..']',
-                startTimestamp = math.floor(startTimestamp),
-                endTimestamp = math.floor(endTimestamp)
-            })
+                Discord.changePresence({
+                    details = detailsText,
+                    state = self.SONG.song..' - ['..diff..']',
+                    startTimestamp = math.floor(startTimestamp),
+                    endTimestamp = math.floor(endTimestamp)
+                })
+            end
         end
     end
 
@@ -532,33 +555,35 @@ function PlayState:update(dt)
                           0.36
     self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
 
-    local section = self:getCurrentSection()
-    if section ~= nil then
-        if section.gfSection then
-            local x, y = self.gf:getMidpoint()
-            self.camFollow.x = x -
-                                   (self.gf.cameraPosition.x -
-                                       self.stage.gfCam.x)
-            self.camFollow.y = y -
-                                   (self.gf.cameraPosition.y -
-                                       self.stage.gfCam.y)
-        else
-            if section.mustHitSection then
-                local x, y = self.boyfriend:getMidpoint()
-                self.camFollow.x = x - 100 -
-                                       (self.boyfriend.cameraPosition.x -
-                                           self.stage.boyfriendCam.x)
-                self.camFollow.y = y - 100 +
-                                       (self.boyfriend.cameraPosition.y +
-                                           self.stage.boyfriendCam.y)
+    if self.startedCountdown then
+        local section = self:getCurrentSection()
+        if section ~= nil then
+            if section.gfSection then
+                local x, y = self.gf:getMidpoint()
+                self.camFollow.x = x -
+                                    (self.gf.cameraPosition.x -
+                                        self.stage.gfCam.x)
+                self.camFollow.y = y -
+                                    (self.gf.cameraPosition.y -
+                                        self.stage.gfCam.y)
             else
-                local x, y = self.dad:getMidpoint()
-                self.camFollow.x = x + 150 +
-                                       (self.dad.cameraPosition.x +
-                                           self.stage.dadCam.x)
-                self.camFollow.y = y - 100 +
-                                       (self.dad.cameraPosition.y +
-                                           self.stage.dadCam.y)
+                if section.mustHitSection then
+                    local x, y = self.boyfriend:getMidpoint()
+                    self.camFollow.x = x - 100 -
+                                        (self.boyfriend.cameraPosition.x -
+                                            self.stage.boyfriendCam.x)
+                    self.camFollow.y = y - 100 +
+                                        (self.boyfriend.cameraPosition.y +
+                                            self.stage.boyfriendCam.y)
+                else
+                    local x, y = self.dad:getMidpoint()
+                    self.camFollow.x = x + 150 +
+                                        (self.dad.cameraPosition.x +
+                                            self.stage.dadCam.x)
+                    self.camFollow.y = y - 100 +
+                                        (self.dad.cameraPosition.y +
+                                            self.stage.dadCam.y)
+                end
             end
         end
     end
@@ -569,44 +594,46 @@ function PlayState:update(dt)
         self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
     end
 
-    if controls:pressed("pause") then
-        PlayState.conductor.sound:pause()
-        if self.vocals then self.vocals:pause() end
+    if self.startedCountdown then
+        if controls:pressed("pause") then
+            PlayState.conductor.sound:pause()
+            if self.vocals then self.vocals:pause() end
 
-        self.paused = true
+            self.paused = true
 
-        if love.system.getDevice() == 'Desktop' then
-            local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+            if love.system.getDevice() == 'Desktop' then
+                local detailsText = "Freeplay"
+                if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
-            local diff = "Normal"
-            switch(PlayState.storyDifficulty, {
-                ["easy"] = function() diff = "Easy" end,
-                ["hard"] = function() diff = "Hard" end
-            })
+                local diff = "Normal"
+                switch(PlayState.storyDifficulty, {
+                    ["easy"] = function() diff = "Easy" end,
+                    ["hard"] = function() diff = "Hard" end
+                })
 
-            Discord.changePresence({
-                details = "Paused - " .. detailsText,
-                state = self.SONG.song..' - ['..diff..']'
-            })
+                Discord.changePresence({
+                    details = "Paused - " .. detailsText,
+                    state = self.SONG.song..' - ['..diff..']'
+                })
+            end
+
+            local pause = PauseSubstate()
+            pause.cameras = {self.camOther}
+            self:openSubstate(pause)
         end
-
-        local pause = PauseSubstate()
-        pause.cameras = {self.camOther}
-        self:openSubstate(pause)
+        if controls:pressed("debug_1") then
+            PlayState.conductor.sound:pause()
+            if self.vocals then self.vocals:pause() end
+            game.switchState(ChartingState())
+        end
+        if controls:pressed("debug_2") then
+            PlayState.conductor.sound:pause()
+            if self.vocals then self.vocals:pause() end
+            CharacterEditor.onPlayState = true
+            game.switchState(CharacterEditor())
+        end
+        if controls:pressed("reset") then self.health = 0 end
     end
-    if controls:pressed("debug_1") then
-        PlayState.conductor.sound:pause()
-        if self.vocals then self.vocals:pause() end
-        game.switchState(ChartingState())
-    end
-    if controls:pressed("debug_2") then
-        PlayState.conductor.sound:pause()
-        if self.vocals then self.vocals:pause() end
-        CharacterEditor.onPlayState = true
-        game.switchState(CharacterEditor())
-    end
-    if controls:pressed("reset") then self.health = 0 end
 
     if self.health <= 0 and not self.isDead then
         self.paused = true
@@ -1042,8 +1069,12 @@ function PlayState:goodNoteHit(n)
 end
 
 function PlayState:endSong()
+    PlayState.seenCutscene = false
+
     local formatSong = paths.formatToSongPath(self.SONG.song)
-    Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
+    if self.SONG.validScore then
+        Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
+    end
 
     if self.storyMode then
         PlayState.storyScore = PlayState.storyScore + self.score
@@ -1068,7 +1099,9 @@ function PlayState:endSong()
             PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
             game.resetState(true)
         else
-            Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.storyDifficulty)
+            if self.SONG.validScore then
+                Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.storyDifficulty)
+            end
             game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(StoryMenuState())
         end
@@ -1278,6 +1311,7 @@ end
 function PlayState:leave()
     self.scripts:call("leave")
 
+    PlayState.seenCutscene = false
     PlayState.conductor = nil
 
     controls:unbindPress(self.bindedKeyPress)

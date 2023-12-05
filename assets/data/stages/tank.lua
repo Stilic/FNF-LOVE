@@ -125,6 +125,24 @@ function create()
     fgSprites:add(fgTank3)
 end
 
+function postCreate()
+    if state.gf.char == 'pico-speaker' then
+        local tempTankman = TankmenBG(20, 500, true)
+        tempTankman.time = 10
+        tempTankman:resetShit(20, 600, true)
+        tankmanRun:add(tempTankman)
+
+        for i = 1, #TankmenBG.animationNotes do
+            if love.math.randomBool(16) then
+                local tankman = tankmanRun:recycle(TankmenBG)
+                tankman.time = TankmenBG.animationNotes[i][1]
+                tankman:resetShit(500, 200 + love.math.random(50, 100), TankmenBG.animationNotes[i][2] < 2)
+                tankmanRun:add(tankman)
+            end
+        end
+    end
+end
+
 function update(dt)
     tankAngle = tankAngle + dt * tankSpeed
     tankGround.angle = tankAngle - 90 + 15
