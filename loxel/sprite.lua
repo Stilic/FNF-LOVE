@@ -404,8 +404,8 @@ end
 function Sprite:updateHitbox()
     local w, h = self:getFrameDimensions()
 
-    self.width = math.abs(self.scale.x) * w
-    self.height = math.abs(self.scale.y) * h
+    self.width = math.abs(self.scale.x * self.zoom.x) * w
+    self.height = math.abs(self.scale.y * self.zoom.y) * h
     self.__width, self.__height = self.width, self.height
 
     self.offset = {x = -0.5 * (self.width - w), y = -0.5 * (self.height - h)}
@@ -500,7 +500,7 @@ function Sprite:__render(camera)
         love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
 
         local w, h = self:getFrameDimensions()
-        w, h = math.abs(self.scale.x) * w, math.abs(self.scale.y) * h
+        w, h = math.abs(sx) * w, math.abs(sy) * h
 
         love.graphics.push()
         love.graphics.translate(x, y)

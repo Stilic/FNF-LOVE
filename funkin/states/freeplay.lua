@@ -156,7 +156,7 @@ function FreeplayState:changeSelection(change)
         if item.targetY == 0 then item.alpha = 1 end
     end
 
-    for _, icon in pairs(self.iconTable) do icon.alpha = 0.6 end
+    for _, icon in next, self.iconTable do icon.alpha = 0.6 end
     self.iconTable[FreeplayState.curSelected].alpha = 1
 
     self:changeDiff()

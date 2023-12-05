@@ -11,7 +11,7 @@ function Object:new(x, y)
 
 	self.offset = {x = 0, y = 0}
 	self.scale = {x = 1, y = 1}
-	self.zoom = {x = 1, y = 1} -- same as scale, but ignores the offsets
+	self.zoom = {x = 1, y = 1} -- same as scale
 	self.scrollFactor = {x = 1, y = 1}
 	self.flipX = false
 	self.flipY = false
@@ -68,8 +68,8 @@ function Object:update(dt)
 end
 
 function Object:draw()
-	if self.alpha > 0 and self.scale.x * self.zoom.x ~= 0 and
-		self.scale.y * self.zoom.y ~= 0
+	if self.alpha > 0 and (self.scale.x * self.zoom.x ~= 0 or
+		self.scale.y * self.zoom.y ~= 0)
 	then
 		Object.super.draw(self)
 	end

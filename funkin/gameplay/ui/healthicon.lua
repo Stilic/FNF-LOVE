@@ -13,12 +13,12 @@ end
 function HealthIcon:changeIcon(icon, ignoreDefault)
 	if paths.getImage("icons/" .. icon) == nil then
 		if ignoreDefault then return false end
-		icon = HealthIcon.defaultIcon 
+		icon = "icons/" .. HealthIcon.defaultIcon 
 	end
 	self:loadTexture(paths.getImage("icons/" .. icon))
 
 	self.icon = icon
-	self.iconOffsets = {x = 0, y = 0}
+	self.iconOffset = {x = 0, y = 0}
 
 	local hasOldSuffix = icon:endsWith("-old")
 	self.isPixelIcon = icon:endsWith("-pixel") or
@@ -49,14 +49,14 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	end
 
 	self:updateHitbox()
-	self.origin.x, self.origin.y = 150, 0
+	self.origin.x, self.origin.y = self.width, 0
 	return true
 end
 
 function HealthIcon:updateHitbox()
 	HealthIcon.super.updateHitbox(self)
-	self.offset.x = self.offset.x + self.iconOffsets.x
-	self.offset.y = self.offset.y + self.iconOffsets.y
+	self.offset.x = self.offset.x + self.iconOffset.x
+	self.offset.y = self.offset.y + self.iconOffset.y
 end
 
 function HealthIcon:update(dt)

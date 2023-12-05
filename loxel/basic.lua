@@ -57,10 +57,10 @@ function Basic:isOnScreen(camera)
         w, h = self:getWidth(), self:getHeight()
     else
         w, h = self.getFrameWidth and
-                   (self:getFrameWidth() * math.abs(self.scale.x)) or
+                   (self:getFrameWidth() * math.abs(self.scale.x * self.zoom.x)) or
                    (self.width or 0),
                self.getFrameHeight and
-                   (self:getFrameHeight() * math.abs(self.scale.y)) or
+                   (self:getFrameHeight() * math.abs(self.scale.y * self.zoom.y)) or
                    (self.height or 0)
     end
 
