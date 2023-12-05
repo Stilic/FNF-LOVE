@@ -450,10 +450,7 @@ function Sprite:update(dt)
 end
 
 function Sprite:draw()
-    if self.texture ~= nil and (
-            self.width ~= 0 or self.height ~= 0 or
-            self.scale.x ~= 0 or self.scale.y ~= 0
-        ) then
+    if self.texture ~= nil and (self.width ~= 0 or self.height ~= 0) then
         Sprite.super.draw(self)
     end
 end
@@ -476,7 +473,8 @@ function Sprite:__render(camera)
     local f = self:getCurrentFrame()
 
     local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
-                                      self.scale.x, self.scale.y,
+                                      self.scale.x * self.zoom.x,
+                                      self.scale.y * self.zoom.y,
                                       self.origin.x, self.origin.y
 
     if self.flipX then sx = -sx end

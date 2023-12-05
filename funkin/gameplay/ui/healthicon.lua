@@ -1,41 +1,77 @@
 local HealthIcon = Sprite:extend("HealthIcon")
 
+HealthIcon.defaultIcon = "face"
+
 function HealthIcon:new(icon, flip)
-    HealthIcon.super.new(self, 0, 0)
+	HealthIcon.super.new(self)
 
-    if paths.getImage("icons/" .. icon) == nil then icon = 'face' end
-    self:loadTexture(paths.getImage("icons/" .. icon))
+	self.flipX = flip or false
+	self.sprTracker = nil
+	self:changeIcon(icon)
+end
 
-    self.static = true
-    self.sprTracker = nil
+function HealthIcon:changeIcon(icon, ignoreDefault)
+	if paths.getImage("icons/" .. icon) == nil then
+		if ignoreDefault then return false end
+		icon = HealthIcon.defaultIcon 
+	end
+	self:loadTexture(paths.getImage("icons/" .. icon))
 
-    if self.width > 150 and self.width ~= self.height then
-        self.width = self.width / 2
-        self:loadTexture(paths.getImage("icons/" .. icon), true,
-                         math.floor(self.width), math.floor(self.height))
-        self:addAnim("i", {0, 1}, 0)
-        self:play("i")
+	self.icon = icon
+	self.iconOffsets = {x = 0, y = 0}
 
-        self.static = false
-    end
+	local hasOldSuffix = icon:endsWith("-old")
+	self.isPixelIcon = icon:endsWith("-pixel") or
+					   (hasOldSuffix and icon:sub(1, -5):endsWith("-pixel"))
+	self.isOldIcon = hasOldSuffix or
+					 (self.isPixelIcon and icon:sub(1, -7):endsWith("-old"))
 
-    self.flipX = flip or false
-    if icon:endsWith("-pixel") then self.antialiasing = false end
+	self.availableStates = math.max(1, math.round(self.width / self.height))
+	self.state = 0
 
-    self:setScrollFactor()
-    self:updateHitbox()
-    self.origin = {x = 150, y = 0}
+	self.width = self.width / self.availableStates
+
+	local zoom = self.isPixelIcon and 150 / self.height or 1
+	self.zoom.x, self.zoom.y = zoom, zoom
+	self.antialiasing = zoom < 2.5 and self.antialiasing
+
+	if self.availableStates > 1 then
+		self:loadTexture(self.texture, true,
+						 math.floor(self.width), math.floor(self.height))
+
+		local _frames = {}
+		for i = 1, self.availableStates do
+			_frames[i] = i - 1
+		end
+
+		self:addAnim("i", _frames, 0)
+		self:play("i")
+	end
+
+	self:updateHitbox()
+	self.origin.x, self.origin.y = 150, 0
+	return true
+end
+
+function HealthIcon:updateHitbox()
+	HealthIcon.super.updateHitbox(self)
+	self.offset.x = self.offset.x + self.iconOffsets.x
+	self.offset.y = self.offset.y + self.iconOffsets.y
 end
 
 function HealthIcon:update(dt)
-    HealthIcon.super.update(self, dt)
+	HealthIcon.super.update(self, dt)
 
-    if self.sprTracker ~= nil then
-        self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() -
-                             self.sprTracker.x + 10, self.sprTracker.y - 30)
-    end
+	if self.sprTracker ~= nil then
+		self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() -
+						 self.sprTracker.x + 10, self.sprTracker.y - 30)
+	end
 end
 
-function HealthIcon:swap(frame) if not self.static then self.curFrame = frame end end
+function HealthIcon:setState(state)
+	if state > self.availableStates then state = 1 end
+	self.state = state
+	self.curFrame = state
+end
 
 return HealthIcon

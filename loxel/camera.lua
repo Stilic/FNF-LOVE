@@ -1,3 +1,5 @@
+-- TODO: make offsets works me think
+
 ---@diagnostic disable: duplicate-set-field
 ---@class Camera:Object
 local Camera = Object:extend("Camera")
@@ -42,6 +44,7 @@ function Camera:new(x, y, width, height)
 	
 	self.bgColor = {0, 0, 0, 0}
 
+	self.__zoom = {x = 1, y = 1}
 	self.__renderQueue = {}
 
 	self.__flashColor = {1, 1, 1}
@@ -78,6 +81,10 @@ function Camera:flash(color, duration, onComplete, force)
 end
 
 function Camera:update(dt)
+	local isnum = type(self.zoom) == "number"
+	self.__zoom.x = isnum and self.zoom or self.zoom.x
+	self.__zoom.y = isnum and self.zoom or self.zoom.y
+
 	if self.target then
 		self.scroll.x = self.target.x - self.width / 2
 		self.scroll.y = self.target.y - self.height / 2
@@ -101,23 +108,27 @@ function Camera:update(dt)
 			if self.__shakeAxes:find('x') then
 				local shakeVal =
 					love.math.random(-1, 1) * self.__shakeIntensity * self.width
-				self.__shakeX = self.__shakeX + shakeVal * self.zoom
+				self.__shakeX = self.__shakeX + shakeVal * self.__zoom
 			end
 
 			if self.__shakeAxes:find('y') then
 				local shakeVal =
 					love.math.random(-1, 1) * self.__shakeIntensity *
 						self.height
-				self.__shakeY = self.__shakeY + shakeVal * self.zoom
+				self.__shakeY = self.__shakeY + shakeVal * self.__zoom
 			end
 		end
 	end
 end
 
 function Camera:canDraw()
+	local isnum = type(self.zoom) == "number"
+	self.__zoom.x = isnum and self.zoom or self.zoom.x
+	self.__zoom.y = isnum and self.zoom or self.zoom.y
+
 	return self.visible and self.exists and next(self.__renderQueue) and
-		self.alpha > 0 and self.zoom ~= 0 and
-		self.scale.x ~= 0 and self.scale.y ~= 0
+		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and
+		(self.scale.y * self.__zoom.y) ~= 0
 end
 
 function Camera:getMultColor(r, g, b, a)
@@ -168,7 +179,7 @@ function Camera:drawSimple(_skipCheck)
 	love.graphics.scale(scale)
 
 	love.graphics.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-	love.graphics.scale(self.zoom * self.scale.x, self.zoom * self.scale.y)
+	love.graphics.scale(self.__zoom.x * self.scale.x, self.__zoom.y * self.scale.y)
 	love.graphics.rotate(math.rad(self.angle + self.rotation))
 	love.graphics.translate(-w2, -h2)
 
@@ -228,7 +239,7 @@ function Camera:drawComplex(_skipCheck)
 		love.graphics.translate(w2 + self.__shakeX, h2 + self.__shakeY)
 	end
 	love.graphics.rotate(math.rad(self.angle))
-	love.graphics.scale(self.zoom)
+	love.graphics.scale(self.__zoom.x, self.__zoom.y)
 	love.graphics.translate(-w2, -h2)
 
 	love.graphics.setBlendMode("alpha", "alphamultiply")

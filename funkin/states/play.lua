@@ -537,8 +537,8 @@ function PlayState:update(dt)
                                            0) * 0.01)) -
                         (self.iconP2.width - iconOffset)
 
-    self.iconP1:swap((self.health < 0.2 and 2 or 1))
-    self.iconP2:swap((self.health > 1.8 and 2 or 1))
+    self.iconP1:setState((self.health < 0.2 and 2 or 1))
+    self.iconP2:setState((self.health > 1.8 and 2 or 1))
 
     -- time arc / text
     local songTime = PlayState.conductor.time / 1000
