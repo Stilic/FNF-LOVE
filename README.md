@@ -10,7 +10,7 @@ INFO: we made loxel for this game, so this library is similar to [HaxeFlixel](ht
 - Raltyro
 - Fellyn
 - VicKaoy
-- BlueColorsion
+- BlueColorsin
 
 ## Library used
 - classic - [https://github.com/rxi/classic](https://github.com/rxi/classic)
