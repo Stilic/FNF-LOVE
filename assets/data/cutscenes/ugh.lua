@@ -20,8 +20,8 @@ function create()
 end
 
 function postCreate()
-    bgMusic = Sound():load(paths.getMusic('gameplay/DISTORTO'))
-    bgMusic:play(0.5)
+    bgMusic = Sound():load(paths.getMusic('gameplay/DISTORTO'), 0.5, true, true)
+    bgMusic:play()
     game.camera.zoom = game.camera.zoom * 1.2
 
     cutsceneTimer:after(0.1, function()

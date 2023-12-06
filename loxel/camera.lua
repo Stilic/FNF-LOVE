@@ -41,7 +41,7 @@ function Camera:new(x, y, width, height)
 	self.angle = 0
 	self.target = nil
 	self.zoom = 1
-	
+
 	self.bgColor = {0, 0, 0, 0}
 
 	self.__zoom = {x = 1, y = 1}
@@ -108,14 +108,14 @@ function Camera:update(dt)
 			if self.__shakeAxes:find('x') then
 				local shakeVal =
 					love.math.random(-1, 1) * self.__shakeIntensity * self.width
-				self.__shakeX = self.__shakeX + shakeVal * self.__zoom
+				self.__shakeX = self.__shakeX + shakeVal * self.__zoom.x
 			end
 
 			if self.__shakeAxes:find('y') then
 				local shakeVal =
 					love.math.random(-1, 1) * self.__shakeIntensity *
 						self.height
-				self.__shakeY = self.__shakeY + shakeVal * self.__zoom
+				self.__shakeY = self.__shakeY + shakeVal * self.__zoom.y
 			end
 		end
 	end

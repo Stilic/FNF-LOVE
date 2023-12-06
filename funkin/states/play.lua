@@ -241,16 +241,6 @@ function PlayState:enter()
 
     self.judgeSprites = Group()
 
-    self.camFollow = {x = 0, y = 0}
-    if PlayState.prevCamFollow ~= nil then
-        game.camera.target.x = PlayState.prevCamFollow.x
-        game.camera.target.y = PlayState.prevCamFollow.y
-        PlayState.prevCamFollow = nil
-    end
-    self.camZooming = false
-
-    game.camera.zoom = self.stage.camZoom
-
     local gfVersion = PlayState.SONG.gfVersion
     if gfVersion == nil then
         switch(curStage, {
@@ -290,6 +280,20 @@ function PlayState:enter()
 
     self:add(self.stage.foreground)
     self:add(self.judgeSprites)
+
+    self.camFollow = {x = 0, y = 0}
+    self:cameraMovement()
+    game.camera.target.x, game.camera.target.y = self.camFollow.x,
+                                                 self.camFollow.y
+
+    if PlayState.prevCamFollow ~= nil then
+        game.camera.target.x = PlayState.prevCamFollow.x
+        game.camera.target.y = PlayState.prevCamFollow.y
+        PlayState.prevCamFollow = nil
+    end
+    self.camZooming = false
+
+    game.camera.zoom = self.stage.camZoom
 
     self.healthBarBG = Sprite()
     self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
@@ -555,39 +559,6 @@ function PlayState:update(dt)
                           0.36
     self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
 
-    if self.startedCountdown then
-        local section = self:getCurrentSection()
-        if section ~= nil then
-            if section.gfSection then
-                local x, y = self.gf:getMidpoint()
-                self.camFollow.x = x -
-                                    (self.gf.cameraPosition.x -
-                                        self.stage.gfCam.x)
-                self.camFollow.y = y -
-                                    (self.gf.cameraPosition.y -
-                                        self.stage.gfCam.y)
-            else
-                if section.mustHitSection then
-                    local x, y = self.boyfriend:getMidpoint()
-                    self.camFollow.x = x - 100 -
-                                        (self.boyfriend.cameraPosition.x -
-                                            self.stage.boyfriendCam.x)
-                    self.camFollow.y = y - 100 +
-                                        (self.boyfriend.cameraPosition.y +
-                                            self.stage.boyfriendCam.y)
-                else
-                    local x, y = self.dad:getMidpoint()
-                    self.camFollow.x = x + 150 +
-                                        (self.dad.cameraPosition.x +
-                                            self.stage.dadCam.x)
-                    self.camFollow.y = y - 100 +
-                                        (self.dad.cameraPosition.y +
-                                            self.stage.dadCam.y)
-                end
-            end
-        end
-    end
-
     if self.camZooming then
         game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom,
                                          0.0475)
@@ -788,6 +759,49 @@ function PlayState:update(dt)
     self.scripts:call("postUpdate", dt)
 end
 
+function PlayState:cameraMovement()
+    local section = self:getCurrentSection()
+    if section ~= nil then
+        if section.gfSection then
+            local x, y = self.gf:getMidpoint()
+            self.camFollow.x = x -
+                                (self.gf.cameraPosition.x -
+                                    self.stage.gfCam.x)
+            self.camFollow.y = y -
+                                (self.gf.cameraPosition.y -
+                                    self.stage.gfCam.y)
+        else
+            if section.mustHitSection then
+                local x, y = self.boyfriend:getMidpoint()
+                self.camFollow.x = x - 100 -
+                                    (self.boyfriend.cameraPosition.x -
+                                        self.stage.boyfriendCam.x)
+                self.camFollow.y = y - 100 +
+                                    (self.boyfriend.cameraPosition.y +
+                                        self.stage.boyfriendCam.y)
+            else
+                local x, y = self.dad:getMidpoint()
+                self.camFollow.x = x + 150 +
+                                    (self.dad.cameraPosition.x +
+                                        self.stage.dadCam.x)
+                self.camFollow.y = y - 100 +
+                                    (self.dad.cameraPosition.y +
+                                        self.stage.dadCam.y)
+            end
+        end
+    end
+
+    if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
+        if section.mustHitSection then
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000),
+                        game.camera, {zoom = 1}, 'in-out-elastic')
+        else
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000),
+                        game.camera, {zoom = 1.3}, 'in-out-elastic')
+        end
+    end
+end
+
 function PlayState:draw()
     self.scripts:call("draw")
     PlayState.super.draw(self)
@@ -829,8 +843,16 @@ function PlayState:closeSubstate()
 end
 
 function PlayState:onSettingChange(setting)
+    self.scripts:call("onSettingChange", setting)
+
     if setting == 'gameplay' then
         self.downScroll = ClientPrefs.data.downScroll
+
+        local songTime = PlayState.conductor.time / 1000
+        if ClientPrefs.data.timeType == "left" then
+            songTime = PlayState.conductor.sound:getDuration() - songTime
+        end
+        self.timeTxt.content = util.getFormattedTime(songTime)
 
         local ry = 50
         if self.downScroll then ry = game.height - 100 - ry end
@@ -1072,9 +1094,7 @@ function PlayState:endSong()
     PlayState.seenCutscene = false
 
     local formatSong = paths.formatToSongPath(self.SONG.song)
-    if self.SONG.validScore then
-        Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
-    end
+    Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
 
     if self.storyMode then
         PlayState.storyScore = PlayState.storyScore + self.score
@@ -1099,9 +1119,7 @@ function PlayState:endSong()
             PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
             game.resetState(true)
         else
-            if self.SONG.validScore then
-                Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.storyDifficulty)
-            end
+            Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.storyDifficulty)
             game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(StoryMenuState())
         end
@@ -1162,15 +1180,7 @@ function PlayState:beat(b)
             self.camHUD.zoom = self.camHUD.zoom + 0.03
         end
 
-        if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
-            if section.mustHitSection then
-                Timer.tween((self.conductor.stepCrochet * 4 / 1000),
-                            game.camera, {zoom = 1}, 'in-out-elastic')
-            else
-                Timer.tween((self.conductor.stepCrochet * 4 / 1000),
-                            game.camera, {zoom = 1.3}, 'in-out-elastic')
-            end
-        end
+        self:cameraMovement()
     end
 
     local scaleNum = 1.2

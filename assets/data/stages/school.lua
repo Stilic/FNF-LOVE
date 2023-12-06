@@ -84,10 +84,6 @@ function create()
     bgGirls:updateHitbox()
     bgGirls.antialiasing = false
     self:add(bgGirls)
-
-    if PlayState.storyMode and state.SONG.song:lower() == 'roses' then
-        game.sound.play(paths.getSound('gameplay/ANGRY_TEXT_BOX'))
-    end
 end
 
 function beat(b) if state.SONG.song:lower() ~= 'thorns' then bgGirls:dance() end end

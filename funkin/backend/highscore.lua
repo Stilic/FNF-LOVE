@@ -19,14 +19,14 @@ function Highscore.saveScore(song, score, diff)
 end
 
 function Highscore.saveWeekScore(week, score, diff)
-    local formatSong = week .. '-' .. diff
+    local formatWeek = week .. '-' .. diff
 
-    if Highscore.scores.weeks[formatSong] then
-        if Highscore.scores.weeks[formatSong] < score then
-            Highscore.scores.weeks[formatSong] = score
+    if Highscore.scores.weeks[formatWeek] then
+        if Highscore.scores.weeks[formatWeek] < score then
+            Highscore.scores.weeks[formatWeek] = score
         end
     else
-        Highscore.scores.weeks[formatSong] = score
+        Highscore.scores.weeks[formatWeek] = score
     end
     game.save.data.scores = Highscore.scores
 end
@@ -42,13 +42,13 @@ function Highscore.getScore(song, diff)
 end
 
 function Highscore.getWeekScore(week, diff)
-    local formatSong = week .. '-' .. diff
+    local formatWeek = week .. '-' .. diff
 
-    if Highscore.scores.weeks[formatSong] == nil then
-        Highscore.scores.weeks[formatSong] = 0
+    if Highscore.scores.weeks[formatWeek] == nil then
+        Highscore.scores.weeks[formatWeek] = 0
     end
 
-    return Highscore.scores.weeks[formatSong]
+    return Highscore.scores.weeks[formatWeek]
 end
 
 function Highscore.load()

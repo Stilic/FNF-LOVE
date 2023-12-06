@@ -1,0 +1,75 @@
+local DialogueBox = require "funkin.gameplay.ui.dialoguebox"
+
+local doof
+local music
+function create()
+    local dialogue = love.filesystem.read(paths.getPath('songs/thorns/thornsDialogue.txt')):split('\n')
+
+    music = game.sound.load(paths.getMusic('gameplay/LunchboxScary'), 0.8, true, true)
+    music:play()
+
+    doof = DialogueBox(dialogue)
+    doof:setScrollFactor()
+    doof.cameras = {state.camHUD}
+    doof.finishThing = function() state:startCountdown() close() end
+
+    local red = Sprite(-150, -150):make(game.width * 2, game.height * 2,
+                                            Color.convert({255, 27, 49}))
+    red:setScrollFactor()
+    state:add(red)
+
+    local white = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.WHITE)
+    white:setScrollFactor()
+    white.alpha = 0
+
+    local senpaiEvil = Sprite()
+    senpaiEvil:setFrames(paths.getSparrowAtlas('stages/school-evil/senpaiCrazy'))
+    senpaiEvil:addAnimByPrefix('idle', 'Senpai Pre Explosion', 24, false)
+    senpaiEvil:setGraphicSize(math.floor(senpaiEvil.width * 6))
+    senpaiEvil:setScrollFactor()
+    senpaiEvil:updateHitbox()
+    senpaiEvil:screenCenter()
+    senpaiEvil.x = senpaiEvil.x + 280
+
+    state.camHUD.visible = false
+
+    Timer.after(2.1, function()
+        state:add(senpaiEvil)
+        senpaiEvil.alpha = 0
+        state:add(white)
+        for delay = 1, 7 do
+            Timer.after(0.3 * delay, function()
+                senpaiEvil.alpha = senpaiEvil.alpha + 0.15
+                if senpaiEvil.alpha > 1 then
+                    senpaiEvil.alpha = 1
+
+                    Timer.tween(2.4, game.camera, {zoom = state.stage.camZoom - 0.2}, 'in-sine')
+
+                    senpaiEvil:play('idle')
+                    game.sound.play(paths.getSound('gameplay/Senpai_Dies'), 1, false, true, function()
+                        state:remove(senpaiEvil)
+                        state:remove(red)
+                        state:remove(white)
+                        game.camera.zoom = state.stage.camZoom
+                        state:add(doof)
+                        state.camHUD.visible = true
+                    end)
+                    Timer.after(2.4, function()
+                        game.camera.zoom = 1.4
+                        Timer.tween(1, game.camera, {zoom = state.stage.camZoom - 0.2}, 'out-circ')
+                        game.camera:shake(0.005, 2.5)
+                    end)
+                    Timer.after(3.2, function()
+                        Timer.tween(1.6, white, {alpha = 1})
+                    end)
+                end
+            end)
+        end
+    end)
+end
+
+function postUpdate(dt)
+    if controls:pressed('accept') and doof.isEnding then
+        music:stop()
+    end
+end
