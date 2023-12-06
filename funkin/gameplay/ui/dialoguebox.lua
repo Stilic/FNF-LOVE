@@ -140,6 +140,7 @@ function DialogueBox:update(dt)
                             self.portraitRight.visible = false
                             self.swagDialogue.alpha = self.swagDialogue.alpha - 1 / 5
                             self.dropText.alpha = self.swagDialogue.alpha
+                            self.handSelect.alpha = self.handSelect.alpha - 1 / 5
                         end)
                     end
 
