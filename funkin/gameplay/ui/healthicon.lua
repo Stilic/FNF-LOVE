@@ -29,15 +29,9 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	self.availableStates = math.max(1, math.round(self.width / self.height))
 	self.state = 0
 
-	self.width = self.width / self.availableStates
-
-	local zoom = self.isPixelIcon and 150 / self.height or 1
-	self.zoom.x, self.zoom.y = zoom, zoom
-	self.antialiasing = zoom < 2.5 and self.antialiasing
-
 	if self.availableStates > 1 then
 		self:loadTexture(self.texture, true,
-						 math.floor(self.width), math.floor(self.height))
+						 math.floor(self.width / self.availableStates), math.floor(self.height))
 
 		local _frames = {}
 		for i = 1, self.availableStates do
@@ -48,13 +42,16 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 		self:play("i")
 	end
 
+	local zoom = self.isPixelIcon and 150 / self.height or 1
+	self.zoom.x, self.zoom.y = zoom, zoom
+	self.antialiasing = zoom < 2.5 and self.antialiasing
 	self:updateHitbox()
-	self.origin.x, self.origin.y = self.width, 0
+
 	return true
 end
 
-function HealthIcon:updateHitbox()
-	HealthIcon.super.updateHitbox(self)
+function HealthIcon:centerOffsets(__width, __height)
+	HealthIcon.super.centerOffsets(self, __width, __height)
 	self.offset.x = self.offset.x + self.iconOffset.x
 	self.offset.y = self.offset.y + self.iconOffset.y
 end
@@ -63,8 +60,8 @@ function HealthIcon:update(dt)
 	HealthIcon.super.update(self, dt)
 
 	if self.sprTracker ~= nil then
-		self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() -
-						 self.sprTracker.x + 10, self.sprTracker.y - 30)
+		self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() + 10,
+						 self.sprTracker.y - 30)
 	end
 end
 
