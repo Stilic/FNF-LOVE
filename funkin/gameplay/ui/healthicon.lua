@@ -31,7 +31,8 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 
 	if self.availableStates > 1 then
 		self:loadTexture(self.texture, true,
-						 math.floor(self.width / self.availableStates), math.floor(self.height))
+						 math.floor(self.width / self.availableStates),
+						 math.floor(self.height))
 
 		local _frames = {}
 		for i = 1, self.availableStates do
@@ -50,8 +51,8 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	return true
 end
 
-function HealthIcon:centerOffsets(__width, __height)
-	HealthIcon.super.centerOffsets(self, __width, __height)
+function HealthIcon:centerOffsets(...)
+	HealthIcon.super.centerOffsets(self, ...)
 	self.offset.x = self.offset.x + self.iconOffset.x
 	self.offset.y = self.offset.y + self.iconOffset.y
 end

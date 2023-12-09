@@ -50,8 +50,8 @@ local SplashScreen = require "funkin.states.splash"
 require "errorhandler"
 
 function love.run()
-    local _, _, flags = love.window.getMode()
-    love.FPScap, love.unfocusedFPScap = math.max(flags.refreshrate, 120), 8
+    local _, _, modes = love.window.getMode()
+    love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 120), 8
 
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
@@ -126,9 +126,10 @@ function love.load()
     end
 
     -- for the joystick, i'll remake it later
-    controls = (require "lib.baton").new({
-        controls = table.clone(ClientPrefs.controls)
-    })
+    game.save.init('funkin')
+    ClientPrefs.loadData()
+
+    Highscore.load()
 
     game.init(Project, SplashScreen)
 

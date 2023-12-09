@@ -1,11 +1,15 @@
-local json = {encode = require("lib.json").encode, decode = require("lib.json").decode}
+local json = require("lib.json")
 
 local Save = {
     data = {},
-    path = ''
+    path = '',
+    initialized = false
 }
 
 function Save.init(name)
+    if Save.initialized then return end
+    Save.initialized = true
+    
     Save.path = love.filesystem.getAppdataDirectory()..'/'..Project.company..'/'..Project.file
     local filePath = Save.path..'/'..name..'.lox'
     local dataFile = io.open(filePath, "rb")
