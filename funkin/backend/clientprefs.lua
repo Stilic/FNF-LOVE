@@ -47,10 +47,10 @@ function ClientPrefs.loadData()
 
 	if game.save.data.prefs then
 		ClientPrefs.data = game.save.data.prefs
-
-		love.FPScap = ClientPrefs.data.fps
-		Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 	end
+
+	love.FPScap = ClientPrefs.data.fps
+	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 
 	if game.save.data.controls then
 		ClientPrefs.controls = game.save.data.controls
