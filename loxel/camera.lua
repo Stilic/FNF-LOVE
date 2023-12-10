@@ -142,7 +142,7 @@ function Camera:draw()
 	if not self.simple or self.shader or (self.antialiasing and
 			(self.x ~= math.floor(self.x) or self.y ~= math.floor(self.y) or
 			self.scale.x ~= 1 or self.scale.y ~= 1) or
-			math.min(winWidth / game.width, winHeight / game.height) ~= 1) or
+			math.min(winWidth / game.width, winHeight / game.height) > 1) or
 		self.alpha < 1 or self.rotation ~= 0 then
 		self:drawComplex(true)
 	else
@@ -173,8 +173,9 @@ function Camera:drawSimple(_skipCheck)
 		if self.clipCam then
 			x, y = self.x * scale + x, self.y * scale + y
 		end
-		love.graphics.setScissor(x, y, self.width * scale * self.scale.x,
-								 self.height * scale * self.scale.y)
+		love.graphics.setScissor(math.round(x), math.round(y),
+								 math.round(self.width * scale * self.scale.x),
+								 math.round(self.height * scale * self.scale.y))
 	end
 	love.graphics.scale(scale)
 
