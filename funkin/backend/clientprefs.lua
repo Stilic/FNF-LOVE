@@ -54,13 +54,13 @@ function ClientPrefs.loadData()
 
 	if game.save.data.controls then
 		ClientPrefs.controls = game.save.data.controls
+	end
 
-		local config = {controls = table.clone(ClientPrefs.controls)}
-		if controls == nil then
-			controls = (require "lib.baton").new(config)
-		else
-			controls:reset(config)
-		end
+	local config = {controls = table.clone(ClientPrefs.controls)}
+	if controls == nil then
+		controls = (require "lib.baton").new(config)
+	else
+		controls:reset(config)
 	end
 end
 
