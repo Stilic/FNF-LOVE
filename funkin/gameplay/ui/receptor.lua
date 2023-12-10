@@ -61,19 +61,6 @@ function Receptor:play(anim, force)
 
     self:centerOffsets()
     self:centerOrigin()
-
-    if not PlayState.pixelStage and anim == "confirm" then
-        if self.data == 0 then
-            self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 3
-        elseif self.data == 1 then
-            self.offset.x, self.offset.y = self.offset.x - 2, self.offset.y - 2
-        elseif self.data == 2 then
-            self.offset.x, self.offset.y = self.offset.x - 1,
-                                           self.offset.y - 0.5
-        elseif self.data == 3 then
-            self.offset.x = self.offset.x - 1.5
-        end
-    end
 end
 
 function Receptor:confirm(time)
