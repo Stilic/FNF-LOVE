@@ -211,7 +211,7 @@ function SpriteGroup:getWidth()
             if minMemberX < minX then minX = minMemberX end
         end
     end
-    return maxX - minX
+    return (maxX - minX) - self.x
 end
 
 function SpriteGroup:getHeight()
@@ -228,7 +228,7 @@ function SpriteGroup:getHeight()
             if minMemberY < minY then minY = minMemberY end
         end
     end
-    return maxY - minY
+    return (maxY - minY) - self.y
 end
 
 function SpriteGroup:screenCenter(axes)

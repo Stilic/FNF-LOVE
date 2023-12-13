@@ -402,24 +402,24 @@ function Sprite:setGraphicSize(width, height)
 end
 
 function Sprite:updateHitbox()
-    local w, h = self:getFrameDimensions()
+    local width, height = self:getFrameDimensions()
 
-    self.width = math.abs(self.scale.x * self.zoom.x) * w
-    self.height = math.abs(self.scale.y * self.zoom.y) * h
+    self.width = math.abs(self.scale.x * self.zoom.x) * width
+    self.height = math.abs(self.scale.y * self.zoom.y) * height
     self.__width, self.__height = self.width, self.height
 
-    self.offset = {x = -0.5 * (self.width - w), y = -0.5 * (self.height - h)}
-    self:centerOrigin()
+    self:centerOffsets(width, height)
+    self:centerOrigin(width, height)
 end
 
-function Sprite:centerOffsets()
-    self.offset.x, self.offset.y = (self:getFrameWidth() - self.width) * 0.5,
-                                   (self:getFrameHeight() - self.height) * 0.5
+function Sprite:centerOffsets(__width, __height)
+    self.offset.x = 0.5 * ((__width or self:getFrameWidth()) - self.width)
+    self.offset.y = 0.5 * ((__height or self:getFrameHeight()) - self.height)
 end
 
-function Sprite:centerOrigin()
-    self.origin.x, self.origin.y = self:getFrameWidth() * 0.5,
-                                   self:getFrameHeight() * 0.5
+function Sprite:centerOrigin(__width, __height)
+    self.origin.x = 0.5 * (__width or self:getFrameWidth())
+    self.origin.y = 0.5 * (__height or self:getFrameHeight())
 end
 
 function Sprite:update(dt)

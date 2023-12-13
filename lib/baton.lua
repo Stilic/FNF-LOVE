@@ -349,6 +349,13 @@ end
 
 -- public API --
 
+-- resets the configs
+function Player:reset(config)
+	self:_loadConfig(config)
+	self:_initControls()
+	self:_initPairs()
+end
+
 -- checks for changes in inputs
 function Player:update()
 	self:_setActiveDevice()

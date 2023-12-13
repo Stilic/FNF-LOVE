@@ -46,15 +46,24 @@ function ClientPrefs.saveData()
 end
 
 function ClientPrefs.loadData()
+	game.save.init('funkin')
+
 	if game.save.data.prefs then
 		ClientPrefs.data = game.save.data.prefs
 	end
 
+	love.FPScap = ClientPrefs.data.fps
+	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
+
 	if game.save.data.controls then
 		ClientPrefs.controls = game.save.data.controls
-		controls = (require "lib.baton").new({
-			controls = table.clone(ClientPrefs.controls)
-		})
+	end
+
+	local config = {controls = table.clone(ClientPrefs.controls)}
+	if controls == nil then
+		controls = (require "lib.baton").new(config)
+	else
+		controls:reset(config)
 	end
 end
 
