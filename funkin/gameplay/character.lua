@@ -167,9 +167,14 @@ function Character:playAnim(anim, force, frame)
     end
 end
 
-function Character:sing(dir, miss)
+function Character:sing(dir, type)
     local anim = "sing" .. string.upper(Note.directions[dir + 1])
-    if miss then anim = anim .. "miss" end
+    local suffix = ''
+    switch(type:lower(),{
+        ['miss']=function() suffix = "miss" end,
+        ['alt']=function() suffix = "-alt" end
+    })
+    if self.__animations[anim..suffix] then anim = anim .. suffix end
     self:playAnim(anim, true)
 
     self.lastHit = math.floor(PlayState.conductor.time)

@@ -12,6 +12,11 @@ function StoryMenuState:enter()
     self.lerpScore = 0
     self.intendedScore = 0
 
+    self.inSubstate = false
+
+    self.persistentUpdate = true
+    self.persistentDraw = true
+
     self.movedBack = false
     self.selectedWeek = false
 
@@ -39,15 +44,12 @@ function StoryMenuState:enter()
     self.grpLocks = Group()
     self:add(self.grpLocks)
 
-    self.weekData = {}
-    for i, weekStr in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                  'data/weeks/weeks'))) do
-        local data = paths.getJSON('data/weeks/weeks/' .. weekStr:withoutExt())
-        data.file = weekStr:withoutExt()
-
-        local isLocked = (data.locked == true)
+    self.weeksData = {}
+    self:loadWeeks()
+    for i, week in pairs(self.weeksData) do
+        local isLocked = (week.locked == true)
         local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10,
-                                   data.sprite)
+                                    week.sprite)
         weekThing.y = weekThing.y + ((weekThing.height + 20) * (i - 1))
         weekThing.targetY = num
         self.grpWeekText:add(weekThing)
@@ -62,11 +64,9 @@ function StoryMenuState:enter()
             lock.ID = i
             self.grpLocks:add(lock)
         end
-
-        table.insert(self.weekData, data)
     end
 
-    local charTable = self.weekData[StoryMenuState.curWeek].characters
+    local charTable = self.weeksData[StoryMenuState.curWeek].characters
     for char = 0, 2 do
         local weekCharThing = MenuCharacter(
                                   (game.width * 0.25) * (1 + char) - 150,
@@ -117,7 +117,7 @@ function StoryMenuState:update(dt)
     self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 0.5)
     self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
-    if not self.movedBack and not self.selectedWeek then
+    if not self.movedBack and not self.selectedWeek and not self.inSubstate then
         if controls:pressed("ui_up") then self:changeWeek(-1) end
         if controls:pressed("ui_down") then self:changeWeek(1) end
 
@@ -138,7 +138,8 @@ function StoryMenuState:update(dt)
         if controls:pressed("accept") then self:selectWeek() end
     end
 
-    if controls:pressed("back") and not self.movedBack and not self.selectedWeek then
+    if controls:pressed("back") and not self.movedBack and not self.selectedWeek
+        and not self.inSubstate then
         game.sound.play(paths.getSound("cancelMenu"))
         self.movedBack = true
         game.switchState(MainMenuState())
@@ -155,11 +156,11 @@ function StoryMenuState:update(dt)
 end
 
 function StoryMenuState:selectWeek()
-    if not self.weekData[StoryMenuState.curWeek].locked then
+    if not self.weeksData[StoryMenuState.curWeek].locked then
         local songTable = {}
-        local leWeek = self.weekData[StoryMenuState.curWeek].songs
-        for i = 1, #leWeek do
-            table.insert(songTable, paths.formatToSongPath(leWeek[i][1]))
+        local leWeek = self.weeksData[StoryMenuState.curWeek]
+        for i = 1, #leWeek.songs do
+            table.insert(songTable, paths.formatToSongPath(leWeek.songs[i]))
         end
 
         local diff = ""
@@ -168,22 +169,35 @@ function StoryMenuState:selectWeek()
             [3] = function() diff = "hard" end
         })
 
-        local toState = PlayState(true, songTable, diff)
-        PlayState.storyWeek = self.weekData[StoryMenuState.curWeek].name
-        PlayState.storyWeekFile = self.weekData[StoryMenuState.curWeek].file
+        if self:checkSongsDifficulty() then
+            local toState = PlayState(true, songTable, diff)
+            PlayState.storyWeek = leWeek.name
+            PlayState.storyWeekFile = leWeek.file
 
-        if not self.selectedWeek then
-            game.sound.play(paths.getSound('confirmMenu'))
-            self.grpWeekText.members[StoryMenuState.curWeek]:startFlashing()
-            for _, char in pairs(self.grpWeekCharacters.members) do
-                if char.character ~= '' and char.hasConfirmAnimation then
-                    char:play('confirm')
+            if not self.selectedWeek then
+                game.sound.play(paths.getSound('confirmMenu'))
+                self.grpWeekText.members[StoryMenuState.curWeek]:startFlashing()
+                for _, char in pairs(self.grpWeekCharacters.members) do
+                    if char.character ~= '' and char.hasConfirmAnimation then
+                        char:play('confirm')
+                    end
+                end
+                self.selectedWeek = true
+            end
+
+            Timer.after(1, function() game.switchState(toState) end)
+        else
+            local pathTable = {}
+            for i = 1, #songTable do
+                local suffix = (diff ~= "" and "-" .. diff or "")
+                local path = 'songs/' .. songTable[i] .. '/chart' .. suffix
+                if not paths.getJSON(path) then
+                    table.insert(pathTable, path .. '.json')
                 end
             end
-            self.selectedWeek = true
+            self.inSubstate = true
+            self:openSubstate(ChartErrorSubstate(pathTable))
         end
-
-        Timer.after(1, function() game.switchState(toState) end)
     else
         game.sound.play(paths.getSound('cancelMenu'))
     end
@@ -225,7 +239,7 @@ function StoryMenuState:changeDifficulty(change)
         [3] = function() diff = "hard" end
     })
 
-    local weekName = self.weekData[StoryMenuState.curWeek].file
+    local weekName = self.weeksData[StoryMenuState.curWeek].file
     self.intendedScore = Highscore.getWeekScore(weekName, diff)
 end
 
@@ -235,13 +249,13 @@ function StoryMenuState:changeWeek(change)
 
     StoryMenuState.curWeek = StoryMenuState.curWeek + change
 
-    if StoryMenuState.curWeek > #self.weekData then
+    if StoryMenuState.curWeek > #self.weeksData then
         StoryMenuState.curWeek = 1
     elseif StoryMenuState.curWeek < 1 then
-        StoryMenuState.curWeek = #self.weekData
+        StoryMenuState.curWeek = #self.weeksData
     end
 
-    local leWeek = self.weekData[StoryMenuState.curWeek]
+    local leWeek = self.weeksData[StoryMenuState.curWeek]
     self.txtWeekTitle.content = leWeek.name:upper()
     self.txtWeekTitle.x = game.width - (self.txtWeekTitle:getWidth() + 10)
 
@@ -264,14 +278,14 @@ function StoryMenuState:changeWeek(change)
 end
 
 function StoryMenuState:updateText()
-    local weekTable = self.weekData[StoryMenuState.curWeek].characters
+    local weekTable = self.weeksData[StoryMenuState.curWeek].characters
     for i = 1, #weekTable do
         self.grpWeekCharacters.members[i]:changeCharacter(weekTable[i])
     end
 
-    local leWeek = self.weekData[StoryMenuState.curWeek]
+    local leWeek = self.weeksData[StoryMenuState.curWeek]
     local stringThing = {}
-    for i = 1, #leWeek.songs do table.insert(stringThing, leWeek.songs[i][1]) end
+    for i = 1, #leWeek.songs do table.insert(stringThing, leWeek.songs[i]) end
 
     self.txtTrackList.content = 'TRACKS\n'
     for i = 1, #stringThing do
@@ -288,8 +302,54 @@ function StoryMenuState:updateText()
         [3] = function() diff = "hard" end
     })
 
-    local weekName = self.weekData[StoryMenuState.curWeek].file
+    local weekName = self.weeksData[StoryMenuState.curWeek].file
     self.intendedScore = Highscore.getWeekScore(weekName, diff)
+end
+
+function StoryMenuState:closeSubstate()
+    self.inSubstate = false
+    StoryMenuState.super.closeSubstate(self)
+end
+
+function StoryMenuState:checkSongsDifficulty()
+    local weekSongs = self.weeksData[StoryMenuState.curWeek].songs
+    local diff = ""
+    if diffString[StoryMenuState.curDifficulty] ~= "Normal" then
+        diff = "-" .. diffString[StoryMenuState.curDifficulty]:lower()
+    end
+    local checkSongs = {}
+    for _, s in ipairs(weekSongs) do
+        local song = paths.formatToSongPath(s)
+        if paths.getJSON('songs/'..song..'/chart'..diff) then
+            table.insert(checkSongs, true)
+        else
+            table.insert(checkSongs, false)
+        end
+    end
+    if table.find(checkSongs, false) then return false
+    else return true end
+    return false
+end
+
+function StoryMenuState:loadWeeks()
+    if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
+        local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+        for _, week in pairs(listData) do
+            local data = paths.getJSON('data/weeks/weeks/'..week)
+            data.file = week
+            table.insert(self.weeksData, data)
+        end
+    else
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                          'data/weeks/weeks'))) do
+            local week = str:withoutExt()
+            if str:endsWith('.json') then
+                local data = paths.getJSON('data/weeks/weeks/'..week)
+                data.file = week
+                table.insert(self.weeksData, data)
+            end
+        end
+    end
 end
 
 return StoryMenuState

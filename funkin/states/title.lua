@@ -74,6 +74,7 @@ function TitleState:update(dt)
 
 	if self.skippedIntro then
 		if controls:pressed("debug_1") then
+			game.sound.music:stop()
 			game.switchState(ChartingState())
 		end
 		if controls:pressed("debug_2") then

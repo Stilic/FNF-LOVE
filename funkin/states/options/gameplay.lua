@@ -6,7 +6,7 @@ local optionsVar = {
     {'pauseMusic', 'Pause Music', false, 'string', {'railways', 'breakfast'}},
     {'botplayMode', 'Botplay', false, 'boolean'},
     {'timeType', 'Song Time Type', false, 'string', {'left', 'elapsed'}},
-    {'songOffset', 'Song Offset', false, 'number', {0, 999}}
+    {'songOffset', 'Song Offset', false, 'number', {0, 999}},
 }
 
 local curSelected = 1
@@ -20,9 +20,9 @@ function Gameplay.add(options)
         local daGroup = Group()
 
         local yPos = (i * 45) + 80
-        local control = Text(145, yPos, daOption[2],
+        local title = Text(145, yPos, daOption[2],
                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
-        daGroup:add(control)
+        daGroup:add(title)
 
         local realvalue = ClientPrefs.data[daOption[1]]
         if type(realvalue) == "boolean" then
@@ -34,18 +34,21 @@ function Gameplay.add(options)
         end
         local value = daOption[3] and '< ' .. tostring(realvalue)
                         .. ' >' or tostring(realvalue)
-        local valueTxt = Text(382, yPos, value,
-                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
+        local valueTxt = Text((game.width/2) + 10, yPos, value,
+                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1},
+                              'center', (game.width*0.8)/2 - 20)
         daGroup:add(valueTxt)
 
         gameplayTab:add(daGroup)
     end
 
     local linesGroup = Group()
+    linesGroup.isLines = true
     linesGroup.name = gameplayTab.name
 
-    local lines = Sprite(370, 117):make(2, game.height * 0.72,
+    local lines = Sprite(0, 117):make(2, game.height * 0.72,
                                             {255, 255, 255})
+    lines:screenCenter('x')
     lines.alpha = 0.5
     linesGroup:add(lines)
     options.spriteGroup:add(linesGroup)
@@ -76,6 +79,7 @@ function Gameplay.changeSelection(huh)
     local optionType = selectedOption[4]
     if optionType == 'boolean' then
         ClientPrefs.data[optionData] = not ClientPrefs.data[optionData]
+        if selectedOption[5] then selectedOption[5]() end
     elseif optionType == 'string' then
         local stringVal = selectedOption[5]
 
@@ -88,6 +92,7 @@ function Gameplay.changeSelection(huh)
         end
 
         ClientPrefs.data[optionData] = stringVal[stringSelected]
+        if selectedOption[6] then selectedOption[6]() end
     elseif optionType == 'number' then
         local minVal = selectedOption[5][1]
         local maxVal = selectedOption[5][2]
@@ -99,6 +104,7 @@ function Gameplay.changeSelection(huh)
         elseif ClientPrefs.data[optionData] < minVal then
             ClientPrefs.data[optionData] = minVal
         end
+        if selectedOption[6] then selectedOption[6]() end
     end
 end
 

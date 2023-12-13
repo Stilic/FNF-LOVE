@@ -34,22 +34,37 @@ PlayState.pixelStage = false
 
 PlayState.prevCamFollow = nil
 
+-- Charting Stuff
+PlayState.chartingMode = false
+PlayState.startPos = 0
+
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState.loadSong(song, diff)
     if type(diff) ~= "string" then
-      diff = PlayState.defaultDifficulty
+        diff = PlayState.defaultDifficulty
     end
     if diff == "normal" then
-      diff = ""
+        diff = ""
     end
-    local path = "songs/" .. song .. "/" .. song .. (diff ~= "" and ("-" .. diff) or "")
+    local path = "songs/" .. song .. "/chart" .. (diff ~= "" and ("-" .. diff) or "")
 
     local data = paths.getJSON(path)
     if data then
-      PlayState.SONG = data.song
-    elseif diff ~= PlayState.defaultDifficulty then
-      PlayState.loadSong(song, PlayState.defaultDifficulty)
+        PlayState.SONG = data.song
+    else
+        local metadata = paths.getJSON('songs/' .. song .. '/meta')
+        PlayState.SONG = {
+            song = song,
+            bpm = metadata.bpm or 150.0,
+            speed = 1,
+            needsVoices = true,
+            stage = 'stage',
+            player1 = 'bf',
+            player2 = 'dad',
+            gfVersion = 'gf',
+            notes = {}
+        }
     end
 end
 
@@ -76,16 +91,40 @@ function PlayState:enter()
     local songName = paths.formatToSongPath(PlayState.SONG.song)
 
     self.scripts = ScriptsHandler()
-    self.scripts:loadDirectory("data/scripts/songs")
+    self.scripts:loadDirectory("data/scripts")
+    self.scripts:loadDirectory("data/scripts/" .. songName)
     self.scripts:loadDirectory("songs/" .. songName)
     self.scripts:call("create")
 
+    local curSection = 0
+    local stepsToDo = 0
     game.sound.loadMusic(paths.getInst(songName), nil, false)
     game.sound.music.onComplete = function() self:endSong() end
     PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
     PlayState.conductor:mapBPMChanges(PlayState.SONG)
+    PlayState.conductor.currentSection = 0
+    PlayState.conductor.onStep = function(s)
+        self:step(s)
+
+        local section = PlayState.SONG.notes[curSection + 1]
+        local beats = 4
+        if section and section.sectionBeats then
+            beats = section.sectionBeats
+        end
+
+        if stepsToDo < 1 then stepsToDo = math.round(beats * 4) end
+        while s >= stepsToDo do
+            curSection = curSection + 1
+            PlayState.conductor.currentSection = curSection
+            section = PlayState.SONG.notes[curSection + 1]
+            if section and section.sectionBeats then
+                beats = section.sectionBeats
+            end
+            stepsToDo = stepsToDo + math.round(beats * 4)
+            self:section(curSection)
+        end
+    end
     PlayState.conductor.onBeat = function(b) self:beat(b) end
-    PlayState.conductor.onStep = function(s) self:step(s) end
     if PlayState.SONG.needsVoices then
         self.vocals = Sound():load(paths.getVoices(songName))
         game.sound.list:add(self.vocals)
@@ -106,7 +145,9 @@ function PlayState:enter()
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
-        if songName == 'spookeez' or songName == 'south' or songName ==
+        if songName == 'test' then
+            curStage = 'test'
+        elseif songName == 'spookeez' or songName == 'south' or songName ==
             'monster' then
             curStage = 'spooky'
         elseif songName == 'pico' or songName == 'philly-nice' or songName ==
@@ -115,6 +156,10 @@ function PlayState:enter()
         elseif songName == 'satin-panties' or songName == 'high' or songName ==
             'milf' then
             curStage = 'limo'
+        elseif songName == 'cocoa' or songName == 'eggnog' then
+            curStage = 'mall'
+        elseif songName == 'winter-horrorland' then
+            curStage = 'mall-evil'
         elseif songName == "senpai" or songName == "roses" then
             curStage = "school"
         elseif songName == "thorns" then
@@ -142,7 +187,7 @@ function PlayState:enter()
             for _, n in ipairs(s.sectionNotes) do
                 local daStrumTime = tonumber(n[1])
                 local daNoteData = tonumber(n[2])
-                if daStrumTime ~= nil and daNoteData ~= nil then
+                if daStrumTime ~= nil and daNoteData ~= nil and daStrumTime >= self.startPos then
                     daNoteData = daNoteData % 4
                     local gottaHitNote = s.mustHitSection
                     if n[2] > 3 then
@@ -195,7 +240,7 @@ function PlayState:enter()
 
     table.sort(self.unspawnNotes, PlayState.sortByShit)
 
-    PlayState.notePosition = -PlayState.conductor.crochet * 5
+    PlayState.notePosition = self.startPos - (PlayState.conductor.crochet * 5)
 
     self.score = 0
     self.combo = 0
@@ -245,14 +290,13 @@ function PlayState:enter()
     if gfVersion == nil then
         switch(curStage, {
             ["limo"] = function() gfVersion = "gf-car" end,
+            ["mall"] = function() gfVersion = "gf-christmas" end,
+            ["mall-evil"] = function() gfVersion = "gf-christmas" end,
             ["school"] = function() gfVersion = "gf-pixel" end,
             ["school-evil"] = function() gfVersion = "gf-pixel" end,
             ["tank"] = function()
-                if songName == 'stress' then
-                    gfVersion = "pico-speaker"
-                else
-                    gfVersion = "gf-tankmen"
-                end
+                if songName == 'stress' then gfVersion = "pico-speaker"
+                else gfVersion = "gf-tankmen" end
             end,
             default = function() gfVersion = "gf" end
         })
@@ -432,6 +476,8 @@ function PlayState:startCountdown()
         {sound = basePath .. "/introGo", image = basePath .. "/go"}
     }
 
+    self:section(0)
+
     local crochet = PlayState.conductor.crochet / 1000
     for swagCounter = 0, 4 do
         self.countdownTimer:after(crochet * (swagCounter+1), function()
@@ -483,10 +529,14 @@ function PlayState:update(dt)
 
     if self.startedCountdown then
         PlayState.notePosition = PlayState.notePosition + 1000 * dt
-        if self.startingSong and PlayState.notePosition >= 0 then
+        if self.startingSong and PlayState.notePosition >= self.startPos then
             self.startingSong = false
+            PlayState.conductor.sound:seek(self.startPos / 1000)
             PlayState.conductor.sound:play()
-            if self.vocals then self.vocals:play() end
+            if self.vocals then
+                self.vocals.__source:seek(PlayState.conductor.sound:tell())
+                self.vocals:play()
+            end
             PlayState.notePosition = PlayState.conductor.time
             self.scripts:call("songStart")
 
@@ -631,6 +681,7 @@ function PlayState:update(dt)
         fadeGroupSprites(self.stage)
         fadeGroupSprites(self.gf)
         fadeGroupSprites(self.dad)
+        fadeGroupSprites(self.stage.foreground)
 
         self.camHUD.visible = false
         self.boyfriend.visible = false
@@ -744,7 +795,12 @@ function PlayState:update(dt)
                 self.health = self.health - 0.0475
                 self.healthBar:setValue(self.health)
 
-                self.boyfriend:sing(n.data, true)
+                self.boyfriend:sing(n.data, "miss")
+
+                if self.gf.__animations['sad'] then
+                    self.gf:playAnim('sad', true)
+                    self.gf.lastHit = math.floor(PlayState.conductor.time)
+                end
             end
 
             self:removeNote(n)
@@ -760,7 +816,7 @@ function PlayState:update(dt)
 end
 
 function PlayState:cameraMovement()
-    local section = self:getCurrentSection()
+    local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
     if section ~= nil then
         if section.gfSection then
             local x, y = self.gf:getMidpoint()
@@ -843,9 +899,8 @@ function PlayState:closeSubstate()
 end
 
 function PlayState:onSettingChange(setting)
-    self.scripts:call("onSettingChange", setting)
-
     if setting == 'gameplay' then
+        self.botPlay = ClientPrefs.data.botplayMode
         self.downScroll = ClientPrefs.data.downScroll
 
         local songTime = PlayState.conductor.time / 1000
@@ -945,13 +1000,7 @@ function PlayState:onSettingChange(setting)
         self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
         controls:bindRelease(self.bindedKeyRelease)
     end
-end
-
--- CAN RETURN NIL!!
-function PlayState:getCurrentSection()
-    return
-        PlayState.SONG.notes[math.floor(PlayState.conductor.currentStep / 16) +
-            1]
+    self.scripts:call("onSettingChange", setting)
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -1033,8 +1082,13 @@ function PlayState:goodNoteHit(n)
 
         if self.vocals then self.vocals:setVolume(1) end
 
+        local animType = ''
+        if PlayState.SONG.notes[PlayState.conductor.currentSection+1].altAnim then
+            animType = 'alt'
+        end
+
         local char = (n.mustPress and self.boyfriend or self.dad)
-        char:sing(n.data, false)
+        char:sing(n.data, animType)
 
         if paths.formatToSongPath(self.SONG.song) ~= 'tutorial' then
             if not n.mustPress then self.camZooming = true end
@@ -1090,11 +1144,36 @@ function PlayState:goodNoteHit(n)
     end
 end
 
-function PlayState:endSong()
+function PlayState:endSong(skip)
+    if skip == nil then skip = false end
     PlayState.seenCutscene = false
+
+    if self.storyMode and not self.seenCutscene and not skip then
+        PlayState.seenCutscene = true
+        self.startedCountdown = false
+
+        local songName = paths.formatToSongPath(PlayState.SONG.song)
+        if paths.exists(paths.getPath('data/cutscenes/'..songName..'-end.lua'), 'file') then
+            local cutsceneScript = Script('data/cutscenes/'..songName..'-end')
+            cutsceneScript:call("create")
+            table.insert(self.scripts.scripts, cutsceneScript)
+            cutsceneScript:call("postCreate")
+            return
+        else
+            self:endSong(true)
+            return
+        end
+    end
+
+    self.scripts:call("endSong")
 
     local formatSong = paths.formatToSongPath(self.SONG.song)
     Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
+
+    if self.chartingMode then
+        game.switchState(ChartingState())
+        return
+    end
 
     if self.storyMode then
         PlayState.storyScore = PlayState.storyScore + self.score
@@ -1127,6 +1206,8 @@ function PlayState:endSong()
         game.sound.playMusic(paths.getMusic("freakyMenu"))
         game.switchState(FreeplayState())
     end
+
+    self.scripts:call("postEndSong")
 end
 
 function PlayState:removeNote(n)
@@ -1156,32 +1237,12 @@ function PlayState:step(s)
     self.gf:step(s)
     self.dad:step(s)
 
-    self.scripts:call("postStep", s)
+    self.scripts:call("postStep")
 end
 
 function PlayState:beat(b)
     self.scripts:set("curBeat", b)
     self.scripts:call("beat")
-
-    local section = self:getCurrentSection()
-    if section and b %
-        (section.sectionBeats ~= nil and section.sectionBeats or 4) == 0 then
-        if section and section.changeBPM then
-            print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
-                      ", NEW BPM: " .. section.bpm)
-            PlayState.conductor:setBPM(section.bpm)
-            self.scripts:set("bpm", PlayState.conductor.bpm)
-            self.scripts:set("crochet", PlayState.conductor.crochet)
-            self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
-        end
-
-        if self.camZooming and game.camera.zoom < 1.35 then
-            game.camera.zoom = game.camera.zoom + 0.015
-            self.camHUD.zoom = self.camHUD.zoom + 0.03
-        end
-
-        self:cameraMovement()
-    end
 
     local scaleNum = 1.2
     self.iconP1.scale = {x = scaleNum, y = scaleNum}
@@ -1191,7 +1252,30 @@ function PlayState:beat(b)
     self.gf:beat(b)
     self.dad:beat(b)
 
-    self.scripts:call("postBeat", b)
+    self.scripts:call("postBeat")
+end
+
+function PlayState:section(s)
+    self.scripts:set("curSection", s)
+    self.scripts:call("section")
+
+    if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
+        print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
+                  ", NEW BPM: " .. PlayState.SONG.notes[s].bpm)
+        PlayState.conductor:setBPM(PlayState.SONG.notes[s].bpm)
+        self.scripts:set("bpm", PlayState.conductor.bpm)
+        self.scripts:set("crochet", PlayState.conductor.crochet)
+        self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
+    end
+
+    if self.camZooming and game.camera.zoom < 1.35 then
+        game.camera.zoom = game.camera.zoom + 0.015
+        self.camHUD.zoom = self.camHUD.zoom + 0.03
+    end
+
+    self:cameraMovement()
+
+    self.scripts:call("postSection")
 end
 
 function PlayState:popUpScore(rating)
@@ -1321,7 +1405,6 @@ end
 function PlayState:leave()
     self.scripts:call("leave")
 
-    PlayState.seenCutscene = false
     PlayState.conductor = nil
 
     controls:unbindPress(self.bindedKeyPress)

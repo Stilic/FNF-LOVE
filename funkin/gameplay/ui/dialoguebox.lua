@@ -57,7 +57,7 @@ function DialogueBox:new(dialogueList)
             self.box:addAnimByPrefix('normalOpen', 'Spirit Textbox spawn', 24, false)
             self.box:addAnimByIndices('normal', 'Spirit Textbox spawn', {11}, nil, 24)
 
-            local face = Sprite(300, 0)
+            local face = Sprite(250, -90)
             face:loadTexture(paths.getImage('stages/school-evil/spiritFaceForward'))
             face:setGraphicSize(math.floor(face.width * 6))
             self:add(face)

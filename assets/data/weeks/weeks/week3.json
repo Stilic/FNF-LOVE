@@ -1,33 +1,9 @@
 {
     "name": "PICO",
     "songs": [
-        [
-            "Pico",
-            "pico",
-            [
-                148,
-                22,
-                83
-            ]
-        ],
-        [
-            "Philly Nice",
-            "pico",
-            [
-                148,
-                22,
-                83
-            ]
-        ],
-        [
-            "Blammed",
-            "pico",
-            [
-                148,
-                22,
-                83
-            ]
-        ]
+        "Pico",
+        "Philly Nice",
+        "Blammed"
     ],
     "characters": [
         "pico",

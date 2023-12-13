@@ -3,7 +3,7 @@ local DialogueBox = require "funkin.gameplay.ui.dialoguebox"
 local doof
 local music
 function create()
-    local dialogue = love.filesystem.read(paths.getPath('songs/thorns/thornsDialogue.txt')):split('\n')
+    local dialogue = love.filesystem.read(paths.getPath('songs/thorns/dialogue.txt')):split('\n')
 
     music = game.sound.load(paths.getMusic('gameplay/LunchboxScary'), 0.8, true, true)
     music:play()

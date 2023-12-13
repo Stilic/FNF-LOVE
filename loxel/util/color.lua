@@ -30,6 +30,13 @@ function Color.fromHSL(...)
 	return {Color.HSL(...)}
 end
 
+function Color.fromString(str)
+	str = str:gsub("#", "")
+	return Color.fromRGB(tonumber('0x'..str:sub(1,2)),
+						 tonumber('0x'..str:sub(3,4)),
+						 tonumber('0x'..str:sub(5,6)))
+end
+
 function Color.fromRGB(r, g, b)
 	return {r / 255, g / 255, b / 255}
 end

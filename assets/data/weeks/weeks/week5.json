@@ -1,33 +1,9 @@
 {
     "name": "RED SNOW",
     "songs": [
-        [
-            "Cocoa",
-            "parents",
-            [
-                160,
-                209,
-                255
-            ]
-        ],
-        [
-            "Eggnog",
-            "parents",
-            [
-                160,
-                209,
-                255
-            ]
-        ],
-        [
-            "Winter Horrorland",
-            "monster",
-            [
-                160,
-                209,
-                255
-            ]
-        ]
+        "Cocoa",
+        "Eggnog",
+        "Winter Horrorland"
     ],
     "characters": [
         "parents-christmas",
@@ -35,5 +11,5 @@
         "gf"
     ],
     "sprite": "week5",
-    "locked": true
+    "locked": false
 }

@@ -38,7 +38,7 @@ function postCreate()
         game.sound.play(paths.getSound('gameplay/bfBeep'))
     end)
 
-    cutsceneTimer:after(5.5, function()
+    cutsceneTimer:after(5.2, function()
         state.boyfriend:playAnim('idle', true)
     end)
 

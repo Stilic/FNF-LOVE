@@ -13,7 +13,7 @@ end
 function HealthIcon:changeIcon(icon, ignoreDefault)
 	if paths.getImage("icons/" .. icon) == nil then
 		if ignoreDefault then return false end
-		icon = "icons/" .. HealthIcon.defaultIcon 
+		icon = HealthIcon.defaultIcon
 	end
 	self:loadTexture(paths.getImage("icons/" .. icon))
 

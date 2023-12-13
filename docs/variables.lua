@@ -3,11 +3,16 @@
 local state
 
 ---The current beat the conductor is on
+---@type number
 local curBeat
 
 ---The current step the conductor is on
 ---@type number
 local curStep
+
+---The current section the conductor is on
+---@type number
+local curSection
 
 ---The current bpm defined by conductor
 ---@type number

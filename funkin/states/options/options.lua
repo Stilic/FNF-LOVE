@@ -21,8 +21,15 @@ function OptionsState:enter()
     self.bg = Sprite()
     self.bg:loadTexture(paths.getImage('menus/menuBGBlue'))
     self.bg.color = {0.5, 0.5, 0.5}
+    self.bg:setScrollFactor()
     self.bg:screenCenter()
     self:add(self.bg)
+
+    self.scrollCam = Camera()
+    self.scrollCam.target = {x = game.width/2, y = game.height/2}
+    game.cameras.add(self.scrollCam, false)
+
+    self.camFollow = {x = game.width/2, y = game.height/2}
 
     self.optionsTab = {
         'Gameplay',
@@ -33,38 +40,46 @@ function OptionsState:enter()
     self.titleTabBG = Sprite(0, 20):make(game.width * 0.8, 65, {0, 0, 0})
     self.titleTabBG.alpha = 0.7
     self.titleTabBG:screenCenter('x')
+    self.titleTabBG.cameras = {self.scrollCam}
     self:add(self.titleTabBG)
 
     self.tabBG = Sprite(0, 105):make(game.width * 0.8, game.height * 0.75,
                                      {0, 0, 0})
     self.tabBG.alpha = 0.7
     self.tabBG:screenCenter('x')
+    self.tabBG.cameras = {self.scrollCam}
     self:add(self.tabBG)
 
     self.optionsCursor = Sprite():make((game.width * 0.78), 39, {1, 1, 1})
     self.optionsCursor.alpha = 0.1
     self.optionsCursor.visible = false
     self.optionsCursor:screenCenter('x')
+    self.optionsCursor.cameras = {self.scrollCam}
     self:add(self.optionsCursor)
 
     self.curBindSelect = 1
 
-    self.controlsCursor = Sprite(377):make(148, 39, {1, 1, 1})
+    self.controlsCursor = Sprite(game.width/2 + 5):make(240, 39, {1, 1, 1})
     self.controlsCursor.alpha = 0.2
     self.controlsCursor.visible = false
+    self.controlsCursor.cameras = {self.scrollCam}
     self:add(self.controlsCursor)
 
     self.titleTxt = Text(0, 30, '', paths.getFont('phantommuff.ttf', 40),
                          {1, 1, 1}, "center", game.width)
+    self.titleTxt.cameras = {self.scrollCam}
     self:add(self.titleTxt)
 
     self.allTabs = Group()
+    self.allTabs.cameras = {self.scrollCam}
     self:add(self.allTabs)
 
     self.textGroup = Group()
+    self.textGroup.cameras = {self.scrollCam}
     self:add(self.textGroup)
 
     self.spriteGroup = Group()
+    self.spriteGroup.cameras = {self.scrollCam}
     self:add(self.spriteGroup)
 
     self.timerHold = 0
@@ -72,12 +87,10 @@ function OptionsState:enter()
     self.block_input = false
     self.onTab = false
 
-    self:reset_Tabs()
-
-    self:changeTab()
-
     self.blackFG = Sprite():make(game.width, game.height, {0, 0, 0})
     self.blackFG.alpha = 0
+    self.blackFG.cameras = {self.scrollCam}
+    self.blackFG:setScrollFactor()
     self:add(self.blackFG)
 
     self.waitInputTxt = Text(0, 0, 'Rebinding..',
@@ -85,7 +98,15 @@ function OptionsState:enter()
                              "center", game.width)
     self.waitInputTxt:screenCenter('y')
     self.waitInputTxt.visible = false
+    self.waitInputTxt.cameras = {self.scrollCam}
+    self.waitInputTxt:setScrollFactor()
     self:add(self.waitInputTxt)
+
+    self.hitboxdown = {y = game.width-65, height = 65}
+    self.hitboxup = {y = -65, height = 65}
+
+    self:reset_Tabs()
+    self:changeTab()
 end
 
 function OptionsState:reset_Tabs()
@@ -102,6 +123,9 @@ function OptionsState:reset_Tabs()
         for _, grp in ipairs(idk.members) do
             for _, obj in ipairs(grp.members) do
                 obj.visible = (grp.name == self.optionsTab[self.curTab])
+                if grp.isLines then
+                    obj:make(2, self.tabBG.height - 24, {255, 255, 255})
+                end
             end
         end
     end
@@ -111,11 +135,29 @@ end
 function OptionsState:update(dt)
     OptionsState.super.update(self, dt)
 
-    if game.sound.music:getVolume() <= 0.5 then
-        game.sound.music:setVolume(game.sound.music:getVolume() + 0.05)
+    self.scrollCam.target.x, self.scrollCam.target.y =
+        util.coolLerp(self.scrollCam.target.x, self.camFollow.x, 0.2),
+        util.coolLerp(self.scrollCam.target.y, self.camFollow.y, 0.2)
+
+    if self.onTab then
+        self.hitboxdown.y = self.scrollCam.scroll.y + (game.height-65)
+        if self.camFollow.y > game.height/2 then
+            self.hitboxup.y = self.scrollCam.scroll.y + (game.height/2-65)
+        else
+            self.camFollow.y = game.height/2
+            self.hitboxup.y = -65
+        end
+        if self.optionsCursor.y > self.hitboxdown.y then
+            self.camFollow.y = self.optionsCursor.y - (game.height-463)
+        elseif (self.optionsCursor.y + self.optionsCursor.height) <
+            (self.hitboxup.y + self.hitboxup.height) then
+            self.camFollow.y = self.optionsCursor.y
+        end
     end
 
     if controls:pressed('back') then
+        if self.block_input then self.block_input = false return end
+
         game.sound.play(paths.getSound('cancelMenu'))
         if self.waiting_input then
             self.waiting_input = false
@@ -135,6 +177,10 @@ function OptionsState:update(dt)
                 self.optionsCursor.visible = false
                 self.controlsCursor.visible =
                     (self.optionsTab[self.curTab] == 'Controls' and false)
+                if self.camFollow.y > game.height/2 then
+                    self.camFollow.y = game.height/2
+                    self.hitboxup.y = -65
+                end
             end
         else
             game.switchState(MainMenuState())
@@ -142,6 +188,8 @@ function OptionsState:update(dt)
     end
 
     if not self.waiting_input then
+        if self.block_input then self.block_input = false return end
+
         if not self.onTab then
             if controls:pressed('ui_left') then
                 self:changeTab(-1)
@@ -176,6 +224,10 @@ function OptionsState:update(dt)
                         tabs[selectedTab].selectOption(self.curSelect, true)
                         self:reset_Tabs()
                         self.changingOption = true
+                    else
+                        tabs[selectedTab].selectOption(self.curSelect)
+                        self:reset_Tabs()
+                        self.changingOption = false
                     end
                 end
             end
@@ -249,33 +301,38 @@ function OptionsState:update(dt)
                 end
             end
         end
-    elseif Keyboard.input and self.waiting_input and not self.block_input then
-        game.sound.play(paths.getSound('confirmMenu'))
-        self.block_input = true
-
-        local arrow = {
-            'note_left', 'note_down', 'note_up', 'note_right'
-        }
-        local text = arrow[self.curSelect]
-
-        local newBind = 'key:' .. Keyboard.input:lower()
-        self.controls[text][self.curBindSelect] = newBind
-
-        self:reset_Tabs()
-
-        self.waitInputTxt.content = 'Configuring..\nPlease Wait'
-        Timer.after(1, function()
-            self.block_input = false
+    else
+        if Keyboard.input and self.waiting_input then
+            game.sound.play(paths.getSound('confirmMenu'))
             self.waiting_input = false
             self.blackFG.alpha = 0
             self.waitInputTxt.visible = false
-            self.waitInputTxt.content = 'Rebinding..'
+
+            local controlsTable = tabs.Controls.getControls()
+            local text = controlsTable[self.curSelect]
+
+            local newBind = 'key:' .. Keyboard.input:lower()
+            local secBind = 1
+            if self.curBindSelect == 1 then
+                secBind = 2
+            end
+            local oldBind = self.controls[text][self.curBindSelect]
+            self.controls[text][self.curBindSelect] = newBind
+
+            if self.controls[text][self.curBindSelect] ==
+                self.controls[text][secBind] then
+                self.controls[text][secBind] = oldBind
+            end
+
+            self:reset_Tabs()
 
             ClientPrefs.controls = table.clone(self.controls)
             controls = (require "lib.baton").new({
                 controls = table.clone(self.controls)
             })
-        end)
+
+            self.block_input = true
+        end
     end
 end
 
@@ -290,8 +347,8 @@ function OptionsState:changeBindSelection(huh)
         self.curBindSelect = 2
     end
 
-    self.controlsCursor.x = (self.curBindSelect == 1 and 382 or
-                                self.curBindSelect == 2 and 542) - 5
+    self.controlsCursor.x = (self.curBindSelect == 1 and game.width/2 + 10 or
+                                self.curBindSelect == 2 and game.width/2 + 260) - 5
 end
 
 function OptionsState:changeSelection(huh, tab)
@@ -325,10 +382,24 @@ function OptionsState:changeTab(huh)
 
     self.titleTxt.content = '< ' .. self.optionsTab[self.curTab] .. ' >'
 
+    local tabSelected = self.allTabs.members[self.curTab]
+    local lastSelection = tabSelected.members[#tabSelected.members]
+    local lastObject = lastSelection.members[1]
+    if lastObject.y > game.height then
+        self.tabBG:make(game.width * 0.8, lastObject.y - 50,
+                            {0, 0, 0})
+    else
+        self.tabBG:make(game.width * 0.8, game.height * 0.75,
+                            {0, 0, 0})
+    end
+
     for _, idk in ipairs({self.allTabs, self.textGroup, self.spriteGroup}) do
         for _, grp in ipairs(idk.members) do
             for _, obj in ipairs(grp.members) do
                 obj.visible = (grp.name == self.optionsTab[self.curTab])
+                if grp.isLines then
+                    obj:make(2, self.tabBG.height - 24, {255, 255, 255})
+                end
             end
         end
     end

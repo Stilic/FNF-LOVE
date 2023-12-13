@@ -6,9 +6,6 @@ function create()
     self.camZoom = 0.9
 
     self.boyfriendPos = {x = 1030, y = -120}
-    self.gfPos = {x = 400, y = 130}
-    self.dadPos = {x = 100, y = 100}
-
     self.boyfriendCam = {x = -200, y = 0}
 
     local skyBG = Sprite(-120, -50)
@@ -52,8 +49,10 @@ local updateElapsed = 0
 function update(dt) updateElapsed = dt end
 
 local fastCarCanDrive = true
+local fastCarSpeed = 170
 function resetFastCar()
-    fastCar.x = -12600
+    fastCarSpeed = love.math.random(170, 220)
+    fastCar.x = -12600 - (fastCarSpeed*32)
 	fastCar.y = love.math.random(140, 250)
 	fastCar.velocity.x = 0
 	fastCarCanDrive = true
@@ -62,17 +61,12 @@ end
 function fastCarDrive()
     game.sound.play(paths.getSound('gameplay/carPass' .. love.math.random(0, 1)), 0.7)
 
-    fastCar.velocity.x = (love.math.random(170, 220) / updateElapsed)
+    fastCar.velocity.x = (fastCarSpeed / updateElapsed)
 	fastCarCanDrive = false
     Timer.after(2, function() resetFastCar() end)
 end
 
 function beat()
-    if paths.formatToSongPath(state.SONG.song) == 'milf'
-        and curBeat >= 168 and curBeat < 200 and state.camZooming and game.camera.zoom < 1.35 then
-		game.camera.zoom = game.camera.zoom + 0.015
-		state.camHUD.zoom = state.camHUD.zoom + 0.03
-    end
     for _, spr in pairs(grpLimoDancers.members) do
         spr:dance()
     end

@@ -19,7 +19,8 @@ function CharacterEditor:enter()
         self.isPlayer = self.curChar:startsWith('bf')
     end
 
-    game.camera.scroll = {x = 0, y = 0}
+    self.camFollow = {x = 0, y = 0}
+    self.curZoom = 1
 
     self.camChar = Camera()
     self.camChar.scroll = {x = 0, y = 0}
@@ -103,7 +104,7 @@ function CharacterEditor:add_UI_Character()
 
         self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
         self.char.y = 100 + self.char.positionTable.y
-        self.camChar.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
+        self.camFollow = {x = (self.isPlayer and 350 or -310), y = 294}
 
         if self.char.curAnim.name:find('LEFT') or
             self.char.curAnim.name:find('RIGHT') then
@@ -268,21 +269,32 @@ function CharacterEditor:update(dt)
 
         local shiftMult = Keyboard.pressed.SHIFT and 10 or 1
 
-        if Keyboard.pressed.J then
-            self.camChar.scroll.x = self.camChar.scroll.x - (2 + shiftMult)
-        elseif Keyboard.pressed.L then
-            self.camChar.scroll.x = self.camChar.scroll.x + (2 + shiftMult)
+        if Keyboard.pressed.A then
+            self.camFollow.x = self.camFollow.x - (2 + shiftMult)
+        elseif Keyboard.pressed.D then
+            self.camFollow.x = self.camFollow.x + (2 + shiftMult)
         end
-        if Keyboard.pressed.I then
-            self.camChar.scroll.y = self.camChar.scroll.y - (2 + shiftMult)
-        elseif Keyboard.pressed.K then
-            self.camChar.scroll.y = self.camChar.scroll.y + (2 + shiftMult)
+        if Keyboard.pressed.W then
+            self.camFollow.y = self.camFollow.y - (2 + shiftMult)
+        elseif Keyboard.pressed.S then
+            self.camFollow.y = self.camFollow.y + (2 + shiftMult)
         end
-        if Keyboard.pressed.U then
-            self.camChar.zoom = self.camChar.zoom - 0.01
-        elseif Keyboard.pressed.O then
-            self.camChar.zoom = self.camChar.zoom + 0.01
+        if Keyboard.pressed.CONTROL then
+            if Keyboard.justPressed.PLUS then
+                self.curZoom = self.curZoom + 0.1
+                if self.curZoom > 1.8 then self.curZoom = 1.8 end
+            elseif Keyboard.justPressed.MINUS then
+                self.curZoom = self.curZoom - 0.1
+                if self.curZoom < 0.1 then self.curZoom = 0.1 end
+            end
         end
+        self.camChar.zoom = math.lerp(self.camChar.zoom, self.curZoom, 0.05)
+
+        self.camChar.scroll.x, self.camChar.scroll.y =
+        util.coolLerp(self.camChar.scroll.x, self.camFollow.x,
+                      0.2),
+        util.coolLerp(self.camChar.scroll.y, self.camFollow.y,
+                      0.2)
 
         if Keyboard.justPressed.LEFT then
             self.curAnim.offsets[1] = self.curAnim.offsets[1] + shiftMult
@@ -299,9 +311,9 @@ function CharacterEditor:update(dt)
             self:changeOffsets(self.curAnim.offsets[1], self.curAnim.offsets[2])
         end
 
-        if Keyboard.justPressed.A then
+        if Keyboard.justPressed.Q then
             self:changeAnim(-1)
-        elseif Keyboard.justPressed.D then
+        elseif Keyboard.justPressed.E then
             self:changeAnim(1)
         end
 
@@ -353,7 +365,7 @@ function CharacterEditor:loadCharacter()
     self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
     self.char.y = 100 + self.char.positionTable.y
 
-    self.camChar.scroll = {x = (self.isPlayer and 350 or -310), y = 294}
+    self.camFollow = {x = (self.isPlayer and 350 or -310), y = 294}
 end
 
 function CharacterEditor:changeOffsets(x, y)

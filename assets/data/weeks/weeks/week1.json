@@ -1,33 +1,9 @@
 {
     "name": "Daddy Dearest",
     "songs": [
-        [
-            "Bopeebo",
-            "dad",
-            [
-                146,
-                113,
-                253
-            ]
-        ],
-        [
-            "Fresh",
-            "dad",
-            [
-                146,
-                113,
-                253
-            ]
-        ],
-        [
-            "Dadbattle",
-            "dad",
-            [
-                146,
-                113,
-                253
-            ]
-        ]
+        "Bopeebo",
+        "Fresh",
+        "Dadbattle"
     ],
     "characters": [
         "dad",

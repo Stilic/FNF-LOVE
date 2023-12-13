@@ -33,6 +33,12 @@ function beat() end
 --- gets called every beatHit AFTER beat.super()
 function postBeat() end
 
+--- gets called every sectionHit
+function section() end
+
+--- gets called every sectionHit AFTER beat.super()
+function postSection() end
+
 --- gets called every noteHit
 ---@param note table
 function goodNoteHit(note) end

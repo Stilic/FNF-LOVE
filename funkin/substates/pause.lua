@@ -8,7 +8,7 @@ function PauseSubstate:new()
     self.menuItems = {"Resume", "Restart Song", "Options", "Exit to menu"}
     self.curSelected = 1
 
-    self.music = game.sound.load(paths.getMusic(ClientPrefs.data.pauseMusic))
+    self.music = game.sound.load(paths.getMusic('pause/'..ClientPrefs.data.pauseMusic))
 
     self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
     self.bg.alpha = 0
@@ -61,7 +61,10 @@ function PauseSubstate:update(dt)
             end,
             ["Exit to menu"] = function()
                 game.sound.playMusic(paths.getMusic("freakyMenu"))
+                PlayState.chartingMode = false
+                PlayState.startPos = 0
                 if PlayState.storyMode then
+                    PlayState.seenCutscene = false
                     game.switchState(StoryMenuState())
                 else
                     game.switchState(FreeplayState())

@@ -11,6 +11,7 @@ ClientPrefs.data = {
 
 	-- display
 	fps = 120,
+	showFps = true,
 	antialiasing = true,
 	shader = true,
 }
@@ -31,8 +32,10 @@ ClientPrefs.controls = {
 	pause = {"key:return", "key:escape"},
 	reset = {"key:r"},
 
+	pick_mods = {"key:6"},
+
 	debug_1 = {"key:7"},
-	debug_2 = {"key:8"}
+	debug_2 = {"key:8"},
 }
 
 function ClientPrefs.saveData()

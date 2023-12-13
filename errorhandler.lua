@@ -77,7 +77,7 @@ function love.errorhandler(msg)
     local fnfFont18 = paths.getFont('phantommuff.ttf', 18)
     local fnfFont20 = paths.getFont('phantommuff.ttf', 35)
 
-    local bgMusic = paths.getMusic('breakfast')
+    local bgMusic = paths.getMusic('pause/' .. ClientPrefs.data.pauseMusic)
     bgMusic:setLooping(true)
     bgMusic:setVolume(0.3)
     bgMusic:play()

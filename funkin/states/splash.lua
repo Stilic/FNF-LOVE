@@ -1,6 +1,5 @@
 local Splash = State:extend("Splash")
 local UpdateState = require "funkin.states.update"
-local Https = require "https"
 
 function Splash:enter()
     game.save.init('funkin')

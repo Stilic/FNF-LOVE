@@ -89,11 +89,11 @@ function TabMenu:__render(camera)
 
             love.graphics.setColor(tabColor)
             love.graphics.rectangle("fill", tabX, tabY,
-                                    (self.width / #self.tabs), self.tabHeight)
+                                    (self.width / #self.tabs) + 1, self.tabHeight)
 
             love.graphics.setColor(0.3, 0.3, 0.3)
             love.graphics.rectangle("line", tabX, tabY,
-                                    (self.width / #self.tabs), self.tabHeight)
+                                    (self.width / #self.tabs) + 1, self.tabHeight)
 
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(self.font)
@@ -127,7 +127,7 @@ local function isMouseOverTab(self, mx, my)
         for i, _ in ipairs(self.tabs) do
             local tabX = self.x + (i - 1) * ((self.width / #self.tabs) + 2)
             local tabY = self.y
-            if mx >= tabX and mx <= tabX + (self.width / #self.tabs) and my >=
+            if mx >= tabX and mx <= tabX + (self.width / #self.tabs) + 1 and my >=
                 tabY and my <= tabY + self.tabHeight then return i end
         end
     end

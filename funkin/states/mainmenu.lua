@@ -87,6 +87,10 @@ function MainMenuState:update(dt)
             game.switchState(TitleState())
         end
 
+        if controls:pressed("pick_mods") then
+            game.switchState(ModsState())
+        end
+
         if controls:pressed("accept") then
             local selected = self.optionShit[MainMenuState.curSelected]
             if selected == 'donate' then

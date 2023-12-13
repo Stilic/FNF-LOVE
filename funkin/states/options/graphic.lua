@@ -1,8 +1,15 @@
 local Graphic = {}
 
 local optionsVar = {
-    {'fps', 'FPS', false, 'number', {30, 250}},
-    {'antialiasing', 'Antialiasing', false, 'boolean'},
+    {'fps', 'FPS', false, 'number', {30, 250}, function()
+        love.FPScap = ClientPrefs.data.fps
+    end},
+    {'showFps', 'Show FPS', false, 'boolean', function()
+        love.showFPS = ClientPrefs.data.showFps
+    end},
+    {'antialiasing', 'Antialiasing', false, 'boolean', function()
+        Object.defaultAntialiasing = ClientPrefs.data.antialiasing
+    end},
     {'shader', 'Shader', false, 'boolean'}
 }
 
@@ -31,18 +38,21 @@ function Graphic.add(options)
         end
         local value = daOption[3] and '< ' .. tostring(realvalue)
                         .. ' >' or tostring(realvalue)
-        local valueTxt = Text(382, yPos, value,
-                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
+        local valueTxt = Text((game.width/2) + 10, yPos, value,
+                              paths.getFont('phantommuff.ttf', 30), {1, 1, 1},
+                              'center', (game.width*0.8)/2 - 20)
         daGroup:add(valueTxt)
 
         graphicTab:add(daGroup)
     end
 
     local linesGroup = Group()
+    linesGroup.isLines = true
     linesGroup.name = graphicTab.name
 
-    local lines = Sprite(370, 117):make(2, game.height * 0.72,
+    local lines = Sprite(0, 117):make(2, game.height * 0.72,
                                             {255, 255, 255})
+    lines:screenCenter('x')
     lines.alpha = 0.5
     linesGroup:add(lines)
     options.spriteGroup:add(linesGroup)
@@ -73,6 +83,7 @@ function Graphic.changeSelection(huh)
     local optionType = selectedOption[4]
     if optionType == 'boolean' then
         ClientPrefs.data[optionData] = not ClientPrefs.data[optionData]
+        if selectedOption[5] then selectedOption[5]() end
     elseif optionType == 'string' then
         local stringVal = selectedOption[5]
 
@@ -85,6 +96,7 @@ function Graphic.changeSelection(huh)
         end
 
         ClientPrefs.data[optionData] = stringVal[stringSelected]
+        if selectedOption[6] then selectedOption[6]() end
     elseif optionType == 'number' then
         local minVal = selectedOption[5][1]
         local maxVal = selectedOption[5][2]
@@ -96,6 +108,7 @@ function Graphic.changeSelection(huh)
         elseif ClientPrefs.data[optionData] < minVal then
             ClientPrefs.data[optionData] = minVal
         end
+        if selectedOption[6] then selectedOption[6]() end
     end
 end
 

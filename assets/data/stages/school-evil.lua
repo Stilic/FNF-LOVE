@@ -1,14 +1,10 @@
 function create()
     self.camZoom = 1.05
-    self.camSpeed = 1
 
     self.boyfriendPos = {x = 970, y = 320}
     self.gfPos = {x = 580, y = 430}
-    self.dadPos = {x = 100, y = 100}
 
     self.boyfriendCam = {x = -100, y = -100}
-    self.gfCam = {x = 0, y = 0}
-    self.dadCam = {x = 0, y = 0}
 
     PlayState.pixelStage = true
 

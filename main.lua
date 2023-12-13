@@ -32,12 +32,14 @@ BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 TankmenBG = require "funkin.gameplay.tankmenbg"
 ParallaxImage = require "loxel.effects.parallax"
 
+ModsState = require "funkin.states.mods"
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
 StoryMenuState = require "funkin.states.storymenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
+ChartErrorSubstate = require "funkin.substates.charterror"
 GameOverSubstate = require "funkin.substates.gameover"
 
 OptionsState = require "funkin.states.options.options"
@@ -52,12 +54,15 @@ require "errorhandler"
 function love.run()
     local _, _, flags = love.window.getMode()
     love.FPScap, love.unfocusedFPScap = math.max(flags.refreshrate, 120), 8
+    love.showFPS = false
 
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
 
     collectgarbage()
     collectgarbage("step")
+
+    local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 12)
 
     if not love.quit then love.quit = function()end end
 
@@ -82,13 +87,23 @@ function love.run()
                 love.graphics.clear(love.graphics.getBackgroundColor())
                 love.draw()
 
-                local stats = love.graphics.getStats()
-                love.graphics.printf("FPS: " ..
-                                         math.min(love.timer.getFPS(),
-                                                  love.FPScap) .. "\nVRAM: " ..
-                                         math.countbytes(stats.texturememory) ..
-                                         "\nDRAWS: " .. stats.drawcalls, 6, 6,
-                                     300, "left", 0)
+                if love.showFPS then
+                    local stats = love.graphics.getStats()
+                    love.graphics.setColor(0, 0, 0, 0.5)
+                    love.graphics.printf("FPS: " ..
+                                            math.min(love.timer.getFPS(),
+                                                    love.FPScap) .. "\nVRAM: " ..
+                                            math.countbytes(stats.texturememory) ..
+                                            "\nDRAWS: " .. stats.drawcalls, consolas, 7, 7,
+                                        300, "left", 0)
+                    love.graphics.setColor(1, 1, 1, 1)
+                    love.graphics.printf("FPS: " ..
+                                            math.min(love.timer.getFPS(),
+                                                    love.FPScap) .. "\nVRAM: " ..
+                                            math.countbytes(stats.texturememory) ..
+                                            "\nDRAWS: " .. stats.drawcalls, consolas, 6, 6,
+                                        300, "left", 0)
+                end
 
                 love.graphics.present()
             end
@@ -132,7 +147,7 @@ function love.load()
 
     game.init(Project, SplashScreen)
 
-    if love.system.getDevice() == "Desktop" then 
+    if love.system.getDevice() == "Desktop" then
     	Discord = require "funkin.backend.discord"
     	Discord.init()
     else

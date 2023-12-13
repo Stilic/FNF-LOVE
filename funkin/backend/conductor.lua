@@ -55,6 +55,38 @@ function Conductor:seek(position, unit)
     if playing then self.sound:play() end
 end
 
+function Conductor:getTimeFromStep(step)
+    local bpmChange = {
+        0,
+        0,
+        self.bpm
+    }
+
+    for _, change in ipairs(self.__bpmChanges) do
+        if change[1] < step and change[1] >= bpmChange[1] then
+            bpmChange = change
+        end
+    end
+
+    return bpmChange[2] + ((step - bpmChange[1]) * ((60 / bpmChange[3]) * 1000))
+end
+
+function Conductor:getStepFromTime(time)
+    local bpmChange = {
+        0,
+        0,
+        self.bpm
+    }
+
+    for _, change in ipairs(self.__bpmChanges) do
+        if change[2] < time and change[2] >= bpmChange[2] then
+            bpmChange = change
+        end
+    end
+
+    return bpmChange[1] + ((time - bpmChange[2]) / ((60 / bpmChange[3]) * 1000))
+end
+
 function Conductor:mapBPMChanges(song)
     self.__bpmChanges = {}
 

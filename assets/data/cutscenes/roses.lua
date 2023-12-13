@@ -2,7 +2,7 @@ local DialogueBox = require "funkin.gameplay.ui.dialoguebox"
 
 local doof
 function create()
-    local dialogue = love.filesystem.read(paths.getPath('songs/roses/rosesDialogue.txt')):split('\n')
+    local dialogue = love.filesystem.read(paths.getPath('songs/roses/dialogue.txt')):split('\n')
 
     game.sound.play(paths.getSound('gameplay/ANGRY_TEXT_BOX'))
     game.camera:shake(0.001, 0.8)
