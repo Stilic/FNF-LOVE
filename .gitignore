@@ -40,3 +40,4 @@ luac.out
 
 # Ignore
 *.sublime-workspace
+mods/

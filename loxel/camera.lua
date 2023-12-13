@@ -177,6 +177,12 @@ function Camera:drawSimple(_skipCheck)
 								 math.round(self.width * scale * self.scale.x),
 								 math.round(self.height * scale * self.scale.y))
 	end
+
+	love.graphics.setColor(self.bgColor[1], self.bgColor[2],
+						   self.bgColor[3], self.bgColor[4])
+	love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+	love.graphics.setColor(r, g, b, a)
+
 	love.graphics.scale(scale)
 
 	love.graphics.translate(w2 + self.__shakeX, h2 + self.__shakeY)
