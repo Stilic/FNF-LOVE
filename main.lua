@@ -51,6 +51,7 @@ local SplashScreen = require "funkin.states.splash"
 
 require "errorhandler"
 
+local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14)
 function love.run()
     local _, _, modes = love.window.getMode()
     love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 120), 8
@@ -61,8 +62,6 @@ function love.run()
 
     collectgarbage()
     collectgarbage("step")
-
-    local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 12)
 
     if not love.quit then love.quit = function()end end
 
@@ -89,20 +88,16 @@ function love.run()
 
                 if love.showFPS then
                     local stats = love.graphics.getStats()
+                    local fps = math.min(love.timer.getFPS(), love.FPScap)
+                    local vram = math.countbytes(stats.texturememory)
+                    local text = "FPS: " .. fps ..
+                                 "\nVRAM: " .. vram ..
+                                 "\nDRAWS: " .. stats.drawcalls
+
                     love.graphics.setColor(0, 0, 0, 0.5)
-                    love.graphics.printf("FPS: " ..
-                                            math.min(love.timer.getFPS(),
-                                                    love.FPScap) .. "\nVRAM: " ..
-                                            math.countbytes(stats.texturememory) ..
-                                            "\nDRAWS: " .. stats.drawcalls, consolas, 7, 7,
-                                        300, "left", 0)
+                    love.graphics.printf(text, consolas, 8, 8, 300, "left", 0)
                     love.graphics.setColor(1, 1, 1, 1)
-                    love.graphics.printf("FPS: " ..
-                                            math.min(love.timer.getFPS(),
-                                                    love.FPScap) .. "\nVRAM: " ..
-                                            math.countbytes(stats.texturememory) ..
-                                            "\nDRAWS: " .. stats.drawcalls, consolas, 6, 6,
-                                        300, "left", 0)
+                    love.graphics.printf(text, consolas, 6, 6, 300, "left", 0)
                 end
 
                 love.graphics.present()

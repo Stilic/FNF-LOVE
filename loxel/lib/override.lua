@@ -85,6 +85,10 @@ function switch(param, case_table) -- https://gist.github.com/FreeBirdLjj/630386
 	return def and def() or nil
 end
 
+function table.merge(a, b)
+	for i, v in next, b do a[i] = v end
+end
+
 function table.keys(table, includeIndices, keys)
 	keys = keys or {}
 	for i in includeIndices and iter or next, table, includeIndices and 0 or nil do
