@@ -46,70 +46,80 @@ function StoryMenuState:enter()
 
     self.weeksData = {}
     self:loadWeeks()
-    for i, week in pairs(self.weeksData) do
-        local isLocked = (week.locked == true)
-        local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10,
-                                    week.sprite)
-        weekThing.y = weekThing.y + ((weekThing.height + 20) * (i - 1))
-        weekThing.targetY = num
-        self.grpWeekText:add(weekThing)
+    if #self.weeksData > 0 then
+        for i, week in pairs(self.weeksData) do
+            local isLocked = (week.locked == true)
+            local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10,
+                                        week.sprite)
+            weekThing.y = weekThing.y + ((weekThing.height + 20) * (i - 1))
+            weekThing.targetY = num
+            self.grpWeekText:add(weekThing)
 
-        weekThing:screenCenter("x")
+            weekThing:screenCenter("x")
 
-        if isLocked then
-            local lock = Sprite(weekThing.width + 10 + weekThing.x)
-            lock:setFrames(ui_tex)
-            lock:addAnimByPrefix('lock', 'lock')
-            lock:play('lock')
-            lock.ID = i
-            self.grpLocks:add(lock)
+            if isLocked then
+                local lock = Sprite(weekThing.width + 10 + weekThing.x)
+                lock:setFrames(ui_tex)
+                lock:addAnimByPrefix('lock', 'lock')
+                lock:play('lock')
+                lock.ID = i
+                self.grpLocks:add(lock)
+            end
         end
+
+        local charTable = self.weeksData[StoryMenuState.curWeek].characters
+        for char = 0, 2 do
+            local weekCharThing = MenuCharacter(
+                                      (game.width * 0.25) * (1 + char) - 150,
+                                      charTable[char + 1])
+            weekCharThing.y = weekCharThing.y + 70
+            self.grpWeekCharacters:add(weekCharThing)
+        end
+
+        self.difficultySelector = Group()
+        self:add(self.difficultySelector)
+
+        self.leftArrow = Sprite(self.grpWeekText.members[1].x +
+                                    self.grpWeekText.members[1].width + 10,
+                                self.grpWeekText.members[1].y + 10);
+        self.leftArrow:setFrames(ui_tex)
+        self.leftArrow:addAnimByPrefix('idle', "arrow left")
+        self.leftArrow:addAnimByPrefix('press', "arrow push left")
+        self.leftArrow:play('idle')
+        self.difficultySelector:add(self.leftArrow)
+
+        self.sprDifficulty = Sprite(0, self.leftArrow.y);
+        self.difficultySelector:add(self.sprDifficulty);
+
+        self.rightArrow = Sprite(self.leftArrow.x + 376, self.leftArrow.y);
+        self.rightArrow:setFrames(ui_tex)
+        self.rightArrow:addAnimByPrefix('idle', "arrow right")
+        self.rightArrow:addAnimByPrefix('press', "arrow push right")
+        self.rightArrow:play('idle')
+        self.difficultySelector:add(self.rightArrow)
     end
-
-    local charTable = self.weeksData[StoryMenuState.curWeek].characters
-    for char = 0, 2 do
-        local weekCharThing = MenuCharacter(
-                                  (game.width * 0.25) * (1 + char) - 150,
-                                  charTable[char + 1])
-        weekCharThing.y = weekCharThing.y + 70
-        self.grpWeekCharacters:add(weekCharThing)
-    end
-
-    self.difficultySelector = Group()
-    self:add(self.difficultySelector)
-
-    self.leftArrow = Sprite(self.grpWeekText.members[1].x +
-                                self.grpWeekText.members[1].width + 10,
-                            self.grpWeekText.members[1].y + 10);
-    self.leftArrow:setFrames(ui_tex)
-    self.leftArrow:addAnimByPrefix('idle', "arrow left")
-    self.leftArrow:addAnimByPrefix('press', "arrow push left")
-    self.leftArrow:play('idle')
-    self.difficultySelector:add(self.leftArrow)
-
-    self.sprDifficulty = Sprite(0, self.leftArrow.y);
-    self.difficultySelector:add(self.sprDifficulty);
-
-    self.rightArrow = Sprite(self.leftArrow.x + 376, self.leftArrow.y);
-    self.rightArrow:setFrames(ui_tex)
-    self.rightArrow:addAnimByPrefix('idle', "arrow right")
-    self.rightArrow:addAnimByPrefix('press', "arrow push right")
-    self.rightArrow:play('idle')
-    self.difficultySelector:add(self.rightArrow)
 
     self:add(bgYellow)
     self:add(self.grpWeekCharacters)
+
+    self.noWeeksTxt = Alphabet(0, 210, 'No Weeks Here', true, false)
+    self.noWeeksTxt:screenCenter('x')
+    self:add(self.noWeeksTxt)
+    self.noWeeksTxt.visible = (#self.weeksData == 0)
 
     self.txtTrackList = Text(game.width * 0.05,
                              bgYellow.x + bgYellow.height + 100, "TRACKS",
                              paths.getFont('vcr.ttf', 32),
                              Color.fromRGB(229, 87, 119), 'center')
+    self.txtTrackList.visible = (#self.weeksData > 0)
     self:add(self.txtTrackList)
     self:add(self.scoreText)
     self:add(self.txtWeekTitle)
 
-    self:changeWeek()
-    self:changeDifficulty()
+    if #self.weeksData > 0 then
+        self:changeWeek()
+        self:changeDifficulty()
+    end
 end
 
 local tweenDifficulty = Timer.new()
@@ -117,7 +127,7 @@ function StoryMenuState:update(dt)
     self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 0.5)
     self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
-    if not self.movedBack and not self.selectedWeek and not self.inSubstate then
+    if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and not self.inSubstate then
         if controls:pressed("ui_up") then self:changeWeek(-1) end
         if controls:pressed("ui_down") then self:changeWeek(1) end
 
@@ -149,9 +159,11 @@ function StoryMenuState:update(dt)
 
     tweenDifficulty:update(dt)
 
-    for _, lock in pairs(self.grpLocks.members) do
-        lock.y = self.grpWeekText.members[lock.ID].y
-        lock.visible = (lock.y > game.height / 2)
+    if #self.weeksData > 0 then
+        for _, lock in pairs(self.grpLocks.members) do
+            lock.y = self.grpWeekText.members[lock.ID].y
+            lock.visible = (lock.y > game.height / 2)
+        end
     end
 end
 
@@ -245,7 +257,6 @@ end
 
 function StoryMenuState:changeWeek(change)
     if change == nil then change = 0 end
-    game.sound.play(paths.getSound('scrollMenu'))
 
     StoryMenuState.curWeek = StoryMenuState.curWeek + change
 
@@ -272,6 +283,10 @@ function StoryMenuState:changeWeek(change)
 
     for _, spr in pairs(self.difficultySelector.members) do
         spr.visible = not leWeek.locked
+    end
+
+    if #self.weeksData > 1 then
+        game.sound.play(paths.getSound('scrollMenu'))
     end
 
     self:updateText()
@@ -326,27 +341,47 @@ function StoryMenuState:checkSongsDifficulty()
             table.insert(checkSongs, false)
         end
     end
-    if table.find(checkSongs, false) then return false
-    else return true end
-    return false
+    if table.find(checkSongs, false) then return false end
+    return true
 end
 
 function StoryMenuState:loadWeeks()
-    if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
-        local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
-        for _, week in pairs(listData) do
-            local data = paths.getJSON('data/weeks/weeks/'..week)
-            data.file = week
-            table.insert(self.weeksData, data)
-        end
-    else
-        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                          'data/weeks/weeks'))) do
-            local week = str:withoutExt()
-            if str:endsWith('.json') then
+    if Mods.currentMod then
+        if paths.exists(paths.getMods('data/weekList.txt'), 'file') then
+            local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+            for _, week in pairs(listData) do
                 local data = paths.getJSON('data/weeks/weeks/'..week)
                 data.file = week
                 table.insert(self.weeksData, data)
+            end
+        else
+            for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
+                                                              'data/weeks/weeks'))) do
+                local week = str:withoutExt()
+                if str:endsWith('.json') then
+                    local data = paths.getJSON('data/weeks/weeks/'..week)
+                    data.file = week
+                    table.insert(self.weeksData, data)
+                end
+            end
+        end
+    else
+        if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
+            local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+            for _, week in pairs(listData) do
+                local data = paths.getJSON('data/weeks/weeks/'..week)
+                data.file = week
+                table.insert(self.weeksData, data)
+            end
+        else
+            for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                              'data/weeks/weeks'))) do
+                local week = str:withoutExt()
+                if str:endsWith('.json') then
+                    local data = paths.getJSON('data/weeks/weeks/'..week)
+                    data.file = week
+                    table.insert(self.weeksData, data)
+                end
             end
         end
     end

@@ -12,10 +12,19 @@ function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)
 ---@param ... string
 function ScriptsHandler:loadDirectory(...)
     for _, dir in ipairs({...}) do
-        for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                    dir))) do
-            if file:endsWith('.lua') then
-                self:loadScript(util.removeExtension(dir .. "/" .. file))
+        if Mods.currentMod then
+            for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getMods(
+                                                                        dir))) do
+                if file:endsWith('.lua') then
+                    self:loadScript(util.removeExtension(dir .. "/" .. file))
+                end
+            end
+        else
+            for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                                        dir))) do
+                if file:endsWith('.lua') then
+                    self:loadScript(util.removeExtension(dir .. "/" .. file))
+                end
             end
         end
     end

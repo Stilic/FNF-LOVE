@@ -10,6 +10,7 @@ function TitleState:enter()
 	self.skippedIntro = false
 	self.danceLeft = false
 	self.confirmed = false
+	self.sickBeats = 0
 
 	self.gfDance = Sprite(512, 40)
 	self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
@@ -57,6 +58,7 @@ function TitleState:enter()
 								   .playMusic(paths.getMusic("freakyMenu")) or
 							   game.sound.music, 102)
 	self.music.onBeat = function(b) self:beat(b) end
+	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 end
 
 function TitleState:getIntroTextShit()
@@ -120,7 +122,6 @@ function TitleState:deleteCoolText()
 	end
 end
 
-local sickBeats = 0
 function TitleState:beat(b)
 	self.logoBl:play("bump", true)
 
@@ -131,36 +132,36 @@ function TitleState:beat(b)
 		self.gfDance:play("danceRight")
 	end
 
-	sickBeats = sickBeats + 1
-	if sickBeats == 1 then
+	self.sickBeats = self.sickBeats + 1
+	if self.sickBeats == 1 then
 		self:createCoolText({
 			'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
 		})
-	elseif sickBeats == 3 then
+	elseif self.sickBeats == 3 then
 		self:addMoreText('present')
-	elseif sickBeats == 4 then
+	elseif self.sickBeats == 4 then
 		self:deleteCoolText()
-	elseif sickBeats == 5 then
+	elseif self.sickBeats == 5 then
 		self:createCoolText({'In association', 'with'})
-	elseif sickBeats == 7 then
+	elseif self.sickBeats == 7 then
 		self:addMoreText('newgrounds')
 		self.ngSpr.visible = true
-	elseif sickBeats == 8 then
+	elseif self.sickBeats == 8 then
 		self:deleteCoolText()
 		self.ngSpr.visible = false
-	elseif sickBeats == 9 then
+	elseif self.sickBeats == 9 then
 		self:createCoolText({self.curWacky[1]})
-	elseif sickBeats == 11 then
+	elseif self.sickBeats == 11 then
 		self:addMoreText(self.curWacky[2])
-	elseif sickBeats == 12 then
+	elseif self.sickBeats == 12 then
 		self:deleteCoolText()
-	elseif sickBeats == 13 then
+	elseif self.sickBeats == 13 then
 		self:addMoreText('Friday')
-	elseif sickBeats == 14 then
+	elseif self.sickBeats == 14 then
 		self:addMoreText('Night')
-	elseif sickBeats == 15 then
+	elseif self.sickBeats == 15 then
 		self:addMoreText('Funkin')
-	elseif sickBeats == 16 then
+	elseif self.sickBeats == 16 then
 		self:skipIntro()
 	end
 end

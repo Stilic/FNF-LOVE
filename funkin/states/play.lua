@@ -395,6 +395,11 @@ function PlayState:enter()
     self.timeTxt.outWidth = 2
     if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
+    self.botplayTxt = Text(620, (self.downScroll and 8 or 688), 'BOTPLAY MODE',
+                            fontTime, {1, 1, 1}, "right", game.width/2)
+    self.botplayTxt.outWidth = 2
+    self.botplayTxt.visible = self.botPlay
+
     self:add(self.receptors)
     self:add(self.sustainsGroup)
     self:add(self.notesGroup)
@@ -408,13 +413,14 @@ function PlayState:enter()
     self:add(self.timeArcBG)
     self:add(self.timeArc)
     self:add(self.timeTxt)
+    self:add(self.botplayTxt)
 
     self:recalculateRating()
 
     for _, o in ipairs({
         self.receptors, self.splashes, self.notesGroup, self.sustainsGroup,
         self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
-        self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt
+        self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt, self.botplayTxt
     }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -908,6 +914,9 @@ function PlayState:onSettingChange(setting)
             songTime = PlayState.conductor.sound:getDuration() - songTime
         end
         self.timeTxt.content = util.getFormattedTime(songTime)
+
+        self.botplayTxt.visible = self.botPlay
+        self.botplayTxt.y = (self.downScroll and 8 or 688)
 
         local ry = 50
         if self.downScroll then ry = game.height - 100 - ry end

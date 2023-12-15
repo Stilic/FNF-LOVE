@@ -186,9 +186,9 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
     if animated == nil then animated = false end
 
     if type(texture) == "string" then
-        texture = love.graphics.newImage(texture) or defaultTexture
+        texture = love.graphics.newImage(texture)
     end
-    self.texture = texture
+    self.texture = texture or defaultTexture
     self.__rectangleMode = false
 
     self.curAnim = nil

@@ -31,6 +31,8 @@ BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 TankmenBG = require "funkin.gameplay.tankmenbg"
 ParallaxImage = require "loxel.effects.parallax"
+Mods = require "funkin.backend.mods"
+ModCard = require "funkin.ui.modcard"
 
 ModsState = require "funkin.states.mods"
 TitleState = require "funkin.states.title"
@@ -143,6 +145,7 @@ function love.load()
     -- for the joystick, i'll remake it later
     game.save.init('funkin')
     ClientPrefs.loadData()
+    Mods.loadMods()
 
     Highscore.load()
 

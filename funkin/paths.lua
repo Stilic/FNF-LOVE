@@ -13,6 +13,12 @@ local paths = {
     persistantAssets = {"assets/music/freakyMenu.ogg"}
 }
 
+function paths.addPersistant(path)
+    if not table.find(paths.persistantAssets, path) then
+        table.insert(paths.persistantAssets, path)
+    end
+end
+
 function paths.isPersistant(path)
     for _, k in pairs(paths.persistantAssets) do
         if path:startsWith(k) then return true end
@@ -51,11 +57,13 @@ function paths.exists(path, infotype)
 end
 
 function paths.getText(key)
-    return readFile(paths.getPath("data/" .. key .. ".txt"))
+    return readFile(paths.getMods("data/" .. key .. ".txt")) or
+           readFile(paths.getPath("data/" .. key .. ".txt"))
 end
 
 function paths.getJSON(key)
-    local data = readFile(paths.getPath(key .. ".json"))
+    local data = readFile(paths.getMods(key .. ".json")) or
+                 readFile(paths.getPath(key .. ".json"))
     if data then
         return decodeJson(data)
     else
@@ -66,13 +74,24 @@ end
 function paths.getFont(key, size)
     if size == nil then size = 12 end
 
-    local path = paths.getPath("fonts/" .. key)
-    key = path .. "_" .. size
-    local obj = paths.fonts[key]
+    local path
+    local obj
+    if Mods.currentMod then
+        path = paths.getMods("fonts/" .. key)
+        obj = paths.fonts[path .. "_" .. size]
+        if obj then return obj end
+        if paths.exists(path, "file") then
+            obj = love.graphics.newFont(path, size)
+            paths.fonts[path .. "_" .. size] = obj
+            return obj
+        end
+    end
+    path = paths.getPath("fonts/" .. key)
+    obj = paths.fonts[path .. "_" .. size]
     if obj then return obj end
     if paths.exists(path, "file") then
         obj = love.graphics.newFont(path, size)
-        paths.fonts[key] = obj
+        paths.fonts[path .. "_" .. size] = obj
         return obj
     end
 
@@ -81,12 +100,24 @@ function paths.getFont(key, size)
 end
 
 function paths.getImage(key)
-    key = paths.getPath("images/" .. key .. ".png")
-    local obj = paths.images[key]
+    local path
+    local obj
+    if Mods.currentMod then
+        path = paths.getModsImage(key)
+        obj = paths.images[path]
+        if obj then return obj end
+        if paths.exists(path, "file") then
+            obj = love.graphics.newImage(path)
+            paths.images[path] = obj
+            return obj
+        end
+    end
+    path = paths.getPath("images/" .. key .. ".png")
+    obj = paths.images[path]
     if obj then return obj end
-    if paths.exists(key, "file") then
-        obj = love.graphics.newImage(key)
-        paths.images[key] = obj
+    if paths.exists(path, "file") then
+        obj = love.graphics.newImage(path)
+        paths.images[path] = obj
         return obj
     end
 
@@ -95,13 +126,26 @@ function paths.getImage(key)
 end
 
 function paths.getAudio(key, stream)
-    key = paths.getPath(key .. ".ogg")
-    local obj = paths.audio[key]
+    local path
+    local obj
+    if Mods.currentMod then
+        path = paths.getModsAudio(key)
+        obj = paths.audio[path]
+        if obj then return obj end
+        if paths.exists(path, "file") then
+            obj = stream and love.audio.newSource(path, "stream") or
+                    love.sound.newSoundData(path)
+            paths.audio[path] = obj
+            return obj
+        end
+    end
+    path = paths.getPath(key .. ".ogg")
+    obj = paths.audio[path]
     if obj then return obj end
-    if paths.exists(key, "file") then
-        obj = stream and love.audio.newSource(key, "stream") or
-                  love.sound.newSoundData(key)
-        paths.audio[key] = obj
+    if paths.exists(path, "file") then
+        obj = stream and love.audio.newSource(path, "stream") or
+                  love.sound.newSoundData(path)
+        paths.audio[path] = obj
         return obj
     end
 
@@ -124,14 +168,26 @@ function paths.getVoices(song)
 end
 
 function paths.getSparrowAtlas(key)
-    local imgPath, xmlPath = key, paths.getPath("images/" .. key .. ".xml")
-    key = paths.getPath("images/" .. key)
-    local obj = paths.atlases[key]
+    local imgPath, xmlPath
+    local obj
+    if Mods.currentMod then
+        imgPath, xmlPath = key, paths.getMods("images/" .. key .. ".xml")
+        obj = paths.atlases[paths.getMods("images/" .. key)]
+        if obj then return obj end
+        local img = paths.getImage(imgPath)
+        if img and paths.exists(xmlPath, "file") then
+            obj = Sprite.getFramesFromSparrow(img, readFile(xmlPath))
+            paths.atlases[paths.getMods("images/" .. key)] = obj
+            return obj
+        end
+    end
+    imgPath, xmlPath = key, paths.getPath("images/" .. key .. ".xml")
+    obj = paths.atlases[paths.getPath("images/" .. key)]
     if obj then return obj end
-    local img = paths.getImage(imgPath)
+    img = paths.getImage(imgPath)
     if img and paths.exists(xmlPath, "file") then
         obj = Sprite.getFramesFromSparrow(img, readFile(xmlPath))
-        paths.atlases[key] = obj
+        paths.atlases[paths.getPath("images/" .. key)] = obj
         return obj
     end
 
@@ -139,14 +195,26 @@ function paths.getSparrowAtlas(key)
 end
 
 function paths.getPackerAtlas(key)
-    local imgPath, txtPath = key, paths.getPath("images/" .. key .. ".txt")
-    key = paths.getPath("images/" .. key)
-    local obj = paths.atlases[key]
+    local imgPath, txtPath
+    local obj
+    if Mods.currentMod then
+        imgPath, txtPath = key, paths.getMods("images/" .. key .. ".txt")
+        obj = paths.atlases[paths.getMods("images/" .. key)]
+        if obj then return obj end
+        local img = paths.getImage(imgPath)
+        if img and paths.exists(txtPath, "file") then
+            obj = Sprite.getFramesFromPacker(img, readFile(txtPath))
+            paths.atlases[paths.getMods("images/" .. key)] = obj
+            return obj
+        end
+    end
+    imgPath, txtPath = key, paths.getPath("images/" .. key .. ".txt")
+    obj = paths.atlases[paths.getPath("images/" .. key)]
     if obj then return obj end
     local img = paths.getImage(imgPath)
     if img and paths.exists(txtPath, "file") then
         obj = Sprite.getFramesFromPacker(img, readFile(txtPath))
-        paths.atlases[key] = obj
+        paths.atlases[paths.getPath("images/" .. key)] = obj
         return obj
     end
 
@@ -154,14 +222,23 @@ function paths.getPackerAtlas(key)
 end
 
 function paths.getAtlas(key)
-    if paths.exists(paths.getPath('images/' .. key .. '.xml'), "file") then
+    if paths.exists(paths.getMods('images/' .. key .. '.xml'), "file") or
+        paths.exists(paths.getPath('images/' .. key .. '.xml'), "file") then
         return paths.getSparrowAtlas(key)
     end
     return paths.getPackerAtlas(key)
 end
 
 function paths.getLua(key)
-    local path = paths.getPath(key .. ".lua")
+    local path
+    if Mods.currentMod then
+        path = paths.getMods(key .. ".lua")
+        if paths.exists(path, "file") then
+            local chunk = love.filesystem.load(path)
+            return chunk
+        end
+    end
+    path = paths.getPath(key .. ".lua")
     if paths.exists(path, "file") then
         local chunk = love.filesystem.load(path)
         return chunk
@@ -175,6 +252,22 @@ function paths.formatToSongPath(path)
     return string.lower(string.gsub(string.gsub(path:gsub(' ', '-'),
                                                 invalidChars, '-'), hideChars,
                                     ''))
+end
+
+function paths.getMods(key)
+    if Mods.currentMod then
+        return "mods/" .. Mods.currentMod .. "/" .. key
+    else
+        return "mods/" .. key
+    end
+end
+
+function paths.getModsImage(key)
+    return paths.getMods("images/" .. key .. ".png")
+end
+
+function paths.getModsAudio(key)
+    return paths.getMods(key .. ".ogg")
 end
 
 return paths

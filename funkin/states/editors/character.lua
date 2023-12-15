@@ -169,11 +169,21 @@ function CharacterEditor:add_UI_Character()
     end
 
     local optionsChar = {}
-    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                              'data/characters'))) do
-        local charName = str:withoutExt()
-        if str:endsWith('.json') and not charName:endsWith('-dead') then
-            table.insert(optionsChar, charName)
+    if Mods.currentMod then
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
+                                                                'data/characters'))) do
+            local charName = str:withoutExt()
+            if str:endsWith('.json') and not charName:endsWith('-dead') then
+                table.insert(optionsChar, charName)
+            end
+        end
+    else
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                                'data/characters'))) do
+            local charName = str:withoutExt()
+            if str:endsWith('.json') and not charName:endsWith('-dead') then
+                table.insert(optionsChar, charName)
+            end
         end
     end
 

@@ -25,34 +25,43 @@ function FreeplayState:enter()
     self.bg:loadTexture(paths.getImage('menus/menuDesat'))
     self:add(self.bg)
     self.bg:screenCenter()
-    self.bg.color = Color.fromString(self.songsData[FreeplayState.curSelected].color)
+    if #self.songsData > 0 then
+        self.bg.color = Color.fromString(self.songsData[FreeplayState.curSelected].color)
+    end
 
     self.grpSongs = Group()
     self:add(self.grpSongs)
 
+    self.noSongTxt = Alphabet(0, 0, 'No Songs Here', true, false)
+    self.noSongTxt:screenCenter()
+    self:add(self.noSongTxt)
+    self.noSongTxt.visible = (#self.songsData == 0)
+
     self.iconTable = {}
-    for i = 0, #self.songsData - 1 do
-        local songText = Alphabet(0, (70 * i) + 30, self.songsData[i + 1].name,
-                                  true, false)
-        songText.isMenuItem = true
-        songText.targetY = i
-        self.grpSongs:add(songText)
+    if #self.songsData > 0 then
+        for i = 0, #self.songsData - 1 do
+            local songText = Alphabet(0, (70 * i) + 30, self.songsData[i + 1].name,
+                                      true, false)
+            songText.isMenuItem = true
+            songText.targetY = i
+            self.grpSongs:add(songText)
 
-        if songText:getWidth() > 980 then
-            local textScale = 980 / songText:getWidth()
-            songText.scale.x = textScale
-            for _, letter in ipairs(songText.lettersArray) do
-                letter.x = letter.x * textScale
-                letter.offset.x = letter.offset.x * textScale
+            if songText:getWidth() > 980 then
+                local textScale = 980 / songText:getWidth()
+                songText.scale.x = textScale
+                for _, letter in ipairs(songText.lettersArray) do
+                    letter.x = letter.x * textScale
+                    letter.offset.x = letter.offset.x * textScale
+                end
             end
+
+            local icon = HealthIcon(self.songsData[i + 1].icon)
+            icon.sprTracker = songText
+            icon:updateHitbox()
+
+            table.insert(self.iconTable, icon)
+            self:add(icon)
         end
-
-        local icon = HealthIcon(self.songsData[i + 1].icon)
-        icon.sprTracker = songText
-        icon:updateHitbox()
-
-        table.insert(self.iconTable, icon)
-        self:add(icon)
     end
 
     self.scoreText = Text(game.width * 0.7, 5, "", paths.getFont("vcr.ttf", 32),
@@ -62,12 +71,12 @@ function FreeplayState:enter()
     self.scoreBG.alpha = 0.6
     self:add(self.scoreBG)
 
-    self.diffText = Text(self.scoreText.x, self.scoreText.y + 36, "",
+    self.diffText = Text(self.scoreText.x, self.scoreText.y + 36, "DIFFICULTY",
                             paths.getFont("vcr.ttf", 24))
     self:add(self.diffText)
     self:add(self.scoreText)
 
-    self:changeSelection()
+    if #self.songsData > 0 then self:changeSelection() end
 end
 
 function FreeplayState:update(dt)
@@ -77,45 +86,50 @@ function FreeplayState:update(dt)
     self:positionHighscore()
 
     if not self.inSubstate then
-        if controls:pressed('ui_up') then self:changeSelection(-1) end
-        if controls:pressed('ui_down') then self:changeSelection(1) end
-        if controls:pressed('ui_left') then self:changeDiff(-1) end
-        if controls:pressed('ui_right') then self:changeDiff(1) end
+        if #self.songsData > 0 then
+            if controls:pressed('ui_up') then self:changeSelection(-1) end
+            if controls:pressed('ui_down') then self:changeSelection(1) end
+            if controls:pressed('ui_left') then self:changeDiff(-1) end
+            if controls:pressed('ui_right') then self:changeDiff(1) end
 
+            if controls:pressed('accept') then
+                local daSong = paths.formatToSongPath(self.songsData[FreeplayState.
+                                                        curSelected].name)
+                PlayState.storyMode = false
+                local songdiffs = self.songsData[self.curSelected].difficulties
+                local diff = ""
+                if songdiffs[FreeplayState.curDifficulty] ~= "Normal" then
+                    diff = songdiffs[FreeplayState.curDifficulty]:lower()
+                end
+
+                if self:checkSongDifficulty() then
+                    if Keyboard.pressed.SHIFT then
+                        PlayState.loadSong(daSong, diff)
+                        PlayState.storyDifficulty = diff
+                        game.switchState(ChartingState())
+                    else
+                        game.switchState(PlayState(false, daSong, diff))
+                    end
+                else
+                    local suffix = (diff ~= "" and "-" .. diff or "")
+                    local path = 'songs/' .. daSong .. '/chart' .. suffix .. '.json'
+                    self.inSubstate = true
+                    self:openSubstate(ChartErrorSubstate(path))
+                end
+            end
+        end
         if controls:pressed("back") then
             game.sound.play(paths.getSound('cancelMenu'))
             game.switchState(MainMenuState())
         end
-        if controls:pressed('accept') then
-            local daSong = paths.formatToSongPath(self.songsData[FreeplayState.curSelected].name)
-            PlayState.storyMode = false
-            local songdiffs = self.songsData[self.curSelected].difficulties
-            local diff = ""
-            if songdiffs[FreeplayState.curDifficulty] ~= "Normal" then
-                diff = songdiffs[FreeplayState.curDifficulty]:lower()
-            end
-
-            if self:checkSongDifficulty() then
-                if Keyboard.pressed.SHIFT then
-                    PlayState.loadSong(daSong, diff)
-                    PlayState.storyDifficulty = diff
-                    game.switchState(ChartingState())
-                else
-                    game.switchState(PlayState(false, daSong, diff))
-                end
-            else
-                local suffix = (diff ~= "" and "-" .. diff or "")
-                local path = 'songs/' .. daSong .. '/chart' .. suffix .. '.json'
-                self.inSubstate = true
-                self:openSubstate(ChartErrorSubstate(path))
-            end
-        end
     end
 
-    local colorBG = Color.fromString(self.songsData[FreeplayState.curSelected].color)
-    self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
-    self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
-    self.bg.color[3] = util.coolLerp(self.bg.color[3], colorBG[3], 0.05)
+    if #self.songsData > 0 then
+        local colorBG = Color.fromString(self.songsData[FreeplayState.curSelected].color)
+        self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
+        self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
+        self.bg.color[3] = util.coolLerp(self.bg.color[3], colorBG[3], 0.05)
+    end
 
     FreeplayState.super.update(self, dt)
 end
@@ -159,7 +173,6 @@ end
 
 function FreeplayState:changeSelection(change)
     if change == nil then change = 0 end
-    game.sound.play(paths.getSound('scrollMenu'))
 
     FreeplayState.curSelected = FreeplayState.curSelected + change
 
@@ -182,6 +195,10 @@ function FreeplayState:changeSelection(change)
 
     for _, icon in next, self.iconTable do icon.alpha = 0.6 end
     self.iconTable[FreeplayState.curSelected].alpha = 1
+
+    if #self.songsData > 1 then
+        game.sound.play(paths.getSound('scrollMenu'))
+    end
 
     self:changeDiff(0, false)
 end
@@ -220,28 +237,58 @@ local function getSongMetadata(song)
 end
 
 function FreeplayState:loadSongs()
-    if paths.exists(paths.getPath('data/freeplayList.txt'), 'file') then
-        local listData = paths.getText('freeplayList'):gsub('\r',''):split('\n')
-        for _, song in pairs(listData) do
-            table.insert(self.songsData, getSongMetadata(song))
-        end
-    else
-        if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
-            local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
-            for _, week in pairs(listData) do
-                local weekData = paths.getJSON('data/weeks/weeks/'..week)
-                for _, song in ipairs(weekData.songs) do
-                    table.insert(self.songsData, getSongMetadata(song))
-                end
+    if Mods.currentMod then
+        if paths.exists(paths.getMods('data/freeplayList.txt'), 'file') then
+            local listData = paths.getText('freeplayList'):gsub('\r',''):split('\n')
+            for _, song in pairs(listData) do
+                table.insert(self.songsData, getSongMetadata(song))
             end
         else
-            for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                              'data/weeks/weeks'))) do
-                local weekName = str:withoutExt()
-                if str:endsWith('.json') then
-                    local weekData = paths.getJSON('data/weeks/weeks/'..weekName)
+            if paths.exists(paths.getMods('data/weekList.txt'), 'file') then
+                local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+                for _, week in pairs(listData) do
+                    local weekData = paths.getJSON('data/weeks/weeks/'..week)
                     for _, song in ipairs(weekData.songs) do
                         table.insert(self.songsData, getSongMetadata(song))
+                    end
+                end
+            else
+                for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
+                                                                  'data/weeks/weeks'))) do
+                    local weekName = str:withoutExt()
+                    if str:endsWith('.json') then
+                        local weekData = paths.getJSON('data/weeks/weeks/'..weekName)
+                        for _, song in ipairs(weekData.songs) do
+                            table.insert(self.songsData, getSongMetadata(song))
+                        end
+                    end
+                end
+            end
+        end
+    else
+        if paths.exists(paths.getPath('data/freeplayList.txt'), 'file') then
+            local listData = paths.getText('freeplayList'):gsub('\r',''):split('\n')
+            for _, song in pairs(listData) do
+                table.insert(self.songsData, getSongMetadata(song))
+            end
+        else
+            if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
+                local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+                for _, week in pairs(listData) do
+                    local weekData = paths.getJSON('data/weeks/weeks/'..week)
+                    for _, song in ipairs(weekData.songs) do
+                        table.insert(self.songsData, getSongMetadata(song))
+                    end
+                end
+            else
+                for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                                  'data/weeks/weeks'))) do
+                    local weekName = str:withoutExt()
+                    if str:endsWith('.json') then
+                        local weekData = paths.getJSON('data/weeks/weeks/'..weekName)
+                        for _, song in ipairs(weekData.songs) do
+                            table.insert(self.songsData, getSongMetadata(song))
+                        end
                     end
                 end
             end

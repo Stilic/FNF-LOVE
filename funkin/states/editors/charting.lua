@@ -242,11 +242,21 @@ function ChartingState:add_UI_Song()
     speed_stepper.onChanged = function(value) self.__song.speed = value end
 
     local optionsChar = {}
-    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                              'data/characters'))) do
-        local charName = str:withoutExt()
-        if str:endsWith('.json') and not charName:endsWith('-dead') then
-            table.insert(optionsChar, charName)
+    if Mods.currentMod then
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
+                                                                'data/characters'))) do
+            local charName = str:withoutExt()
+            if str:endsWith('.json') and not charName:endsWith('-dead') then
+                table.insert(optionsChar, charName)
+            end
+        end
+    else
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                                'data/characters'))) do
+            local charName = str:withoutExt()
+            if str:endsWith('.json') and not charName:endsWith('-dead') then
+                table.insert(optionsChar, charName)
+            end
         end
     end
 
@@ -271,10 +281,18 @@ function ChartingState:add_UI_Song()
     end
 
     local optionsStage = {}
-    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                              'data/stages'))) do
-        local stageName = str:withoutExt()
-        table.insert(optionsStage, stageName)
+    if Mods.currentMod then
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
+                                                                'data/stages'))) do
+            local stageName = str:withoutExt()
+            table.insert(optionsStage, stageName)
+        end
+    else
+        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                                'data/stages'))) do
+            local stageName = str:withoutExt()
+            table.insert(optionsStage, stageName)
+        end
     end
 
     local stage_dropdown = ui.UIDropDown(140, 250, optionsStage)
@@ -635,6 +653,7 @@ function ChartingState:update(dt)
             if self.vocals then self.vocals:pause() end
 
             PlayState.chartingMode = false
+            PlayState.startPos = 0
             game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(FreeplayState())
         end
