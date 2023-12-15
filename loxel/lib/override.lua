@@ -4,8 +4,9 @@ bit32, iter, utf8 = bit, ipairs(math), require "utf8"
 
 function string.split(self, sep, t)
 	t = t or {}
-	for s in self:gmatch((not sep or sep == '') and '(.)' or '([^' .. sep ..
-							 ']+)') do table.insert(t, s) end
+	for s in self:gmatch((not sep or sep == '') and '(.)' or '([^' .. sep .. ']+)') do
+		table.insert(t, s)
+	end
 	return t
 end
 
@@ -18,35 +19,30 @@ function table.find(list, value)
 end
 
 function table.remove(list, callback)
-	local checkIdx
+	local idx, j, v = type(callback) == "number" and callback or
+					  (callback == nil and #list) or nil, 1
 
-	if callback == nil then callback = #list end
-	if type(callback) == "number" then checkIdx = callback end
-
-	local j, n = 1, #list
-	local value
-
-	for i = 1, n do
-		local check
-		if checkIdx == nil then
-			check = callback(list, i, j)
-		else
-			check = i == checkIdx
-		end
-		if check then
-			value = list[i]
+	for i = 1, #list do
+		if (idx == nil and callback(list, i, j) or i == idx) then
+			v = list[i]
 			list[i] = nil
 		else
-			-- Move i's kept value to j's position, if it's not already there.
 			if i ~= j then
 				list[j] = list[i]
 				list[i] = nil
 			end
-			j = j + 1 -- Increment position of where we'll place the next kept value.
+			j = j + 1
 		end
 	end
 
-	return value
+	return v
+end
+
+function table.reverse(list)
+	for i = 1, #list / 2, 1 do
+		list[i], list[#list - i + 1] = list[#list - 1 + 1], list[i]
+	end
+	return list
 end
 
 function table.delete(list, object)
@@ -78,16 +74,20 @@ math.negative_infinity = -math.huge
 
 math.noise = require "lib.noise"
 
-function switch(param, case_table) -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
-	local case = case_table[param]
-	if case then return case() end
-	local def = case_table.default
-	return def and def() or nil
+function __NULL__() end
+
+-- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
+function switch(param, case_table)
+	return (case_table[param] or case_table.default or __NULL__)()
 end
 
-function table.keys(table, includeIndices, keys)
+function table.merge(a, b)
+	for i, v in next, b do a[i] = v end
+end
+
+function table.keys(list, includeIndices, keys)
 	keys = keys or {}
-	for i in includeIndices and iter or next, table, includeIndices and 0 or nil do
+	for i in includeIndices and iter or next, list, includeIndices and 0 or nil do
 		table.insert(keys, i)
 	end
 	return keys
@@ -99,9 +99,9 @@ function string.withoutExt(self)
 	return self:sub(0, -1 - (self:reverse():find('%.') or 1))
 end
 
-function string.fileName(self)
+function string.fileName(self, parts)
 	local separator = package.config:sub(1,1)
-	local parts = {}
+	parts = parts or {}
 	for part in self:split(separator) do
 		table.insert(parts, part)
 	end
@@ -154,14 +154,10 @@ function table.splice(tbl, start, count, ...)
 	return removedItems
 end
 
-function table.clone(original)
-	local clone = {}
-	for key, value in pairs(original) do
-		if type(value) == "table" then
-			clone[key] = table.clone(value)
-		else
-			clone[key] = value
-		end
+function table.clone(list, includeIndices, clone)
+	clone = clone or {}
+	for i, v in includeIndices and iter or next, list, includeIndices and 0 or nil do
+		clone[i] = type(v) == "table" and table.clone(v) or v
 	end
 	return clone
 end
@@ -172,19 +168,16 @@ function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
 function math.lerp(x, y, i) return x + (y - x) * i end
 
-function math.truncate(x, precision, round)
-	round = round and math.round or math.floor
-	if not precision or precision > 0 then
-		precision = 10 ^ (precision or 2)
-		return round(precision * x) / precision
-	end
-	return round(x)
-end
-math.roundDecimal = math.truncate
-
 function math.remapToRange(x, start1, stop1, start2, stop2)
 	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
 end
+
+-- please use math.floor/round instead if you want the precision to be 0
+function math.truncate(x, precision, round)
+	precision = 10 ^ (precision or 2)
+	return (round and math.round or math.floor)(precision * x) / precision
+end
+math.roundDecimal = math.truncate
 
 local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
 function math.countbytes(x)
@@ -198,6 +191,5 @@ end
 
 -- LOVE2D EXTRA FUNCTIONS
 function love.math.randomBool(chance)
-	chance = chance or 50
-	return love.math.random(0, 100) < chance
+	return love.math.random(0, 100) < (chance or 50)
 end

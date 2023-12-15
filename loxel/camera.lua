@@ -174,8 +174,8 @@ function Camera:drawSimple(_skipCheck)
 			x, y = self.x * scale + x, self.y * scale + y
 		end
 		love.graphics.setScissor(math.round(x), math.round(y),
-								 math.round(self.width * scale * self.scale.x),
-								 math.round(self.height * scale * self.scale.y))
+								 math.floor(self.width * scale * self.scale.x),
+								 math.floor(self.height * scale * self.scale.y))
 	end
 
 	love.graphics.setColor(self.bgColor[1], self.bgColor[2],

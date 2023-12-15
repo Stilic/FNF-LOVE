@@ -14,6 +14,9 @@ return {
 	flags = {
 		CheckForUpdates = false,
 
+		InitialAutoFocus = true,
+		ParallelUpdate = false, -- VERY CPU INTENSIVE
+
 		LoxelForceRenderCameraComplex = false,
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,

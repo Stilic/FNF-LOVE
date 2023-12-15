@@ -48,17 +48,13 @@ end
 function ClientPrefs.loadData()
 	game.save.init('funkin')
 
-	if game.save.data.prefs then
-		ClientPrefs.data = game.save.data.prefs
-	end
+	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
 
 	love.FPScap = ClientPrefs.data.fps
 	love.showFPS = ClientPrefs.data.showFps
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 
-	if game.save.data.controls then
-		ClientPrefs.controls = game.save.data.controls
-	end
+	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
 
 	local config = {controls = table.clone(ClientPrefs.controls)}
 	if controls == nil then
