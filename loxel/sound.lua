@@ -87,7 +87,7 @@ function Sound:update()
 end
 
 function Sound:onFocus(focus)
-    if not self:isFinished() then
+    if love.autoPause and not self:isFinished() then
         if focus then
             if self.__wasPlaying ~= nil and self.__wasPlaying then
                 self:play()

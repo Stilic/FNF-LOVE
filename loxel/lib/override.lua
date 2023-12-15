@@ -168,16 +168,16 @@ function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
 function math.lerp(x, y, i) return x + (y - x) * i end
 
+function math.remapToRange(x, start1, stop1, start2, stop2)
+	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
+end
+
 -- please use math.floor/round instead if you want the precision to be 0
 function math.truncate(x, precision, round)
 	precision = 10 ^ (precision or 2)
 	return (round and math.round or math.floor)(precision * x) / precision
 end
 math.roundDecimal = math.truncate
-
-function math.remapToRange(x, start1, stop1, start2, stop2)
-	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
-end
 
 local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
 function math.countbytes(x)

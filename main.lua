@@ -56,6 +56,7 @@ function love.run()
     local _, _, modes = love.window.getMode()
     love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 120), 8
     love.showFPS = false
+    love.autoPause = flags.InitialAutoFocus
 
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(arg) end
@@ -65,7 +66,32 @@ function love.run()
 
     if not love.quit then love.quit = function()end end
 
+    local function draw()
+        if not love.graphics.isActive() then return end
+        love.graphics.origin()
+        love.graphics.clear(love.graphics.getBackgroundColor())
+        love.draw()
+
+        if love.showFPS then
+            local stats = love.graphics.getStats()
+            local fps = math.min(love.timer.getFPS(), love.FPScap)
+            local vram = math.countbytes(stats.texturememory)
+            local text = "FPS: " .. fps ..
+                         "\nVRAM: " .. vram ..
+                         "\nDRAWS: " .. stats.drawcalls
+
+            love.graphics.setColor(0, 0, 0, 0.5)
+            love.graphics.printf(text, consolas, 8, 8, 300, "left", 0)
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.printf(text, consolas, 6, 6, 300, "left", 0)
+        end
+
+        love.graphics.present()
+    end
+
+    local parallelUpdate = flags.ParallelUpdate
     local firstTime, fullGC, focused, dt = true, true, false, 0
+    local nextclock, clock, cap = 0
     return function()
         love.event.pump()
         for name, a, b, c, d, e, f in love.event.poll() do
@@ -76,45 +102,35 @@ function love.run()
         end
 
         focused = firstTime or love.window.hasFocus()
-        dt = love.timer.step() or 0
+        cap = 1 / (focused and love.FPScap or love.unfocusedFPScap)
 
-        if focused then
+        dt = dt + math.min((love.timer.step() or 0) - dt, 0.04)
+
+        if focused or not love.autoPause then
             love.update(dt)
-
-            if love.graphics.isActive() then
-                love.graphics.origin()
-                love.graphics.clear(love.graphics.getBackgroundColor())
-                love.draw()
-
-                if love.showFPS then
-                    local stats = love.graphics.getStats()
-                    local fps = math.min(love.timer.getFPS(), love.FPScap)
-                    local vram = math.countbytes(stats.texturememory)
-                    local text = "FPS: " .. fps ..
-                                 "\nVRAM: " .. vram ..
-                                 "\nDRAWS: " .. stats.drawcalls
-
-                    love.graphics.setColor(0, 0, 0, 0.5)
-                    love.graphics.printf(text, consolas, 8, 8, 300, "left", 0)
-                    love.graphics.setColor(1, 1, 1, 1)
-                    love.graphics.printf(text, consolas, 6, 6, 300, "left", 0)
+            if parallelUpdate then
+                clock = os.clock()
+                if clock > nextclock then
+                    draw()
+                    nextclock = cap + clock
                 end
-
-                love.graphics.present()
+            else
+                draw()
             end
         end
-
-        love.timer.sleep(1 / (focused and love.FPScap or love.unfocusedFPScap) - dt)
 
         if focused then
             collectgarbage("step")
             fullGC = true
+            firstTime = false
         elseif fullGC then
             collectgarbage()
             fullGC = false
         end
 
-        firstTime = false
+        if not parallelUpdate then
+            love.timer.sleep(cap - dt)
+        end
     end
 end
 
@@ -172,8 +188,6 @@ function love.mousepressed(x, y, button) game.mousepressed(x, y, button) end
 function love.mousereleased(x, y, button) game.mousereleased(x, y, button) end
 
 function love.update(dt)
-    dt = math.min(dt, 1 / 30) -- temporary workaround until we can detect when freezes started smh
-
     Timer.update(dt)
     controls:update()
 
