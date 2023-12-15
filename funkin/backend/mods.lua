@@ -1,6 +1,6 @@
 local Mods = {
     mods = {},
-    currentMod = "empty"
+    currentMod = nil
 }
 
 function Mods.getBanner(mods)
