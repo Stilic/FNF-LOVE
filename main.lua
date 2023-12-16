@@ -69,30 +69,34 @@ function love.run()
 
     if not love.quit then love.quit = function()end end
 
-    local real_fps = 0
+    local real_fps, _stats, _update, _vram, _text = 0
     local function draw()
         love.graphics.origin()
         love.graphics.clear(love.graphics.getBackgroundColor())
         love.draw()
 
         if love.showFPS then
-            local stats = love.graphics.getStats()
-            local update = love.timer.getFPS()
-            local vram = math.countbytes(stats.texturememory)
-            local text = "FPS: " .. (love.parallelUpdate and real_fps or math.min(update, love.FPScap)) ..
-                         (love.parallelUpdate and (" | UPDATE: " .. update) or "") ..
-                         "\nVRAM: " .. vram ..
-                         "\nDRAWS: " .. stats.drawcalls
+            _stats, _update = love.graphics.getStats(), love.timer.getFPS()
+            _vram = math.countbytes(_stats.texturememory)
+            _text = "FPS: " .. (math.min(love.parallelUpdate and real_fps or _update, love.FPScap)) ..
+                         (love.parallelUpdate and (" | UPDATE: " .. _update) or "") ..
+                         "\nVRAM: " .. _vram ..
+                         "\nDRAWS: " .. _stats.drawcalls
 
             love.graphics.setColor(0, 0, 0, 0.5)
-            love.graphics.printf(text, consolas, 8, 8, 300, "left", 0)
+            love.graphics.printf(_text, consolas, 8, 8, 300, "left", 0)
             love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.printf(text, consolas, 6, 6, 300, "left", 0)
+            love.graphics.printf(_text, consolas, 6, 6, 300, "left", 0)
         end
 
         love.graphics.present()
     end
 
+    -- note:
+    -- arithmetic like a + b - c would be the same as a - (c - b)
+    -- but it really matters alot in context depending on what its used for computer calculation
+
+    local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
     local firstTime, fullGC, focused, dt, real_dt = true, true, false, love.timer.step()
     local nextclock, clock, newclock, cap = 0, 0, 0
     return function()
@@ -116,8 +120,14 @@ function love.run()
                 if love.parallelUpdate then
                     if clock + dt > nextclock then
                         draw()
-                        real_fps = clock + cap - nextclock
-                        nextclock, real_fps = cap + clock, math.min(math.round(1 / real_fps), love.FPScap)
+                        nextclock = cap + clock
+                        timeSinceLastFps = clock - prevFpsUpdate
+                        frames = frames + 1
+                        if timeSinceLastFps > fpsUpdateFrequency then
+                            real_fps = math.round(frames/timeSinceLastFps)
+                            prevFpsUpdate = clock
+                            frames = 0
+                        end
                     end
                 else
                     draw()
@@ -139,6 +149,8 @@ function love.run()
         else
             love.timer.sleep(0.001 - (newclock - clock))
         end
+
+        -- using clock instead of love.timer.getTime() because it messes up parallelUpdate
         clock, newclock = newclock, os.clock()
     end
 end
