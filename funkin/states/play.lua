@@ -20,9 +20,9 @@ PlayState.ratings = {
 PlayState.notePosition = 0
 
 PlayState.SONG = nil
+PlayState.songDifficulty = ""
 
 PlayState.storyPlaylist = {}
-PlayState.storyDifficulty = ""
 PlayState.storyMode = false
 PlayState.storyWeek = ""
 PlayState.storyScore = 0
@@ -72,7 +72,7 @@ function PlayState:new(storyMode, song, diff)
     PlayState.super.new(self)
 
     if storyMode ~= nil then
-        PlayState.storyDifficulty = diff
+        PlayState.songDifficulty = diff
         PlayState.storyMode = storyMode
         PlayState.storyWeek = ""
     end
@@ -453,10 +453,9 @@ function PlayState:enter()
         if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
         local diff = "Normal"
-        switch(PlayState.storyDifficulty, {
-            ["easy"] = function() diff = "Easy" end,
-            ["hard"] = function() diff = "Hard" end
-        })
+        if PlayState.songDifficulty ~= "" then
+            diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+        end
 
         Discord.changePresence({
             details = detailsText,
@@ -555,10 +554,9 @@ function PlayState:update(dt)
                                         PlayState.conductor.sound:getDuration()
 
                 local diff = "Normal"
-                switch(PlayState.storyDifficulty, {
-                    ["easy"] = function() diff = "Easy" end,
-                    ["hard"] = function() diff = "Hard" end
-                })
+                if PlayState.songDifficulty ~= "" then
+                    diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+                end
 
                 Discord.changePresence({
                     details = detailsText,
@@ -633,10 +631,9 @@ function PlayState:update(dt)
                 if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
                 local diff = "Normal"
-                switch(PlayState.storyDifficulty, {
-                    ["easy"] = function() diff = "Easy" end,
-                    ["hard"] = function() diff = "Hard" end
-                })
+                if PlayState.songDifficulty ~= "" then
+                    diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+                end
 
                 Discord.changePresence({
                     details = "Paused - " .. detailsText,
@@ -673,10 +670,9 @@ function PlayState:update(dt)
             if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local diff = "Normal"
-            switch(PlayState.storyDifficulty, {
-                ["easy"] = function() diff = "Easy" end,
-                ["hard"] = function() diff = "Hard" end
-            })
+            if PlayState.songDifficulty ~= "" then
+                diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+            end
 
             Discord.changePresence({
                 details = "Game Over - "..detailsText,
@@ -889,10 +885,9 @@ function PlayState:closeSubstate()
             endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
             local diff = "Normal"
-            switch(PlayState.storyDifficulty, {
-                ["easy"] = function() diff = "Easy" end,
-                ["hard"] = function() diff = "Hard" end
-            })
+            if PlayState.songDifficulty ~= "" then
+                diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+            end
 
             Discord.changePresence({
                 details = detailsText,
@@ -1147,9 +1142,9 @@ function PlayState:goodNoteHit(n)
             end
 
             self:removeNote(n)
-
-            self.scripts:call("postGoodNoteHit", n)
         end
+
+        self.scripts:call("postGoodNoteHit", n)
     end
 end
 
@@ -1177,7 +1172,7 @@ function PlayState:endSong(skip)
     self.scripts:call("endSong")
 
     local formatSong = paths.formatToSongPath(self.SONG.song)
-    Highscore.saveScore(formatSong, self.score, self.storyDifficulty)
+    Highscore.saveScore(formatSong, self.score, self.songDifficulty)
 
     if self.chartingMode then
         game.switchState(ChartingState())
@@ -1204,10 +1199,10 @@ function PlayState:endSong(skip)
                 })
             end
 
-            PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.storyDifficulty)
+            PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
             game.resetState(true)
         else
-            Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.storyDifficulty)
+            Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
             game.sound.playMusic(paths.getMusic("freakyMenu"))
             game.switchState(StoryMenuState())
         end
@@ -1370,10 +1365,9 @@ function PlayState:focus(f)
             endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
             local diff = "Normal"
-            switch(PlayState.storyDifficulty, {
-                ["easy"] = function() diff = "Easy" end,
-                ["hard"] = function() diff = "Hard" end
-            })
+            if PlayState.songDifficulty ~= "" then
+                diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+            end
 
             Discord.changePresence({
                 details = detailsText,
@@ -1386,10 +1380,9 @@ function PlayState:focus(f)
             if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local diff = "Normal"
-            switch(PlayState.storyDifficulty, {
-                ["easy"] = function() diff = "Easy" end,
-                ["hard"] = function() diff = "Hard" end
-            })
+            if PlayState.songDifficulty ~= "" then
+                diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+            end
 
             Discord.changePresence({
                 details = "Paused - " .. detailsText,

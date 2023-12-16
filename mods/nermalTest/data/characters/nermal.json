@@ -1,0 +1,89 @@
+{
+	"animations": [
+		{
+			"loop": false,
+			"offsets": [
+				0,
+				0
+			],
+			"anim": "idle",
+			"fps": 24,
+			"name": "nermal idle dance",
+			"indices": []
+		},
+		{
+			"loop": false,
+			"offsets": [
+				120,
+				0
+			],
+			"anim": "singLEFT",
+			"fps": 24,
+			"name": "nermal left pose",
+			"indices": []
+		},
+		{
+			"offsets": [
+				60,
+				94
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singUP",
+			"indices": [],
+			"name": "nermal up pose"
+		},
+		{
+			"offsets": [
+				65,
+				-152
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singDOWN",
+			"indices": [],
+			"name": "nermal down pose"
+		},
+		{
+			"offsets": [
+				-10,
+				5
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singRIGHT",
+			"indices": [],
+			"name": "nermal right pose"
+		},
+		{
+			"loop": false,
+			"offsets": [
+				135,
+				161
+			],
+			"anim": "shootPOSE",
+			"fps": 16,
+			"name": "nermal kills bf",
+			"indices": []
+		}
+	],
+	"no_antialiasing": false,
+	"image": "characters/nermal_Assets",
+	"position": [
+		30,
+		280
+	],
+	"healthicon": "nerml",
+	"flip_x": false,
+	"healthbar_colors": [
+		161,
+		161,
+		161
+	],
+	"camera_position": [
+		-60,
+		120
+	],
+	"sing_duration": 6.1,
+	"scale": 1
+}

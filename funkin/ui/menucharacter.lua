@@ -22,7 +22,8 @@ function MenuCharacter:changeCharacter(char)
         [''] = function() self.visible = false end,
         default = function()
             local path = 'data/weeks/characters/' .. self.character
-            if not paths.exists(paths.getPath(path .. '.json'), "file") then
+            if not (paths.exists(paths.getMods(path .. '.json'), "file") or
+                paths.exists(paths.getPath(path .. '.json'), "file")) then
                 path = 'data/weeks/characters/bf'
             end
 

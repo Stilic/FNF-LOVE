@@ -1,0 +1,11 @@
+{
+    "sprite": "nermal",
+    "position": [
+        107,
+        50
+    ],
+    "flipX": false,
+    "scale": 0.8,
+    "idle_anim": "nermal idle dance",
+    "confirm_anim": ""
+}

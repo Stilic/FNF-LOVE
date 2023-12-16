@@ -45,12 +45,26 @@ function Mods.getMetadata(mods)
 end
 
 function Mods.loadMods()
-    for _, dir in ipairs(love.filesystem.getDirectoryItems('mods')) do
-        table.insert(Mods.mods, dir)
+    Mods.mods = {}
+    if paths.exists('mods/modsList.txt', 'file') then
+        local listData = love.filesystem.read('mods/modsList.txt'):gsub('\r',''):split('\n')
+        for _, dir in pairs(listData) do
+            table.insert(Mods.mods, dir)
+        end
+    else
+        for _, dir in ipairs(love.filesystem.getDirectoryItems('mods')) do
+            if not dir:hasExt() then table.insert(Mods.mods, dir) end
+        end
     end
 
-    if game.save.data.curMods then
-        Mods.currentMod = game.save.data.curMod
+    if game.save.data.currentMod then
+        Mods.currentMod = game.save.data.currentMod
+        if table.find(Mods.mods, Mods.currentMod) then
+            Mods.currentMod = game.save.data.currentMod
+        else
+            Mods.currentMod = nil
+            game.save.data.currentMod = Mods.currentMod
+        end
     end
 end
 

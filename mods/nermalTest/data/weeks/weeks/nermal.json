@@ -1,0 +1,13 @@
+{
+    "name": "nermal",
+    "songs": [
+        "Nermal"
+    ],
+    "characters": [
+        "nermal",
+        "bf",
+        "gf"
+    ],
+    "sprite": "nermal",
+    "locked": false
+}

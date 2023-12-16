@@ -95,6 +95,10 @@ end
 
 function string.ext(self) return self:sub(1 - (self:reverse():find('%.') or 1)) end
 
+function string.hasExt(self)
+    return self:match("%.([^%.]+)$") ~= nil
+end
+
 function string.withoutExt(self)
 	return self:sub(0, -1 - (self:reverse():find('%.') or 1))
 end

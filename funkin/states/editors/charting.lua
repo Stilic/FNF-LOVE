@@ -201,7 +201,16 @@ function ChartingState:add_UI_Song()
     input_song.text = self.__song.song
     input_song.onChanged = function(value) self.__song.song = value end
 
-    local diff_dropdown = ui.UIDropDown(70, 40, {'easy', 'normal', 'hard'})
+    local metadata = paths.getJSON('songs/' .. paths.formatToSongPath(self.__song.song)
+                                .. '/meta')
+    local diffs = {"easy", "normal", "hard"}
+    if metadata and metadata.difficulties then
+        diffs = {}
+        for i = 1, #metadata.difficulties do
+            diffs[i] = metadata.difficulties[i]:lower()
+        end
+    end
+    local diff_dropdown = ui.UIDropDown(70, 40, diffs)
     if self.curDiff == "" then self.curDiff = "normal" end
     diff_dropdown.selectedLabel = self.curDiff
     diff_dropdown.onChanged = function(value) self.curDiff = value end
@@ -250,13 +259,12 @@ function ChartingState:add_UI_Song()
                 table.insert(optionsChar, charName)
             end
         end
-    else
-        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                'data/characters'))) do
-            local charName = str:withoutExt()
-            if str:endsWith('.json') and not charName:endsWith('-dead') then
-                table.insert(optionsChar, charName)
-            end
+    end
+    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                            'data/characters'))) do
+        local charName = str:withoutExt()
+        if str:endsWith('.json') and not charName:endsWith('-dead') then
+            table.insert(optionsChar, charName)
         end
     end
 
@@ -287,12 +295,11 @@ function ChartingState:add_UI_Song()
             local stageName = str:withoutExt()
             table.insert(optionsStage, stageName)
         end
-    else
-        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                'data/stages'))) do
-            local stageName = str:withoutExt()
-            table.insert(optionsStage, stageName)
-        end
+    end
+    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                            'data/stages'))) do
+        local stageName = str:withoutExt()
+        table.insert(optionsStage, stageName)
     end
 
     local stage_dropdown = ui.UIDropDown(140, 250, optionsStage)
