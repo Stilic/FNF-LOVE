@@ -63,7 +63,7 @@ function math.type(v)
 		__integer__ or __float__
 end
 
-function math.clamp(x, min, max) return return min(max(x, min or 0), max or 1) end
+function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
 math.bound = math.clamp
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end

@@ -71,7 +71,6 @@ function love.run()
 
     local real_fps = 0
     local function draw()
-        if not love.graphics.isActive() then return end
         love.graphics.origin()
         love.graphics.clear(love.graphics.getBackgroundColor())
         love.draw()
@@ -94,8 +93,8 @@ function love.run()
         love.graphics.present()
     end
 
-    local firstTime, fullGC, focused, dt, real_dt = true, true, false, 0
-    local nextclock, clock, cap = 0, 0
+    local firstTime, fullGC, focused, dt, real_dt = true, true, false, love.timer.step()
+    local nextclock, clock, newclock, cap = 0, 0, 0
     return function()
         love.event.pump()
         for name, a, b, c, d, e, f in love.event.poll() do
@@ -113,15 +112,16 @@ function love.run()
 
         if focused or not love.autoPause then
             love.update(dt)
-            if love.parallelUpdate then
-                if clock + dt > nextclock then
+            if love.graphics.isActive() then
+                if love.parallelUpdate then
+                    if clock + dt > nextclock then
+                        draw()
+                        real_fps = clock + cap - nextclock
+                        nextclock, real_fps = cap + clock, math.min(math.round(1 / real_fps), love.FPScap)
+                    end
+                else
                     draw()
-                    real_fps = clock + cap - nextclock
-                    nextclock = cap + clock
-                    real_fps = math.min(math.round(1 / real_fps), love.FPScap)
                 end
-            else
-                draw()
             end
         end
 
@@ -137,9 +137,9 @@ function love.run()
         if not love.parallelUpdate or not focused then
             love.timer.sleep(cap - real_dt)
         else
-            love.timer.sleep(0.001 - (os.clock() - clock))
+            love.timer.sleep(0.001 - (newclock - clock))
         end
-        clock = os.clock()
+        clock, newclock = newclock, os.clock()
     end
 end
 
