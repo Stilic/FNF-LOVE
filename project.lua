@@ -15,7 +15,7 @@ return {
 		CheckForUpdates = false,
 
 		InitialAutoFocus = true,
-		ParallelUpdate = false, -- VERY CPU INTENSIVE
+		InitialParallelUpdate = true,
 
 		LoxelForceRenderCameraComplex = false,
 		LoxelDisableRenderCameraComplex = false,

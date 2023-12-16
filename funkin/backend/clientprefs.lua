@@ -10,7 +10,7 @@ ClientPrefs.data = {
 	songOffset = 0,
 
 	-- display
-	fps = 120,
+	fps = 0,
 	showFps = true,
 	antialiasing = true,
 	shader = true,
@@ -50,7 +50,9 @@ function ClientPrefs.loadData()
 
 	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
 
-	love.FPScap = ClientPrefs.data.fps
+	if game.save.data.prefs.fps then
+		love.FPScap = ClientPrefs.data.fps
+	end
 	love.showFPS = ClientPrefs.data.showFps
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 

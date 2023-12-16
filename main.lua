@@ -56,18 +56,20 @@ require "errorhandler"
 local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14)
 function love.run()
     local _, _, modes = love.window.getMode()
-    love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 120), 8
+    love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 60), 8
     love.showFPS = false
     love.autoPause = flags.InitialAutoFocus
+    love.parallelUpdate = flags.InitialParallelUpdate
 
     if love.math then love.math.setRandomSeed(os.time()) end
-    if love.load then love.load(arg) end
+    if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
     collectgarbage()
     collectgarbage("step")
 
     if not love.quit then love.quit = function()end end
 
+    local real_fps = 0
     local function draw()
         if not love.graphics.isActive() then return end
         love.graphics.origin()
@@ -76,9 +78,10 @@ function love.run()
 
         if love.showFPS then
             local stats = love.graphics.getStats()
-            local fps = math.min(love.timer.getFPS(), love.FPScap)
+            local update = love.timer.getFPS()
             local vram = math.countbytes(stats.texturememory)
-            local text = "FPS: " .. fps ..
+            local text = "FPS: " .. (love.parallelUpdate and real_fps or math.min(update, love.FPScap)) ..
+                         (love.parallelUpdate and (" | UPDATE: " .. update) or "") ..
                          "\nVRAM: " .. vram ..
                          "\nDRAWS: " .. stats.drawcalls
 
@@ -91,30 +94,31 @@ function love.run()
         love.graphics.present()
     end
 
-    local parallelUpdate = flags.ParallelUpdate
-    local firstTime, fullGC, focused, dt = true, true, false, 0
-    local nextclock, clock, cap = 0
+    local firstTime, fullGC, focused, dt, real_dt = true, true, false, 0
+    local nextclock, clock, cap = 0, 0
     return function()
         love.event.pump()
         for name, a, b, c, d, e, f in love.event.poll() do
-            if name == "quit" and (not love.quit()) then
+            if name == "quit" and not love.quit() then
                 return a or 0
             end
             love.handlers[name](a, b, c, d, e, f)
         end
 
+        real_dt = love.timer.step()
+        dt = dt + math.min(real_dt - dt, 0.04)
+
         focused = firstTime or love.window.hasFocus()
         cap = 1 / (focused and love.FPScap or love.unfocusedFPScap)
 
-        dt = dt + math.min((love.timer.step() or 0) - dt, 0.04)
-
         if focused or not love.autoPause then
             love.update(dt)
-            if parallelUpdate then
-                clock = os.clock()
-                if clock > nextclock then
+            if love.parallelUpdate then
+                if clock + dt > nextclock then
                     draw()
+                    real_fps = clock + cap - nextclock
                     nextclock = cap + clock
+                    real_fps = math.min(math.round(1 / real_fps), love.FPScap)
                 end
             else
                 draw()
@@ -130,9 +134,12 @@ function love.run()
             fullGC = false
         end
 
-        if not parallelUpdate then
-            love.timer.sleep(cap - dt)
+        if not love.parallelUpdate or not focused then
+            love.timer.sleep(cap - real_dt)
+        else
+            love.timer.sleep(0.001 - (os.clock() - clock))
         end
+        clock = os.clock()
     end
 end
 
