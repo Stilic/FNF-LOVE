@@ -63,7 +63,7 @@ function math.type(v)
 		__integer__ or __float__
 end
 
-function math.clamp(value, min, max) return math.max(min, math.min(value, max)) end
+function math.clamp(x, min, max) return return min(max(x, min or 0), max or 1) end
 math.bound = math.clamp
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
@@ -72,7 +72,7 @@ function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5)
 math.positive_infinity = math.huge
 math.negative_infinity = -math.huge
 
-math.noise = require "lib.noise"
+math.noise = love.math.noise
 
 function __NULL__() end
 
@@ -170,7 +170,7 @@ function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
 
 function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
-function math.lerp(x, y, i) return x + (y - x) * i end
+function math.lerp(a, b, t) return a + (b - a) * t end
 
 function math.remapToRange(x, start1, stop1, start2, stop2)
 	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
