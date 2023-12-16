@@ -98,7 +98,7 @@ function love.run()
 
     local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
     local firstTime, fullGC, focused, dt, real_dt = true, true, false, love.timer.step()
-    local nextclock, clock, newclock, cap = 0, 0, 0
+    local nextclock, prevclock, clock, cap = 0, 0, 0
     return function()
         love.event.pump()
         for name, a, b, c, d, e, f in love.event.poll() do
@@ -121,8 +121,7 @@ function love.run()
                     if clock + dt > nextclock then
                         draw()
                         nextclock = cap + clock
-                        timeSinceLastFps = clock - prevFpsUpdate
-                        frames = frames + 1
+                        timeSinceLastFps, frames = clock - prevFpsUpdate, frames + 1
                         if timeSinceLastFps > fpsUpdateFrequency then
                             real_fps = math.round(frames/timeSinceLastFps)
                             prevFpsUpdate = clock
@@ -147,11 +146,11 @@ function love.run()
         if not love.parallelUpdate or not focused then
             love.timer.sleep(cap - real_dt)
         else
-            love.timer.sleep(0.001 - (newclock - clock))
+            love.timer.sleep(0.001 - (clock - prevclock))
         end
 
         -- using clock instead of love.timer.getTime() because it messes up parallelUpdate
-        clock, newclock = newclock, os.clock()
+        prevclock, clock = clock, os.clock()
     end
 end
 
