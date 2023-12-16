@@ -53,7 +53,7 @@ local SplashScreen = require "funkin.states.splash"
 
 require "errorhandler"
 
-local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14)
+local consolas, real_fps = love.graphics.newFont('assets/fonts/consolas.ttf', 14), 0
 function love.run()
     local _, _, modes = love.window.getMode()
     love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 60), 8
@@ -67,16 +67,14 @@ function love.run()
     collectgarbage()
     collectgarbage("step")
 
-    if not love.quit then love.quit = function()end end
-
-    local real_fps, _stats, _update, _vram, _text = 0
+    local _stats, _update, _vram, _text
     local function draw()
         love.graphics.origin()
         love.graphics.clear(love.graphics.getBackgroundColor())
         love.draw()
 
         if love.showFPS then
-            _stats, _update = love.graphics.getStats(), love.timer.getFPS()
+            _stats, _update = love.graphics.getStats(), love.timer.getUpdateFPS()
             _vram = math.countbytes(_stats.texturememory)
             _text = "FPS: " .. (math.min(love.parallelUpdate and real_fps or _update, love.FPScap)) ..
                          (love.parallelUpdate and (" | UPDATE: " .. _update) or "") ..
@@ -123,9 +121,8 @@ function love.run()
                         nextclock = cap + clock
                         timeSinceLastFps, frames = clock - prevFpsUpdate, frames + 1
                         if timeSinceLastFps > fpsUpdateFrequency then
-                            real_fps = math.round(frames/timeSinceLastFps)
+                            real_fps, frames = math.round(frames/timeSinceLastFps), 0
                             prevFpsUpdate = clock
-                            frames = 0
                         end
                     end
                 else
@@ -153,6 +150,19 @@ function love.run()
         prevclock, clock = clock, os.clock()
     end
 end
+
+local _ogGetFPS = love.timer.getFPS
+
+---@return number -- Returns the current draws FPS.
+function love.timer.getDrawFPS()
+    return love.parallelUpdate and real_fps or _ogGetFPS()
+end
+
+---@return number -- Returns the current updates FPS.
+love.timer.getUpdateFPS = _ogGetFPS
+
+---@return number -- Returns the current frames per second.
+love.timer.getFPS = love.timer.getDrawFPS
 
 -- Gets the current device
 ---@return string -- The current device. 'Desktop' or 'Mobile'
@@ -209,9 +219,9 @@ function love.mousepressed(x, y, button) game.mousepressed(x, y, button) end
 function love.mousereleased(x, y, button) game.mousereleased(x, y, button) end
 
 function love.update(dt)
-    Timer.update(dt)
     controls:update()
 
+    Timer.update(dt)
     game.update(dt)
 
     if love.system.getDevice() == "Desktop" then Discord.update() end
