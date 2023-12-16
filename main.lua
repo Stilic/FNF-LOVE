@@ -67,7 +67,7 @@ function love.run()
     collectgarbage()
     collectgarbage("step")
 
-    local _stats, _update, _vram, _text
+    local _stats, _update, _ram, _vram, _text
     local function draw()
         love.graphics.origin()
         love.graphics.clear(love.graphics.getBackgroundColor())
@@ -75,10 +75,10 @@ function love.run()
 
         if love.showFPS then
             _stats, _update = love.graphics.getStats(), love.timer.getUpdateFPS()
-            _vram = math.countbytes(_stats.texturememory)
+            _ram, _vram = math.countbytes(collectgarbage("count") * 0x400), math.countbytes(_stats.texturememory)
             _text = "FPS: " .. (math.min(love.parallelUpdate and real_fps or _update, love.FPScap)) ..
                          (love.parallelUpdate and (" | UPDATE: " .. _update) or "") ..
-                         "\nVRAM: " .. _vram ..
+                         "\nRAM: " .. _ram .. " | VRAM: " .. _vram ..
                          "\nDRAWS: " .. _stats.drawcalls
 
             love.graphics.setColor(0, 0, 0, 0.5)
@@ -94,20 +94,30 @@ function love.run()
     -- arithmetic like a + b - c would be the same as a - (c - b)
     -- but it really matters alot in context depending on what its used for computer calculation
 
+    local polledEvents, _defaultEvents = {}, {}
     local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
     local firstTime, fullGC, focused, dt, real_dt = true, true, false, love.timer.step()
     local nextclock, prevclock, clock, cap = 0, 0, 0
     return function()
         love.event.pump()
+        table.merge(polledEvents, _defaultEvents)
         for name, a, b, c, d, e, f in love.event.poll() do
             if name == "quit" and not love.quit() then
                 return a or 0
             end
+            _defaultEvents[name] = false
+            polledEvents[name] = true
             love.handlers[name](a, b, c, d, e, f)
         end
 
         real_dt = love.timer.step()
-        dt = dt + math.min(real_dt - dt, 0.04)
+        if not polledEvents.lowmemory and ((fullGC and not focused) or real_dt - dt > 0.04) then
+            love.handlers.lowmemory()
+            fullGC = false
+            dt = dt + 0.04
+        else
+            dt = real_dt
+        end
 
         focused = firstTime or love.window.hasFocus()
         cap = 1 / (focused and love.FPScap or love.unfocusedFPScap)
@@ -116,7 +126,7 @@ function love.run()
             love.update(dt)
             if love.graphics.isActive() then
                 if love.parallelUpdate then
-                    if clock + dt > nextclock then
+                    if clock + real_dt > nextclock then
                         draw()
                         nextclock = cap + clock
                         timeSinceLastFps, frames = clock - prevFpsUpdate, frames + 1
@@ -135,9 +145,6 @@ function love.run()
             collectgarbage("step")
             fullGC = true
             firstTime = false
-        elseif fullGC then
-            collectgarbage()
-            fullGC = false
         end
 
         if not love.parallelUpdate or not focused then
