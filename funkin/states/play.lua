@@ -504,6 +504,7 @@ function PlayState:startCountdown()
 
                     Timer.tween(crochet, countdownSprite, {alpha = 0},
                                 "in-out-cubic", function()
+                        countdownSprite.texture:release()
                         self:remove(countdownSprite)
                         countdownSprite:destroy()
                     end)
