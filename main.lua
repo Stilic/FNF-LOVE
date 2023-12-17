@@ -211,9 +211,12 @@ end
 
 function love.resize(w, h) game.resize(w, h) end
 
-function love.keypressed(...)
-    controls:onKeyPress(...)
-    game.keypressed(...)
+function love.keypressed(key, ...)
+    if love.keyboard.isDown("lctrl", "rctrl") then
+        if key == "f4" then error("force crash") end
+    end
+    controls:onKeyPress(key, ...)
+    game.keypressed(key, ...)
 end
 function love.keyreleased(...)
     controls:onKeyRelease(...)
