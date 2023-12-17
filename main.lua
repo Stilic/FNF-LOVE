@@ -93,10 +93,11 @@ function love.run()
     -- note:
     -- arithmetic like a + b - c would be the same as a - (c - b)
     -- but it really matters alot in context depending on what its used for computer calculation
+    love.timer.step()
 
     local polledEvents, _defaultEvents = {}, {}
     local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
-    local firstTime, fullGC, focused, dt, real_dt = true, true, false, love.timer.step()
+    local firstTime, fullGC, focused, dt, real_dt = true, true, false, 0
     local nextclock, prevclock, clock, cap = 0, 0, 0
     return function()
         love.event.pump()
@@ -105,8 +106,7 @@ function love.run()
             if name == "quit" and not love.quit() then
                 return a or 0
             end
-            _defaultEvents[name] = false
-            polledEvents[name] = true
+            _defaultEvents[name], polledEvents[name] = false, true
             love.handlers[name](a, b, c, d, e, f)
         end
 
@@ -116,6 +116,7 @@ function love.run()
             fullGC = false
             dt = dt + 0.04
         else
+            fullGC = true
             dt = real_dt
         end
 
@@ -141,14 +142,15 @@ function love.run()
             end
         end
 
-        if focused then
-            collectgarbage("step")
-            fullGC = true
+        if firstTime then
             firstTime = false
+        else
+            collectgarbage("step")
         end
 
         if not love.parallelUpdate or not focused then
             love.timer.sleep(cap - real_dt)
+            s()
         else
             love.timer.sleep(0.001 - (clock - prevclock))
         end
