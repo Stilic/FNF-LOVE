@@ -150,7 +150,6 @@ function love.run()
 
         if not love.parallelUpdate or not focused then
             love.timer.sleep(cap - real_dt)
-            s()
         else
             love.timer.sleep(0.001 - (clock - prevclock))
         end
