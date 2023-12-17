@@ -46,6 +46,8 @@ function StoryMenuState:enter()
 
     self.weeksData = {}
     self:loadWeeks()
+    StoryMenuState.curWeek = math.min(StoryMenuState.curWeek, #self.weeksData)
+
     if #self.weeksData > 0 then
         for i, week in pairs(self.weeksData) do
             local isLocked = (week.locked == true)
