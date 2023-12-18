@@ -145,6 +145,7 @@ local function switch(state)
 
     game.cameras.reset()
     game.sound.destroy()
+    game.buttons.reset()
 
     for _, s in ipairs(Gamestate.stack) do
         for _, o in ipairs(s.members) do
