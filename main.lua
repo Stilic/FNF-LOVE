@@ -90,15 +90,12 @@ function love.run()
         love.graphics.present()
     end
 
-    -- note:
-    -- arithmetic like a + b - c would be the same as a - (c - b)
-    -- but it really matters alot in context depending on what its used for computer calculation
     love.timer.step()
 
     local polledEvents, _defaultEvents = {}, {}
     local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
     local firstTime, fullGC, focused, dt, real_dt = true, true, false, 0
-    local nextclock, prevclock, clock, cap = 0, 0, 0
+    local nextclock, clock, cap = 0, 0, 0
     return function()
         love.event.pump()
         table.merge(polledEvents, _defaultEvents)
@@ -127,6 +124,7 @@ function love.run()
             love.update(dt)
             if love.graphics.isActive() then
                 if love.parallelUpdate then
+                    clock = love.timer.getTime()
                     if clock + real_dt > nextclock then
                         draw()
                         nextclock = cap + clock
@@ -151,11 +149,10 @@ function love.run()
         if not love.parallelUpdate or not focused then
             love.timer.sleep(cap - real_dt)
         else
-            love.timer.sleep(0.001 - (clock - prevclock))
+            if real_dt < 0.001 then
+                love.timer.sleep(0.001)
+            end
         end
-
-        -- using clock instead of love.timer.getTime() because it messes up parallelUpdate
-        prevclock, clock = clock, os.clock()
     end
 end
 
