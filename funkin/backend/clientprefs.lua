@@ -12,7 +12,7 @@ ClientPrefs.data = {
 
 	-- display
 	fps = 0,
-	showFps = true,
+	showFps = false,
 	antialiasing = true,
 	shader = true,
 }
@@ -51,7 +51,7 @@ function ClientPrefs.loadData()
 
 	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
 
-	if game.save.data.prefs.fps then
+	if game.save.data.prefs then
 		love.FPScap = ClientPrefs.data.fps
 	end
 	love.showFPS = ClientPrefs.data.showFps

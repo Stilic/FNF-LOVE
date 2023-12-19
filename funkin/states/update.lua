@@ -1,5 +1,4 @@
 local UpdateState = State:extend("UpdateState")
-local Https = require "https"
 
 local updateVersion = ''
 

@@ -1,5 +1,15 @@
-local ffi = require "ffi"
-local discordRPClib = ffi.load("discord-rpc")
+local ffi, discordRPClib = require "ffi"
+local OS = love.system.getOS()
+if OS == "Windows" then
+    discordRPClib = ffi.load("lib/windows/discord-rpc")
+elseif OS == "Linux" then
+    discordRPClib = ffi.load("lib/linux/libdiscord-rpc")
+elseif OS == "OS X" then
+    discordRPClib = ffi.load("lib/osx/libdiscord-rpc")
+else
+    local __NULL__ = function() end
+    return setmetatable({}, {__index = function() return __NULL__ end})
+end
 
 ffi.cdef[[
 typedef struct DiscordRichPresence {

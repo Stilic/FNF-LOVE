@@ -1,6 +1,7 @@
-local Dialogue = {}
+local ffi = require "ffi"
+local comdlg32 = ffi.load("comdlg32")
 
-local ffi = require("ffi")
+local Dialogue = {}
 ffi.cdef[[
     typedef void* HWND;
     typedef const char* LPCSTR;
@@ -41,8 +42,6 @@ ffi.cdef[[
     BOOL GetSaveFileNameA(WINDOWDIALOGUE *lpofn);
     BOOL GetOpenFileNameA(WINDOWDIALOGUE *lpofn);
 ]]
-
-local comdlg32 = ffi.load("comdlg32")
 
 function Dialogue.askOpenFile(title, fileType)
     if title == nil then title = "Save As" end

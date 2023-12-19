@@ -4,12 +4,7 @@ function love.conf(t)
     t.identity = Project.company
     t.console = Project.DEBUG_MODE
 
-    t.window.title = Project.title
-    t.window.icon = Project.icon
-    t.window.width = Project.width
-    t.window.height = Project.height
-    t.window.resizable = true
-    t.window.vsync = false
+    t.window = nil -- we'll initialize it in run.lua
 
     t.modules.physics = false
     t.modules.touch = false
