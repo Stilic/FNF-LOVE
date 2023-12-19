@@ -43,6 +43,8 @@ game.buttons = require "loxel.managers.buttonmanager"
 game.sound = require "loxel.managers.soundmanager"
 game.save = require "loxel.util.save"
 
+TypeText = require "loxel.typetext"
+
 local fade
 local function fadeOut(time, callback)
     if fade and fade.timer then Timer.cancel(fade.timer) end

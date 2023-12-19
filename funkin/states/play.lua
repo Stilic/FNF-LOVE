@@ -375,7 +375,7 @@ function PlayState:enter()
     local fontScore = paths.getFont("vcr.ttf", 17)
     self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", fontScore,
                          {1, 1, 1}, "center")
-    self.scoreTxt.outWidth = 1
+    self.scoreTxt.outline.width = 1
 
     self.timeArcBG = Graphic(45, game.height - 45, 100, 100, {0, 0, 0}, "arc",
                              "line")
@@ -403,12 +403,12 @@ function PlayState:enter()
     local fontTime = paths.getFont("vcr.ttf", 24)
     self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "",
                         fontTime, {1, 1, 1}, "left")
-    self.timeTxt.outWidth = 2
+    self.timeTxt.outline.width = 2
     if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
     self.botplayTxt = Text(620, (self.downScroll and 8 or 688), 'BOTPLAY MODE',
                             fontTime, {1, 1, 1}, "right", game.width/2)
-    self.botplayTxt.outWidth = 2
+    self.botplayTxt.outline.width = 2
     self.botplayTxt.visible = self.botPlay
 
     if love.system.getDevice() == "Mobile" then
