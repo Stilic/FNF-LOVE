@@ -21,6 +21,5 @@ return {
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,
 		LoxelDefaultClipCamera = true,
-		--this is stupid LoxelRenderTransparentGraphics = false,
 	}
 }

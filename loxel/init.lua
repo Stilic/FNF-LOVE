@@ -23,6 +23,10 @@ Color = require "loxel.util.color"
 
 Keyboard = require "loxel.input.keyboard"
 Mouse = require "loxel.input.mouse"
+
+Button = require "loxel.button"
+ButtonGroup = require "loxel.group.buttongroup"
+
 ui = {
     UIButton = require "loxel.ui.button",
     UICheckbox = require "loxel.ui.checkbox",
@@ -35,6 +39,7 @@ ui = {
 }
 
 game.cameras = require "loxel.managers.cameramanager"
+game.buttons = require "loxel.managers.buttonmanager"
 game.sound = require "loxel.managers.soundmanager"
 game.save = require "loxel.util.save"
 
@@ -131,11 +136,16 @@ function game.mousemoved(x, y) Mouse.onMoved(x, y) end
 function game.mousepressed(x, y, button) Mouse.onPressed(button) end
 function game.mousereleased(x, y, button) Mouse.onReleased(button) end
 
+function game.touchmoved(id, x, y) game.buttons.move(id, x, y) end
+function game.touchpressed(id, x, y) game.buttons.press(id, x, y) end
+function game.touchreleased(id, x, y) game.buttons.release(id, x, y) end
+
 local function switch(state)
     Timer.clear()
 
     game.cameras.reset()
     game.sound.destroy()
+    game.buttons.reset()
 
     for _, s in ipairs(Gamestate.stack) do
         for _, o in ipairs(s.members) do
