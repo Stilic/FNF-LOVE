@@ -59,6 +59,15 @@ function TitleState:enter()
 							   game.sound.music, 102)
 	self.music.onBeat = function(b) self:beat(b) end
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
+
+	if love.system.getDevice() == "Mobile" then
+	    local group = ButtonGroup()
+		local enter = Button(0, 0, game.width, game.height, "return")
+		enter.pressedAlpha = 0
+		enter.releasedAlpha = 0
+		group:add(enter)
+		game.buttons.add(group)
+	end
 end
 
 function TitleState:getIntroTextShit()

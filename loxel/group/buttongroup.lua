@@ -18,6 +18,7 @@ local function fillTransform(button, fill) button.fill = fill end
 local function typeTransform(button, type) button.type = type end
 local function lineWidthTransform(button, lineWidth) button.line.width = lineWidth end
 local function linedTransform(button, lined) button.lined = lined end
+local function stunnedTransform(button, stunned) button.stunned = stunned end
 
 --------------
 
@@ -37,16 +38,16 @@ function ButtonGroup:new()
     self.__fill = self.fill
     self.__type = self.type
 
+    self.__stunned = self.stunned
+
     self.__lined = self.lined
     self.line.__width = self.line.width
 
-    self.buttons = {}
     self.group = Group()
     self.__graphics = self.group.members
 end
 
 function ButtonGroup:add(button)
-    table.insert(self.buttons, button)
     return self.group:add(button)
 end
 
@@ -54,6 +55,10 @@ function ButtonGroup:update(dt)
     if self.__cameras ~= self.cameras then
         tranformChildren(self, camerasTransform, self.cameras)
         self.__cameras = self.cameras
+    end
+    if self.__stunned ~= self.stunned then
+        transformChildren(self, stunnedTransform, self.stunned)
+        self.__stunned = self.stunned
     end
     if self.__x ~= self.x then
         tranformChildren(self, xTransform, self.x - self.__x)
@@ -103,10 +108,13 @@ function ButtonGroup:draw()
 end
 
 function ButtonGroup:checkPress(x, y)
-    for _, button in ipairs(self.buttons) do
-        if x >= button.x and x <= button.x + button.width and
-            y >= button.y and y <= button.y + button.height then
-            return button
+    if not self.stunned then
+        for _, button in ipairs(self.__graphics) do
+            if not button.stunned and x >= button.x and
+                x <= button.x + button.width and y >= button.y and
+                y <= button.y + button.height then
+                return button
+            end
         end
     end
     return nil

@@ -15,6 +15,10 @@ function ButtonManager.reset()
     end
 end
 
+function ButtonManager.remove(o)
+    table.delete(ButtonManager.list, o)
+end
+
 function ButtonManager.press(id, x, y)
     local X, Y = ButtonManager.remap(x, y)
     for _, group in ipairs(ButtonManager.list) do

@@ -20,9 +20,9 @@ function FreeplayState:enter()
 
     self.songsData = {}
     self:loadSongs()
-
+    
     FreeplayState.curSelected = math.min(FreeplayState.curSelected, #self.songsData)
-
+    
     self.bg = Sprite()
     self.bg:loadTexture(paths.getImage('menus/menuDesat'))
     self:add(self.bg)
@@ -79,6 +79,37 @@ function FreeplayState:enter()
     self:add(self.scoreText)
 
     if #self.songsData > 0 then self:changeSelection() end
+
+    if love.system.getDevice() == "Mobile" then
+        self.buttons = ButtonGroup()
+        self.buttons.type = "roundrect"
+        self.buttons.lined = true
+        self.buttons.width = 134
+        self.buttons.height = 134
+
+        local w = self.buttons.width
+
+        local left = Button(2, game.height - w, 0, 0, "left")
+        local up = Button(left.x + w, left.y - w, 0, 0, "up")
+        local down = Button(up.x, left.y, 0, 0, "down")
+        local right = Button(down.x + w, left.y, 0, 0, "right")
+
+        local enter = Button(game.width - w, left.y, 0, 0, "return")
+        enter:setColor(Color.GREEN)
+        local back = Button(enter.x - w, left.y, 0, 0, "escape")
+        back:setColor(Color.RED)
+
+        self.buttons:add(left)
+        self.buttons:add(up)
+        self.buttons:add(down)
+        self.buttons:add(right)
+
+        self.buttons:add(enter)
+        self.buttons:add(back)
+
+        self:add(self.buttons)
+        game.buttons.add(self.buttons)
+    end
 end
 
 function FreeplayState:update(dt)
