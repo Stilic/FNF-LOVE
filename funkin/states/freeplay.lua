@@ -20,9 +20,9 @@ function FreeplayState:enter()
 
     self.songsData = {}
     self:loadSongs()
-    
+
     FreeplayState.curSelected = math.min(FreeplayState.curSelected, #self.songsData)
-    
+
     self.bg = Sprite()
     self.bg:loadTexture(paths.getImage('menus/menuDesat'))
     self:add(self.bg)
