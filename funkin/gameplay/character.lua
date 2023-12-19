@@ -27,9 +27,9 @@ function Character:new(x, y, char, isPlayer)
     local jsonData = paths.getJSON("data/characters/" .. self.char)
     if jsonData == nil then jsonData = paths.getJSON("data/characters/bf") end
 
-    self:setFrames(paths.getAtlas(jsonData.image))
+    self:setFrames(paths.getAtlas(jsonData.sprite))
 
-    self.imageFile = jsonData.image
+    self.imageFile = jsonData.sprite
     self.jsonScale = 1
     if jsonData.scale ~= 1 then
         self.jsonScale = jsonData.scale
@@ -43,28 +43,26 @@ function Character:new(x, y, char, isPlayer)
 
     self.positionTable = {x = jsonData.position[1], y = jsonData.position[2]}
     self.cameraPosition = {
-        x = jsonData.camera_position[1],
-        y = jsonData.camera_position[2]
+        x = jsonData.camera_points[1],
+        y = jsonData.camera_points[2]
     }
 
-    self.icon = jsonData.healthicon
+    self.icon = jsonData.icon
 
     self.flipX = (jsonData.flip_x == true)
     self.jsonFlipX = self.flipX
 
-    self.noAntialiasing = (jsonData.no_antialiasing == true)
-    self.antialiasing = ClientPrefs.data.antialiasing and
-                            not self.noAntialiasing or false
+    self.antialiasing = ClientPrefs.data.antialiasing and jsonData.antialiasing or false
 
     self.animationsTable = jsonData.animations
     if self.animationsTable and #self.animationsTable > 0 then
         for _, anim in ipairs(self.animationsTable) do
-            local animAnim = '' .. anim.anim
-            local animName = '' .. anim.name
-            local animFps = anim.fps
-            local animLoop = anim.loop
-            local animOffsets = anim.offsets
-            local animIndices = anim.indices
+            local animAnim = '' .. anim[1]
+            local animName = '' .. anim[2]
+            local animIndices = anim[3]
+            local animFps = anim[4]
+            local animLoop = anim[5]
+            local animOffsets = anim[6]
             if animIndices ~= nil and #animIndices > 0 then
                 self:addAnimByIndices(animAnim, animName, animIndices, nil,
                                       animFps, animLoop)

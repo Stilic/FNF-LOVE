@@ -1,116 +1,21 @@
 {
 	"animations": [
-		{
-			"anim": "idle",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF IDLE",
-			"offsets": [
-				7,
-				0
-			]
-		},
-		{
-			"anim": "singLEFTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF LEFT MISS",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singLEFT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF LEFT NOTE",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singUPmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF UP MISS",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singUP",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF UP NOTE",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singRIGHT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF RIGHT NOTE",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singRIGHTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF RIGHT MISS",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singDOWN",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF DOWN NOTE",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singDOWNmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF DOWN MISS",
-			"offsets": [
-				0,
-				0
-			]
-		}
+		["idle", "BF IDLE", [], 24, false, [7, 0]],
+		["singLEFTmiss", "BF LEFT MISS", [], 24, false, [0, 0]],
+		["singLEFT", "BF LEFT NOTE", [], 24, false, [0, 0]],
+		["singUPmiss", "BF UP MISS", [], 24, false, [0, 0]],
+		["singUP", "BF UP NOTE", [], 24, false, [0, 0]],
+		["singRIGHT", "BF RIGHT NOTE", [], 24, false, [0, 0]],
+		["singRIGHTmiss", "BF RIGHT MISS", [], 24, false, [0, 0]],
+		["singDOWN", "BF DOWN NOTE", [], 24, false, [0, 0]],
+		["singDOWNmiss", "BF DOWN MISS", [], 24, false, [0, 0]]
 	],
-	"camera_position": [
-		50,
-		-60
-	],
+	"position": [0, 350],
+	"camera_points": [50, -60],
 	"flip_x": true,
-	"healthicon": "bf-pixel",
-	"image": "characters/bfPixel",
-	"no_antialiasing": true,
-	"position": [
-		0,
-		350
-	],
+	"icon": "bf-pixel",
+	"sprite": "characters/bfPixel",
+	"antialiasing": false,
+	"sing_duration": 4,
 	"scale": 6
 }

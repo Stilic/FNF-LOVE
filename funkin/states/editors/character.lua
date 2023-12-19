@@ -1,4 +1,4 @@
-local encodeJson = require('lib.json').encode
+local buildCharFile = require("funkin.backend.jsonbuilder").buildChar
 
 local CharacterEditor = State:extend("CharacterEditor")
 
@@ -274,7 +274,7 @@ function CharacterEditor:update(dt)
 
     if not isTyping then
         if Keyboard.justPressed.SPACE then
-            self.char:playAnim(self.curAnim.anim, true)
+            self.char:playAnim(self.curAnim[1], true)
         end
 
         local shiftMult = Keyboard.pressed.SHIFT and 10 or 1
@@ -307,18 +307,18 @@ function CharacterEditor:update(dt)
                       0.2)
 
         if Keyboard.justPressed.LEFT then
-            self.curAnim.offsets[1] = self.curAnim.offsets[1] + shiftMult
-            self:changeOffsets(self.curAnim.offsets[1], self.curAnim.offsets[2])
+            self.curAnim[6][1] = self.curAnim[6][1] + shiftMult
+            self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
         elseif Keyboard.justPressed.RIGHT then
-            self.curAnim.offsets[1] = self.curAnim.offsets[1] - shiftMult
-            self:changeOffsets(self.curAnim.offsets[1], self.curAnim.offsets[2])
+            self.curAnim[6][1] = self.curAnim[6][1] - shiftMult
+            self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
         end
         if Keyboard.justPressed.UP then
-            self.curAnim.offsets[2] = self.curAnim.offsets[2] + shiftMult
-            self:changeOffsets(self.curAnim.offsets[1], self.curAnim.offsets[2])
+            self.curAnim[6][2] = self.curAnim[6][2] + shiftMult
+            self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
         elseif Keyboard.justPressed.DOWN then
-            self.curAnim.offsets[2] = self.curAnim.offsets[2] - shiftMult
-            self:changeOffsets(self.curAnim.offsets[1], self.curAnim.offsets[2])
+            self.curAnim[6][2] = self.curAnim[6][2] - shiftMult
+            self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
         end
 
         if Keyboard.justPressed.Q then
@@ -340,10 +340,10 @@ function CharacterEditor:update(dt)
 
     updateCamPoint(self)
 
-    local animInfo = 'Current Animation\n' .. '\nName: ' .. self.curAnim.anim ..
-                         '\nOffsets: [' .. self.curAnim.offsets[1] .. ', ' ..
-                         self.curAnim.offsets[2] .. ']' .. '\nFPS: ' ..
-                         self.curAnim.fps
+    local animInfo = 'Current Animation\n' .. '\nName: ' .. self.curAnim[1] ..
+                         '\nOffsets: [' .. self.curAnim[6][1] .. ', ' ..
+                         self.curAnim[6][2] .. ']' .. '\nFPS: ' ..
+                         self.curAnim[4]
     self.animInfoTxt.content = animInfo
 
     local charInfo = 'Current Character\n' .. '\nName: ' .. self.curChar ..
@@ -359,7 +359,7 @@ function CharacterEditor:loadCharacter()
     self.char.cameras = {self.camChar}
     self.charLayer:add(self.char)
     if self.char.animationsTable[1] ~= nil then
-        self.char:playAnim(self.char.animationsTable[1].anim, true)
+        self.char:playAnim(self.char.animationsTable[1][1], true)
     end
 
     self.healthIcon = HealthIcon(self.char.icon, false)
@@ -380,7 +380,7 @@ end
 
 function CharacterEditor:changeOffsets(x, y)
     self.char.offset.x, self.char.offset.y = x, y
-    self.char.animOffsets[self.curAnim.anim] = {x = x, y = y}
+    self.char.animOffsets[self.curAnim[1]] = {x = x, y = y}
 end
 
 function CharacterEditor:changeAnim(huh)
@@ -394,7 +394,7 @@ function CharacterEditor:changeAnim(huh)
     end
 
     self.curAnim = self.char.animationsTable[self.curSelected]
-    self.char:playAnim(self.curAnim.anim, true)
+    self.char:playAnim(self.curAnim[1], true)
 end
 
 function CharacterEditor:saveCharacter()
@@ -402,22 +402,20 @@ function CharacterEditor:saveCharacter()
                                               self.curChar .. ".json")
 
     if file then
-        local animationsTable = self.char.animationsTable
-        local positionTable = self.char.positionTable
-        local cameraPosition = self.char.cameraPosition
         local charData = {
-            animations = animationsTable,
-            image = self.char.imageFile,
-            position = {positionTable.x, positionTable.y},
-            healthicon = self.char.icon,
+            animations = self.char.animationsTable,
+            sprite = self.char.imageFile,
+            position = self.char.positionTable,
+            icon = self.char.icon,
             flip_x = self.char.jsonFlipX,
-            no_antialiasing = self.char.noAntialiasing,
-            camera_position = {cameraPosition.x, cameraPosition.y},
+            antialiasing = self.char.anti,
+            camera_points = self.char.cameraPosition,
+            sing_duration = self.char.holdTime,
             scale = self.char.jsonScale
         }
 
         local json_file = io.open(file, "wb")
-        json_file:write(encodeJson(charData))
+        json_file:write(buildCharFile(charData))
         json_file:close()
     end
 end

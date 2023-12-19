@@ -1,116 +1,21 @@
 {
 	"animations": [
-		{
-			"anim": "idle",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico Idle Dance",
-			"offsets": [
-				3,
-				0
-			]
-		},
-		{
-			"anim": "singUP",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "pico Up note0",
-			"offsets": [
-				21,
-				27
-			]
-		},
-		{
-			"anim": "singDOWN",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico Down Note0",
-			"offsets": [
-				84,
-				-80
-			]
-		},
-		{
-			"anim": "singDOWNmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico Down Note MISS",
-			"offsets": [
-				80,
-				-38
-			]
-		},
-		{
-			"anim": "singUPmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "pico Up note miss",
-			"offsets": [
-				28,
-				67
-			]
-		},
-		{
-			"anim": "singRIGHT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico Note Right0",
-			"offsets": [
-				-48,
-				2
-			]
-		},
-		{
-			"anim": "singLEFT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico NOTE LEFT0",
-			"offsets": [
-				85,
-				-10
-			]
-		},
-		{
-			"anim": "singRIGHTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico Note Right Miss",
-			"offsets": [
-				-45,
-				50
-			]
-		},
-		{
-			"anim": "singLEFTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "Pico NOTE LEFT miss",
-			"offsets": [
-				83,
-				28
-			]
-		}
+		["idle", "Pico Idle Dance", [], 24, false, [3, 0]],
+		["singUP", "pico Up note0", [], 24, false, [21, 27]],
+		["singDOWN", "Pico Down Note0", [], 24, false, [84, -80]],
+		["singDOWNmiss", "Pico Down Note MISS", [], 24, false, [80, -38]],
+		["singUPmiss", "pico Up note miss", [], 24, false, [28, 67]],
+		["singRIGHT", "Pico Note Right0", [], 24, false, [-48, 2]],
+		["singLEFT", "Pico NOTE LEFT0", [], 24, false, [85, -10]],
+		["singRIGHTmiss", "Pico Note Right Miss", [], 24, false, [-45, 50]],
+		["singLEFTmiss", "Pico NOTE LEFT miss", [], 24, false, [83, 28]]
 	],
-	"camera_position": [
-		250,
-		20
-	],
+	"position": [-250, 300],
+	"camera_points": [250, 20],
 	"flip_x": true,
-	"healthicon": "pico",
-	"image": "characters/Pico_FNF_assetss",
-	"no_antialiasing": false,
-	"position": [
-		-250,
-		300
-	],
+	"icon": "pico",
+	"sprite": "characters/Pico_FNF_assetss",
+	"antialiasing": true,
+	"sing_duration": 4,
 	"scale": 1
 }

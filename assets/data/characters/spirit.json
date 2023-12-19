@@ -1,72 +1,17 @@
 {
 	"animations": [
-		{
-			"anim": "idle",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "idle spirit_",
-			"offsets": [
-				-218,
-				-280
-			]
-		},
-		{
-			"anim": "singLEFT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "left_",
-			"offsets": [
-				-200,
-				-280
-			]
-		},
-		{
-			"anim": "singDOWN",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "spirit down_",
-			"offsets": [
-				170,
-				110
-			]
-		},
-		{
-			"anim": "singRIGHT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "right_",
-			"offsets": [
-				-220,
-				-280
-			]
-		},
-		{
-			"anim": "singUP",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "up_",
-			"offsets": [
-				-220,
-				-240
-			]
-		}
+		["idle", "idle spirit_", [], 24, false, [-218, -280]],
+		["singLEFT", "left_", [], 24, false, [-200, -280]],
+		["singDOWN", "spirit down_", [], 24, false, [170, 110]],
+		["singRIGHT", "right_", [], 24, false, [-220, -280]],
+		["singUP", "up_", [], 24, false, [-220, -240]]
 	],
-	"camera_position": [
-		0,
-		0
-	],
+	"position": [-150, 100],
+	"camera_points": [0, 0],
 	"flip_x": false,
-	"healthicon": "spirit-pixel",
-	"image": "characters/spirit",
-	"no_antialiasing": true,
-	"position": [
-		-150,
-		100
-	],
+	"icon": "spirit-pixel",
+	"sprite": "characters/spirit",
+	"antialiasing": false,
+	"sing_duration": 4,
 	"scale": 6
 }

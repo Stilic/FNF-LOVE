@@ -1,122 +1,21 @@
 {
 	"animations": [
-		{
-			"loop": false,
-			"offsets": [
-				0,
-				0
-			],
-			"anim": "idle",
-			"fps": 24,
-			"name": "Idle",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-10,
-				-106
-			],
-			"anim": "singDOWN",
-			"fps": 24,
-			"name": "Down",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				34,
-				-35
-			],
-			"anim": "singLEFT",
-			"fps": 24,
-			"name": "Left",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				67,
-				87
-			],
-			"anim": "singUP",
-			"fps": 24,
-			"name": "Up",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-9,
-				-41
-			],
-			"anim": "singRIGHT",
-			"fps": 24,
-			"name": "Right",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-41,
-				-3
-			],
-			"anim": "singRIGHT-alt",
-			"fps": 30,
-			"name": "altRight",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				119,
-				-3
-			],
-			"anim": "singLEFT-alt",
-			"fps": 30,
-			"name": "altLeft",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				50,
-				30
-			],
-			"anim": "singDOWN-alt",
-			"fps": 30,
-			"name": "altDown",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				90,
-				160
-			],
-			"anim": "singUP-alt",
-			"fps": 30,
-			"name": "altUp",
-			"indices": []
-		}
+		["idle", "Idle", [], 24, false, [0, 0]],
+		["singDOWN", "Down", [], 24, false, [-10, -106]],
+		["singLEFT", "Left", [], 24, false, [34, -35]],
+		["singUP", "Up", [], 24, false, [67, 87]],
+		["singRIGHT", "Right", [], 24, false, [-9, -41]],
+		["singRIGHT-alt", "altRight", [], 30, false, [-41, -3]],
+		["singLEFT-alt", "altLeft", [], 30, false, [119, -3]],
+		["singDOWN-alt", "altDown", [], 30, false, [50, 30]],
+		["singUP-alt", "altUp", [], 30, false, [90, 160]]
 	],
-	"no_antialiasing": true,
-	"image": "characters/ourple",
-	"position": [
-		0,
-		250
-	],
-	"healthicon": "guy",
+	"position": [0, 250],
+	"camera_points": [0, 110],
 	"flip_x": false,
-	"healthbar_colors": [
-		163,
-		87,
-		171
-	],
-	"camera_position": [
-		0,
-		110
-	],
-	"sing_duration": 6.1,
+	"icon": "guy",
+	"sprite": "characters/ourple",
+	"antialiasing": false,
+	"sing_duration": 4,
 	"scale": 1
 }

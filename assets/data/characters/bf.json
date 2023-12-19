@@ -1,182 +1,27 @@
 {
 	"animations": [
-		{
-			"anim": "idle",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF idle dance",
-			"offsets": [
-				-5,
-				0
-			]
-		},
-		{
-			"anim": "singLEFT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE LEFT0",
-			"offsets": [
-				5,
-				-6
-			]
-		},
-		{
-			"anim": "singDOWN",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE DOWN0",
-			"offsets": [
-				-20,
-				-51
-			]
-		},
-		{
-			"anim": "singUP",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE UP0",
-			"offsets": [
-				-46,
-				27
-			]
-		},
-		{
-			"anim": "singRIGHT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE RIGHT0",
-			"offsets": [
-				-48,
-				-7
-			]
-		},
-		{
-			"anim": "singLEFTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE LEFT MISS",
-			"offsets": [
-				7,
-				19
-			]
-		},
-		{
-			"anim": "singDOWNmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE DOWN MISS",
-			"offsets": [
-				-15,
-				-19
-			]
-		},
-		{
-			"anim": "singUPmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE UP MISS",
-			"offsets": [
-				-46,
-				27
-			]
-		},
-		{
-			"anim": "singRIGHTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE RIGHT MISS",
-			"offsets": [
-				-44,
-				22
-			]
-		},
-		{
-			"anim": "hey",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF HEY",
-			"offsets": [
-				-3,
-				5
-			]
-		},
-		{
-			"anim": "hurt",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF hit",
-			"offsets": [
-				14,
-				18
-			]
-		},
-		{
-			"anim": "scared",
-			"fps": 24,
-			"indices": [],
-			"loop": true,
-			"name": "BF idle shaking",
-			"offsets": [
-				-4,
-				0
-			]
-		},
-		{
-			"anim": "dodge",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "boyfriend dodge",
-			"offsets": [
-				-10,
-				-16
-			]
-		},
-		{
-			"anim": "attack",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "boyfriend attack",
-			"offsets": [
-				294,
-				267
-			]
-		},
-		{
-			"anim": "pre-attack",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "bf pre attack",
-			"offsets": [
-				-40,
-				-40
-			]
-		}
+		["idle", "BF idle dance", [], 24, false, [-5, 0]],
+		["singLEFT", "BF NOTE LEFT0", [], 24, false, [5, -6]],
+		["singDOWN", "BF NOTE DOWN0", [], 24, false, [-20, -51]],
+		["singUP", "BF NOTE UP0", [], 24, false, [-46, 27]],
+		["singRIGHT", "BF NOTE RIGHT0", [], 24, false, [-48, -7]],
+		["singLEFTmiss", "BF NOTE LEFT MISS", [], 24, false, [7, 19]],
+		["singDOWNmiss", "BF NOTE DOWN MISS", [], 24, false, [-15, -19]],
+		["singUPmiss", "BF NOTE UP MISS", [], 24, false, [-46, 27]],
+		["singRIGHTmiss", "BF NOTE RIGHT MISS", [], 24, false, [-44, 22]],
+		["hey", "BF HEY", [], 24, false, [-3, 5]],
+		["hurt", "BF hit", [], 24, false, [14, 18]],
+		["scared", "BF idle shaking", [], 24, true, [-4, 0]],
+		["dodge", "boyfriend dodge", [], 24, false, [-10, -16]],
+		["attack", "boyfriend attack", [], 24, false, [294, 267]],
+		["pre-attack", "bf pre attack", [], 24, false, [-40, -40]]
 	],
-	"camera_position": [
-		0,
-		0
-	],
+	"position": [0, 350],
+	"camera_points": [0, 0],
 	"flip_x": true,
-	"healthicon": "bf",
-	"image": "characters/BOYFRIEND",
-	"no_antialiasing": false,
-	"position": [
-		0,
-		350
-	],
+	"icon": "bf",
+	"sprite": "characters/BOYFRIEND",
+	"antialiasing": true,
+	"sing_duration": 4,
 	"scale": 1
 }

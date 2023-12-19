@@ -1,94 +1,16 @@
 {
 	"animations": [
-		{
-			"anim": "cheer",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "GF Cheer",
-			"offsets": [
-				1,
-				0
-			]
-		},
-		{
-			"anim": "sad",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "gf sad",
-			"offsets": [
-				-2,
-				-21
-			]
-		},
-		{
-			"anim": "danceLeft",
-			"fps": 24,
-			"indices": [
-				30,
-				0,
-				1,
-				2,
-				3,
-				4,
-				5,
-				6,
-				7,
-				8,
-				9,
-				10,
-				11,
-				12,
-				13,
-				14
-			],
-			"loop": false,
-			"name": "GF Dancing Beat",
-			"offsets": [
-				0,
-				-9
-			]
-		},
-		{
-			"anim": "danceRight",
-			"fps": 24,
-			"indices": [
-				15,
-				16,
-				17,
-				18,
-				19,
-				20,
-				21,
-				22,
-				23,
-				24,
-				25,
-				26,
-				27,
-				28,
-				29
-			],
-			"loop": false,
-			"name": "GF Dancing Beat",
-			"offsets": [
-				0,
-				-9
-			]
-		}
+		["cheer", "GF Cheer", [], 24, false, [1, 0]],
+		["sad", "gf sad", [], 24, false, [-2, -21]],
+		["danceLeft", "GF Dancing Beat", [30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14], 24, false, [0, -9]],
+		["danceRight", "GF Dancing Beat", [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], 24, false, [0, -9]]
 	],
-	"camera_position": [
-		0,
-		0
-	],
+	"position": [0, 0],
+	"camera_points": [0, 0],
 	"flip_x": false,
-	"healthicon": "gf",
-	"image": "characters/gfChristmas",
-	"no_antialiasing": false,
-	"position": [
-		0,
-		0
-	],
+	"icon": "gf",
+	"sprite": "characters/gfChristmas",
+	"antialiasing": true,
+	"sing_duration": 4,
 	"scale": 1
 }

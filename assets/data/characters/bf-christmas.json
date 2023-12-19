@@ -1,127 +1,22 @@
 {
 	"animations": [
-		{
-			"anim": "idle",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF idle dance",
-			"offsets": [
-				-3,
-				-1
-			]
-		},
-		{
-			"anim": "singLEFT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE LEFT0",
-			"offsets": [
-				12,
-				-6
-			]
-		},
-		{
-			"anim": "singDOWN",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE DOWN0",
-			"offsets": [
-				-10,
-				-50
-			]
-		},
-		{
-			"anim": "singUP",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE UP0",
-			"offsets": [
-				-29,
-				27
-			]
-		},
-		{
-			"anim": "singRIGHT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE RIGHT0",
-			"offsets": [
-				-38,
-				-7
-			]
-		},
-		{
-			"anim": "singLEFTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE LEFT MISS",
-			"offsets": [
-				12,
-				24
-			]
-		},
-		{
-			"anim": "singDOWNmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE DOWN MISS",
-			"offsets": [
-				-11,
-				-19
-			]
-		},
-		{
-			"anim": "singUPmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE UP MISS",
-			"offsets": [
-				-29,
-				27
-			]
-		},
-		{
-			"anim": "singRIGHTmiss",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF NOTE RIGHT MISS",
-			"offsets": [
-				-30,
-				21
-			]
-		},
-		{
-			"anim": "hey",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "BF HEY",
-			"offsets": [
-				-3,
-				5
-			]
-		}
+		["idle", "BF idle dance", [], 24, false, [-3, -1]],
+		["singLEFT", "BF NOTE LEFT0", [], 24, false, [12, -6]],
+		["singDOWN", "BF NOTE DOWN0", [], 24, false, [-10, -50]],
+		["singUP", "BF NOTE UP0", [], 24, false, [-29, 27]],
+		["singRIGHT", "BF NOTE RIGHT0", [], 24, false, [-38, -7]],
+		["singLEFTmiss", "BF NOTE LEFT MISS", [], 24, false, [12, 24]],
+		["singDOWNmiss", "BF NOTE DOWN MISS", [], 24, false, [-11, -19]],
+		["singUPmiss", "BF NOTE UP MISS", [], 24, false, [-29, 27]],
+		["singRIGHTmiss", "BF NOTE RIGHT MISS", [], 24, false, [-30, 21]],
+		["hey", "BF HEY", [], 24, false, [-3, 5]]
 	],
-	"camera_position": [
-		0,
-		0
-	],
+	"position": [0, 350],
+	"camera_points": [0, 0],
 	"flip_x": true,
-	"healthicon": "bf",
-	"image": "characters/bfChristmas",
-	"no_antialiasing": false,
-	"position": [
-		0,
-		350
-	],
+	"icon": "bf",
+	"sprite": "characters/bfChristmas",
+	"antialiasing": true,
+	"sing_duration": 4,
 	"scale": 1
 }

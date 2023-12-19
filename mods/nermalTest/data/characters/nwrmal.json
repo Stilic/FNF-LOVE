@@ -1,122 +1,21 @@
 {
 	"animations": [
-		{
-			"loop": false,
-			"offsets": [
-				0,
-				0
-			],
-			"anim": "idle",
-			"fps": 24,
-			"name": "idle",
-			"indices": []
-		},
-		{
-			"offsets": [
-				68,
-				10
-			],
-			"loop": false,
-			"fps": 24,
-			"anim": "singLEFT",
-			"indices": [],
-			"name": "singLEFT"
-		},
-		{
-			"offsets": [
-				-13,
-				0
-			],
-			"loop": false,
-			"fps": 24,
-			"anim": "singDOWN",
-			"indices": [],
-			"name": "singDOWN"
-		},
-		{
-			"offsets": [
-				-75,
-				2
-			],
-			"loop": false,
-			"fps": 24,
-			"anim": "singUP",
-			"indices": [],
-			"name": "singUP"
-		},
-		{
-			"offsets": [
-				-64,
-				2
-			],
-			"loop": false,
-			"fps": 24,
-			"anim": "singRIGHT",
-			"indices": [],
-			"name": "singRIGHT"
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-6,
-				14
-			],
-			"anim": "singLEFTmiss",
-			"fps": 24,
-			"name": "0singLEFTmiss",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-9,
-				-13
-			],
-			"anim": "singDOWNmiss",
-			"fps": 24,
-			"name": "0singDOWNmiss",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-69,
-				14
-			],
-			"anim": "singUPmiss",
-			"fps": 24,
-			"name": "0singUPmiss",
-			"indices": []
-		},
-		{
-			"loop": false,
-			"offsets": [
-				-50,
-				11
-			],
-			"anim": "singRIGHTmiss",
-			"fps": 24,
-			"name": "0singRIGHTmiss",
-			"indices": []
-		}
+		["idle", "idle", [], 24, false, [0, 0]],
+		["singLEFT", "singLEFT", [], 24, false, [68, 10]],
+		["singDOWN", "singDOWN", [], 24, false, [-13, 0]],
+		["singUP", "singUP", [], 24, false, [-75, 2]],
+		["singRIGHT", "singRIGHT", [], 24, false, [-64, 2]],
+		["singLEFTmiss", "0singLEFTmiss", [], 24, false, [-6, 14]],
+		["singDOWNmiss", "0singDOWNmiss", [], 24, false, [-9, -13]],
+		["singUPmiss", "0singUPmiss", [], 24, false, [-69, 14]],
+		["singRIGHTmiss", "0singRIGHTmiss", [], 24, false, [-50, 11]]
 	],
-	"no_antialiasing": true,
-	"image": "characters/nwrmalSheet",
-	"position": [
-		90,
-		270
-	],
-	"healthicon": "nwrmal",
+	"position": [90, 270],
+	"camera_points": [20, 10],
 	"flip_x": true,
-	"healthbar_colors": [
-		128,
-		128,
-		128
-	],
-	"camera_position": [
-		20,
-		10
-	],
-	"sing_duration": 6.1,
+	"icon": "nwrmal",
+	"sprite": "characters/nwrmalSheet",
+	"antialiasing": false,
+	"sing_duration": 4,
 	"scale": 1
 }

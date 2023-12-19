@@ -1,103 +1,19 @@
 {
 	"animations": [
-		{
-			"anim": "hey",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "spooky kids YEAH!!",
-			"offsets": [
-				59,
-				-20
-			]
-		},
-		{
-			"anim": "singLEFT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "note sing left",
-			"offsets": [
-				130,
-				-10
-			]
-		},
-		{
-			"anim": "singRIGHT",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "spooky sing right",
-			"offsets": [
-				-130,
-				-14
-			]
-		},
-		{
-			"anim": "singDOWN",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "spooky DOWN note",
-			"offsets": [
-				-50,
-				-130
-			]
-		},
-		{
-			"anim": "danceLeft",
-			"fps": 12,
-			"indices": [
-				0,
-				2,
-				6
-			],
-			"loop": false,
-			"name": "spooky dance idle",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "danceRight",
-			"fps": 12,
-			"indices": [
-				8,
-				10,
-				12,
-				14
-			],
-			"loop": false,
-			"name": "spooky dance idle",
-			"offsets": [
-				0,
-				0
-			]
-		},
-		{
-			"anim": "singUP",
-			"fps": 24,
-			"indices": [],
-			"loop": false,
-			"name": "spooky UP NOTE",
-			"offsets": [
-				-20,
-				26
-			]
-		}
+		["hey", "spooky kids YEAH!!", [], 24, false, [59, -20]],
+		["singLEFT", "note sing left", [], 24, false, [130, -10]],
+		["singRIGHT", "spooky sing right", [], 24, false, [-130, -14]],
+		["singDOWN", "spooky DOWN note", [], 24, false, [-50, -130]],
+		["danceLeft", "spooky dance idle", [0, 2, 6], 12, false, [0, 0]],
+		["danceRight", "spooky dance idle", [8, 10, 12, 14], 12, false, [0, 0]],
+		["singUP", "spooky UP NOTE", [], 24, false, [-20, 26]]
 	],
-	"camera_position": [
-		0,
-		0
-	],
+	"position": [0, 200],
+	"camera_points": [0, 0],
 	"flip_x": false,
-	"healthicon": "spooky",
-	"image": "characters/spooky_kids_assets",
-	"no_antialiasing": false,
-	"position": [
-		0,
-		200
-	],
+	"icon": "spooky",
+	"sprite": "characters/spooky_kids_assets",
+	"antialiasing": true,
+	"sing_duration": 4,
 	"scale": 1
 }
