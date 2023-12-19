@@ -313,12 +313,16 @@ function PlayState:enter()
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
                         self.SONG.gfVersion, false)
     self.gf:setScrollFactor(0.95, 0.95)
+    table.insert(self.scripts.scripts, self.gf.script)
 
     self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
                          self.SONG.player2, false)
+    table.insert(self.scripts.scripts, self.dad.script)
+
     self.boyfriend = Character(self.stage.boyfriendPos.x,
                                self.stage.boyfriendPos.y, self.SONG.player1,
                                true)
+    table.insert(self.scripts.scripts, self.boyfriend.script)
 
     self:add(self.gf)
     self:add(self.dad)
@@ -1260,14 +1264,8 @@ function PlayState:step(s)
     if math.abs(time * 1000 - PlayState.notePosition) > 20 then
         PlayState.notePosition = time * 1000
     end
-
     self.scripts:set("curStep", s)
     self.scripts:call("step")
-
-    self.boyfriend:step(s)
-    self.gf:step(s)
-    self.dad:step(s)
-
     self.scripts:call("postStep")
 end
 

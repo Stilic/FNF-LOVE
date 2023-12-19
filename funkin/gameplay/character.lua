@@ -8,7 +8,6 @@ function Character:new(x, y, char, isPlayer)
     if not Character.editorMode then
         self.script = Script("data/characters/" .. char, false)
         self.script:set("self", self)
-
         self.script:call("create")
     end
 
@@ -93,8 +92,6 @@ function Character:new(x, y, char, isPlayer)
 
     self:dance()
     self:finish()
-
-    if not Character.editorMode then self.script:call("postCreate") end
 end
 
 function Character:switchAnim(oldAnim, newAnim)
@@ -118,15 +115,7 @@ function Character:update(dt)
         if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~=
             nil then self:playAnim(self.curAnim.name .. '-loop') end
     end
-    if not Character.editorMode then self.script:call("update", dt) end
     Character.super.update(self, dt)
-    if not Character.editorMode then self.script:call("postUpdate", dt) end
-end
-
-function Character:draw()
-    if not Character.editorMode then self.script:call("draw") end
-    Character.super.draw(self)
-    if not Character.editorMode then self.script:call("postDraw") end
 end
 
 function Character:__render(camera)
@@ -135,13 +124,7 @@ function Character:__render(camera)
     if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
 end
 
-function Character:step(s)
-    if not Character.editorMode then self.script:call("step", s) end
-    if not Character.editorMode then self.script:call("postStep", s) end
-end
-
 function Character:beat(b)
-    if not Character.editorMode then self.script:call("beat", b) end
     if self.lastHit > 0 then
         if self.lastHit + PlayState.conductor.stepCrochet * self.holdTime <
             PlayState.conductor.time then
@@ -151,7 +134,6 @@ function Character:beat(b)
     elseif b % self.danceSpeed == 0 then
         self:dance(self.danceSpeed < 2)
     end
-    if not Character.editorMode then self.script:call("postBeat", b) end
 end
 
 function Character:playAnim(anim, force, frame)
