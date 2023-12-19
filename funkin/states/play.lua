@@ -445,6 +445,10 @@ function PlayState:enter()
     self:add(self.timeTxt)
     self:add(self.botplayTxt)
 
+    if love.system.getDevice() == "Mobile" then
+        self:add(self.buttons)
+    end
+
     self:recalculateRating()
 
     for _, o in ipairs({
