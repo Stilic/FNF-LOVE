@@ -197,3 +197,15 @@ end
 function love.math.randomBool(chance)
 	return love.math.random(0, 100) < (chance or 50)
 end
+
+-- Gets the current device
+---@return string -- The current device. 'Desktop' or 'Mobile'
+function love.system.getDevice()
+	local os = love.system.getOS()
+    if os == "Android" or os == "iOS" then
+        return "Mobile"
+    elseif os == "OS X" or os == "Windows" or os == "Linux" then
+        return "Desktop"
+    end
+    return "Unknown"
+end

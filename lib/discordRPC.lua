@@ -1,5 +1,12 @@
-local ffi = require "ffi"
-local discordRPClib = ffi.load("discord-rpc")
+local ffi, discordRPClib
+local s = pcall(function()
+    ffi = require "ffi"
+    discordRPClib = ffi.load("lib/windows/discord-rpc")
+end)
+if not s then
+    local __NULL__ = function() end
+    return setmetatable({}, {__index = function() return __NULL__ end})
+end
 
 ffi.cdef[[
 typedef struct DiscordRichPresence {
