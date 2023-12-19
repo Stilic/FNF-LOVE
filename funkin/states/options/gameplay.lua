@@ -2,6 +2,7 @@ local Gameplay = {}
 
 local optionsVar = {
     {'downScroll', 'Down Scroll', false, 'boolean'},
+    {'middleScroll', 'Middle Scroll', false, 'boolean'},
     {'noteSplash', 'Note Splash', false, 'boolean'},
     {'pauseMusic', 'Pause Music', false, 'string', {'railways', 'breakfast'}},
     {'botplayMode', 'Botplay', false, 'boolean'},

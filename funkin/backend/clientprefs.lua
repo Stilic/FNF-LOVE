@@ -3,6 +3,7 @@ local ClientPrefs = {}
 ClientPrefs.data = {
 	-- gameplay
 	downScroll = false,
+	middleScroll = false,
 	noteSplash = true,
 	pauseMusic = 'railways',
 	botplayMode = false,

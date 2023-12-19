@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="GARFNOTES.png">
+	<!-- Created with Adobe Animate version 22.0.4.185 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="blue0000" x="3" y="3" width="157" height="154" pivotX="1.1" pivotY="11.15"/>
+	<SubTexture name="blue hold end0000" x="163" y="3" width="50" height="64" pivotX="0" pivotY="0"/>
+	<SubTexture name="blue hold piece0000" x="216" y="3" width="50" height="44" pivotX="0" pivotY="0"/>
+	<SubTexture name="green0000" x="269" y="3" width="158" height="154" pivotX="-9.75" pivotY="-6.25"/>
+	<SubTexture name="green hold end0000" x="163" y="3" width="50" height="64" pivotX="0" pivotY="0"/>
+	<SubTexture name="green hold piece0000" x="216" y="3" width="50" height="44" pivotX="0" pivotY="0"/>
+	<SubTexture name="pruple end hold0000" x="163" y="3" width="50" height="64" pivotX="0" pivotY="0"/>
+	<SubTexture name="purple0000" x="3" y="160" width="154" height="157" pivotX="-0.05" pivotY="10"/>
+	<SubTexture name="purple hold piece0000" x="216" y="3" width="50" height="44" pivotX="0" pivotY="0"/>
+	<SubTexture name="red0000" x="160" y="160" width="154" height="157" pivotX="1.25" pivotY="24.4"/>
+	<SubTexture name="red hold end0000" x="163" y="3" width="50" height="64" pivotX="0" pivotY="0"/>
+	<SubTexture name="red hold piece0000" x="216" y="3" width="50" height="44" pivotX="0" pivotY="0"/>
+</TextureAtlas>

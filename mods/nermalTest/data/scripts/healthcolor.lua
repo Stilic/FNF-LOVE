@@ -1,6 +1,11 @@
 local charColor = {
     bf = "#31B0D1",
-    nermal = "#94918A"
+    bfShot = "#31B0D1",
+    nermal = "#94918A",
+    angrynermal = "#94918A",
+    garfield = "#FF9933",
+    guy = "#A357AB",
+    nwrmal = "#808080"
 }
 
 function postCreate()

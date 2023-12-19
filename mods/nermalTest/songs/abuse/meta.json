@@ -1,0 +1,9 @@
+{
+    "name": "Abuse",
+    "bpm": 170,
+    "icon": "garield",
+    "color": "#FFFFFF",
+    "difficulties": [
+        "Easy"
+    ]
+}

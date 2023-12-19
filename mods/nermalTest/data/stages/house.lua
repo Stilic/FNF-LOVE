@@ -8,4 +8,9 @@ function create()
     self:add(bg)
 end
 
-function postCreate() state.gf:setScrollFactor(1, 1) end
+function postCreate()
+    state.gf:setScrollFactor(1, 1)
+    if PlayState.SONG.song == 'Abuse' then
+        state.gf.visible = false
+    end
+end

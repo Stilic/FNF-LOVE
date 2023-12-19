@@ -1,0 +1,78 @@
+{
+	"animations": [
+		{
+			"offsets": [
+				0,
+				0
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "idle",
+			"indices": [],
+			"name": "nermal idle dance"
+		},
+		{
+			"offsets": [
+				120,
+				0
+			],
+			"loop": false,
+			"fps": 24,
+			"anim": "singLEFT",
+			"indices": [],
+			"name": "nermal left pose"
+		},
+		{
+			"loop": false,
+			"offsets": [
+				60,
+				94
+			],
+			"anim": "singUP",
+			"fps": 24,
+			"name": "nermal up pose",
+			"indices": []
+		},
+		{
+			"loop": false,
+			"offsets": [
+				45,
+				-92
+			],
+			"anim": "singDOWN",
+			"fps": 24,
+			"name": "nermal down pose",
+			"indices": []
+		},
+		{
+			"loop": false,
+			"offsets": [
+				-10,
+				5
+			],
+			"anim": "singRIGHT",
+			"fps": 24,
+			"name": "nermal right pose",
+			"indices": []
+		}
+	],
+	"no_antialiasing": false,
+	"image": "characters/angrynermal_assets",
+	"position": [
+		30,
+		280
+	],
+	"healthicon": "nerml",
+	"flip_x": false,
+	"healthbar_colors": [
+		161,
+		161,
+		161
+	],
+	"camera_position": [
+		-60,
+		120
+	],
+	"sing_duration": 6.1,
+	"scale": 1
+}

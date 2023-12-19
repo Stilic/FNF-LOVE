@@ -142,6 +142,7 @@ function PlayState:enter()
 
     self.botPlay = ClientPrefs.data.botplayMode
     self.downScroll = ClientPrefs.data.downScroll
+    self.middleScroll = ClientPrefs.data.middleScroll
 
     local curStage = PlayState.SONG.stage
     if PlayState.SONG.stage == nil then
@@ -203,6 +204,7 @@ function PlayState:enter()
                     note.mustPress = gottaHitNote
                     note.altNote = n[4]
                     note:setScrollFactor()
+                    if self.middleScroll and not note.mustPress then note.visible = false end
                     table.insert(self.unspawnNotes, note)
 
                     if n[3] ~= nil then
@@ -225,6 +227,9 @@ function PlayState:enter()
                                     sustain.mustPress = note.mustPress
                                     sustain.altNote = note.altNote
                                     sustain:setScrollFactor()
+                                    if self.middleScroll and not sustain.mustPress then
+                                        sustain.visible = false
+                                    end
                                     table.insert(self.unspawnNotes, sustain)
                                 end
                             end
@@ -271,8 +276,10 @@ function PlayState:enter()
             rep:groupInit()
             self.receptors:add(rep)
             if i == 1 then
+                if self.middleScroll then rep.x = rep.x - 318 end
                 self.playerReceptors:add(rep)
             else
+                if self.middleScroll then rep.visible = false end
                 self.enemyReceptors:add(rep)
             end
         end
@@ -711,7 +718,7 @@ function PlayState:update(dt)
     local ogStepCrochet = ogCrochet / 4
     for _, n in ipairs(self.allNotes.members) do
         if not self.startingSong and not n.tooLate and
-            ((not n.mustPress or self.botPlay) and
+            not n.ignoreNote and ((not n.mustPress or self.botPlay) and
                 (not n.isSustain or not n.parentNote or n.parentNote.wasGoodHit) and
                 ((n.isSustain and n.canBeHit) or n.time <=
                     PlayState.notePosition) or
@@ -776,7 +783,7 @@ function PlayState:update(dt)
         end
 
         if PlayState.notePosition > 350 / PlayState.SONG.speed + n.time then
-            if n.mustPress and not n.wasGoodHit and
+            if not n.ignoreNote and n.mustPress and not n.wasGoodHit and
                 (not n.isSustain or not n.parentNote.tooLate) then
                 if self.vocals then self.vocals:setVolume(0) end
                 self.combo = 0
@@ -903,6 +910,7 @@ function PlayState:onSettingChange(setting)
     if setting == 'gameplay' then
         self.botPlay = ClientPrefs.data.botplayMode
         self.downScroll = ClientPrefs.data.downScroll
+        self.middleScroll = ClientPrefs.data.middleScroll
 
         local songTime = PlayState.conductor.time / 1000
         if ClientPrefs.data.timeType == "left" then
@@ -913,10 +921,16 @@ function PlayState:onSettingChange(setting)
         self.botplayTxt.visible = self.botPlay
         self.botplayTxt.y = (self.downScroll and 8 or 688)
 
-        local ry = 50
+        local rx, ry = game.width / 2, 50
         if self.downScroll then ry = game.height - 100 - ry end
         for _, rep in ipairs(self.receptors.members) do
-            rep.y = ry
+            rep:setPosition(rx + (game.width / 4) * (rep.player == 1 and 1 or -1), ry)
+            rep:groupInit()
+            rep.visible = true
+            if self.middleScroll then
+                if rep.player == 1 then rep.x = rep.x - 318
+                else rep.visible = false end
+            end
         end
 
         self.healthBarBG.y =
@@ -935,6 +949,13 @@ function PlayState:onSettingChange(setting)
         self.timeTxt.y = (self.downScroll and self.timeArcBG.y - 32 or
                                                 self.timeArcBG.y + 7)
 
+        for i = 1, #self.unspawnNotes do
+            self.unspawnNotes[i].visible = true
+            if self.middleScroll and not self.unspawnNotes[i].mustPress then
+                self.unspawnNotes[i].visible = false
+            end
+        end
+
         local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
         local ogStepCrochet = ogCrochet / 4
         for _, n in ipairs(self.allNotes.members) do
@@ -951,6 +972,10 @@ function PlayState:onSettingChange(setting)
             n.x = r.x + n.scrollOffset.x
             n.y = sy - (PlayState.notePosition - time) *
                     (0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
+            n.visible = true
+            if self.middleScroll and not n.mustPress then
+                n.visible = false
+            end
 
             if n.isSustain then
                 n.flipY = self.downScroll
@@ -1121,8 +1146,15 @@ function PlayState:goodNoteHit(n)
                     end
                 end
 
-                self.combo = self.combo + 1
-                self.score = self.score + rating.score
+                if not n.ignoreNote then
+                    self.combo = self.combo + 1
+                    self.score = self.score + rating.score
+
+                    if self.health > 2 then self.health = 2 end
+
+                    self.health = self.health + 0.023
+                    self.healthBar:setValue(self.health)
+                end
 
                 if ClientPrefs.data.noteSplash and rating.splash then
                     local splash = self.splashes:recycle(NoteSplash)
@@ -1134,11 +1166,6 @@ function PlayState:goodNoteHit(n)
                 self.totalHit = self.totalHit + rating.mod
                 self.totalPlayed = self.totalPlayed + 1
                 self:recalculateRating()
-
-                if self.health > 2 then self.health = 2 end
-
-                self.health = self.health + 0.023
-                self.healthBar:setValue(self.health)
             end
 
             self:removeNote(n)

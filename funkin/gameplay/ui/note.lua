@@ -20,6 +20,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
     self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
     self.earlyHitMult, self.lateHitMult = 1, 1
     self.altNote = false
+    self.ignoreNote = false
 
     self.scrollOffset = {x = 0, y = 0}
 
@@ -119,7 +120,8 @@ function Note:update(dt)
     self.canBeHit = self:checkDiff()
 
     if self.mustPress then
-        if not self.wasGoodHit and self.time < instTime - safeZoneOffset then
+        if not self.ignoreNote and not self.wasGoodHit and
+            self.time < instTime - safeZoneOffset then
             self.tooLate = true
         end
     end

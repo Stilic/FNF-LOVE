@@ -1,0 +1,9 @@
+{
+    "name": "Cutes",
+    "bpm": 180,
+    "icon": "guy",
+    "color": "#FFFFFF",
+    "difficulties": [
+        "Ourple"
+    ]
+}
