@@ -313,13 +313,12 @@ function love.errorhandler(msg)
 			gameW, gameH = w, h
 			draw()
 		end,
-		displayrotated = function()
+		displayrotated = function(force)
 			gameW, gameH = love.graphics.getPixelDimensions()
-			draw()
+			draw(force)
 		end
 	}
 
-	eventhandlers.displayrotated()
 	local __step__, name, a, b = "step"
 	if love.system.getDevice() == "Mobile" then
 		dontDraw = true
@@ -342,7 +341,7 @@ function love.errorhandler(msg)
 			if not done then
 				firstPass()
 			end
-			draw(true)
+			eventhandlers.displayrotated(true)
 
 			done = true
 			collectgarbage(__step__)
@@ -351,6 +350,7 @@ function love.errorhandler(msg)
 	end
 
 	firstPass()
+	eventhandlers.displayrotated(true)
 
 	return function()
 		name, a, b = love.event.wait()
