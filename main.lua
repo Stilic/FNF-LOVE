@@ -64,6 +64,8 @@ function love.run()
     if love.math then love.math.setRandomSeed(os.time()) end
     if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
+    love.timer.step()
+
     collectgarbage()
     collectgarbage("step")
 
@@ -90,31 +92,35 @@ function love.run()
         love.graphics.present()
     end
 
-    love.timer.step()
-
+    local __step__, __quit__ = "step", "quit"
     local polledEvents, _defaultEvents = {}, {}
     local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
-    local firstTime, fullGC, focused, dt, real_dt = true, true, false, 0
+    local firstTime, fullGC, focused, dt, real_dt, lowfps = true, true, false, 0
     local nextclock, clock, cap = 0, 0, 0
+
     return function()
         love.event.pump()
         table.merge(polledEvents, _defaultEvents)
         for name, a, b, c, d, e, f in love.event.poll() do
-            if name == "quit" and not love.quit() then
+            if name == __quit__ and not love.quit() then
                 return a or 0
             end
             _defaultEvents[name], polledEvents[name] = false, true
             love.handlers[name](a, b, c, d, e, f)
+            --[[
+            if name:sub(1,5) == "mouse" and name ~= "mousefocus" then
+                love.handlers["touch"..name:sub(6)](a, b, c, d, e, f)
+            end
+            ]]
         end
 
         real_dt = love.timer.step()
-        if not polledEvents.lowmemory and ((fullGC and not focused) or real_dt - dt > 0.04) then
+        lowfps = real_dt - dt > 0.04
+        if not polledEvents.lowmemory and ((fullGC and not focused) or lowfps) then
             love.handlers.lowmemory()
-            fullGC = false
-            dt = dt + 0.04
+            dt, fullGC = lowfps and dt + 0.04 or real_dt, false
         else
-            fullGC = true
-            dt = real_dt
+            dt, fullGC = real_dt, true
         end
 
         focused = firstTime or love.window.hasFocus()
@@ -130,7 +136,7 @@ function love.run()
                         nextclock = cap + clock
                         timeSinceLastFps, frames = clock - prevFpsUpdate, frames + 1
                         if timeSinceLastFps > fpsUpdateFrequency then
-                            real_fps, frames = math.round(frames/timeSinceLastFps), 0
+                            real_fps, frames = math.round(frames / timeSinceLastFps), 0
                             prevFpsUpdate = clock
                         end
                     end
@@ -140,11 +146,7 @@ function love.run()
             end
         end
 
-        if firstTime then
-            firstTime = false
-        else
-            collectgarbage("step")
-        end
+        collectgarbage(__step__)
 
         if not love.parallelUpdate or not focused then
             love.timer.sleep(cap - real_dt)
@@ -153,6 +155,7 @@ function love.run()
                 love.timer.sleep(0.001)
             end
         end
+        firstTime = false
     end
 end
 

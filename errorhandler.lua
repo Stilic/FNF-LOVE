@@ -73,6 +73,7 @@ function love.errorhandler(msg)
 		love.window.setDisplaySleepEnabled(true)
 	end
 	if love.audio then love.audio.stop() end
+	if love.handlers then love.handlers = nil end
 
 	collectgarbage()
 	collectgarbage()
@@ -120,8 +121,12 @@ function love.errorhandler(msg)
 		love.graphics.printf(p, 40, 110, love.graphics.getWidth() - 80, __center__)
 
 		love.graphics.present()
+	end
 
-		prevGameW, prevGameH, prevP = gameW, gameH, p
+	local function copyToClipboard()
+		love.system.setClipboardText(fullErrorText)
+		p = p .. "\nCopied to clipboard!"
+		draw()
 	end
 
 	local eventhandlers = {
@@ -130,9 +135,7 @@ function love.errorhandler(msg)
 		end,
 		keypressed = function(key)
 			if not love.keyboard.isDown("lctrl", "rctrl") then return end
-			if love.system and key == "c" then
-				love.system.setClipboardText(fullErrorText)
-				p = p .. "\nCopied to clipboard!"
+			if love.system and key == "c" then copyToClipboard()
 			elseif key == "r" then
 				return "restart"
 			end
