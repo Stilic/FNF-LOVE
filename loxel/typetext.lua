@@ -4,7 +4,7 @@ local TypeText = Text:extend("TypeText")
 function TypeText:new(x, y, content, font, color, align, limit)
     TypeText.super.new(self, x, y, "", font, color, align, limit)
 
-    self.target = self.content
+    self.target = content
 
     self.speed = 0.04
     self.timer = 0
