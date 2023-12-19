@@ -93,7 +93,7 @@ function MainMenuState:enter()
         self.buttons:add(back)
 
         self:add(self.buttons)
-        game.buttons.add(slf.buttons)
+        game.buttons.add(self.buttons)
     end
 
     self:changeSelection()
