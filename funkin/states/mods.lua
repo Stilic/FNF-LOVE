@@ -35,6 +35,31 @@ function ModsState:enter()
     else
         self.camFollow = {x = game.width/2, y = game.height/2}
     end
+    if love.system.getDevice() == "Mobile" then
+        self.buttons = ButtonGroup()
+        self.buttons.type = "roundrect"
+        self.buttons.lined = true
+        self.buttons.width = 134
+        self.buttons.height = 134
+
+        local w = self.buttons.width
+
+        local left = Button(2, game.height - w, 0, 0, "left")
+        local right = Button(left.x + w, left.y, 0, 0, "right")
+
+        local enter = Button(game.width - w, left.y, 0, 0, "return")
+        enter:setColor(Color.GREEN)
+        local back = Button(enter.x - w, left.y, 0, 0, "escape")
+        back:setColor(Color.RED)
+
+        self.buttons:add(left)
+        self.buttons:add(right)
+        self.buttons:add(enter)
+        self.buttons:add(back)
+
+        self:add(self.buttons)
+        game.buttons.add(self.buttons)
+    end
 end
 
 function ModsState:update(dt)

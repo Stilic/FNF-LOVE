@@ -411,6 +411,29 @@ function PlayState:enter()
     self.botplayTxt.outWidth = 2
     self.botplayTxt.visible = self.botPlay
 
+    if love.system.getDevice() == "Mobile" then
+        local width = game.width / 4
+
+        self.buttons = ButtonGroup()
+
+        self.buttons.width = width
+        self.buttons.height = game.height
+        self.buttons.cameras = {self.camOther}
+        self.buttons.fill = "line"
+
+        local bl = Button(0, 0, 0, 0, "left", {1, 0, 1})
+        local bd = Button(width, 0, 0, 0, "down", Color.BLUE)
+        local bu = Button(width * 2, 0, 0, 0, "up", Color.GREEN)
+        local br = Button(width * 3, 0, 0, 0, "right", Color.RED)
+
+        self.buttons:add(bl)
+        self.buttons:add(bd)
+        self.buttons:add(bu)
+        self.buttons:add(br)
+
+        game.buttons.add(self.buttons)
+    end
+
     self:add(self.receptors)
     self:add(self.sustainsGroup)
     self:add(self.notesGroup)
@@ -425,6 +448,10 @@ function PlayState:enter()
     self:add(self.timeArc)
     self:add(self.timeTxt)
     self:add(self.botplayTxt)
+
+    if love.system.getDevice() == "Mobile" then
+        self:add(self.buttons)
+    end
 
     self:recalculateRating()
 

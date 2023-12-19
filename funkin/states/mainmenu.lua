@@ -70,6 +70,32 @@ function MainMenuState:enter()
     self.engineCreated:setScrollFactor()
     self:add(self.engineCreated)
 
+    if love.system.getDevice() == "Mobile" then
+        self.buttons = ButtonGroup()
+        self.buttons.type = "roundrect"
+        self.buttons.lined = true
+        self.buttons.width = 134
+        self.buttons.height = 134
+
+        local w = self.buttons.width
+
+        local down = Button(2, game.height - w, 0, 0, "down")
+        local up = Button(down.x, down.y - w, 0, 0, "up")
+
+        local enter = Button(game.width - w, down.y, 0, 0, "return")
+        enter:setColor(Color.GREEN)
+        local back = Button(enter.x - w, down.y, 0, 0, "escape")
+        back:setColor(Color.RED)
+
+        self.buttons:add(up)
+        self.buttons:add(down)
+        self.buttons:add(enter)
+        self.buttons:add(back)
+
+        self:add(self.buttons)
+        game.buttons.add(self.buttons)
+    end
+
     self:changeSelection()
 end
 

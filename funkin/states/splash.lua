@@ -83,6 +83,15 @@ function Splash:startSplash()
 
         self:finishSplash(false)
     end)
+
+    if love.system.getDevice() == "Mobile" then
+        local group = ButtonGroup()
+        local enter = Button(0, 0, game.width, game.height, "return")
+        enter.pressedAlpha = 0
+        enter.releasedAlpha = 0
+        group:add(enter)
+        game.buttons.add(group)
+    end
 end
 
 function Splash:finishSplash(skip)
