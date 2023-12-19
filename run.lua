@@ -172,14 +172,6 @@ function love.errorhandler(msg)
     local p = table.concat(err, "\n"):gsub("\t", ""):gsub("%[string \"(.-)\"%]", "%1")
     local fullErrorText = p
 
-    local menuDesat = paths.getImage("menus/menuDesat")
-    local funkinLogo = paths.getImage("menus/splashscreen/FNFLOVE_logo")
-    local fnfFont18 = paths.getFont("phantommuff.ttf", 18) or love.graphics.setNewFont(18)
-    local fnfFont20 = paths.getFont("phantommuff.ttf", 35) or love.graphics.setNewFont(35)
-
-    local bgMusic = paths.getMusic("pause/railways", "static")
-    local missSfx = love.audio.newSource(paths.getSound("gameplay/missnote"..love.math.random(1,3)), "static")
-
     if love.mouse then
         love.mouse.setVisible(true)
         love.mouse.setGrabbed(false)
@@ -204,23 +196,39 @@ function love.errorhandler(msg)
     love.graphics.setColor(1, 1, 1)
     love.graphics.origin()
 
-    bgMusic:setLooping(true)
-    bgMusic:setVolume(0.3)
-    bgMusic:play()
-
-    missSfx:setVolume(0.1)
-    missSfx:play()
-
     if love.system then
         p = p .. "\n\nPress Ctrl+C or tap to copy this error"
     end
     p = p .. "\nPress ESC to quit"
     p = p .. "\nPress Ctrl+R to restart"
 
+    local menuDesat, funkinLogo, fnfFont18, fnfFont20
+    local bgMusic, missSfx
+
+    function firstPass()
+        menuDesat = paths.getImage("menus/menuDesat")
+        funkinLogo = paths.getImage("menus/splashscreen/FNFLOVE_logo")
+        fnfFont18 = paths.getFont("phantommuff.ttf", 18) or love.graphics.setNewFont(18)
+        fnfFont20 = paths.getFont("phantommuff.ttf", 35) or love.graphics.setNewFont(35)
+
+        bgMusic = paths.getMusic("pause/railways", "static")
+        missSfx = love.audio.newSource(paths.getSound("gameplay/missnote"..love.math.random(1,3)), "static")
+
+        bgMusic:setLooping(true)
+        bgMusic:setVolume(0.3)
+        bgMusic:play()
+
+        missSfx:setVolume(0.1)
+        missSfx:play()
+    end
+
+    local dontDraw = false
     local __error__, __center__, focused = "[ ERROR ]", "center"
     local scale1, scale2, gameW, gameH, hgameW, hgameH, retval
     local menuDesatW, menuDesatH, funkinLogoW, funkinLogoH
-    local function draw()
+    local function draw(force)
+        if not force and dontDraw then return end
+
         love.graphics.clear(0, 0, 0)
 
         hgameW, hgameH = gameW / 2, gameH / 2
@@ -289,6 +297,37 @@ function love.errorhandler(msg)
 
     eventhandlers.displayrotated()
     local __step__, name, a, b = "step"
+    if love.system.getDevice() == "Mobile" then
+        dontDraw = true
+
+        local first, done = true, false
+        return function()
+            if first then
+                first = false
+                return
+            end
+
+            love.event.pump()
+            for name, a in love.event.poll() do
+                if eventhandlers[name] ~= nil then
+                    retval = eventhandlers[name](a)
+                    if retval then return retval end
+                end
+            end
+
+            if not done then
+                firstPass()
+            end
+            draw(true)
+
+            done = true
+            collectgarbage(__step__)
+            love.timer.sleep(0.1)
+        end
+    end
+
+    firstPass()
+
     return function()
         name, a, b = love.event.wait()
         if eventhandlers[name] ~= nil then

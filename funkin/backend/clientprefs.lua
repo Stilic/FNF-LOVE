@@ -12,7 +12,7 @@ ClientPrefs.data = {
 
 	-- display
 	fps = 0,
-	showFps = true,
+	showFps = false,
 	antialiasing = true,
 	shader = true,
 }

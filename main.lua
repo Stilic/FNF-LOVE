@@ -62,6 +62,14 @@ function love.load()
         love.graphics.setBackgroundColor(Project.bgColor)
     end
 
+    -- make screen orientation locked for mobiles
+    if love.system.getDevice() == "Mobile" then
+        local width, height, flags = love.window.getMode()
+        flags.resizable = false
+        love.window.setFullscreen(true, "exclusive")
+        love.window.setMode(height, width, flags)
+    end
+
     -- for the joystick, i'll remake it later
 
     game.save.init('funkin')
