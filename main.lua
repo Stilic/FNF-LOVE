@@ -9,7 +9,6 @@ require "run"
 
 Timer = require "lib.timer"
 Https = require "lib.https"
-WindowDialogue = require "lib.windows.dialogue"
 
 paths = require "funkin.paths"
 util = require "funkin.util"
@@ -51,9 +50,12 @@ OptionsState = require "funkin.states.options.options"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
-local SplashScreen = require "funkin.states.splash"
+local OS = love.system.getOS()
+if OS == "Windows" then
+    WindowDialogue = require "lib.windows.dialogue"
+end
 
-require "errorhandler"
+local SplashScreen = require "funkin.states.splash"
 
 function love.load()
     if Project.bgColor then

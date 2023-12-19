@@ -1,9 +1,12 @@
-local ffi, discordRPClib
-local s = pcall(function()
-    ffi = require "ffi"
+local ffi, discordRPClib = require "ffi"
+local OS = love.system.getOS()
+if OS == "Windows" then
     discordRPClib = ffi.load("lib/windows/discord-rpc")
-end)
-if not s then
+elseif OS == "Linux" then
+    discordRPClib = ffi.load("lib/linux/libdiscord-rpc")
+elseif OS == "OS X" then
+    discordRPClib = ffi.load("lib/osx/libdiscord-rpc")
+else
     local __NULL__ = function() end
     return setmetatable({}, {__index = function() return __NULL__ end})
 end
