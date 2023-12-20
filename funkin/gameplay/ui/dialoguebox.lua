@@ -28,6 +28,7 @@ function DialogueBox:new(dialogueList)
     self.portraitLeft:setScrollFactor()
     self:add(self.portraitLeft)
     self.portraitLeft.visible = false
+    self.portraitLeft.antialiasing = false
 
     self.portraitRight = Sprite(0, 40)
     self.portraitRight:setFrames(paths.getSparrowAtlas('stages/school/bfPortrait'))
@@ -37,8 +38,10 @@ function DialogueBox:new(dialogueList)
     self.portraitRight:setScrollFactor()
     self:add(self.portraitRight)
     self.portraitRight.visible = false
+    self.portraitRight.antialiasing = false
 
     self.box = Sprite(-20, 45)
+    self.box.antialiasing = false
 
     local hasDialog = true
     switch(PlayState.SONG.song:lower(),{
@@ -58,6 +61,7 @@ function DialogueBox:new(dialogueList)
             self.box:addAnimByIndices('normal', 'Spirit Textbox spawn', {11}, nil, 24)
 
             local face = Sprite(250, -90)
+            face.antialiasing = false
             face:loadTexture(paths.getImage('stages/school-evil/spiritFaceForward'))
             face:setGraphicSize(math.floor(face.width * 6))
             self:add(face)
@@ -85,22 +89,21 @@ function DialogueBox:new(dialogueList)
     self.handSelect:loadTexture(paths.getImage('stages/school/pixelUI/hand_textbox'))
     self.handSelect:setGraphicSize(math.floor(self.handSelect.width * 6 * 0.9))
     self.handSelect:updateHitbox()
-    --self.handSelect.visible = false
+    self.handSelect.visible = false
+    self.handSelect.antialiasing = false
     self:add(self.handSelect)
 
-    self.dropText = Text(242, 502, "", paths.getFont('pixel.otf', 32),
-                                Color.convert({216, 148, 148}), 'left', math.floor(game.width * 0.6))
-    self:add(self.dropText)
-
-    self.swagDialogue = Text(240, 500, "", paths.getFont('pixel.otf', 32),
+    self.swagDialogue = TypeText(240, 500, "", paths.getFont('pixel.otf', 32),
                                 Color.convert({63, 32, 33}), 'left', math.floor(game.width * 0.6))
+    self.swagDialogue.sound = paths.getSound("gameplay/pixelText")
+    self.swagDialogue.antialiasing = false
+    self.swagDialogue:setOutline("simple", 2, {x = 4, y = 4}, Color.convert({216, 148, 148}))
     self:add(self.swagDialogue)
 
     if PlayState.SONG.song:lower() == 'thorns' then
         self.swagDialogue.color = Color.WHITE
-        self.dropText.color = Color.BLACK
+        self.swagDialogue.outline.color = Color.BLACK
     end
-
 
     self.curCharacter = 'dad'
     self.finishThing = nil
@@ -112,7 +115,6 @@ function DialogueBox:new(dialogueList)
 end
 
 function DialogueBox:update(dt)
-    self.dropText.content = self.swagDialogue.content
     if self.box.curAnim then
         if self.box.curAnim.name == 'normalOpen' and self.box.animFinished then
             self.box:play('normal')
@@ -139,7 +141,6 @@ function DialogueBox:update(dt)
                             self.portraitLeft.visible = false
                             self.portraitRight.visible = false
                             self.swagDialogue.alpha = self.swagDialogue.alpha - 1 / 5
-                            self.dropText.alpha = self.swagDialogue.alpha
                             self.handSelect.alpha = self.handSelect.alpha - 1 / 5
                         end)
                     end
@@ -155,6 +156,7 @@ function DialogueBox:update(dt)
                 game.sound.play(paths.getSound('gameplay/clickText'), 0.8)
             end
         elseif self.dialogueStarted then
+            self.swagDialogue:forceEnd()
             game.sound.play(paths.getSound('gameplay/clickText'), 0.8)
         end
     end
@@ -165,8 +167,16 @@ end
 function DialogueBox:startDialogue()
     self:clearDialog()
 
-    self.swagDialogue.content = self.dialogueList[1]
-    self.dialogueEnded = true
+    self.swagDialogue:resetText(self.dialogueList[1])
+
+    self.handSelect.visible = false
+    self.dialogueEnded = false
+
+    self.swagDialogue.isComplete = function()
+        print("Dialogue finished!")
+        self.handSelect.visible = true
+        self.dialogueEnded = true
+    end
 
     switch(self.curCharacter,{
         ["dad"]=function()

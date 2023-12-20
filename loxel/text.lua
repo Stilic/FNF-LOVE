@@ -10,8 +10,12 @@ function Text:new(x, y, content, font, color, align, limit)
     self.alignment = align or "left"
     self.limit = limit
 
-    self.outColor = {0, 0, 0}
-    self.outWidth = 0
+    self.outline = {
+        style = "normal",
+        color = {0, 0, 0},
+        width = 0,
+        offset = {x = 0, y = 0}
+    }
 
     self.__content = nil
     self.__font = nil
@@ -63,6 +67,13 @@ function Text:getMidpoint()
     return self.x + self.width / 2, self.y + self.height / 2
 end
 
+function Text:setOutline(style, width, offset, color)
+    self.outline.style = style
+    self.outline.width = width
+    self.outline.offset = offset or {x = 0, y = 0}
+    self.outline.color = color or {0, 0, 0}
+end
+
 function Text:draw()
     if self.content ~= "" then
         Text.super.draw(self)
@@ -87,20 +98,30 @@ function Text:__render(camera)
     love.graphics.setBlendMode(self.blend)
 
     love.graphics.setFont(self.font)
-    love.graphics.setColor(self.outColor[1], self.outColor[2], self.outColor[3],
+
+    local color = self.outline.color
+    love.graphics.setColor(color[1], color[2], color[3],
                            self.alpha)
 
-    if self.outWidth > 0 then
-        for dx = -self.outWidth, self.outWidth do
-            for dy = -self.outWidth, self.outWidth do
-                love.graphics.printf(self.content, x + dx, y + dy,
-                                     (self.limit or self:getWidth()),
-                                     self.alignment)
+    if self.outline.width > 0 then
+        if self.outline.style == "normal" then
+            for dx = -self.outline.width, self.outline.width do
+                for dy = -self.outline.width, self.outline.width do
+                    love.graphics.printf(self.content, x + dx, y + dy,
+                                         (self.limit or self:getWidth()),
+                                         self.alignment)
+                end
             end
+        elseif self.outline.style == "simple" then
+            local dx, dy = self.outline.offset.x, self.outline.offset.y
+            love.graphics.printf(self.content, x + dx, y + dy,
+                                 (self.limit or self:getWidth()),
+                                 self.alignment)
         end
     end
 
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+    color = self.color
+    love.graphics.setColor(color[1], color[2], color[3], self.alpha)
     love.graphics.printf(self.content, x, y, (self.limit or self:getWidth()),
                          self.alignment)
 
