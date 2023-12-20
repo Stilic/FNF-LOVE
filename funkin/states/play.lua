@@ -509,48 +509,51 @@ function PlayState:enter()
 end
 
 function PlayState:startCountdown()
-    self.startedCountdown = true
-
-    local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
-    local countdownData = {
-        {sound = basePath .. "/intro3", image = nil},
-        {sound = basePath .. "/intro2", image = basePath .. "/ready"},
-        {sound = basePath .. "/intro1", image = basePath .. "/set"},
-        {sound = basePath .. "/introGo", image = basePath .. "/go"}
-    }
-
     self:section(0)
 
-    local crochet = PlayState.conductor.crochet / 1000
-    for swagCounter = 0, 4 do
-        self.countdownTimer:after(crochet * (swagCounter+1), function()
-            local data = countdownData[swagCounter+1]
-            if data then
-                if data.sound then
-                    game.sound.play(paths.getSound(data.sound))
-                end
-                if data.image then
-                    local countdownSprite = Sprite()
-                    countdownSprite:loadTexture(paths.getImage(data.image))
-                    countdownSprite.cameras = {self.camHUD}
-                    if PlayState.pixelStage then
-                        countdownSprite.scale = {x = 6, y = 6}
+    local event = self.scripts:call("startCountdown")
+    if not event.cancelled then
+        self.startedCountdown = true
+
+        local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
+        local countdownData = {
+            {sound = basePath .. "/intro3", image = nil},
+            {sound = basePath .. "/intro2", image = basePath .. "/ready"},
+            {sound = basePath .. "/intro1", image = basePath .. "/set"},
+            {sound = basePath .. "/introGo", image = basePath .. "/go"}
+        }
+
+        local crochet = PlayState.conductor.crochet / 1000
+        for swagCounter = 0, 4 do
+            self.countdownTimer:after(crochet * (swagCounter+1), function()
+                local data = countdownData[swagCounter+1]
+                if data then
+                    if data.sound then
+                        game.sound.play(paths.getSound(data.sound))
                     end
-                    countdownSprite:updateHitbox()
-                    countdownSprite.antialiasing = not PlayState.pixelStage
-                    countdownSprite:screenCenter()
+                    if data.image then
+                        local countdownSprite = Sprite()
+                        countdownSprite:loadTexture(paths.getImage(data.image))
+                        countdownSprite.cameras = {self.camHUD}
+                        if PlayState.pixelStage then
+                            countdownSprite.scale = {x = 6, y = 6}
+                        end
+                        countdownSprite:updateHitbox()
+                        countdownSprite.antialiasing = not PlayState.pixelStage
+                        countdownSprite:screenCenter()
 
-                    Timer.tween(crochet, countdownSprite, {alpha = 0},
-                                "in-out-cubic", function()
-                        self:remove(countdownSprite)
-                        countdownSprite:destroy()
-                    end)
-                    self:add(countdownSprite)
+                        Timer.tween(crochet, countdownSprite, {alpha = 0},
+                                    "in-out-cubic", function()
+                            self:remove(countdownSprite)
+                            countdownSprite:destroy()
+                        end)
+                        self:add(countdownSprite)
+                    end
                 end
-            end
 
-            self:beat(swagCounter - 4)
-        end)
+                self:beat(swagCounter - 4)
+            end)
+        end
     end
 end
 
@@ -659,29 +662,32 @@ function PlayState:update(dt)
 
     if self.startedCountdown then
         if controls:pressed("pause") then
-            PlayState.conductor.sound:pause()
-            if self.vocals then self.vocals:pause() end
+            local event = self.scripts:call("paused")
+            if not event.cancelled then
+                PlayState.conductor.sound:pause()
+                if self.vocals then self.vocals:pause() end
 
-            self.paused = true
+                self.paused = true
 
-            if love.system.getDevice() == 'Desktop' then
-                local detailsText = "Freeplay"
-                if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+                if love.system.getDevice() == 'Desktop' then
+                    local detailsText = "Freeplay"
+                    if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
-                local diff = "Normal"
-                if PlayState.songDifficulty ~= "" then
-                    diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+                    local diff = "Normal"
+                    if PlayState.songDifficulty ~= "" then
+                        diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+                    end
+
+                    Discord.changePresence({
+                        details = "Paused - " .. detailsText,
+                        state = self.SONG.song..' - ['..diff..']'
+                    })
                 end
 
-                Discord.changePresence({
-                    details = "Paused - " .. detailsText,
-                    state = self.SONG.song..' - ['..diff..']'
-                })
+                local pause = PauseSubstate()
+                pause.cameras = {self.camOther}
+                self:openSubstate(pause)
             end
-
-            local pause = PauseSubstate()
-            pause.cameras = {self.camOther}
-            self:openSubstate(pause)
         end
         if controls:pressed("debug_1") then
             PlayState.conductor.sound:pause()
@@ -1215,7 +1221,11 @@ function PlayState:endSong(skip)
         self.startedCountdown = false
 
         local songName = paths.formatToSongPath(PlayState.SONG.song)
-        if paths.exists(paths.getPath('data/cutscenes/'..songName..'-end.lua'), 'file') then
+        local fileExist = (paths.exists(paths.getMods('data/cutscenes/'..songName..'-end.lua'),
+                            'file') or
+                             paths.exists(paths.getPath('data/cutscenes/'..songName..'-end.lua'),
+                              'file'))
+        if fileExist then
             local cutsceneScript = Script('data/cutscenes/'..songName..'-end')
             cutsceneScript:call("create")
             table.insert(self.scripts.scripts, cutsceneScript)
@@ -1227,46 +1237,48 @@ function PlayState:endSong(skip)
         end
     end
 
-    self.scripts:call("endSong")
+    local event = self.scripts:call("endSong")
 
-    local formatSong = paths.formatToSongPath(self.SONG.song)
-    Highscore.saveScore(formatSong, self.score, self.songDifficulty)
+    if not event.cancelled then
+        local formatSong = paths.formatToSongPath(self.SONG.song)
+        Highscore.saveScore(formatSong, self.score, self.songDifficulty)
 
-    if self.chartingMode then
-        game.switchState(ChartingState())
-        return
-    end
-
-    if self.storyMode then
-        PlayState.storyScore = PlayState.storyScore + self.score
-
-        table.remove(PlayState.storyPlaylist, 1)
-
-        if #PlayState.storyPlaylist > 0 then
-            PlayState.prevCamFollow = game.camera.target
-            PlayState.conductor.sound:stop()
-            if self.vocals then self.vocals:stop() end
-
-            if love.system.getDevice() == 'Desktop' then
-                local detailsText = "Freeplay"
-                if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
-
-                Discord.changePresence({
-                    details = detailsText,
-                    state = 'Loading next song..'
-                })
-            end
-
-            PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
-            game.resetState(true)
-        else
-            Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
-            game.sound.playMusic(paths.getMusic("freakyMenu"))
-            game.switchState(StoryMenuState())
+        if self.chartingMode then
+            game.switchState(ChartingState())
+            return
         end
-    else
-        game.sound.playMusic(paths.getMusic("freakyMenu"))
-        game.switchState(FreeplayState())
+
+        if self.storyMode then
+            PlayState.storyScore = PlayState.storyScore + self.score
+
+            table.remove(PlayState.storyPlaylist, 1)
+
+            if #PlayState.storyPlaylist > 0 then
+                PlayState.prevCamFollow = game.camera.target
+                PlayState.conductor.sound:stop()
+                if self.vocals then self.vocals:stop() end
+
+                if love.system.getDevice() == 'Desktop' then
+                    local detailsText = "Freeplay"
+                    if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+
+                    Discord.changePresence({
+                        details = detailsText,
+                        state = 'Loading next song..'
+                    })
+                end
+
+                PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
+                game.resetState(true)
+            else
+                Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
+                game.sound.playMusic(paths.getMusic("freakyMenu"))
+                game.switchState(StoryMenuState())
+            end
+        else
+            game.sound.playMusic(paths.getMusic("freakyMenu"))
+            game.switchState(FreeplayState())
+        end
     end
 
     self.scripts:call("postEndSong")

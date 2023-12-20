@@ -34,7 +34,14 @@ end
 ---@param func string
 ---@param ... any
 function ScriptsHandler:call(func, ...)
-    for _, script in ipairs(self.scripts) do script:call(func, ...) end
+    local retValue = {cancelled = false}
+    for _, script in ipairs(self.scripts) do
+        local retScript = script:call(func, ...)
+        if (retScript == Script.Event_Cancel) then
+            retValue.cancelled = true
+        end
+    end
+    return retValue
 end
 
 ---sets a variable across all scripts

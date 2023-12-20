@@ -3,6 +3,9 @@ local Script = Classic:extend("Script")
 
 local chunkMt = {__index = _G}
 
+Script.Event_Continue = 1
+Script.Event_Cancel = 2
+
 function Script:new(path, notFoundMsg)
     self.path = path
     self.variables = {}
@@ -24,6 +27,8 @@ function Script:new(path, notFoundMsg)
 
     p = path
     if not p:endsWith("/") then p = p .. "/" end
+    self:set('Event_Continue', Script.Event_Continue)
+    self:set('Event_Cancel', Script.Event_Cancel)
     self:set("SCRIPT_PATH", p)
     self:set("close", function() self:close() end)
     self:set("state", game.getState())
