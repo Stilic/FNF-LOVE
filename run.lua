@@ -8,7 +8,7 @@ local modes = {
 	resizable = true,
 	centered = true,
 	highdpi = false,
-	usedpiscale = true,
+	usedpiscale = false,
 }
 
 -- make screen orientation locked for mobiles
@@ -80,8 +80,8 @@ function love.run()
 			_defaultEvents[name], polledEvents[name] = false, true
 			love.handlers[name](a, b, c, d, e, f)
 			--[[
-			if name:sub(1,5) == "mouse" and name ~= "mousefocus" then
-				love.handlers["touch"..name:sub(6)](a, b, c, d, e, f)
+			if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
+				love.handlers["touch"..name:sub(6)](0, a, b, c)
 			end
 			]]
 		end
