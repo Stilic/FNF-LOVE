@@ -29,6 +29,7 @@ function create()
     senpaiEvil:setScrollFactor()
     senpaiEvil:updateHitbox()
     senpaiEvil:screenCenter()
+    senpaiEvil.antialiasing = false
     senpaiEvil.x = senpaiEvil.x + 280
 
     state.camHUD.visible = false

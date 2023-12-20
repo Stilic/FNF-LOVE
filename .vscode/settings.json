@@ -13,6 +13,8 @@
     "inject-field",
     "duplicate-set-field",
     "unused-local",
-    "cast-local-type"
+    "cast-local-type",
+    "assign-type-mismatch",
+    "unbalanced-assignments"
   ]
 }

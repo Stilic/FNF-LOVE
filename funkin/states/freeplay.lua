@@ -68,6 +68,7 @@ function FreeplayState:enter()
 
     self.scoreText = Text(game.width * 0.7, 5, "", paths.getFont("vcr.ttf", 32),
                             {1, 1, 1}, "right")
+    self.scoreText.antialiasing = false
 
     self.scoreBG = Sprite(self.scoreText.x - 6, 0):make(1, 66, {0, 0, 0})
     self.scoreBG.alpha = 0.6
@@ -75,6 +76,7 @@ function FreeplayState:enter()
 
     self.diffText = Text(self.scoreText.x, self.scoreText.y + 36, "DIFFICULTY",
                             paths.getFont("vcr.ttf", 24))
+    self.diffText.antialiasing = false
     self:add(self.diffText)
     self:add(self.scoreText)
 

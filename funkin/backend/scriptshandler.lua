@@ -19,12 +19,11 @@ function ScriptsHandler:loadDirectory(...)
                     self:loadScript(util.removeExtension(dir .. "/" .. file))
                 end
             end
-        else
-            for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
+        end
+        for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
                                                                         dir))) do
-                if file:endsWith('.lua') then
-                    self:loadScript(util.removeExtension(dir .. "/" .. file))
-                end
+            if file:endsWith('.lua') then
+                self:loadScript(util.removeExtension(dir .. "/" .. file))
             end
         end
     end

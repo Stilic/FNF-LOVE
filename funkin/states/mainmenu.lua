@@ -60,12 +60,14 @@ function MainMenuState:enter()
     self.engineVersion = Text(12, game.height - 42,
                               "FNF LÖVE v" .. Project.version,
                               paths.getFont("vcr.ttf", 16), {255, 255, 255})
+    self.engineVersion.antialiasing = false
     self.engineVersion.outline.width = 1
     self.engineVersion:setScrollFactor()
     self:add(self.engineVersion)
 
     self.engineCreated = Text(12, game.height - 24, "Created By Stilic",
                               paths.getFont("vcr.ttf", 16), {255, 255, 255})
+    self.engineCreated.antialiasing = false
     self.engineCreated.outline.width = 1
     self.engineCreated:setScrollFactor()
     self:add(self.engineCreated)

@@ -173,7 +173,6 @@ function DialogueBox:startDialogue()
     self.dialogueEnded = false
 
     self.swagDialogue.isComplete = function()
-        print("Dialogue finished!")
         self.handSelect.visible = true
         self.dialogueEnded = true
     end

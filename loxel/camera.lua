@@ -205,15 +205,17 @@ function Camera:drawSimple(_skipCheck)
 		self.__renderQueue[i] = nil
 	end
 
-	if self.__flashAlpha > 0 then
-		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
-							   self.__flashColor[3], self.__flashAlpha)
-		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
-	end
-
 	love.graphics.setColor = _ogSetColor
 
 	love.graphics.pop()
+
+	if self.__flashAlpha > 0 then
+		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
+							   self.__flashColor[3], self.__flashAlpha)
+		love.graphics.rectangle("fill", (winWidth - scale * game.width) / 2,
+										(winHeight - scale * game.height) / 2,
+										self.width, self.height)
+	end
 
 	love.graphics.setScissor(xc, yc, wc, hc)
 	love.graphics.setColor(r, g, b, a)
@@ -260,13 +262,14 @@ function Camera:drawComplex(_skipCheck)
 		self.__renderQueue[i] = nil
 	end
 
+	love.graphics.pop()
+
 	if self.__flashAlpha > 0 then
 		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
 							   self.__flashColor[3], self.__flashAlpha)
 		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
 	end
 
-	love.graphics.pop()
 	love.graphics.setCanvas(cv)
 
 	love.graphics.setShader(self.shader)

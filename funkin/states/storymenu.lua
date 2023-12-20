@@ -24,10 +24,12 @@ function StoryMenuState:enter()
 
     self.scoreText = Text(10, 10, "SCORE: 49324858",
                           paths.getFont('vcr.ttf', 36), {1, 1, 1}, 'right')
+    self.scoreText.antialiasing = false
 
     self.txtWeekTitle = Text(game.width * 0.7, 10, "",
                              paths.getFont('vcr.ttf', 32), {1, 1, 1}, 'right')
     self.txtWeekTitle.alpha = 0.7
+    self.txtWeekTitle.antialiasing = false
 
     local ui_tex = paths.getSparrowAtlas(
                        'menus/storymenu/campaign_menu_UI_assets');
@@ -114,6 +116,7 @@ function StoryMenuState:enter()
                              paths.getFont('vcr.ttf', 32),
                              Color.fromRGB(229, 87, 119), 'center')
     self.txtTrackList.visible = (#self.weeksData > 0)
+    self.txtTrackList.antialiasing = false
     self:add(self.txtTrackList)
     self:add(self.scoreText)
     self:add(self.txtWeekTitle)

@@ -256,7 +256,13 @@ function PlayState:enter()
     self.totalPlayed = 0
     self.totalHit = 0.0
 
-    game.camera.target = {x = 0, y = 0}
+    if PlayState.prevCamFollow ~= nil then
+        game.camera.target = {x = PlayState.prevCamFollow.x,
+                              y = PlayState.prevCamFollow.y}
+        PlayState.prevCamFollow = nil
+    else
+        game.camera.target = {x = 0, y = 0}
+    end
 
     self.camHUD = Camera()
     self.camOther = Camera()
@@ -338,16 +344,8 @@ function PlayState:enter()
 
     self.camFollow = {x = 0, y = 0}
     self:cameraMovement()
-    game.camera.target.x, game.camera.target.y = self.camFollow.x,
-                                                 self.camFollow.y
 
-    if PlayState.prevCamFollow ~= nil then
-        game.camera.target.x = PlayState.prevCamFollow.x
-        game.camera.target.y = PlayState.prevCamFollow.y
-        PlayState.prevCamFollow = nil
-    end
     self.camZooming = false
-
     game.camera.zoom = self.stage.camZoom
 
     self.healthBarBG = Sprite()
@@ -376,6 +374,7 @@ function PlayState:enter()
     self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", fontScore,
                          {1, 1, 1}, "center")
     self.scoreTxt.outline.width = 1
+    self.scoreTxt.antialiasing = false
 
     self.timeArcBG = Graphic(45, game.height - 45, 100, 100, {0, 0, 0}, "arc",
                              "line")
@@ -404,11 +403,13 @@ function PlayState:enter()
     self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "",
                         fontTime, {1, 1, 1}, "left")
     self.timeTxt.outline.width = 2
+    self.timeTxt.antialiasing = false
     if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
     self.botplayTxt = Text(620, (self.downScroll and 8 or 688), 'BOTPLAY MODE',
                             fontTime, {1, 1, 1}, "right", game.width/2)
     self.botplayTxt.outline.width = 2
+    self.botplayTxt.antialiasing = false
     self.botplayTxt.visible = self.botPlay
 
     if love.system.getDevice() == "Mobile" then
@@ -1254,7 +1255,8 @@ function PlayState:endSong(skip)
             table.remove(PlayState.storyPlaylist, 1)
 
             if #PlayState.storyPlaylist > 0 then
-                PlayState.prevCamFollow = game.camera.target
+                PlayState.prevCamFollow = {x = game.camera.target.x,
+                                           y = game.camera.target.y}
                 PlayState.conductor.sound:stop()
                 if self.vocals then self.vocals:stop() end
 

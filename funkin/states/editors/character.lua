@@ -34,6 +34,12 @@ function CharacterEditor:enter()
     bg:setScrollFactor()
     self:add(bg)
 
+    self.floor = Sprite(0, 840)
+    self.floor:make(game.width, 4)
+    self.floor:setScrollFactor(0, 1)
+    self.floor.cameras = {self.camChar}
+    self:add(self.floor)
+
     self.charLayer = Group()
     self:add(self.charLayer)
 
@@ -177,13 +183,12 @@ function CharacterEditor:add_UI_Character()
                 table.insert(optionsChar, charName)
             end
         end
-    else
-        for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                                'data/characters'))) do
-            local charName = str:withoutExt()
-            if str:endsWith('.json') and not charName:endsWith('-dead') then
-                table.insert(optionsChar, charName)
-            end
+    end
+    for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
+                                                            'data/characters'))) do
+        local charName = str:withoutExt()
+        if str:endsWith('.json') and not charName:endsWith('-dead') then
+            table.insert(optionsChar, charName)
         end
     end
 
@@ -298,13 +303,6 @@ function CharacterEditor:update(dt)
                 if self.curZoom < 0.1 then self.curZoom = 0.1 end
             end
         end
-        self.camChar.zoom = math.lerp(self.camChar.zoom, self.curZoom, 0.05)
-
-        self.camChar.scroll.x, self.camChar.scroll.y =
-        util.coolLerp(self.camChar.scroll.x, self.camFollow.x,
-                      0.2),
-        util.coolLerp(self.camChar.scroll.y, self.camFollow.y,
-                      0.2)
 
         if Keyboard.justPressed.LEFT then
             self.curAnim[6][1] = self.curAnim[6][1] + shiftMult
@@ -337,6 +335,15 @@ function CharacterEditor:update(dt)
             end
         end
     end
+
+    self.camChar.zoom = math.lerp(self.camChar.zoom, self.curZoom, 0.05)
+    self.floor.scale.x = game.width / self.camChar.zoom
+
+    self.camChar.scroll.x, self.camChar.scroll.y =
+    util.coolLerp(self.camChar.scroll.x, self.camFollow.x,
+                  0.2),
+    util.coolLerp(self.camChar.scroll.y, self.camFollow.y,
+                  0.2)
 
     updateCamPoint(self)
 

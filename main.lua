@@ -53,16 +53,17 @@ ChartingState = require "funkin.states.editors.charting"
 local OS = love.system.getOS()
 if OS == "Windows" then
 	WindowDialogue = require "lib.windows.dialogue"
+	WindowUtil = require "lib.windows.util"
 end
 
 local SplashScreen = require "funkin.states.splash"
 
 function love.load()
+	WindowUtil.setDarkMode(Project.title, true)
+
 	if Project.bgColor then
 		love.graphics.setBackgroundColor(Project.bgColor)
 	end
-
-	-- for the joystick, i'll remake it later
 
 	game.save.init('funkin')
 	ClientPrefs.loadData()

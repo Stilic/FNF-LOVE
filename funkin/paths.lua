@@ -1,4 +1,4 @@
-local decodeJson = (require "lib.json").decode
+local decodeJson = (require ".lib.json").decode
 
 local function readFile(key)
     if paths.exists(key, "file") then return love.filesystem.read(key) end

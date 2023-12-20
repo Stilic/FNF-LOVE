@@ -13,6 +13,7 @@ Graphic = require "loxel.graphic"
 Sprite = require "loxel.sprite"
 Camera = require "loxel.camera"
 Text = require "loxel.text"
+TypeText = require "loxel.typetext"
 Bar = require "loxel.ui.bar"
 Group = require "loxel.group.group"
 SpriteGroup = require "loxel.group.spritegroup"
@@ -42,8 +43,6 @@ game.cameras = require "loxel.managers.cameramanager"
 game.buttons = require "loxel.managers.buttonmanager"
 game.sound = require "loxel.managers.soundmanager"
 game.save = require "loxel.util.save"
-
-TypeText = require "loxel.typetext"
 
 local fade
 local function fadeOut(time, callback)
