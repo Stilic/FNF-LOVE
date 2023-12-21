@@ -158,7 +158,9 @@ local function switch(state)
         end
     end
 
-    paths.clearCache()
+    if paths and getmetatable(state) ~= getmetatable(Gamestate.current()) then
+      paths.clearCache()
+    end
 
     Gamestate.switch(state)
     game.isSwitchingState = false
