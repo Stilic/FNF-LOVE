@@ -50,8 +50,7 @@ OptionsState = require "funkin.states.options.options"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
-local OS = love.system.getOS()
-if OS == "Windows" then
+if love.system.getOS() == "Windows" then
 	WindowDialogue = require "lib.windows.dialogue"
 	WindowUtil = require "lib.windows.util"
 end
@@ -59,7 +58,9 @@ end
 local SplashScreen = require "funkin.states.splash"
 
 function love.load()
-	WindowUtil.setDarkMode(Project.title, true)
+	if WindowUtil then
+		WindowUtil.setDarkMode(Project.title, true)
+	end
 
 	if Project.bgColor then
 		love.graphics.setBackgroundColor(Project.bgColor)
