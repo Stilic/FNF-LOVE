@@ -5,6 +5,8 @@
 ### A LÖVE port of Friday Night Funkin' (still wip)
 INFO: we made loxel for this game, so this library is similar to [HaxeFlixel](https://haxeflixel.com/)
 
+[Official Discord server](https://discord.com/invite/eFFgHz7X8N)
+
 ## Dev team
 - Stilic
 - Raltyro
