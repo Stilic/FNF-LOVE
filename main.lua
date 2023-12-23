@@ -1,5 +1,4 @@
 io.stdout:setvbuf("no")
-print("")
 
 Project = require "project"
 flags = Project.flags
@@ -51,43 +50,39 @@ CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
 if love.system.getOS() == "Windows" then
-	WindowDialogue = require "lib.windows.dialogue"
-	WindowUtil = require "lib.windows.util"
+    WindowDialogue = require "lib.windows.dialogue"
+    WindowUtil = require "lib.windows.util"
 end
 
 local SplashScreen = require "funkin.states.splash"
 
 function love.load()
-	if WindowUtil then
-		WindowUtil.setDarkMode(Project.title, true)
-	end
+    if WindowUtil then WindowUtil.setDarkMode(Project.title, true) end
 
-	if Project.bgColor then
-		love.graphics.setBackgroundColor(Project.bgColor)
-	end
+    if Project.bgColor then love.graphics.setBackgroundColor(Project.bgColor) end
 
-	game.save.init('funkin')
-	ClientPrefs.loadData()
-	Mods.loadMods()
+    game.save.init('funkin')
+    ClientPrefs.loadData()
+    Mods.loadMods()
 
-	Highscore.load()
+    Highscore.load()
 
-	game.init(Project, SplashScreen)
-	Discord.init()
+    game.init(Project, SplashScreen)
+    Discord.init()
 end
 
 function love.resize(w, h) game.resize(w, h) end
 
 function love.keypressed(key, ...)
-	if love.keyboard.isDown("lctrl", "rctrl") then
-		if key == "f4" then error("force crash") end
-	end
-	controls:onKeyPress(key, ...)
-	game.keypressed(key, ...)
+    if love.keyboard.isDown("lctrl", "rctrl") then
+        if key == "f4" then error("force crash") end
+    end
+    controls:onKeyPress(key, ...)
+    game.keypressed(key, ...)
 end
 function love.keyreleased(...)
-	controls:onKeyRelease(...)
-	game.keyreleased(...)
+    controls:onKeyRelease(...)
+    game.keyreleased(...)
 end
 function love.textinput(text) game.textinput(text) end
 
@@ -101,12 +96,12 @@ function love.touchpressed(id, x, y) game.touchpressed(id, x, y) end
 function love.touchreleased(id, x, y) game.touchreleased(id, x, y) end
 
 function love.update(dt)
-	controls:update()
+    controls:update()
 
-	Timer.update(dt)
-	game.update(dt)
+    Timer.update(dt)
+    game.update(dt)
 
-	if love.system.getDevice() == "Desktop" then Discord.update() end
+    if love.system.getDevice() == "Desktop" then Discord.update() end
 end
 
 function love.draw() game.draw() end
@@ -114,6 +109,6 @@ function love.draw() game.draw() end
 function love.focus(f) game.focus(f) end
 
 function love.quit()
-	game.quit()
-	Discord.shutdown()
+    game.quit()
+    Discord.shutdown()
 end
