@@ -1,25 +1,25 @@
 return {
-	DEBUG_MODE = true,
-	splashScreen = false,
+    DEBUG_MODE = false,
+    splashScreen = false,
 
-	title = "Friday Night Funkin' LOVE",
-	file = "FNF-LOVE",
-	icon = "art/icon.png",
-	version = "0.6.4",
-	package = "com.stilic.fnflove",
-	width = 1280,
-	height = 720,
-	company = "Stilic",
+    title = "Friday Night Funkin' LOVE",
+    file = "FNF-LOVE",
+    icon = "art/icon.png",
+    version = "0.6.4",
+    package = "com.stilic.fnflove",
+    width = 1280,
+    height = 720,
+    company = "Stilic",
 
-	flags = {
-		CheckForUpdates = false,
+    flags = {
+        CheckForUpdates = false,
 
-		InitialAutoFocus = true,
-		InitialParallelUpdate = true,
+        InitialAutoFocus = true,
+        InitialParallelUpdate = true,
 
-		LoxelForceRenderCameraComplex = false,
-		LoxelDisableRenderCameraComplex = false,
-		LoxelDisableScissorOnRenderCameraSimple = false,
-		LoxelDefaultClipCamera = true,
-	}
+        LoxelForceRenderCameraComplex = false,
+        LoxelDisableRenderCameraComplex = false,
+        LoxelDisableScissorOnRenderCameraSimple = false,
+        LoxelDefaultClipCamera = true
+    }
 }
