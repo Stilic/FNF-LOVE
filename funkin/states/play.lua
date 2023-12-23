@@ -202,7 +202,7 @@ function PlayState:enter()
 
                     local note = Note(daStrumTime, daNoteData, oldNote)
                     note.mustPress = gottaHitNote
-                    note.altNote = n[4]
+                    note.type = n[4]
                     note:setScrollFactor()
                     if self.middleScroll and not note.mustPress then note.visible = false end
                     table.insert(self.unspawnNotes, note)
@@ -225,7 +225,7 @@ function PlayState:enter()
                                                          daNoteData, oldNote,
                                                          true, note)
                                     sustain.mustPress = note.mustPress
-                                    sustain.altNote = note.altNote
+                                    sustain.type = note.type
                                     sustain:setScrollFactor()
                                     if self.middleScroll and not sustain.mustPress then
                                         sustain.visible = false
@@ -476,7 +476,11 @@ function PlayState:enter()
     if self.storyMode and not self.seenCutscene then
         PlayState.seenCutscene = true
 
-        if paths.exists(paths.getPath('data/cutscenes/'..songName..'.lua'), 'file') then
+        local fileExist = (paths.exists(paths.getMods('data/cutscenes/'..songName..'.lua'),
+                                        'file') or
+                            paths.exists(paths.getPath('data/cutscenes/'..songName..'.lua'),
+                                         'file'))
+        if fileExist then
             local cutsceneScript = Script('data/cutscenes/'..songName)
             cutsceneScript:call("create")
             table.insert(self.scripts.scripts, cutsceneScript)

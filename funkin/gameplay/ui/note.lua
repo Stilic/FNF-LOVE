@@ -19,7 +19,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
     self.mustPress = false
     self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
     self.earlyHitMult, self.lateHitMult = 1, 1
-    self.altNote = false
+    self.type = ''
     self.ignoreNote = false
 
     self.scrollOffset = {x = 0, y = 0}
