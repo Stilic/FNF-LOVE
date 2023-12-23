@@ -41,10 +41,13 @@ PlayState.startPos = 0
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState.loadSong(song, diff)
-    if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
-    if diff == "normal" then diff = "" end
-    local path = "songs/" .. song .. "/chart" ..
-                     (diff ~= "" and ("-" .. diff) or "")
+    if type(diff) ~= "string" then
+        diff = PlayState.defaultDifficulty
+    end
+    if diff == "normal" then
+        diff = ""
+    end
+    local path = "songs/" .. song .. "/chart" .. (diff ~= "" and ("-" .. diff) or "")
 
     local data = paths.getJSON(path)
     if data then
@@ -185,8 +188,7 @@ function PlayState:enter()
             for _, n in ipairs(s.sectionNotes) do
                 local daStrumTime = tonumber(n[1])
                 local daNoteData = tonumber(n[2])
-                if daStrumTime ~= nil and daNoteData ~= nil and daStrumTime >=
-                    self.startPos then
+                if daStrumTime ~= nil and daNoteData ~= nil and daStrumTime >= self.startPos then
                     daNoteData = daNoteData % 4
                     local gottaHitNote = s.mustHitSection
                     if n[2] > 3 then
@@ -202,9 +204,7 @@ function PlayState:enter()
                     note.mustPress = gottaHitNote
                     note.altNote = n[4]
                     note:setScrollFactor()
-                    if self.middleScroll and not note.mustPress then
-                        note.visible = false
-                    end
+                    if self.middleScroll and not note.mustPress then note.visible = false end
                     table.insert(self.unspawnNotes, note)
 
                     if n[3] ~= nil then
@@ -227,8 +227,7 @@ function PlayState:enter()
                                     sustain.mustPress = note.mustPress
                                     sustain.altNote = note.altNote
                                     sustain:setScrollFactor()
-                                    if self.middleScroll and
-                                        not sustain.mustPress then
+                                    if self.middleScroll and not sustain.mustPress then
                                         sustain.visible = false
                                     end
                                     table.insert(self.unspawnNotes, sustain)
@@ -258,10 +257,8 @@ function PlayState:enter()
     self.totalHit = 0.0
 
     if PlayState.prevCamFollow ~= nil then
-        game.camera.target = {
-            x = PlayState.prevCamFollow.x,
-            y = PlayState.prevCamFollow.y
-        }
+        game.camera.target = {x = PlayState.prevCamFollow.x,
+                              y = PlayState.prevCamFollow.y}
         PlayState.prevCamFollow = nil
     else
         game.camera.target = {x = 0, y = 0}
@@ -311,11 +308,8 @@ function PlayState:enter()
             ["school"] = function() gfVersion = "gf-pixel" end,
             ["school-evil"] = function() gfVersion = "gf-pixel" end,
             ["tank"] = function()
-                if songName == 'stress' then
-                    gfVersion = "pico-speaker"
-                else
-                    gfVersion = "gf-tankmen"
-                end
+                if songName == 'stress' then gfVersion = "pico-speaker"
+                else gfVersion = "gf-tankmen" end
             end,
             default = function() gfVersion = "gf" end
         })
@@ -413,7 +407,7 @@ function PlayState:enter()
     if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
     self.botplayTxt = Text(620, (self.downScroll and 8 or 688), 'BOTPLAY MODE',
-                           fontTime, {1, 1, 1}, "right", game.width / 2)
+                            fontTime, {1, 1, 1}, "right", game.width/2)
     self.botplayTxt.outline.width = 2
     self.botplayTxt.antialiasing = false
     self.botplayTxt.visible = self.botPlay
@@ -456,15 +450,16 @@ function PlayState:enter()
     self:add(self.timeTxt)
     self:add(self.botplayTxt)
 
-    if love.system.getDevice() == "Mobile" then self:add(self.buttons) end
+    if love.system.getDevice() == "Mobile" then
+        self:add(self.buttons)
+    end
 
     self:recalculateRating()
 
     for _, o in ipairs({
         self.receptors, self.splashes, self.notesGroup, self.sustainsGroup,
         self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
-        self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt,
-        self.botplayTxt
+        self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt, self.botplayTxt
     }) do o.cameras = {self.camHUD} end
 
     self.bindedKeyPress = function(...) self:onKeyPress(...) end
@@ -481,9 +476,8 @@ function PlayState:enter()
     if self.storyMode and not self.seenCutscene then
         PlayState.seenCutscene = true
 
-        if paths.exists(paths.getPath('data/cutscenes/' .. songName .. '.lua'),
-                        'file') then
-            local cutsceneScript = Script('data/cutscenes/' .. songName)
+        if paths.exists(paths.getPath('data/cutscenes/'..songName..'.lua'), 'file') then
+            local cutsceneScript = Script('data/cutscenes/'..songName)
             cutsceneScript:call("create")
             table.insert(self.scripts.scripts, cutsceneScript)
         else
@@ -495,9 +489,7 @@ function PlayState:enter()
 
     if love.system.getDevice() == 'Desktop' then
         local detailsText = "Freeplay"
-        if self.storyMode then
-            detailsText = "Story Mode: " .. PlayState.storyWeek
-        end
+        if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
         local diff = "Normal"
         if PlayState.songDifficulty ~= "" then
@@ -506,7 +498,7 @@ function PlayState:enter()
 
         Discord.changePresence({
             details = detailsText,
-            state = self.SONG.song .. ' - [' .. diff .. ']'
+            state = self.SONG.song..' - ['..diff..']'
         })
     end
 
@@ -524,8 +516,7 @@ function PlayState:startCountdown()
     if not event.cancelled then
         self.startedCountdown = true
 
-        local basePath = "skins/" ..
-                             (PlayState.pixelStage and "pixel" or "normal")
+        local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
         local countdownData = {
             {sound = basePath .. "/intro3", image = nil},
             {sound = basePath .. "/intro2", image = basePath .. "/ready"},
@@ -535,8 +526,8 @@ function PlayState:startCountdown()
 
         local crochet = PlayState.conductor.crochet / 1000
         for swagCounter = 0, 4 do
-            self.countdownTimer:after(crochet * (swagCounter + 1), function()
-                local data = countdownData[swagCounter + 1]
+            self.countdownTimer:after(crochet * (swagCounter+1), function()
+                local data = countdownData[swagCounter+1]
                 if data then
                     if data.sound then
                         game.sound.play(paths.getSound(data.sound))
@@ -598,13 +589,11 @@ function PlayState:update(dt)
 
             if not self.startingSong and love.system.getDevice() == "Desktop" then
                 local detailsText = "Freeplay"
-                if self.storyMode then
-                    detailsText = "Story Mode: " .. PlayState.storyWeek
-                end
+                if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
                 local startTimestamp = os.time(os.date("*t"))
                 local endTimestamp = startTimestamp +
-                                         PlayState.conductor.sound:getDuration()
+                                        PlayState.conductor.sound:getDuration()
 
                 local diff = "Normal"
                 if PlayState.songDifficulty ~= "" then
@@ -613,7 +602,7 @@ function PlayState:update(dt)
 
                 Discord.changePresence({
                     details = detailsText,
-                    state = self.SONG.song .. ' - [' .. diff .. ']',
+                    state = self.SONG.song..' - ['..diff..']',
                     startTimestamp = math.floor(startTimestamp),
                     endTimestamp = math.floor(endTimestamp)
                 })
@@ -683,19 +672,16 @@ function PlayState:update(dt)
 
                 if love.system.getDevice() == 'Desktop' then
                     local detailsText = "Freeplay"
-                    if self.storyMode then
-                        detailsText = "Story Mode: " .. PlayState.storyWeek
-                    end
+                    if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
                     local diff = "Normal"
                     if PlayState.songDifficulty ~= "" then
-                        diff =
-                            PlayState.songDifficulty:gsub("^%l", string.upper)
+                        diff = PlayState.songDifficulty:gsub("^%l", string.upper)
                     end
 
                     Discord.changePresence({
                         details = "Paused - " .. detailsText,
-                        state = self.SONG.song .. ' - [' .. diff .. ']'
+                        state = self.SONG.song..' - ['..diff..']'
                     })
                 end
 
@@ -726,9 +712,7 @@ function PlayState:update(dt)
 
         if love.system.getDevice() == 'Desktop' then
             local detailsText = "Freeplay"
-            if self.storyMode then
-                detailsText = "Story Mode: " .. PlayState.storyWeek
-            end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local diff = "Normal"
             if PlayState.songDifficulty ~= "" then
@@ -736,8 +720,8 @@ function PlayState:update(dt)
             end
 
             Discord.changePresence({
-                details = "Game Over - " .. detailsText,
-                state = self.SONG.song .. ' - [' .. diff .. ']'
+                details = "Game Over - "..detailsText,
+                state = self.SONG.song..' - ['..diff..']'
             })
         end
 
@@ -771,8 +755,8 @@ function PlayState:update(dt)
     local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
     local ogStepCrochet = ogCrochet / 4
     for _, n in ipairs(self.allNotes.members) do
-        if not self.startingSong and not n.tooLate and not n.ignoreNote and
-            ((not n.mustPress or self.botPlay) and
+        if not self.startingSong and not n.tooLate and
+            not n.ignoreNote and ((not n.mustPress or self.botPlay) and
                 (not n.isSustain or not n.parentNote or n.parentNote.wasGoodHit) and
                 ((n.isSustain and n.canBeHit) or n.time <=
                     PlayState.notePosition) or
@@ -884,39 +868,39 @@ function PlayState:cameraMovement()
         if section.gfSection then
             local x, y = self.gf:getMidpoint()
             self.camFollow.x = x -
-                                   (self.gf.cameraPosition.x -
-                                       self.stage.gfCam.x)
+                                (self.gf.cameraPosition.x -
+                                    self.stage.gfCam.x)
             self.camFollow.y = y -
-                                   (self.gf.cameraPosition.y -
-                                       self.stage.gfCam.y)
+                                (self.gf.cameraPosition.y -
+                                    self.stage.gfCam.y)
         else
             if section.mustHitSection then
                 local x, y = self.boyfriend:getMidpoint()
                 self.camFollow.x = x - 100 -
-                                       (self.boyfriend.cameraPosition.x -
-                                           self.stage.boyfriendCam.x)
+                                    (self.boyfriend.cameraPosition.x -
+                                        self.stage.boyfriendCam.x)
                 self.camFollow.y = y - 100 +
-                                       (self.boyfriend.cameraPosition.y +
-                                           self.stage.boyfriendCam.y)
+                                    (self.boyfriend.cameraPosition.y +
+                                        self.stage.boyfriendCam.y)
             else
                 local x, y = self.dad:getMidpoint()
                 self.camFollow.x = x + 150 +
-                                       (self.dad.cameraPosition.x +
-                                           self.stage.dadCam.x)
+                                    (self.dad.cameraPosition.x +
+                                        self.stage.dadCam.x)
                 self.camFollow.y = y - 100 +
-                                       (self.dad.cameraPosition.y +
-                                           self.stage.dadCam.y)
+                                    (self.dad.cameraPosition.y +
+                                        self.stage.dadCam.y)
             end
         end
     end
 
     if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
         if section.mustHitSection then
-            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera,
-                        {zoom = 1}, 'in-out-elastic')
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000),
+                        game.camera, {zoom = 1}, 'in-out-elastic')
         else
-            Timer.tween((self.conductor.stepCrochet * 4 / 1000), game.camera,
-                        {zoom = 1.3}, 'in-out-elastic')
+            Timer.tween((self.conductor.stepCrochet * 4 / 1000),
+                        game.camera, {zoom = 1.3}, 'in-out-elastic')
         end
     end
 end
@@ -938,9 +922,7 @@ function PlayState:closeSubstate()
 
         if love.system.getDevice() == 'Desktop' then
             local detailsText = "Freeplay"
-            if self.storyMode then
-                detailsText = "Story Mode: " .. PlayState.storyWeek
-            end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
@@ -954,7 +936,7 @@ function PlayState:closeSubstate()
 
             Discord.changePresence({
                 details = detailsText,
-                state = self.SONG.song .. ' - [' .. diff .. ']',
+                state = self.SONG.song..' - ['..diff..']',
                 startTimestamp = math.floor(startTimestamp),
                 endTimestamp = math.floor(endTimestamp)
             })
@@ -980,21 +962,17 @@ function PlayState:onSettingChange(setting)
         local rx, ry = game.width / 2, 50
         if self.downScroll then ry = game.height - 100 - ry end
         for _, rep in ipairs(self.receptors.members) do
-            rep:setPosition(rx + (game.width / 4) *
-                                (rep.player == 1 and 1 or -1), ry)
+            rep:setPosition(rx + (game.width / 4) * (rep.player == 1 and 1 or -1), ry)
             rep:groupInit()
             rep.visible = true
             if self.middleScroll then
-                if rep.player == 1 then
-                    rep.x = rep.x - 318
-                else
-                    rep.visible = false
-                end
+                if rep.player == 1 then rep.x = rep.x - 318
+                else rep.visible = false end
             end
         end
 
-        self.healthBarBG.y = (self.downScroll and game.height * 0.08 or
-                                 game.height * 0.9)
+        self.healthBarBG.y =
+            (self.downScroll and game.height * 0.08 or game.height * 0.9)
         self.healthBar.y = self.healthBarBG.y + 4
 
         self.iconP1.y = self.healthBar.y - 75
@@ -1007,7 +985,7 @@ function PlayState:onSettingChange(setting)
         self.timeArcBG.y = (self.downScroll and 45 or game.height - 45)
         self.timeArc.y = self.timeArcBG.y
         self.timeTxt.y = (self.downScroll and self.timeArcBG.y - 32 or
-                             self.timeArcBG.y + 7)
+                                                self.timeArcBG.y + 7)
 
         for i = 1, #self.unspawnNotes do
             self.unspawnNotes[i].visible = true
@@ -1021,18 +999,17 @@ function PlayState:onSettingChange(setting)
         for _, n in ipairs(self.allNotes.members) do
             local time = n.time
             if n.isSustain and PlayState.SONG.speed ~= 1 then
-                time = time - ogStepCrochet + ogStepCrochet /
-                           PlayState.SONG.speed
+                time = time - ogStepCrochet + ogStepCrochet / PlayState.SONG.speed
             end
 
-            local r = (n.mustPress and self.playerReceptors or
-                          self.enemyReceptors).members[n.data + 1]
+            local r =
+                (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
+                    1]
             local sy = r.y + n.scrollOffset.y
 
             n.x = r.x + n.scrollOffset.x
             n.y = sy - (PlayState.notePosition - time) *
-                      (0.45 * PlayState.SONG.speed) *
-                      (self.downScroll and -1 or 1)
+                    (0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
             n.visible = true
             if self.middleScroll and not n.mustPress then
                 n.visible = false
@@ -1043,13 +1020,13 @@ function PlayState:onSettingChange(setting)
                 if n.flipY then
                     if n.isSustainEnd then
                         n.y = n.y + (43.5 * 0.7) *
-                                  (PlayState.conductor.stepCrochet / 100 * 1.5 *
-                                      PlayState.SONG.speed) - n.height
+                                (PlayState.conductor.stepCrochet / 100 * 1.5 *
+                                    PlayState.SONG.speed) - n.height
                     end
                     n.y = n.y + Note.swagWidth / 2 - 60.5 *
-                              (PlayState.SONG.speed - 1) + 27.5 *
-                              (PlayState.SONG.bpm / 100 - 1) *
-                              (PlayState.SONG.speed - 1)
+                            (PlayState.SONG.speed - 1) + 27.5 *
+                            (PlayState.SONG.bpm / 100 - 1) *
+                            (PlayState.SONG.speed - 1)
 
                 else
                     n.y = n.y + Note.swagWidth / 12
@@ -1071,9 +1048,7 @@ function PlayState:onSettingChange(setting)
                                 n:getFrameWidth() * n.scale.x, vert
                         end
                     elseif n.y + n.offset.y <= center then
-                        if not n.clipRect then
-                            n.clipRect = {}
-                        end
+                        if not n.clipRect then n.clipRect = {} end
                         n.clipRect.x, n.clipRect.y = 0, vert
                         n.clipRect.width, n.clipRect.height =
                             n:getFrameWidth() * n.scale.x,
@@ -1175,7 +1150,7 @@ function PlayState:goodNoteHit(n)
         if self.vocals then self.vocals:setVolume(1) end
 
         local animType = ''
-        if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
+        if PlayState.SONG.notes[PlayState.conductor.currentSection+1].altAnim then
             animType = 'alt'
         end
 
@@ -1247,16 +1222,12 @@ function PlayState:endSong(skip)
         self.startedCountdown = false
 
         local songName = paths.formatToSongPath(PlayState.SONG.song)
-        local fileExist = (paths.exists(paths.getMods(
-                                            'data/cutscenes/' .. songName ..
-                                                '-end.lua'), 'file') or
-                              paths.exists(
-                                  paths.getPath(
-                                      'data/cutscenes/' .. songName ..
-                                          '-end.lua'), 'file'))
+        local fileExist = (paths.exists(paths.getMods('data/cutscenes/'..songName..'-end.lua'),
+                            'file') or
+                             paths.exists(paths.getPath('data/cutscenes/'..songName..'-end.lua'),
+                              'file'))
         if fileExist then
-            local cutsceneScript = Script(
-                                       'data/cutscenes/' .. songName .. '-end')
+            local cutsceneScript = Script('data/cutscenes/'..songName..'-end')
             cutsceneScript:call("create")
             table.insert(self.scripts.scripts, cutsceneScript)
             cutsceneScript:call("postCreate")
@@ -1284,18 +1255,14 @@ function PlayState:endSong(skip)
             table.remove(PlayState.storyPlaylist, 1)
 
             if #PlayState.storyPlaylist > 0 then
-                PlayState.prevCamFollow = {
-                    x = game.camera.target.x,
-                    y = game.camera.target.y
-                }
+                PlayState.prevCamFollow = {x = game.camera.target.x,
+                                           y = game.camera.target.y}
                 PlayState.conductor.sound:stop()
                 if self.vocals then self.vocals:stop() end
 
                 if love.system.getDevice() == 'Desktop' then
                     local detailsText = "Freeplay"
-                    if self.storyMode then
-                        detailsText = "Story Mode: " .. PlayState.storyWeek
-                    end
+                    if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
                     Discord.changePresence({
                         details = detailsText,
@@ -1303,12 +1270,10 @@ function PlayState:endSong(skip)
                     })
                 end
 
-                PlayState.loadSong(PlayState.storyPlaylist[1],
-                                   PlayState.songDifficulty)
+                PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
                 game.resetState(true)
             else
-                Highscore.saveWeekScore(self.storyWeekFile, self.storyScore,
-                                        self.songDifficulty)
+                Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
                 game.sound.playMusic(paths.getMusic("freakyMenu"))
                 game.switchState(StoryMenuState())
             end
@@ -1458,9 +1423,7 @@ function PlayState:focus(f)
     if love.system.getDevice() == 'Desktop' then
         if f then
             local detailsText = "Freeplay"
-            if self.storyMode then
-                detailsText = "Story Mode: " .. PlayState.storyWeek
-            end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
@@ -1474,15 +1437,13 @@ function PlayState:focus(f)
 
             Discord.changePresence({
                 details = detailsText,
-                state = self.SONG.song .. ' - [' .. diff .. ']',
+                state = self.SONG.song..' - ['..diff..']',
                 startTimestamp = math.floor(startTimestamp),
                 endTimestamp = math.floor(endTimestamp)
             })
         else
             local detailsText = "Freeplay"
-            if self.storyMode then
-                detailsText = "Story Mode: " .. PlayState.storyWeek
-            end
+            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
 
             local diff = "Normal"
             if PlayState.songDifficulty ~= "" then
@@ -1491,7 +1452,7 @@ function PlayState:focus(f)
 
             Discord.changePresence({
                 details = "Paused - " .. detailsText,
-                state = self.SONG.song .. ' - [' .. diff .. ']'
+                state = self.SONG.song..' - ['..diff..']'
             })
         end
     end
