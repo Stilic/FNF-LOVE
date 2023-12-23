@@ -51,7 +51,8 @@ function Character:new(x, y, char, isPlayer)
     self.flipX = (jsonData.flip_x == true)
     self.jsonFlipX = self.flipX
 
-    self.antialiasing = ClientPrefs.data.antialiasing and jsonData.antialiasing or false
+    self.antialiasing =
+        ClientPrefs.data.antialiasing and jsonData.antialiasing or false
 
     self.animationsTable = jsonData.animations
     if self.animationsTable and #self.animationsTable > 0 then
@@ -132,7 +133,7 @@ function Character:beat(b)
             self.lastHit = 0
         end
     elseif b % self.danceSpeed == 0 then
-        self:dance(self.danceSpeed < 2)
+        self:dance(true)
     end
 end
 
@@ -150,11 +151,11 @@ end
 function Character:sing(dir, type)
     local anim = "sing" .. string.upper(Note.directions[dir + 1])
     local suffix = ''
-    switch(type:lower(),{
-        ['miss']=function() suffix = "miss" end,
-        ['alt']=function() suffix = "-alt" end
+    switch(type:lower(), {
+        ['miss'] = function() suffix = "miss" end,
+        ['alt'] = function() suffix = "-alt" end
     })
-    if self.__animations[anim..suffix] then anim = anim .. suffix end
+    if self.__animations[anim .. suffix] then anim = anim .. suffix end
     self:playAnim(anim, true)
 
     self.lastHit = math.floor(PlayState.conductor.time)
