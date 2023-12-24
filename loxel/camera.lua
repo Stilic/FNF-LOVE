@@ -153,15 +153,27 @@ local function setSimpleColor(r, g, b, a)
 	end
 end
 
-local _ogSetScissor, _scX, _scY, _scW, _scH, _scSX, _scSY
+local _ogGetScissor, _ogSetScissor, _ogIntersectScissor
+local _scX, _scY, _scW, _scH, _scSX, _scSY, _scvX, _scvY, _scvW, _scvH
+local function getSimpleScissor()
+	return scvX, _scvY, _scvW, _scvH
+end
+
 local function setSimpleScissor(x, y, w, h)
+	_scvX, _scvY, _scvW, _scvH = x, y, w, h
 	if not x then return _ogSetScissor() end
 	_ogSetScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
 end
 
-local _ogIntersectScissor
 local function intersectSimpleScissor(x, y, w, h)
-	_ogIntersectScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
+	if not _scvX then
+		_scvX, _scvY, _scvW, _scvH = x, y, w, h
+		_ogSetScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
+	end
+	_scvX, _scvY = math.max(_scvX, x), math.max(_scvY, y)
+	_scvW, _scvH = math.max(math.min(_scvX + _scvW, x + w) - _scvX, 0),
+				   math.max(math.min(_scvY + _scvH, y + h) - _scvY, 0)
+	_ogSetScissor(_scvX * _scSX + _scX, _scvY * _scSY + _scY, _scvW * _scSX, _scvH * _scSY)
 end
 
 function Camera:drawSimple(_skipCheck)
@@ -198,11 +210,14 @@ function Camera:drawSimple(_skipCheck)
 		end
 	end
 	_scX, _scY = _x, _y
+	_scvX, _scvY, _scvW, _scvH = nil, nil, nil, nil
 
 	_simpleCamera = self
 	_ogSetColor, love.graphics.setColor = love.graphics.setColor, setSimpleColor
+	_ogGetScissor, love.graphics.getScissor = love.graphics.getScissor, getSimpleScissor
 	_ogSetScissor, love.graphics.setScissor = love.graphics.setScissor, setSimpleScissor
-	_ogIntersectScissor, love.graphics.intersectScissor = love.graphics.intersectScissor, intersectSimpleScissor
+	_ogIntersectScissor, love.graphics.intersectScissor = love.graphics.intersectScissor,
+														  intersectSimpleScissor
 
 	if self.bgColor ~= nil and (not self.bgColor[4] or self.bgColor[4] > 0) then
 		setSimpleColor(self.bgColor)
@@ -235,6 +250,7 @@ function Camera:drawSimple(_skipCheck)
 	love.graphics.pop()
 
 	love.graphics.setColor = _ogSetColor
+	love.graphics.getScissor = _ogGetScissor
 	love.graphics.setScissor = _ogSetScissor
 	love.graphics.intersectScissor = _ogIntersectScissor
 
