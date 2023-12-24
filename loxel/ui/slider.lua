@@ -10,8 +10,8 @@ function Slider:new(x, y, width, height, value, sliderType, min, max)
 	self.value = value or 0
 	self.isDragging = false
 	self.sliderType = sliderType == nil and "horizontal" or sliderType:lower()
-	self.bgColor = { 1, 1, 1 }
-	self.knobColor = { 0.3, 0.3, 0.3 }
+	self.bgColor = {1, 1, 1}
+	self.knobColor = {0.3, 0.3, 0.3}
 	self.min = min or 0
 	self.max = max or 1
 

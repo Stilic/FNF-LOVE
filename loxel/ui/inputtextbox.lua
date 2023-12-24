@@ -2,8 +2,8 @@ local InputTextBox = Basic:extend("InputTextBox")
 
 InputTextBox.instances = {}
 
-local RemoveType = { NONE = 0, DELETE = 1, BACKSPACE = 2 }
-local CursorDirection = { NONE = 0, LEFT = 1, RIGHT = 2 }
+local RemoveType = {NONE = 0, DELETE = 1, BACKSPACE = 2}
+local CursorDirection = {NONE = 0, LEFT = 1, RIGHT = 2}
 
 function InputTextBox:new(x, y, width, height, font)
 	InputTextBox.super.new(self)
@@ -16,10 +16,10 @@ function InputTextBox:new(x, y, width, height, font)
 	self.font:setFilter("nearest", "nearest")
 	self.text = ""
 	self.active = false
-	self.colorText = { 0, 0, 0 }
-	self.color = { 1, 1, 1 }
-	self.colorBorder = { 0, 0, 0 }
-	self.colorCursor = { 0, 0, 0 }
+	self.colorText = {0, 0, 0}
+	self.color = {1, 1, 1}
+	self.colorBorder = {0, 0, 0}
+	self.colorCursor = {0, 0, 0}
 	self.clearOnPressed = false
 
 	-- add text

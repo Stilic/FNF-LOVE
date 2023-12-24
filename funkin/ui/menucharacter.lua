@@ -14,7 +14,7 @@ function MenuCharacter:changeCharacter(char)
 	self.character = char
 	self.visible = true
 
-	self.scale = { x = 1, y = 1 }
+	self.scale = {x = 1, y = 1}
 	self:updateHitbox()
 
 	self.hasConfirmAnimation = false
@@ -44,7 +44,7 @@ function MenuCharacter:changeCharacter(char)
 			self.flipX = (charFile.flipX == true)
 
 			if charFile.scale ~= 1 then
-				self.scale = { x = charFile.scale, y = charFile.scale }
+				self.scale = {x = charFile.scale, y = charFile.scale}
 				self:updateHitbox()
 			end
 			self.offset.x, self.offset.y = charFile.position[1],

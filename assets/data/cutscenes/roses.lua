@@ -7,7 +7,7 @@ function create()
 
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
-	doof.cameras = { state.camHUD }
+	doof.cameras = {state.camHUD}
 	doof.finishThing = function ()
 		state:startCountdown()
 		close()

@@ -1,9 +1,9 @@
 local Color = {
-	WHITE = { 1, 1, 1 },
-	BLACK = { 0, 0, 0 },
-	RED = { 1, 0, 0 },
-	GREEN = { 0, 1, 0 },
-	BLUE = { 0, 0, 1 }
+	WHITE = {1, 1, 1},
+	BLACK = {0, 0, 0},
+	RED = {1, 0, 0},
+	GREEN = {0, 1, 0},
+	BLUE = {0, 0, 1}
 }
 
 function Color.HSL(h, s, l)
@@ -34,7 +34,7 @@ function Color.HSLtoRGB(...)
 end
 
 function Color.fromHSL(...)
-	return { Color.HSL(...) }
+	return {Color.HSL(...)}
 end
 
 function Color.fromString(str)
@@ -45,13 +45,13 @@ function Color.fromString(str)
 end
 
 function Color.fromRGB(r, g, b)
-	return { r / 255, g / 255, b / 255 }
+	return {r / 255, g / 255, b / 255}
 end
 
 function Color.convert(rgb)
-	return { rgb[1] / 255,
+	return {rgb[1] / 255,
 		rgb[2] / 255,
-		rgb[3] / 255 }
+		rgb[3] / 255}
 end
 
 return Color

@@ -7,7 +7,7 @@ FreeplayState.curDifficulty = 2
 function FreeplayState:enter()
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({ details = "In the Menus" })
+		Discord.changePresence({details = "In the Menus"})
 	end
 
 	self.lerpScore = 0
@@ -69,10 +69,10 @@ function FreeplayState:enter()
 	end
 
 	self.scoreText = Text(game.width * 0.7, 5, "", paths.getFont("vcr.ttf", 32),
-		{ 1, 1, 1 }, "right")
+		{1, 1, 1}, "right")
 	self.scoreText.antialiasing = false
 
-	self.scoreBG = Sprite(self.scoreText.x - 6, 0):make(1, 66, { 0, 0, 0 })
+	self.scoreBG = Sprite(self.scoreText.x - 6, 0):make(1, 66, {0, 0, 0})
 	self.scoreBG.alpha = 0.6
 	self:add(self.scoreBG)
 
@@ -263,7 +263,7 @@ local function getSongMetadata(song)
 		icon = song_metadata.icon or 'face',
 		color = song_metadata.color or '#0F0F0F',
 		difficulties = song_metadata.difficulties or
-			{ 'Easy', PlayState.defaultDifficulty, 'Hard' }
+			{'Easy', PlayState.defaultDifficulty, 'Hard'}
 	}
 end
 

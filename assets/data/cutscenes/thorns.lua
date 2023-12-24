@@ -4,7 +4,7 @@ local doof
 local music
 function create()
 	local dialogue = love.filesystem.read(paths.getPath('songs/thorns/dialogue.txt')):split('\n')
-	local red = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.convert({ 255, 27, 49 }))
+	local red = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.convert({255, 27, 49}))
 	local white = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.WHITE)
 
 	local senpaiEvil = Sprite()
@@ -21,7 +21,7 @@ function create()
 
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
-	doof.cameras = { state.camHUD }
+	doof.cameras = {state.camHUD}
 	doof.finishThing = function ()
 		state:startCountdown()
 		close()
@@ -45,7 +45,7 @@ function create()
 				if senpaiEvil.alpha > 1 then
 					senpaiEvil.alpha = 1
 
-					Timer.tween(2.4, game.camera, { zoom = state.stage.camZoom - 0.2 }, 'in-sine')
+					Timer.tween(2.4, game.camera, {zoom = state.stage.camZoom - 0.2}, 'in-sine')
 
 					senpaiEvil:play('idle')
 					game.sound.play(paths.getSound('gameplay/Senpai_Dies'), 1, false, true, function ()
@@ -58,11 +58,11 @@ function create()
 					end)
 					Timer.after(2.4, function ()
 						game.camera.zoom = 1.4
-						Timer.tween(1, game.camera, { zoom = state.stage.camZoom - 0.2 }, 'out-circ')
+						Timer.tween(1, game.camera, {zoom = state.stage.camZoom - 0.2}, 'out-circ')
 						game.camera:shake(0.005, 2.5)
 					end)
 					Timer.after(3.2, function ()
-						Timer.tween(1.6, white, { alpha = 1 })
+						Timer.tween(1.6, white, {alpha = 1})
 					end)
 				end
 			end)

@@ -1,13 +1,13 @@
 local Gameplay = {}
 
 local optionsVar = {
-	{ 'downScroll',   'Down Scroll',    false, 'boolean' },
-	{ 'middleScroll', 'Middle Scroll',  false, 'boolean' },
-	{ 'noteSplash',   'Note Splash',    false, 'boolean' },
-	{ 'pauseMusic',   'Pause Music',    false, 'string', { 'railways', 'breakfast' } },
-	{ 'botplayMode',  'Botplay',        false, 'boolean' },
-	{ 'timeType',     'Song Time Type', false, 'string', { 'left', 'elapsed' } },
-	{ 'songOffset',   'Song Offset',    false, 'number', { 0, 999 } },
+	{'downScroll',   'Down Scroll',    false, 'boolean'},
+	{'middleScroll', 'Middle Scroll',  false, 'boolean'},
+	{'noteSplash',   'Note Splash',    false, 'boolean'},
+	{'pauseMusic',   'Pause Music',    false, 'string', {'railways', 'breakfast'}},
+	{'botplayMode',  'Botplay',        false, 'boolean'},
+	{'timeType',     'Song Time Type', false, 'string', {'left', 'elapsed'}},
+	{'songOffset',   'Song Offset',    false, 'number', {0, 999}},
 }
 
 local curSelected = 1
@@ -22,7 +22,7 @@ function Gameplay.add(options)
 
 		local yPos = (i * 45) + 80
 		local title = Text(145, yPos, daOption[2],
-			paths.getFont('phantommuff.ttf', 30), { 1, 1, 1 })
+			paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
 		daGroup:add(title)
 
 		local realvalue = ClientPrefs.data[daOption[1]]
@@ -36,7 +36,7 @@ function Gameplay.add(options)
 		local value = daOption[3] and '< ' .. tostring(realvalue)
 			.. ' >' or tostring(realvalue)
 		local valueTxt = Text((game.width / 2) + 10, yPos, value,
-			paths.getFont('phantommuff.ttf', 30), { 1, 1, 1 },
+			paths.getFont('phantommuff.ttf', 30), {1, 1, 1},
 			'center', (game.width * 0.8) / 2 - 20)
 		daGroup:add(valueTxt)
 
@@ -48,7 +48,7 @@ function Gameplay.add(options)
 	linesGroup.name = gameplayTab.name
 
 	local lines = Sprite(0, 117):make(2, game.height * 0.72,
-		{ 255, 255, 255 })
+		{255, 255, 255})
 	lines:screenCenter('x')
 	lines.alpha = 0.5
 	linesGroup:add(lines)

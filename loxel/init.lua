@@ -54,11 +54,11 @@ local function fadeOut(time, callback)
 
 	fade = {
 		height = game.height * 2,
-		texture = util.newGradient("vertical", { 0, 0, 0 }, { 0, 0, 0 },
-			{ 0, 0, 0, 0 })
+		texture = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0},
+			{0, 0, 0, 0})
 	}
 	fade.y = -fade.height
-	fade.timer = Timer.tween(time, fade, { y = 0 }, "linear", function ()
+	fade.timer = Timer.tween(time, fade, {y = 0}, "linear", function ()
 		fade.texture:release()
 		fade = nil
 		if callback then callback() end
@@ -76,11 +76,11 @@ local function fadeIn(time, callback)
 
 	fade = {
 		height = game.height * 2,
-		texture = util.newGradient("vertical", { 0, 0, 0, 0 }, { 0, 0, 0 },
-			{ 0, 0, 0 })
+		texture = util.newGradient("vertical", {0, 0, 0, 0}, {0, 0, 0},
+			{0, 0, 0})
 	}
 	fade.y = -fade.height / 2
-	fade.timer = Timer.tween(time * 2, fade, { y = fade.height }, "linear",
+	fade.timer = Timer.tween(time * 2, fade, {y = fade.height}, "linear",
 		function ()
 			fade.texture:release()
 			fade = nil

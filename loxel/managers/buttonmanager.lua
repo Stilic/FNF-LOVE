@@ -1,4 +1,4 @@
-local ButtonManager = { list = {}, active = {} }
+local ButtonManager = {list = {}, active = {}}
 
 function ButtonManager.remap(x, y)
 	local winWidth, winHeight = love.graphics.getDimensions()

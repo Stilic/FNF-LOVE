@@ -45,7 +45,7 @@ ffi.cdef [[
 
 function Dialogue.askOpenFile(title, fileType)
 	if title == nil then title = "Save As" end
-	if fileType == nil then fileType = { { "All Files", "*.*" } } end
+	if fileType == nil then fileType = {{"All Files", "*.*"}} end
 
 	local ofn = ffi.new("WINDOWDIALOGUE")
 	ofn.lStructSize = ffi.sizeof("WINDOWDIALOGUE")
@@ -72,7 +72,7 @@ end
 
 function Dialogue.askSaveAsFile(title, fileType, initialFile)
 	if title == nil then title = "Save As" end
-	if fileType == nil then fileType = { { "All Files", "*.*" } } end
+	if fileType == nil then fileType = {{"All Files", "*.*"}} end
 	if initialFile == nil then initialFile = "" end
 
 	local ofn = ffi.new("WINDOWDIALOGUE")

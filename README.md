@@ -3,11 +3,13 @@
 ![](art/funkin_logo.png)
 
 ### A LÖVE port of Friday Night Funkin' (still wip)
+
 INFO: we made loxel for this game, so this library is similar to [HaxeFlixel](https://haxeflixel.com/)
 
 [Official Discord server](https://discord.com/invite/eFFgHz7X8N)
 
 ## Dev team
+
 - Stilic
 - Raltyro
 - Fellyn
@@ -15,6 +17,7 @@ INFO: we made loxel for this game, so this library is similar to [HaxeFlixel](ht
 - BlueColorsin
 
 ## Librairies
+
 - classic - [https://github.com/rxi/classic](https://github.com/rxi/classic)
 - baton - [https://github.com/tesselode/baton](https://github.com/tesselode/baton)
 - json - [https://github.com/actboy168/json.lua](https://github.com/actboy168/json.lua)

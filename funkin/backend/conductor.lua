@@ -96,7 +96,7 @@ function Conductor:mapBPMChanges(song)
 		if s.changeBPM and s.bpm ~= nil and s.bpm ~= bpm then
 			bpm = s.bpm
 			toAdd = ((60 / bpm) * 1000 / 4)
-			table.insert(self.__bpmChanges, { totalSteps, totalPos, bpm })
+			table.insert(self.__bpmChanges, {totalSteps, totalPos, bpm})
 		end
 
 		local deltaSteps = math.round(

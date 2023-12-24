@@ -7,7 +7,7 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 	self.width = width or 0
 	self.height = height or 0
 
-	self.color = color or { 0, 0, 0 }
+	self.color = color or {0, 0, 0}
 	self.type = type or "rectangle"
 	self.fill = fill or "fill"
 	self.lined = lined or false
@@ -15,15 +15,15 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 	self.config = {
 		type = "open",
 		radius = 100,
-		angle = { 0, 180 },
-		round = { 15, 15 },
+		angle = {0, 180},
+		round = {15, 15},
 		segments = 36,
 		vertices = nil
 	}
 
 	self.line = {
 		width = 6,
-		color = { 1, 1, 1 }, -- this only applies for lined graphics
+		color = {1, 1, 1}, -- this only applies for lined graphics
 		join = "miter"
 	}
 end

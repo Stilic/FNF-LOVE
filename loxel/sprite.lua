@@ -37,7 +37,7 @@ function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
 			ah > sh and h - (ah - sh) or h, sw, sh),
 		width = ow == nil and w or ow,
 		height = oh == nil and h or oh,
-		offset = { x = ox == nil and 0 or ox, y = oy == nil and 0 or oy }
+		offset = {x = ox == nil and 0 or ox, y = oy == nil and 0 or oy}
 	}
 end
 
@@ -46,7 +46,7 @@ function Sprite.getFramesFromSparrow(texture, description)
 		texture = love.graphics.newImage(texture)
 	end
 
-	local frames = { texture = texture, frames = {} }
+	local frames = {texture = texture, frames = {}}
 	local sw, sh = texture:getDimensions()
 	for _, c in ipairs(parseXml(description).TextureAtlas.children) do
 		if c.name == "SubTexture" then
@@ -70,7 +70,7 @@ function Sprite.getFramesFromPacker(texture, description)
 		texture = love.graphics.newImage(texture)
 	end
 
-	local frames = { texture = texture, frames = {} }
+	local frames = {texture = texture, frames = {}}
 	local sw, sh = texture:getDimensions()
 
 	local pack = description:trim()
@@ -107,7 +107,7 @@ function Sprite.getTiles(texture, tileSize, region, tileSpacing)
 		end
 	end
 
-	tileSpacing = (tileSpacing ~= nil) and tileSpacing or { x = 0, y = 0 }
+	tileSpacing = (tileSpacing ~= nil) and tileSpacing or {x = 0, y = 0}
 
 	local tileFrames = {}
 
@@ -115,8 +115,8 @@ function Sprite.getTiles(texture, tileSize, region, tileSpacing)
 	region.y = math.floor(region.y)
 	region.width = math.floor(region.width)
 	region.height = math.floor(region.height)
-	tileSpacing = { x = math.floor(tileSpacing.x), y = math.floor(tileSpacing.y) }
-	tileSize = { x = math.floor(tileSize.x), y = math.floor(tileSize.y) }
+	tileSpacing = {x = math.floor(tileSpacing.x), y = math.floor(tileSpacing.y)}
+	tileSize = {x = math.floor(tileSize.x), y = math.floor(tileSize.y)}
 
 	local spacedWidth = tileSize.x + tileSpacing.x
 	local spacedHeight = tileSize.y + tileSpacing.y
@@ -148,7 +148,7 @@ local defaultTexture = love.graphics.newImage('art/default.png')
 function Sprite:new(x, y, texture)
 	Sprite.super.new(self, x, y)
 
-	self.origin = { x = 0, y = 0 }
+	self.origin = {x = 0, y = 0}
 	self.__width, self.__height = self.width, self.height
 
 	self.texture = defaultTexture
@@ -224,7 +224,7 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 
 	if animated then
 		self.__frames = Sprite.getTiles(texture,
-			{ x = frameWidth, y = frameHeight })
+			{x = frameWidth, y = frameHeight})
 	end
 
 	return self
@@ -340,7 +340,7 @@ function Sprite:make(width, height, color)
 	self.__rectangleMode = true
 
 	self:setGraphicSize(width or 10, height or 10)
-	self.color = color or { 1, 1, 1 }
+	self.color = color or {1, 1, 1}
 	self:updateHitbox()
 
 	return self

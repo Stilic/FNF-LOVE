@@ -137,9 +137,9 @@ local function func_tween(tween, self, len, subject, target, method, after,
 
 		if to_func_tween[subject] == nil then to_func_tween[subject] = {} end
 
-		ref = { getter(subject) }
-		to_func_tween[subject][k] = { ref, setter }
-		if type(v) == 'number' or #ref == 1 then v = { v } end
+		ref = {getter(subject)}
+		to_func_tween[subject][k] = {ref, setter}
+		if type(v) == 'number' or #ref == 1 then v = {v} end
 		return ref, v
 	end
 
@@ -158,7 +158,7 @@ local function func_tween(tween, self, len, subject, target, method, after,
 				end)
 				assert(ok, 'Field "' .. k ..
 					'" does not support arithmetic operations')
-				out[#out + 1] = { subject, k, delta }
+				out[#out + 1] = {subject, k, delta}
 			end
 		end
 		return out
@@ -166,7 +166,7 @@ local function func_tween(tween, self, len, subject, target, method, after,
 
 	method = tween[method or 'linear'] -- see __index
 	local payload, t, args = tween_collect_payload(subject, target, {}), 0,
-		{ ... }
+		{...}
 
 	local last_s = 0
 	local handle = self:during(len, function (dt)
@@ -280,7 +280,7 @@ Timer.func_tween = def_tween(func_tween)
 
 -- Timer instancing
 function Timer.new()
-	return setmetatable({ functions = {}, tween = Timer.tween }, Timer)
+	return setmetatable({functions = {}, tween = Timer.tween}, Timer)
 end
 
 -- default instance
@@ -299,4 +299,4 @@ module.tween = setmetatable({}, {
 	__call = function (t, ...) return default:tween(...) end
 })
 
-return setmetatable(module, { __call = Timer.new })
+return setmetatable(module, {__call = Timer.new})

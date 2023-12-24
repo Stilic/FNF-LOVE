@@ -21,7 +21,7 @@ function ModsState:enter()
 	self:add(self.noModsTxt)
 	self.noModsTxt.visible = (#Mods.mods == 0)
 
-	game.camera.target = { x = game.width / 2, y = game.height / 2 }
+	game.camera.target = {x = game.width / 2, y = game.height / 2}
 
 	if #Mods.mods > 0 then
 		for i = 1, #Mods.mods do
@@ -31,9 +31,9 @@ function ModsState:enter()
 		end
 
 		local cardMidPointX = self.cardGroup.members[self.curSelected].x + 210
-		self.camFollow = { x = cardMidPointX, y = game.height / 2 }
+		self.camFollow = {x = cardMidPointX, y = game.height / 2}
 	else
-		self.camFollow = { x = game.width / 2, y = game.height / 2 }
+		self.camFollow = {x = game.width / 2, y = game.height / 2}
 	end
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
@@ -116,7 +116,7 @@ function ModsState:changeSelection(change)
 	end
 
 	local cardMidPointX = self.cardGroup.members[self.curSelected].x + 210
-	self.camFollow = { x = cardMidPointX, y = game.height / 2 }
+	self.camFollow = {x = cardMidPointX, y = game.height / 2}
 
 	if #Mods.mods > 1 then
 		game.sound.play(paths.getSound('scrollMenu'))

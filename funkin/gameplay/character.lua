@@ -40,7 +40,7 @@ function Character:new(x, y, char, isPlayer)
 		self.holdTime = jsonData.sing_duration
 	end
 
-	self.positionTable = { x = jsonData.position[1], y = jsonData.position[2] }
+	self.positionTable = {x = jsonData.position[1], y = jsonData.position[2]}
 	self.cameraPosition = {
 		x = jsonData.camera_points[1],
 		y = jsonData.camera_points[2]
@@ -182,7 +182,7 @@ end
 function Character:addOffset(anim, x, y)
 	if x == nil then x = 0 end
 	if y == nil then y = 0 end
-	self.animOffsets[anim] = { x = x, y = y }
+	self.animOffsets[anim] = {x = x, y = y}
 end
 
 return Character

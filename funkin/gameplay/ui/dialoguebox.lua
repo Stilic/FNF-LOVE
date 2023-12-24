@@ -3,7 +3,7 @@ local DialogueBox = SpriteGroup:extend("DialogueBox")
 function DialogueBox:new(dialogueList)
 	DialogueBox.super.new(self)
 
-	local colorBG = Color.convert({ 179, 223, 216 })
+	local colorBG = Color.convert({179, 223, 216})
 	self.bgFade = Sprite(-200, -200)
 	self.bgFade:make(math.floor(game.width * 1.3),
 		math.floor(game.height * 1.3), colorBG)
@@ -48,17 +48,17 @@ function DialogueBox:new(dialogueList)
 		["senpai"] = function ()
 			self.box:setFrames(paths.getSparrowAtlas('stages/school/pixelUI/dialogueBox-pixel'))
 			self.box:addAnimByPrefix('normalOpen', 'Text Box Appear', 24, false)
-			self.box:addAnimByIndices('normal', 'Text Box Appear', { 4 }, "", 24)
+			self.box:addAnimByIndices('normal', 'Text Box Appear', {4}, "", 24)
 		end,
 		["roses"] = function ()
 			self.box:setFrames(paths.getSparrowAtlas('stages/school/pixelUI/dialogueBox-senpaiMad'))
 			self.box:addAnimByPrefix('normalOpen', 'SENPAI ANGRY IMPACT SPEECH', 24, false)
-			self.box:addAnimByIndices('normal', 'SENPAI ANGRY IMPACT SPEECH', { 4 }, nil, 24)
+			self.box:addAnimByIndices('normal', 'SENPAI ANGRY IMPACT SPEECH', {4}, nil, 24)
 		end,
 		["thorns"] = function ()
 			self.box:setFrames(paths.getSparrowAtlas('stages/school-evil/pixelUI/dialogueBox-evil'))
 			self.box:addAnimByPrefix('normalOpen', 'Spirit Textbox spawn', 24, false)
-			self.box:addAnimByIndices('normal', 'Spirit Textbox spawn', { 11 }, nil, 24)
+			self.box:addAnimByIndices('normal', 'Spirit Textbox spawn', {11}, nil, 24)
 
 			local face = Sprite(250, -90)
 			face.antialiasing = false
@@ -94,10 +94,10 @@ function DialogueBox:new(dialogueList)
 	self:add(self.handSelect)
 
 	self.swagDialogue = TypeText(240, 500, "", paths.getFont('pixel.otf', 32),
-		Color.convert({ 63, 32, 33 }), 'left', math.floor(game.width * 0.6))
+		Color.convert({63, 32, 33}), 'left', math.floor(game.width * 0.6))
 	self.swagDialogue.sound = paths.getSound("gameplay/pixelText")
 	self.swagDialogue.antialiasing = false
-	self.swagDialogue:setOutline("simple", 2, { x = 4, y = 4 }, Color.convert({ 216, 148, 148 }))
+	self.swagDialogue:setOutline("simple", 2, {x = 4, y = 4}, Color.convert({216, 148, 148}))
 	self:add(self.swagDialogue)
 
 	if PlayState.SONG.song:lower() == 'thorns' then

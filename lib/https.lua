@@ -7,5 +7,5 @@ elseif OS == "OS X" then
 	return package.loadlib("lib/osx/https", "luaopen_https")
 else
 	local __NULL__ = function () end
-	return setmetatable({}, { __index = function () return __NULL__ end })
+	return setmetatable({}, {__index = function () return __NULL__ end})
 end

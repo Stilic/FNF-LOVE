@@ -9,24 +9,24 @@ function Object:new(x, y)
 	self:setPosition(x, y)
 	self.width, self.height = 0, 0
 
-	self.offset = { x = 0, y = 0 }
-	self.scale = { x = 1, y = 1 }
-	self.zoom = { x = 1, y = 1 } -- same as scale
-	self.scrollFactor = { x = 1, y = 1 }
+	self.offset = {x = 0, y = 0}
+	self.scale = {x = 1, y = 1}
+	self.zoom = {x = 1, y = 1} -- same as scale
+	self.scrollFactor = {x = 1, y = 1}
 	self.flipX = false
 	self.flipY = false
 
 	self.shader = nil
 	self.antialiasing = Object.defaultAntialiasing or false
-	self.color = { 1, 1, 1 }
+	self.color = {1, 1, 1}
 	self.blend = "alpha"
 
 	self.alpha = 1
 	self.angle = 0
 
 	self.moves = false
-	self.velocity = { x = 0, y = 0 }
-	self.acceleration = { x = 0, y = 0 }
+	self.velocity = {x = 0, y = 0}
+	self.acceleration = {x = 0, y = 0}
 end
 
 function Object:destroy()

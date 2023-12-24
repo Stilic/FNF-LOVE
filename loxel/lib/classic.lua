@@ -9,7 +9,7 @@
 
 ---@class Classic
 ---@operator call:fun(...:any)
-local Classic = { __class = "Classic" }
+local Classic = {__class = "Classic"}
 Classic.__index = Classic
 
 ---base function that can be called with Classic() or Classic:new()
@@ -35,7 +35,7 @@ end
 ---implements functions to the class???
 ---@param ... unknown
 function Classic:implement(...)
-	for _, cls in pairs({ ... }) do
+	for _, cls in pairs({...}) do
 		for k, v in pairs(cls) do
 			if self[k] == nil and type(v) == "function" then
 				self[k] = v

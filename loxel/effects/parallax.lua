@@ -12,20 +12,20 @@ function ParallaxImage:new(x, y, width, height, texture)
 	self.height = height
 
 	self.vertices = {
-		{ 0, 0,           0, 0 }, { self.width, 0, 1, 0 }, { self.width, self.height, 1, 1 },
-		{ 0, self.height, 0, 1 }
+		{0, 0,           0, 0}, {self.width, 0, 1, 0}, {self.width, self.height, 1, 1},
+		{0, self.height, 0, 1}
 	}
 
-	self.offsetBack = { x = 0, y = 0 }
-	self.offsetFront = { x = 0, y = 0 }
+	self.offsetBack = {x = 0, y = 0}
+	self.offsetFront = {x = 0, y = 0}
 
-	self.scrollFactorBack = { x = 1, y = 1 }
-	self.scrollFactorFront = { x = 1, y = 1 }
+	self.scrollFactorBack = {x = 1, y = 1}
+	self.scrollFactorFront = {x = 1, y = 1}
 
 	self.scaleBack = 1
 	self.scaleFront = 1
 
-	self.color = { 1, 1, 1 }
+	self.color = {1, 1, 1}
 	self.alpha = 1
 
 	self.mesh = love.graphics.newMesh(self.vertices, "fan")

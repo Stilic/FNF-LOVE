@@ -154,7 +154,7 @@ function table.splice(tbl, start, count, ...)
 			break
 		end
 	end
-	local args = { ... }
+	local args = {...}
 	for i = #args, 1, -1 do table.insert(tbl, start, args[i]) end
 	return removedItems
 end
@@ -185,7 +185,7 @@ end
 
 math.roundDecimal = math.truncate
 
-local intervals = { 'B', 'KB', 'MB', 'GB', 'TB' }
+local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
 function math.countbytes(x)
 	local i = 1
 	while x >= 0x400 and i < 5 do

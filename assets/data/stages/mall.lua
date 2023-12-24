@@ -5,8 +5,8 @@ local santa
 function create()
 	self.camZoom = 0.8
 
-	self.boyfriendPos = { x = 970, y = 100 }
-	self.boyfriendCam = { x = 0, y = -100 }
+	self.boyfriendPos = {x = 970, y = 100}
+	self.boyfriendCam = {x = 0, y = -100}
 
 	local bg = Sprite(-1000, -500)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'bgWalls'))

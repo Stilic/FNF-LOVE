@@ -5,7 +5,7 @@
 local Camera = Object:extend("Camera")
 
 local canvas
-local canvasTable = { nil, stencil = true }
+local canvasTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
 
@@ -27,18 +27,18 @@ function Camera:new(x, y, width, height)
 	self.width = width and (width > 0 and width) or game.width
 	self.height = height and (height > 0 and height) or game.height
 
-	self.scroll = { x = 0, y = 0 }
+	self.scroll = {x = 0, y = 0}
 	self.rotation = 0
 	self.angle = 0
 	self.target = nil
 	self.zoom = 1
 
-	self.bgColor = { 0, 0, 0, 0 }
+	self.bgColor = {0, 0, 0, 0}
 
-	self.__zoom = { x = 1, y = 1 }
+	self.__zoom = {x = 1, y = 1}
 	self.__renderQueue = {}
 
-	self.__flashColor = { 1, 1, 1 }
+	self.__flashColor = {1, 1, 1}
 	self.__flashAlpha = 0
 	self.__flashDuration = 0
 	self.__flashComplete = nil
@@ -63,7 +63,7 @@ end
 function Camera:flash(color, duration, onComplete, force)
 	if not force and (self.__flashAlpha > 0) then return end
 
-	self.__flashColor = color or { 1, 1, 1 }
+	self.__flashColor = color or {1, 1, 1}
 	duration = duration or 1
 	if duration <= 0 then duration = 0.000001 end
 	self.__flashDuration = duration

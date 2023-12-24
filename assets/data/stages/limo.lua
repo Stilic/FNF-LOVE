@@ -5,8 +5,8 @@ local fastCar
 function create()
 	self.camZoom = 0.9
 
-	self.boyfriendPos = { x = 1030, y = -120 }
-	self.boyfriendCam = { x = -200, y = 0 }
+	self.boyfriendPos = {x = 1030, y = -120}
+	self.boyfriendCam = {x = -200, y = 0}
 
 	local skyBG = Sprite(-120, -50)
 	skyBG:loadTexture(paths.getImage(SCRIPT_PATH .. 'limoSunset'))

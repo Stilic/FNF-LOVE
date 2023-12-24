@@ -50,11 +50,11 @@ function JSONBuilder.buildChar(value)
 			end
 		end
 		if value.position ~= nil then
-			result = result .. "\t\"position\": " .. buildArray({ value.position.x, value.position.y }) .. ",\n"
+			result = result .. "\t\"position\": " .. buildArray({value.position.x, value.position.y}) .. ",\n"
 		end
 		if value.camera_points ~= nil then
 			result = result ..
-			"\t\"camera_points\": " .. buildArray({ value.camera_points.x, value.camera_points.y }) .. ",\n"
+				"\t\"camera_points\": " .. buildArray({value.camera_points.x, value.camera_points.y}) .. ",\n"
 		end
 		if value.flip_x ~= nil then
 			result = result .. "\t\"flip_x\": " .. tostring(value.flip_x) .. ",\n"

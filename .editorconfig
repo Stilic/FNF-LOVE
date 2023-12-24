@@ -19,13 +19,9 @@ quote_style = none
 
 continuation_indent = 4
 
-# this mean utf8 length , if this is 'unset' then the line width is no longer checked
+# this mean utf8 length, if this is 'unset' then the line width is no longer checked
 # this option decides when to chopdown the code
 max_line_length = 120
-
-# optional crlf/lf/cr/auto, if it is 'auto', in windows it is crlf other platforms are lf
-# in neovim the value 'auto' is not a valid option, please use 'unset' 
-end_of_line = auto
 
 #  none/ comma / semicolon / only_kv_colon
 table_separator_style = none
@@ -36,13 +32,8 @@ trailing_table_separator = keep
 # keep/remove/remove_table_only/remove_string_only
 call_arg_parentheses = keep
 
-detect_end_of_line = false
-
-# this will check text end with new line
-insert_final_newline = true
-
 # [space]
-space_around_table_field_list = true
+space_around_table_field_list = false
 
 space_before_attribute = true
 

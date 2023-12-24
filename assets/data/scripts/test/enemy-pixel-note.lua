@@ -43,7 +43,7 @@ function postCreate()
 			n.antialiasing = false
 			n:updateHitbox()
 			n:play(color .. "Scroll")
-			n.scrollOffset = { x = 0, y = 0 }
+			n.scrollOffset = {x = 0, y = 0}
 			if n.isSustain and n.prevNote then
 				n.scrollOffset.x = n.scrollOffset.x + n.width / 2
 				n:play(color .. "holdend")

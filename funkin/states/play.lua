@@ -12,10 +12,10 @@ PlayState.controlDirs = {
 	note_right = 3
 }
 PlayState.ratings = {
-	{ name = "sick", time = 45,        score = 350, splash = true,  mod = 1 },
-	{ name = "good", time = 90,        score = 200, splash = false, mod = 0.7 },
-	{ name = "bad",  time = 135,       score = 100, splash = false, mod = 0.4 },
-	{ name = "shit", time = math.huge, score = 50,  splash = false, mod = 0.2 }
+	{name = "sick", time = 45,        score = 350, splash = true,  mod = 1},
+	{name = "good", time = 90,        score = 200, splash = false, mod = 0.7},
+	{name = "bad",  time = 135,       score = 100, splash = false, mod = 0.4},
+	{name = "shit", time = math.huge, score = 50,  splash = false, mod = 0.2}
 }
 PlayState.notePosition = 0
 
@@ -333,14 +333,14 @@ function PlayState:enter()
 	self:add(self.stage.foreground)
 	self:add(self.judgeSprites)
 
-	self.camFollow = { x = 0, y = 0 }
+	self.camFollow = {x = 0, y = 0}
 	self:cameraMovement()
 
 	if PlayState.prevCamFollow ~= nil then
 		game.camera.target = PlayState.prevCamFollow
 		PlayState.prevCamFollow = nil
 	else
-		game.camera.target = { x = self.camFollow.x, y = self.camFollow.y }
+		game.camera.target = {x = self.camFollow.x, y = self.camFollow.y}
 	end
 
 	self.camZooming = false
@@ -370,42 +370,42 @@ function PlayState:enter()
 
 	local fontScore = paths.getFont("vcr.ttf", 17)
 	self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", fontScore,
-		{ 1, 1, 1 }, "center")
+		{1, 1, 1}, "center")
 	self.scoreTxt.outline.width = 1
 	self.scoreTxt.antialiasing = false
 
-	self.timeArcBG = Graphic(45, game.height - 45, 100, 100, { 0, 0, 0 }, "arc",
+	self.timeArcBG = Graphic(45, game.height - 45, 100, 100, {0, 0, 0}, "arc",
 		"line")
 	if self.downScroll then self.timeArcBG.y = 45 end
 	self.timeArcBG.line.width = 18
 	self.timeArcBG.config = {
 		radius = 24,
 		type = "closed",
-		angle = { 0, 360 },
+		angle = {0, 360},
 		segments = 40
 	}
 	self.timeArcBG:updateDimensions()
 
 	self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 100, 100,
-		{ 1, 1, 1 }, "arc", "line")
+		{1, 1, 1}, "arc", "line")
 	self.timeArc.line.width = 10
 	self.timeArc.config = {
 		radius = 24,
 		type = "open",
-		angle = { -90, 0 },
+		angle = {-90, 0},
 		segments = 40
 	}
 	self.timeArc:updateDimensions()
 
 	local fontTime = paths.getFont("vcr.ttf", 24)
 	self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "",
-		fontTime, { 1, 1, 1 }, "left")
+		fontTime, {1, 1, 1}, "left")
 	self.timeTxt.outline.width = 2
 	self.timeTxt.antialiasing = false
 	if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
 	self.botplayTxt = Text(620, (self.downScroll and 8 or 688), 'BOTPLAY MODE',
-		fontTime, { 1, 1, 1 }, "right", game.width / 2)
+		fontTime, {1, 1, 1}, "right", game.width / 2)
 	self.botplayTxt.outline.width = 2
 	self.botplayTxt.antialiasing = false
 	self.botplayTxt.visible = self.botPlay
@@ -417,10 +417,10 @@ function PlayState:enter()
 
 		self.buttons.width = width
 		self.buttons.height = game.height
-		self.buttons.cameras = { self.camOther }
+		self.buttons.cameras = {self.camOther}
 		self.buttons.fill = "line"
 
-		local bl = Button(0, 0, 0, 0, "left", { 1, 0, 1 })
+		local bl = Button(0, 0, 0, 0, "left", {1, 0, 1})
 		local bd = Button(width, 0, 0, 0, "down", Color.BLUE)
 		local bu = Button(width * 2, 0, 0, 0, "up", Color.GREEN)
 		local br = Button(width * 3, 0, 0, 0, "right", Color.RED)
@@ -456,7 +456,7 @@ function PlayState:enter()
 		self.receptors, self.splashes, self.notesGroup, self.sustainsGroup,
 		self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
 		self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt, self.botplayTxt
-	}) do o.cameras = { self.camHUD } end
+	}) do o.cameras = {self.camHUD} end
 
 	self.bindedKeyPress = function (...) self:onKeyPress(...) end
 	controls:bindPress(self.bindedKeyPress)
@@ -517,10 +517,10 @@ function PlayState:startCountdown()
 
 		local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
 		local countdownData = {
-			{ sound = basePath .. "/intro3",  image = nil },
-			{ sound = basePath .. "/intro2",  image = basePath .. "/ready" },
-			{ sound = basePath .. "/intro1",  image = basePath .. "/set" },
-			{ sound = basePath .. "/introGo", image = basePath .. "/go" }
+			{sound = basePath .. "/intro3",  image = nil},
+			{sound = basePath .. "/intro2",  image = basePath .. "/ready"},
+			{sound = basePath .. "/intro1",  image = basePath .. "/set"},
+			{sound = basePath .. "/introGo", image = basePath .. "/go"}
 		}
 
 		local crochet = PlayState.conductor.crochet / 1000
@@ -534,15 +534,15 @@ function PlayState:startCountdown()
 					if data.image then
 						local countdownSprite = Sprite()
 						countdownSprite:loadTexture(paths.getImage(data.image))
-						countdownSprite.cameras = { self.camHUD }
+						countdownSprite.cameras = {self.camHUD}
 						if PlayState.pixelStage then
-							countdownSprite.scale = { x = 6, y = 6 }
+							countdownSprite.scale = {x = 6, y = 6}
 						end
 						countdownSprite:updateHitbox()
 						countdownSprite.antialiasing = not PlayState.pixelStage
 						countdownSprite:screenCenter()
 
-						Timer.tween(crochet, countdownSprite, { alpha = 0 },
+						Timer.tween(crochet, countdownSprite, {alpha = 0},
 							"in-out-cubic", function ()
 								self:remove(countdownSprite)
 								countdownSprite:destroy()
@@ -562,7 +562,7 @@ local function fadeGroupSprites(obj)
 		if obj:is(Group) then
 			for _, o in ipairs(obj.members) do fadeGroupSprites(o) end
 		elseif obj.alpha then
-			return Timer.tween(2, obj, { alpha = 0 }, 'in-out-sine')
+			return Timer.tween(2, obj, {alpha = 0}, 'in-out-sine')
 		end
 	end
 	return false
@@ -620,8 +620,8 @@ function PlayState:update(dt)
 			0.04 * self.stage.camSpeed)
 
 	local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
-	self.iconP1.scale = { x = mult, y = mult }
-	self.iconP2.scale = { x = mult, y = mult }
+	self.iconP1.scale = {x = mult, y = mult}
+	self.iconP2.scale = {x = mult, y = mult}
 
 	self.iconP1:updateHitbox()
 	self.iconP2:updateHitbox()
@@ -685,7 +685,7 @@ function PlayState:update(dt)
 				end
 
 				local pause = PauseSubstate()
-				pause.cameras = { self.camOther }
+				pause.cameras = {self.camOther}
 				self:openSubstate(pause)
 			end
 		end
@@ -895,10 +895,10 @@ function PlayState:cameraMovement()
 	if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
 		if section.mustHitSection then
 			Timer.tween((self.conductor.stepCrochet * 4 / 1000),
-				game.camera, { zoom = 1 }, 'in-out-elastic')
+				game.camera, {zoom = 1}, 'in-out-elastic')
 		else
 			Timer.tween((self.conductor.stepCrochet * 4 / 1000),
-				game.camera, { zoom = 1.3 }, 'in-out-elastic')
+				game.camera, {zoom = 1.3}, 'in-out-elastic')
 		end
 	end
 end
@@ -1314,8 +1314,8 @@ function PlayState:beat(b)
 	self.scripts:call("beat")
 
 	local scaleNum = 1.2
-	self.iconP1.scale = { x = scaleNum, y = scaleNum }
-	self.iconP2.scale = { x = scaleNum, y = scaleNum }
+	self.iconP1.scale = {x = scaleNum, y = scaleNum}
+	self.iconP2.scale = {x = scaleNum, y = scaleNum}
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
@@ -1376,7 +1376,7 @@ function PlayState:popUpScore(rating)
 	judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
 	Timer.after(accel, function ()
-		Timer.tween(0.2, judgeSpr, { alpha = 0 }, "linear", function ()
+		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function ()
 			Timer.cancelTweensOf(judgeSpr)
 			judgeSpr:kill()
 		end)
@@ -1407,7 +1407,7 @@ function PlayState:popUpScore(rating)
 			numScore.velocity.x = math.random(-5.0, 5.0)
 
 			Timer.after(accel * 2, function ()
-				Timer.tween(0.2, numScore, { alpha = 0 }, "linear", function ()
+				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function ()
 					Timer.cancelTweensOf(numScore)
 					numScore:kill()
 				end)

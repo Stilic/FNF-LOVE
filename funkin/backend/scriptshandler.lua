@@ -11,7 +11,7 @@ function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)
 ---loads all scripts in a directory to the handler
 ---@param ... string
 function ScriptsHandler:loadDirectory(...)
-	for _, dir in ipairs({ ... }) do
+	for _, dir in ipairs({...}) do
 		if Mods.currentMod then
 			for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getMods(
 				dir))) do
@@ -33,7 +33,7 @@ end
 ---@param func string
 ---@param ... any
 function ScriptsHandler:call(func, ...)
-	local retValue = { cancelled = false }
+	local retValue = {cancelled = false}
 	for _, script in ipairs(self.scripts) do
 		local retScript = script:call(func, ...)
 		if (retScript == Script.Event_Cancel) then

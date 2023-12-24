@@ -16,7 +16,7 @@ function create()
 	tankman:play('wellWell', true)
 	table.insert(state.members, table.find(state.members, state.dad) + 1, tankman)
 
-	state.camFollow = { x = state.dad.x + 380, y = state.dad.y + 170 }
+	state.camFollow = {x = state.dad.x + 380, y = state.dad.y + 170}
 end
 
 function postCreate()
@@ -58,7 +58,7 @@ function postCreate()
 		state.camHUD.visible = true
 
 		local times = PlayState.conductor.crochet / 1000 * 4.5
-		Timer.tween(times, game.camera, { zoom = state.stage.camZoom }, 'in-out-quad')
+		Timer.tween(times, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad')
 		state:startCountdown()
 	end)
 end

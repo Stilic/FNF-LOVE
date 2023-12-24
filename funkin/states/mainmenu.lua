@@ -5,14 +5,14 @@ MainMenuState.curSelected = 1
 function MainMenuState:enter()
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({ details = "In the Menus" })
+		Discord.changePresence({details = "In the Menus"})
 	end
 
-	self.optionShit = { 'story_mode', 'freeplay', 'donate', 'options' }
+	self.optionShit = {'story_mode', 'freeplay', 'donate', 'options'}
 
 	self.selectedSomethin = false
 
-	game.camera.target = { x = 0, y = 0 }
+	game.camera.target = {x = 0, y = 0}
 
 	local yScroll = math.max(0.25 - (0.05 * (#self.optionShit - 4)), 0.1)
 	self.menuBg = Sprite()
@@ -39,7 +39,7 @@ function MainMenuState:enter()
 	for i = 0, #self.optionShit - 1 do
 		local offset = 98 - (math.max(#self.optionShit, 4) - 4) * 80
 		local menuItem = Sprite(0, (i * 140) + offset)
-		menuItem.scale = { x = scale, y = scale }
+		menuItem.scale = {x = scale, y = scale}
 		menuItem:setFrames(paths.getSparrowAtlas(
 			'menus/mainmenu/menu_' .. self.optionShit[i + 1]))
 		menuItem:addAnimByPrefix('idle', self.optionShit[i + 1] .. ' basic', 24)
@@ -55,18 +55,18 @@ function MainMenuState:enter()
 		menuItem:updateHitbox()
 	end
 
-	self.camFollow = { x = 0, y = 0 }
+	self.camFollow = {x = 0, y = 0}
 
 	self.engineVersion = Text(12, game.height - 42,
 		"FNF LÖVE v" .. Project.version,
-		paths.getFont("vcr.ttf", 16), { 255, 255, 255 })
+		paths.getFont("vcr.ttf", 16), {255, 255, 255})
 	self.engineVersion.antialiasing = false
 	self.engineVersion.outline.width = 1
 	self.engineVersion:setScrollFactor()
 	self:add(self.engineVersion)
 
 	self.engineCreated = Text(12, game.height - 24, "Created By Stilic",
-		paths.getFont("vcr.ttf", 16), { 255, 255, 255 })
+		paths.getFont("vcr.ttf", 16), {255, 255, 255})
 	self.engineCreated.antialiasing = false
 	self.engineCreated.outline.width = 1
 	self.engineCreated:setScrollFactor()
@@ -131,7 +131,7 @@ function MainMenuState:update(dt)
 
 				for i, spr in ipairs(self.menuItems.members) do
 					if MainMenuState.curSelected ~= spr.ID then
-						Timer.tween(0.4, spr, { alpha = 0 }, 'out-quad',
+						Timer.tween(0.4, spr, {alpha = 0}, 'out-quad',
 							function ()
 								spr:destroy()
 							end)

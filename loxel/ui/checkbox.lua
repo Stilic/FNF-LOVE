@@ -9,7 +9,7 @@ function Checkbox:new(x, y, size, callback)
 	self.checked = false
 	self.hovered = false
 	self.callback = callback
-	self.color = { 1, 1, 1 }
+	self.color = {1, 1, 1}
 	self.alpha = 1
 end
 
@@ -55,7 +55,7 @@ function Checkbox:__render()
 		love.graphics.translate(checkX, checkY)
 		love.graphics.setColor(0, 0, 0, self.alpha)
 
-		local logo_position = { (-self.size) * 0.3, (-self.size) * -0.3 }
+		local logo_position = {(-self.size) * 0.3, (-self.size) * -0.3}
 
 		love.graphics.rotate(math.rad(45))
 		love.graphics.rectangle("fill", logo_position[1], logo_position[2],

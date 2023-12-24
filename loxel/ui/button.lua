@@ -13,8 +13,8 @@ function Button:new(x, y, width, height, text, callback)
 
 	self.hovered = false
 	self.callback = callback
-	self.color = { 0.5, 0.5, 0.5 }
-	self.textColor = { 1, 1, 1 }
+	self.color = {0.5, 0.5, 0.5}
+	self.textColor = {1, 1, 1}
 end
 
 function Button:update()

@@ -10,7 +10,7 @@ local paths = {
 	audio = {},
 	atlases = {},
 	fonts = {},
-	persistantAssets = { "assets/music/freakyMenu.ogg" }
+	persistantAssets = {"assets/music/freakyMenu.ogg"}
 }
 
 function paths.addPersistant(path)

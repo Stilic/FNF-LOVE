@@ -6,9 +6,9 @@ function Button:new(x, y, width, height, key, color)
 	self.width = width
 	self.height = height
 	self.key = key
-	self.color = color or { 0.2, 0.2, 0.2 }
+	self.color = color or {0.2, 0.2, 0.2}
 
-	self.scrollFactor = { x = 0, y = 0 }
+	self.scrollFactor = {x = 0, y = 0}
 
 	self.pressed = false
 	self.pressedAlpha = 1

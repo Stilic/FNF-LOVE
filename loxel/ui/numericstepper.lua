@@ -2,8 +2,8 @@ local NumericStepper = Basic:extend("NumericStepper")
 
 NumericStepper.instances = {}
 
-local RemoveType = { NONE = 0, DELETE = 1, BACKSPACE = 2 }
-local CursorDirection = { NONE = 0, LEFT = 1, RIGHT = 2 }
+local RemoveType = {NONE = 0, DELETE = 1, BACKSPACE = 2}
+local CursorDirection = {NONE = 0, LEFT = 1, RIGHT = 2}
 
 -- yeah this is inputtextbox + button
 
@@ -23,10 +23,10 @@ function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
 	self.min = min or -999
 	self.max = max or 999
 	self.active = false
-	self.colorText = { 0, 0, 0 }
-	self.color = { 1, 1, 1 }
-	self.colorBorder = { 0, 0, 0 }
-	self.colorCursor = { 0, 0, 0 }
+	self.colorText = {0, 0, 0}
+	self.color = {1, 1, 1}
+	self.colorBorder = {0, 0, 0}
+	self.colorCursor = {0, 0, 0}
 	self.clearOnPressed = false
 
 	-- add text

@@ -84,8 +84,8 @@ function TabMenu:__render(camera)
 		for i, tab in ipairs(self.tabs) do
 			local tabX = self.x + (i - 1) * ((self.width / #self.tabs) + 2)
 			local tabY = self.y
-			local tabColor = (i == self.selectedTab) and { 0.5, 0.5, 0.5 } or
-				{ 0.3, 0.3, 0.3 }
+			local tabColor = (i == self.selectedTab) and {0.5, 0.5, 0.5} or
+				{0.3, 0.3, 0.3}
 
 			love.graphics.setColor(tabColor)
 			love.graphics.rectangle("fill", tabX, tabY,

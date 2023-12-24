@@ -23,7 +23,7 @@ function GameOverSubstate:new(x, y)
 	self:add(self.boyfriend)
 
 	local boyfriendMidpointX, boyfriendMidpointY = self.boyfriend:getGraphicMidpoint()
-	self.camFollow = { x = boyfriendMidpointX, y = boyfriendMidpointY }
+	self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
 end
 
 function GameOverSubstate:enter(x, y)
@@ -50,10 +50,10 @@ function GameOverSubstate:update(dt)
 			game.sound.music:stop()
 			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName))
 			Timer.after(0.7, function ()
-				Timer.tween(2, self.boyfriend, { alpha = 0 }, "linear",
+				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
 					function () game.resetState() end)
 			end)
-			Timer.tween(2, game.camera, { zoom = 0.9 }, "out-cubic")
+			Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
 		end
 	end
 
@@ -67,7 +67,7 @@ function GameOverSubstate:update(dt)
 			if self.boyfriend.curFrame >= 12 and not self.isFollowing then
 				self.updateCam = true
 				self.isFollowing = true
-				Timer.tween(1, game.camera, { zoom = 1.1 }, "in-out-cubic")
+				Timer.tween(1, game.camera, {zoom = 1.1}, "in-out-cubic")
 			end
 
 			if self.boyfriend.animFinished then

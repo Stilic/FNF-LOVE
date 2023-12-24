@@ -1,4 +1,4 @@
-local SoundManager = { list = Group(), music = nil }
+local SoundManager = {list = Group(), music = nil}
 
 function SoundManager.load(asset, volume, looped, autoDestroy, onComplete)
 	local sound = SoundManager.list:recycle(Sound):load(asset)

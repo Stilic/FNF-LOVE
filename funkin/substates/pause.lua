@@ -5,12 +5,12 @@ local PauseSubstate = Substate:extend("PauseSubstate")
 function PauseSubstate:new()
 	PauseSubstate.super.new(self)
 
-	self.menuItems = { "Resume", "Restart Song", "Options", "Exit to menu" }
+	self.menuItems = {"Resume", "Restart Song", "Options", "Exit to menu"}
 	self.curSelected = 1
 
 	self.music = game.sound.load(paths.getMusic('pause/' .. ClientPrefs.data.pauseMusic))
 
-	self.bg = Graphic(0, 0, game.width, game.height, { 0, 0, 0 })
+	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
 	self.bg.alpha = 0
 	self.bg:setScrollFactor()
 	self:add(self.bg)
@@ -30,7 +30,7 @@ end
 function PauseSubstate:enter()
 	self.music:play(0, true)
 
-	Timer.tween(0.4, self.bg, { alpha = 0.6 }, 'in-out-quart')
+	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 
 	self:changeSelection()
 end
@@ -52,7 +52,7 @@ function PauseSubstate:update(dt)
 			["Restart Song"] = function () game.resetState() end,
 			["Options"] = function ()
 				local toSubstate = OptionsSubstate()
-				toSubstate.cameras = { self.parent.camOther }
+				toSubstate.cameras = {self.parent.camOther}
 				toSubstate.applySettings = function (setting)
 					self.parent:onSettingChange(setting)
 				end

@@ -9,9 +9,9 @@ local fgSprites
 function create()
 	self.camZoom = 0.9
 
-	self.boyfriendPos = { x = 810, y = 100 }
-	self.gfPos = { x = 200, y = 65 }
-	self.dadPos = { x = 20, y = 100 }
+	self.boyfriendPos = {x = 810, y = 100}
+	self.gfPos = {x = 200, y = 65}
+	self.dadPos = {x = 20, y = 100}
 
 	local bg = Sprite(-400, -400)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankSky'))

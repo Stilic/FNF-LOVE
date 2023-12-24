@@ -4,7 +4,7 @@ local ChartingState = State:extend("ChartingState")
 
 ChartingState.songPosition = 0
 ChartingState.sustainColors = {
-	{ 194, 75, 153 }, { 0, 255, 255 }, { 8, 250, 5 }, { 249, 57, 63 }
+	{194, 75, 153}, {0, 255, 255}, {8, 250, 5}, {249, 57, 63}
 }
 
 function ChartingState:enter()
@@ -32,7 +32,7 @@ function ChartingState:enter()
 	self.bg = Sprite()
 	self.bg:loadTexture(paths.getImage("menus/menuDesat"))
 	self.bg:screenCenter()
-	self.bg.color = { 0.05, 0.05, 0.05 }
+	self.bg.color = {0.05, 0.05, 0.05}
 	self.bg:setScrollFactor()
 	self:add(self.bg)
 
@@ -109,7 +109,7 @@ function ChartingState:enter()
 
 	self.gridSize = 40
 
-	self.strumLine = { x = self.gridSize * 16, y = 360 }
+	self.strumLine = {x = self.gridSize * 16, y = 360}
 	self.camHUD = Camera()
 	self.camOther = Camera()
 	game.cameras.add(self.camHUD, false)
@@ -117,7 +117,7 @@ function ChartingState:enter()
 
 	local centerGridX = (game.width / 2) - (self.gridSize * 6)
 	self.gridBox = ui.UIGrid(centerGridX, 0, 40, 8, self.gridSize,
-		{ 0.4, 0.4, 0.4 }, { 0.2, 0.2, 0.2 })
+		{0.4, 0.4, 0.4}, {0.2, 0.2, 0.2})
 
 	self:add(self.gridBox)
 
@@ -131,7 +131,7 @@ function ChartingState:enter()
 	end
 
 	local blackLine = Sprite(self.gridBox.x + (self.gridSize * 4) - 1, 0):make(
-		2, game.height, { 0, 0, 0 })
+		2, game.height, {0, 0, 0})
 	blackLine:setScrollFactor(1, 0)
 	self:add(blackLine)
 
@@ -143,7 +143,7 @@ function ChartingState:enter()
 	self:updateSectionLine()
 	self:add(self.sectionLines)
 
-	self.dummyArrow = Sprite():make(self.gridSize, self.gridSize, { 1, 1, 1 })
+	self.dummyArrow = Sprite():make(self.gridSize, self.gridSize, {1, 1, 1})
 	self:add(self.dummyArrow)
 
 	self:generateNotes()
@@ -152,13 +152,13 @@ function ChartingState:enter()
 
 	local daBlack = Sprite(self.gridBox.x, 0):make(self.gridSize * 8,
 		(self.gridSize * 4),
-		{ 0, 0, 0 })
+		{0, 0, 0})
 	daBlack:setScrollFactor()
 	daBlack.alpha = 0.4
 	self:add(daBlack)
 
 	local curPosLine = Sprite(self.gridBox.x - 5, (self.gridSize * 4) - 2):make(
-		self.gridSize * 8 + 10, 4, { 0, 0.5, 1 })
+		self.gridSize * 8 + 10, 4, {0, 0.5, 1})
 	curPosLine:setScrollFactor()
 	self:add(curPosLine)
 
@@ -183,11 +183,11 @@ function ChartingState:enter()
 
 	self.blockInput = {}
 
-	local tabs = { "Charting", "Note", "Section", "Song" }
+	local tabs = {"Charting", "Note", "Section", "Song"}
 	self.UI_Box = ui.UITabMenu(890, 40, tabs)
 	self.UI_Box.height = (game.height - self.UI_Box.tabHeight) -
 		(self.UI_Box.y * 2)
-	self.UI_Box.cameras = { self.camHUD }
+	self.UI_Box.cameras = {self.camHUD}
 	self:add(self.UI_Box)
 	self:add_UI_Song()
 	self:add_UI_Section()
@@ -204,7 +204,7 @@ function ChartingState:add_UI_Song()
 	local metadata = paths.getJSON('songs/' ..
 		paths.formatToSongPath(self.__song.song) ..
 		'/meta')
-	local diffs = { "easy", "normal", "hard" }
+	local diffs = {"easy", "normal", "hard"}
 	if metadata and metadata.difficulties then
 		diffs = {}
 		for i = 1, #metadata.difficulties do
@@ -691,7 +691,7 @@ function ChartingState:update(dt)
 	self:strumPosUpdate()
 
 	for _, n in pairs(self.allNotes.members) do
-		n.color = { 1, 1, 1 }
+		n.color = {1, 1, 1}
 
 		if self.curSelectedNote ~= nil then
 			local datacheck = n.data
@@ -702,7 +702,7 @@ function ChartingState:update(dt)
 				nil and self.curSelectedNote[2] == datacheck then
 				colorSine = colorSine + dt
 				local colorVal = 0.7 + math.sin(math.pi * colorSine) * 0.3
-				n.color = { colorVal, colorVal, colorVal }
+				n.color = {colorVal, colorVal, colorVal}
 			end
 		end
 
@@ -813,7 +813,7 @@ function ChartingState:updateBeatLine()
 	self.beatLines:clear()
 	for i = 0, 10 do
 		local daLine = Sprite(self.gridBox.x - 4, 0):make(self.gridSize * 8 + 8,
-			2, { 1, 1, 1 })
+			2, {1, 1, 1})
 		daLine.alpha = 0.6
 		daLine.y = self.gridBox.y + ((self.gridSize * 4) * i) - 1
 		self.beatLines:add(daLine)
@@ -827,7 +827,7 @@ function ChartingState:updateSectionLine()
 		local beats = 4
 		if s and s.sectionBeats then beats = s.sectionBeats end
 		local daLine = Sprite(self.gridBox.x - 5, 0):make(
-			self.gridSize * 8 + 10, 4, { 1, 1, 1 })
+			self.gridSize * 8 + 10, 4, {1, 1, 1})
 		daLine.alpha = 0.7
 		daLine.y = (self.gridSize * totalSteps) - 2
 		totalSteps = totalSteps + math.round(beats * 4)
@@ -930,8 +930,8 @@ function ChartingState:updateIcon()
 		40
 	iconRightSpr:setScrollFactor()
 
-	iconLeftSpr.scale = { x = 0.53, y = 0.53 }
-	iconRightSpr.scale = { x = 0.53, y = 0.53 }
+	iconLeftSpr.scale = {x = 0.53, y = 0.53}
+	iconRightSpr.scale = {x = 0.53, y = 0.53}
 
 	iconLeftSpr:updateHitbox()
 	iconRightSpr:updateHitbox()
@@ -1012,7 +1012,7 @@ function ChartingState:addNote()
 	end
 
 	table.insert(self.__song.notes[arrowSection + 1].sectionNotes,
-		{ noteStrumTime, noteData, noteSus })
+		{noteStrumTime, noteData, noteSus})
 	self.curSelectedNote =
 		self.__song.notes[arrowSection + 1].sectionNotes[#self.__song.notes[arrowSection +
 		1].sectionNotes]
@@ -1108,10 +1108,10 @@ function ChartingState:saveJson()
 	if self.curDiff ~= "normal" then diff = "-" .. self.curDiff end
 	local filename = formatSong .. diff
 
-	local file = WindowDialogue.askSaveAsFile(nil, { { "JSON Files", "*.json" } },
+	local file = WindowDialogue.askSaveAsFile(nil, {{"JSON Files", "*.json"}},
 		filename .. ".json")
 	if file then
-		local chartData = { song = table.clone(self.__song) }
+		local chartData = {song = table.clone(self.__song)}
 		local json_file = io.open(file, "wb")
 		json_file:write(encodeJson(chartData))
 		json_file:close()

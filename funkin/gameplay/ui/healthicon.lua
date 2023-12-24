@@ -18,7 +18,7 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	self:loadTexture(paths.getImage("icons/" .. icon))
 
 	self.icon = icon
-	self.iconOffset = { x = 0, y = 0 }
+	self.iconOffset = {x = 0, y = 0}
 
 	local hasOldSuffix = icon:endsWith("-old")
 	self.isPixelIcon = icon:endsWith("-pixel") or

@@ -30,7 +30,7 @@ end
 
 function UpdateState:enter()
 	local bg = Sprite():loadTexture(paths.getImage('menus/menuDesat'))
-	bg.color = { 0.1, 0.1, 0.1 }
+	bg.color = {0.1, 0.1, 0.1}
 	self:add(bg)
 
 	local textmoment = "Oh look, an update! you are running an outdated version."
@@ -39,12 +39,12 @@ function UpdateState:enter()
 		.. "\n\n Press BACK to proceed."
 
 	local textupdate = Text(0, 0, textmoment, paths.getFont('phantommuff.ttf', 30),
-		{ 1, 1, 1 }, 'center')
+		{1, 1, 1}, 'center')
 	textupdate:screenCenter()
 	textupdate.y = textupdate.y - 40
 	self:add(textupdate)
 
-	self.blackScreen = Sprite():make(game.width, game.height, { 0, 0, 0 })
+	self.blackScreen = Sprite():make(game.width, game.height, {0, 0, 0})
 	self.blackScreen.visible = false
 	self:add(self.blackScreen)
 end

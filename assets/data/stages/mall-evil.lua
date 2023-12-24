@@ -3,7 +3,7 @@ local bottomBopper
 local santa
 
 function create()
-	self.boyfriendPos = { x = 1090, y = 100 }
+	self.boyfriendPos = {x = 1090, y = 100}
 
 	local bg = Sprite(-400, -500)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'evilBG'))

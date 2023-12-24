@@ -12,7 +12,7 @@ function OptionsSubstate:new()
 
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({ details = "In the Menus" })
+		Discord.changePresence({details = "In the Menus"})
 	end
 
 	self.curTab = 1
@@ -21,10 +21,10 @@ function OptionsSubstate:new()
 	self.changingOption = false
 
 	self.scrollCam = Camera()
-	self.scrollCam.target = { x = game.width / 2, y = game.height / 2 }
+	self.scrollCam.target = {x = game.width / 2, y = game.height / 2}
 	game.cameras.add(self.scrollCam, false)
 
-	self.camFollow = { x = game.width / 2, y = game.height / 2 }
+	self.camFollow = {x = game.width / 2, y = game.height / 2}
 
 	self.optionsTab = {
 		'Gameplay',
@@ -32,49 +32,49 @@ function OptionsSubstate:new()
 		'Controls'
 	}
 
-	self.titleTabBG = Sprite(0, 20):make(game.width * 0.8, 65, { 0, 0, 0 })
+	self.titleTabBG = Sprite(0, 20):make(game.width * 0.8, 65, {0, 0, 0})
 	self.titleTabBG.alpha = 0.7
 	self.titleTabBG:screenCenter('x')
-	self.titleTabBG.cameras = { self.scrollCam }
+	self.titleTabBG.cameras = {self.scrollCam}
 	self:add(self.titleTabBG)
 
 	self.tabBG = Sprite(0, 105):make(game.width * 0.8, game.height * 0.75,
-		{ 0, 0, 0 })
+		{0, 0, 0})
 	self.tabBG.alpha = 0.7
 	self.tabBG:screenCenter('x')
-	self.tabBG.cameras = { self.scrollCam }
+	self.tabBG.cameras = {self.scrollCam}
 	self:add(self.tabBG)
 
-	self.optionsCursor = Sprite():make((game.width * 0.78), 39, { 1, 1, 1 })
+	self.optionsCursor = Sprite():make((game.width * 0.78), 39, {1, 1, 1})
 	self.optionsCursor.alpha = 0.1
 	self.optionsCursor.visible = false
 	self.optionsCursor:screenCenter('x')
-	self.optionsCursor.cameras = { self.scrollCam }
+	self.optionsCursor.cameras = {self.scrollCam}
 	self:add(self.optionsCursor)
 
 	self.curBindSelect = 1
 
-	self.controlsCursor = Sprite(game.width / 2 + 5):make(240, 39, { 1, 1, 1 })
+	self.controlsCursor = Sprite(game.width / 2 + 5):make(240, 39, {1, 1, 1})
 	self.controlsCursor.alpha = 0.2
 	self.controlsCursor.visible = false
-	self.controlsCursor.cameras = { self.scrollCam }
+	self.controlsCursor.cameras = {self.scrollCam}
 	self:add(self.controlsCursor)
 
 	self.titleTxt = Text(0, 30, '', paths.getFont('phantommuff.ttf', 40),
-		{ 1, 1, 1 }, "center", game.width)
-	self.titleTxt.cameras = { self.scrollCam }
+		{1, 1, 1}, "center", game.width)
+	self.titleTxt.cameras = {self.scrollCam}
 	self:add(self.titleTxt)
 
 	self.allTabs = Group()
-	self.allTabs.cameras = { self.scrollCam }
+	self.allTabs.cameras = {self.scrollCam}
 	self:add(self.allTabs)
 
 	self.textGroup = Group()
-	self.textGroup.cameras = { self.scrollCam }
+	self.textGroup.cameras = {self.scrollCam}
 	self:add(self.textGroup)
 
 	self.spriteGroup = Group()
-	self.spriteGroup.cameras = { self.scrollCam }
+	self.spriteGroup.cameras = {self.scrollCam}
 	self:add(self.spriteGroup)
 
 	self.timerHold = 0
@@ -82,31 +82,31 @@ function OptionsSubstate:new()
 	self.block_input = false
 	self.onTab = false
 
-	self.blackFG = Sprite():make(game.width, game.height, { 0, 0, 0 })
+	self.blackFG = Sprite():make(game.width, game.height, {0, 0, 0})
 	self.blackFG.alpha = 0
-	self.blackFG.cameras = { self.scrollCam }
+	self.blackFG.cameras = {self.scrollCam}
 	self.blackFG:setScrollFactor()
 	self:add(self.blackFG)
 
 	self.waitInputTxt = Text(0, 0, 'Rebinding..',
-		paths.getFont('phantommuff.ttf', 60), { 1, 1, 1 },
+		paths.getFont('phantommuff.ttf', 60), {1, 1, 1},
 		"center", game.width)
 	self.waitInputTxt:screenCenter('y')
 	self.waitInputTxt.visible = false
-	self.waitInputTxt.cameras = { self.scrollCam }
+	self.waitInputTxt.cameras = {self.scrollCam}
 	self.waitInputTxt:setScrollFactor()
 	self:add(self.waitInputTxt)
 
-	self.hitboxdown = { y = game.width - 65, height = 65 }
-	self.hitboxup = { y = -65, height = 65 }
+	self.hitboxdown = {y = game.width - 65, height = 65}
+	self.hitboxup = {y = -65, height = 65}
 
 	self:reset_Tabs()
 	self:changeTab()
 end
 
 function OptionsSubstate:reset_Tabs()
-	for _, idk in ipairs({ self.allTabs, self.textGroup,
-		self.spriteGroup }) do
+	for _, idk in ipairs({self.allTabs, self.textGroup,
+		self.spriteGroup}) do
 		idk:clear()
 	end
 
@@ -114,12 +114,12 @@ function OptionsSubstate:reset_Tabs()
 		tabs[tab].add(self)
 	end
 
-	for _, idk in ipairs({ self.allTabs, self.textGroup, self.spriteGroup }) do
+	for _, idk in ipairs({self.allTabs, self.textGroup, self.spriteGroup}) do
 		for _, grp in ipairs(idk.members) do
 			for _, obj in ipairs(grp.members) do
 				obj.visible = (grp.name == self.optionsTab[self.curTab])
 				if grp.isLines then
-					obj:make(2, self.tabBG.height - 24, { 255, 255, 255 })
+					obj:make(2, self.tabBG.height - 24, {255, 255, 255})
 				end
 			end
 		end
@@ -381,18 +381,18 @@ function OptionsSubstate:changeTab(huh)
 	local lastObject = lastSelection.members[1]
 	if lastObject.y > game.height then
 		self.tabBG:make(game.width * 0.8, lastObject.y - 50,
-			{ 0, 0, 0 })
+			{0, 0, 0})
 	else
 		self.tabBG:make(game.width * 0.8, game.height * 0.75,
-			{ 0, 0, 0 })
+			{0, 0, 0})
 	end
 
-	for _, idk in ipairs({ self.allTabs, self.textGroup, self.spriteGroup }) do
+	for _, idk in ipairs({self.allTabs, self.textGroup, self.spriteGroup}) do
 		for _, grp in ipairs(idk.members) do
 			for _, obj in ipairs(grp.members) do
 				obj.visible = (grp.name == self.optionsTab[self.curTab])
 				if grp.isLines then
-					obj:make(2, self.tabBG.height - 24, { 255, 255, 255 })
+					obj:make(2, self.tabBG.height - 24, {255, 255, 255})
 				end
 			end
 		end

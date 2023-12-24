@@ -103,7 +103,7 @@ return function (xmlText)
 				parseArgs(lNode, xarg)
 				table.insert(stack, lNode)
 				top = lNode
-			else                                    -- end tag
+			else                        -- end tag
 				local toclose = table.remove(stack) -- remove top
 
 				top = stack[#stack]

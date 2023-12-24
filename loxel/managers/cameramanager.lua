@@ -1,4 +1,4 @@
-local CameraManager = { list = {} }
+local CameraManager = {list = {}}
 local defaults = {}
 
 function CameraManager.add(camera, defaultDrawTarget)

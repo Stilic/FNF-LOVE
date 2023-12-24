@@ -1,7 +1,7 @@
 ---@class Script:Classic
 local Script = Classic:extend("Script")
 
-local chunkMt = { __index = _G }
+local chunkMt = {__index = _G}
 
 Script.Event_Continue = 1
 Script.Event_Cancel = 2

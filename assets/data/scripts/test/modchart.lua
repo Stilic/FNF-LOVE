@@ -20,9 +20,9 @@ function onSettingChange(setting)
 	end
 end
 
-local introBeats = { 0, 6, 12, 20, 22, 28, 32, 38, 44, 52, 54, 60, 61, 62, 63 }
+local introBeats = {0, 6, 12, 20, 22, 28, 32, 38, 44, 52, 54, 60, 61, 62, 63}
 local noteModchart = {
-	offset = { x = 0, y = 0 },
+	offset = {x = 0, y = 0},
 	noteY = 0,
 	beat = 0,
 	sin = 0,
@@ -52,28 +52,28 @@ function step()
 			noteModchart.enabled = true
 			noteModchart.cos = 6
 			noteModchart.cos_speed = 3
-			Timer.tween(1.2, noteModchart, { amount = 1 }, 'out-circ')
+			Timer.tween(1.2, noteModchart, {amount = 1}, 'out-circ')
 		end
 		if curStep == 192 then
 			noteModchart.sin_speed = 3
-			Timer.tween(stepCrochet * 0.002, noteModchart, { sin = 6 }, 'in-out-sine')
+			Timer.tween(stepCrochet * 0.002, noteModchart, {sin = 6}, 'in-out-sine')
 		end
 		if curStep == 504 then
-			Timer.tween(stepCrochet * 0.002, noteModchart, { amount = 0 }, 'in-out-sine')
+			Timer.tween(stepCrochet * 0.002, noteModchart, {amount = 0}, 'in-out-sine')
 		end
 		if curStep == 896 then
-			Timer.tween(stepCrochet * 0.002, noteModchart, { sin = 6 }, 'in-out-sine')
-			Timer.tween(stepCrochet * 0.002, noteModchart, { noteY = 15 }, 'in-out-sine')
+			Timer.tween(stepCrochet * 0.002, noteModchart, {sin = 6}, 'in-out-sine')
+			Timer.tween(stepCrochet * 0.002, noteModchart, {noteY = 15}, 'in-out-sine')
 		end
 		if curStep % 4 == 0 then
 			if curStep >= 256 then
-				Timer.tween(0.1, noteModchart, { beat = ((curBeat % 2 == 0) and 10 or -10) }, 'in-out-sine', function ()
-					Timer.tween(0.1, noteModchart, { beat = 0 }, 'in-out-sine')
+				Timer.tween(0.1, noteModchart, {beat = ((curBeat % 2 == 0) and 10 or -10)}, 'in-out-sine', function ()
+					Timer.tween(0.1, noteModchart, {beat = 0}, 'in-out-sine')
 				end)
 			end
 			if curStep >= 384 and curStep < 512 or curStep >= 768 and curStep < 896 then
-				Timer.tween(stepCrochet * 0.002, noteModchart, { bounce = 10 }, 'out-circ', function ()
-					Timer.tween(stepCrochet * 0.002, noteModchart, { bounce = 0 }, 'in-sine')
+				Timer.tween(stepCrochet * 0.002, noteModchart, {bounce = 10}, 'out-circ', function ()
+					Timer.tween(stepCrochet * 0.002, noteModchart, {bounce = 0}, 'in-sine')
 				end)
 			end
 		end
@@ -120,6 +120,6 @@ function randomMoveArrow()
 		n:setPosition(randomX, randomY)
 		n.angle = randomAngle
 		Timer.cancelTweensOf(n)
-		Timer.tween(0.4, n, { x = ogNotePos[i].x, y = ogNotePos[i].y, angle = 0 }, 'out-circ')
+		Timer.tween(0.4, n, {x = ogNotePos[i].x, y = ogNotePos[i].y, angle = 0}, 'out-circ')
 	end
 end

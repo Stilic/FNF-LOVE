@@ -6,15 +6,15 @@ function Text:new(x, y, content, font, color, align, limit)
 
 	self.content = content
 	self.font = font or love.graphics.getFont()
-	self.color = color or { 1, 1, 1 }
+	self.color = color or {1, 1, 1}
 	self.alignment = align or "left"
 	self.limit = limit
 
 	self.outline = {
 		style = "normal",
-		color = { 0, 0, 0 },
+		color = {0, 0, 0},
 		width = 0,
-		offset = { x = 0, y = 0 }
+		offset = {x = 0, y = 0}
 	}
 
 	self.__content = nil
@@ -54,7 +54,7 @@ end
 
 function Text:setFont(font) self.font = font or love.graphics.getFont() end
 
-function Text:setColor(color) self.color = color or { 1, 1, 1 } end
+function Text:setColor(color) self.color = color or {1, 1, 1} end
 
 function Text:screenCenter(axes)
 	if axes == nil then axes = "xy" end
@@ -70,8 +70,8 @@ end
 function Text:setOutline(style, width, offset, color)
 	self.outline.style = style
 	self.outline.width = width
-	self.outline.offset = offset or { x = 0, y = 0 }
-	self.outline.color = color or { 0, 0, 0 }
+	self.outline.offset = offset or {x = 0, y = 0}
+	self.outline.color = color or {0, 0, 0}
 end
 
 function Text:draw()

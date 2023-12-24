@@ -76,14 +76,14 @@ local statusBuilder
 local encode_map = {}
 
 local encode_escape_map = {
-	["\""]   = "\\\"",
-	["\\"]   = "\\\\",
-	["/"]    = "\\/",
-	["\b"]   = "\\b",
-	["\f"]   = "\\f",
-	["\n"]   = "\\n",
-	["\r"]   = "\\r",
-	["\t"]   = "\\t",
+	["\""] = "\\\"",
+	["\\"] = "\\\\",
+	["/"]  = "\\/",
+	["\b"] = "\\b",
+	["\f"] = "\\f",
+	["\n"] = "\\n",
+	["\r"] = "\\r",
+	["\t"] = "\\t",
 }
 
 local decode_escape_set = {}
@@ -179,7 +179,7 @@ function encode_map.table(t, i)
 			local k = keys[1]
 			if type(t[k]) == "number" or type(t[k]) == "string" then
 				statusBuilder[#statusBuilder + 1] = string.rep('\t', indent) .. '{\n' .. string.rep('\t', indent + 1) ..
-				'"'
+					'"'
 			else
 				statusBuilder[#statusBuilder + 1] = '{\n' .. string.rep('\t', indent + 1) .. '"'
 			end

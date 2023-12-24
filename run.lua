@@ -313,7 +313,7 @@ function love.errorhandler(msg)
 			local name = love.window.getTitle()
 			if #name == 0 or name == "Untitled" then name = "Game" end
 
-			local buttons = { "OK", "Cancel", "Restart" }
+			local buttons = {"OK", "Cancel", "Restart"}
 			if love.system then buttons[4] = "Copy to clipboard" end
 
 			local pressed = love.window.showMessageBox("Quit " .. name .. "?", "", buttons)

@@ -19,25 +19,25 @@ function CharacterEditor:enter()
 		self.isPlayer = self.curChar:startsWith('bf')
 	end
 
-	self.camFollow = { x = 0, y = 0 }
+	self.camFollow = {x = 0, y = 0}
 	self.curZoom = 1
 
 	self.camChar = Camera()
-	self.camChar.scroll = { x = 0, y = 0 }
+	self.camChar.scroll = {x = 0, y = 0}
 	self.camMenu = Camera()
 	game.cameras.add(self.camChar, false)
 	game.cameras.add(self.camMenu, false)
 
 	local bg = Sprite()
 	bg:loadTexture(paths.getImage('editor/josh_hutcherson'))
-	bg.color = { 0.4, 0.4, 0.4 }
+	bg.color = {0.4, 0.4, 0.4}
 	bg:setScrollFactor()
 	self:add(bg)
 
 	self.floor = Sprite(0, 840)
 	self.floor:make(game.width, 4)
 	self.floor:setScrollFactor(0, 1)
-	self.floor.cameras = { self.camChar }
+	self.floor.cameras = {self.camChar}
 	self:add(self.floor)
 
 	self.charLayer = Group()
@@ -56,23 +56,23 @@ function CharacterEditor:enter()
 
 	self:changeAnim()
 
-	self.camPoint1 = Sprite():make(5, 30, { 1, 1, 1 })
-	self.camPoint1.cameras = { self.camChar }
+	self.camPoint1 = Sprite():make(5, 30, {1, 1, 1})
+	self.camPoint1.cameras = {self.camChar}
 	self:add(self.camPoint1)
 
-	self.camPoint2 = Sprite():make(30, 5, { 1, 1, 1 })
-	self.camPoint2.cameras = { self.camChar }
+	self.camPoint2 = Sprite():make(30, 5, {1, 1, 1})
+	self.camPoint2.cameras = {self.camChar}
 	self:add(self.camPoint2)
 
 	self.blockInput = {}
 
-	self.animationTab = ui.UITabMenu(0, game.height * 0.8, { 'Animation' })
+	self.animationTab = ui.UITabMenu(0, game.height * 0.8, {'Animation'})
 	self.animationTab.width = game.width * 0.7
 	self.animationTab.height = game.height * 0.2
 	self:add(self.animationTab)
 
 	self.charTab = ui.UITabMenu(game.width * 0.7, game.height * 0.6,
-		{ 'Character' })
+		{'Character'})
 	self.charTab.width = game.width * 0.3
 	self.charTab.height = game.height * 0.4
 	self:add(self.charTab)
@@ -87,7 +87,7 @@ function CharacterEditor:enter()
 
 	for _, o in ipairs({
 		self.animationTab, self.charTab, self.animInfoTxt, self.charInfoTxt
-	}) do o.cameras = { self.camMenu } end
+	}) do o.cameras = {self.camMenu} end
 end
 
 function CharacterEditor:add_UI_Character()
@@ -110,7 +110,7 @@ function CharacterEditor:add_UI_Character()
 
 		self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
 		self.char.y = 100 + self.char.positionTable.y
-		self.camFollow = { x = (self.isPlayer and 350 or -310), y = 294 }
+		self.camFollow = {x = (self.isPlayer and 350 or -310), y = 294}
 
 		if self.char.curAnim.name:find('LEFT') or
 			self.char.curAnim.name:find('RIGHT') then
@@ -167,9 +167,9 @@ function CharacterEditor:add_UI_Character()
 		self.charLayer:add(self.healthIcon)
 		self.healthIcon:destroy()
 		self.healthIcon = HealthIcon(self.char.icon, false)
-		self.healthIcon.cameras = { self.camMenu }
+		self.healthIcon.cameras = {self.camMenu}
 		self.healthIcon:setPosition(20, 157)
-		self.healthIcon.scale = { x = 0.6, y = 0.6 }
+		self.healthIcon.scale = {x = 0.6, y = 0.6}
 		self.healthIcon:updateHitbox()
 		self.charLayer:add(self.healthIcon)
 	end
@@ -363,16 +363,16 @@ end
 function CharacterEditor:loadCharacter()
 	self.charLayer:clear()
 	self.char = Character(0, 0, self.curChar, self.isPlayer)
-	self.char.cameras = { self.camChar }
+	self.char.cameras = {self.camChar}
 	self.charLayer:add(self.char)
 	if self.char.animationsTable[1] ~= nil then
 		self.char:playAnim(self.char.animationsTable[1][1], true)
 	end
 
 	self.healthIcon = HealthIcon(self.char.icon, false)
-	self.healthIcon.cameras = { self.camMenu }
+	self.healthIcon.cameras = {self.camMenu}
 	self.healthIcon:setPosition(20, 157)
-	self.healthIcon.scale = { x = 0.6, y = 0.6 }
+	self.healthIcon.scale = {x = 0.6, y = 0.6}
 	self.healthIcon:updateHitbox()
 	self.charLayer:add(self.healthIcon)
 
@@ -382,12 +382,12 @@ function CharacterEditor:loadCharacter()
 	self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
 	self.char.y = 100 + self.char.positionTable.y
 
-	self.camFollow = { x = (self.isPlayer and 350 or -310), y = 294 }
+	self.camFollow = {x = (self.isPlayer and 350 or -310), y = 294}
 end
 
 function CharacterEditor:changeOffsets(x, y)
 	self.char.offset.x, self.char.offset.y = x, y
-	self.char.animOffsets[self.curAnim[1]] = { x = x, y = y }
+	self.char.animOffsets[self.curAnim[1]] = {x = x, y = y}
 end
 
 function CharacterEditor:changeAnim(huh)
@@ -405,7 +405,7 @@ function CharacterEditor:changeAnim(huh)
 end
 
 function CharacterEditor:saveCharacter()
-	local file = WindowDialogue.askSaveAsFile(nil, { { "JSON Files", "*.json" } },
+	local file = WindowDialogue.askSaveAsFile(nil, {{"JSON Files", "*.json"}},
 		self.curChar .. ".json")
 
 	if file then

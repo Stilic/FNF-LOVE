@@ -1,16 +1,16 @@
 local Graphic = {}
 
 local optionsVar = {
-	{ 'fps', 'FPS', false, 'number', { 30, 250 }, function ()
+	{'fps', 'FPS', false, 'number', {30, 250}, function ()
 		love.FPScap = ClientPrefs.data.fps
-	end },
-	{ 'showFps', 'Show FPS', false, 'boolean', function ()
+	end},
+	{'showFps', 'Show FPS', false, 'boolean', function ()
 		love.showFPS = ClientPrefs.data.showFps
-	end },
-	{ 'antialiasing', 'Antialiasing', false, 'boolean', function ()
+	end},
+	{'antialiasing', 'Antialiasing', false, 'boolean', function ()
 		Object.defaultAntialiasing = ClientPrefs.data.antialiasing
-	end },
-	{ 'shader', 'Shader', false, 'boolean' }
+	end},
+	{'shader', 'Shader', false, 'boolean'}
 }
 
 local curSelected = 1
@@ -25,7 +25,7 @@ function Graphic.add(options)
 
 		local yPos = (i * 45) + 80
 		local control = Text(145, yPos, daOption[2],
-			paths.getFont('phantommuff.ttf', 30), { 1, 1, 1 })
+			paths.getFont('phantommuff.ttf', 30), {1, 1, 1})
 		daGroup:add(control)
 
 		local realvalue = ClientPrefs.data[daOption[1]]
@@ -39,7 +39,7 @@ function Graphic.add(options)
 		local value = daOption[3] and '< ' .. tostring(realvalue)
 			.. ' >' or tostring(realvalue)
 		local valueTxt = Text((game.width / 2) + 10, yPos, value,
-			paths.getFont('phantommuff.ttf', 30), { 1, 1, 1 },
+			paths.getFont('phantommuff.ttf', 30), {1, 1, 1},
 			'center', (game.width * 0.8) / 2 - 20)
 		daGroup:add(valueTxt)
 
@@ -51,7 +51,7 @@ function Graphic.add(options)
 	linesGroup.name = graphicTab.name
 
 	local lines = Sprite(0, 117):make(2, game.height * 0.72,
-		{ 255, 255, 255 })
+		{255, 255, 255})
 	lines:screenCenter('x')
 	lines.alpha = 0.5
 	linesGroup:add(lines)

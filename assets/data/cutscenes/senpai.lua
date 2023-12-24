@@ -4,20 +4,20 @@ local doof, music
 
 function create()
 	local dialogue = love.filesystem.read(paths.getPath('songs/senpai/dialogue.txt')):split('\n')
-	local black = Sprite(-100, -100):make(game.width * 2, game.height * 2, { 0, 0, 0 })
+	local black = Sprite(-100, -100):make(game.width * 2, game.height * 2, {0, 0, 0})
 
 	music = game.sound.play(paths.getMusic('gameplay/Lunchbox'), 0.8, true, true)
 
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
-	doof.cameras = { state.camHUD }
+	doof.cameras = {state.camHUD}
 	doof.finishThing = function ()
 		state:startCountdown()
 		close()
 	end
 
 	black:setScrollFactor()
-	black.cameras = { state.camHUD }
+	black.cameras = {state.camHUD}
 	state:add(black)
 
 	game.discardTransition()

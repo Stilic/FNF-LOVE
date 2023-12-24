@@ -6,10 +6,10 @@ StoryMenuState.curDifficulty = 2
 function StoryMenuState:enter()
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({ details = "In the Menus" })
+		Discord.changePresence({details = "In the Menus"})
 	end
 
-	self.diffs = { 'Easy', PlayState.defaultDifficulty, 'Hard' }
+	self.diffs = {'Easy', PlayState.defaultDifficulty, 'Hard'}
 
 	self.lerpScore = 0
 	self.intendedScore = 0
@@ -25,11 +25,11 @@ function StoryMenuState:enter()
 	PlayState.storyMode = true
 
 	self.scoreText = Text(10, 10, "SCORE: 49324858",
-		paths.getFont('vcr.ttf', 36), { 1, 1, 1 }, 'right')
+		paths.getFont('vcr.ttf', 36), {1, 1, 1}, 'right')
 	self.scoreText.antialiasing = false
 
 	self.txtWeekTitle = Text(game.width * 0.7, 10, "",
-		paths.getFont('vcr.ttf', 32), { 1, 1, 1 }, 'right')
+		paths.getFont('vcr.ttf', 32), {1, 1, 1}, 'right')
 	self.txtWeekTitle.alpha = 0.7
 	self.txtWeekTitle.antialiasing = false
 
@@ -279,7 +279,7 @@ function StoryMenuState:changeDifficulty(change)
 
 		Timer:cancelTweensOf(tweenDifficulty)
 		tweenDifficulty:tween(0.07, self.sprDifficulty,
-			{ y = self.leftArrow.y + 15, alpha = 1 })
+			{y = self.leftArrow.y + 15, alpha = 1})
 	end
 
 	local diff = ""

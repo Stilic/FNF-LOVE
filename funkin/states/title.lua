@@ -3,7 +3,7 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
-	Discord.changePresence({ details = "In the Menus" })
+	Discord.changePresence({details = "In the Menus"})
 
 	self.curWacky = self:getIntroTextShit()
 
@@ -97,7 +97,7 @@ function TitleState:update(dt)
 	if pressedEnter and not self.confirmed and self.skippedIntro then
 		self.confirmed = true
 		self.titleText:play("press")
-		game.camera:flash({ 1, 1, 1 }, 2)
+		game.camera:flash({1, 1, 1}, 2)
 		game.sound.play(paths.getSound("confirmMenu"))
 		Timer.after(1.5, function () game.switchState(MainMenuState()) end)
 	end
@@ -151,7 +151,7 @@ function TitleState:beat(b)
 	elseif self.sickBeats == 4 then
 		self:deleteCoolText()
 	elseif self.sickBeats == 5 then
-		self:createCoolText({ 'In association', 'with' })
+		self:createCoolText({'In association', 'with'})
 	elseif self.sickBeats == 7 then
 		self:addMoreText('newgrounds')
 		self.ngSpr.visible = true
@@ -159,7 +159,7 @@ function TitleState:beat(b)
 		self:deleteCoolText()
 		self.ngSpr.visible = false
 	elseif self.sickBeats == 9 then
-		self:createCoolText({ self.curWacky[1] })
+		self:createCoolText({self.curWacky[1]})
 	elseif self.sickBeats == 11 then
 		self:addMoreText(self.curWacky[2])
 	elseif self.sickBeats == 12 then
@@ -182,7 +182,7 @@ function TitleState:skipIntro()
 		self:add(self.gfDance)
 		self:add(self.logoBl)
 		self:add(self.titleText)
-		game.camera:flash({ 1, 1, 1 }, 4)
+		game.camera:flash({1, 1, 1}, 4)
 		self.skippedIntro = true
 	end
 end
