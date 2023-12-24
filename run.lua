@@ -15,6 +15,8 @@ local OS = love.system.getOS()
 if OS == "Android" or OS == "iOS" then
 	modes.resizable = false
 	modes.fullscreen = true
+elseif Project.DEBUG_MODE then
+	print("")
 end
 
 love.window.setTitle(Project.title)
