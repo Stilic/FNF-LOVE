@@ -39,7 +39,8 @@ function Text:__updateDimension()
 	self.__font = self.font
 
 	self.__width = self.font:getWidth(self.content)
-	self.__height = self.font:getHeight(self.content)
+	local _, lines = self.font:getWrap(print.text, self.limit or self.__width)
+    self.__height = self.font:getHeight() * #lines
 end
 
 function Text:getWidth()
