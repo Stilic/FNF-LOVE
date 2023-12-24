@@ -47,7 +47,7 @@ function goodNoteHit(note) end
 ---@param note table
 function postGoodNoteHit(note) end
 
--- Called before destroying Inst/Vocals 
+-- Called before destroying Inst/Vocals
 function leave() end
 
 --- Called after leaving state completely

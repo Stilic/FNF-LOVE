@@ -20,7 +20,7 @@ end
 
 function table.remove(list, callback)
 	local idx, j, v = type(callback) == "number" and callback or
-					  (callback == nil and #list) or nil, 1
+		(callback == nil and #list) or nil, 1
 
 	for i = 1, #list do
 		if (idx == nil and callback(list, i, j) or i == idx) then
@@ -64,6 +64,7 @@ function math.type(v)
 end
 
 function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
+
 math.bound = math.clamp
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
@@ -96,7 +97,7 @@ end
 function string.ext(self) return self:sub(1 - (self:reverse():find('%.') or 1)) end
 
 function string.hasExt(self)
-    return self:match("%.([^%.]+)$") ~= nil
+	return self:match("%.([^%.]+)$") ~= nil
 end
 
 function string.withoutExt(self)
@@ -104,7 +105,7 @@ function string.withoutExt(self)
 end
 
 function string.fileName(self, parts)
-	local separator = package.config:sub(1,1)
+	local separator = package.config:sub(1, 1)
 	parts = parts or {}
 	for part in self:split(separator) do
 		table.insert(parts, part)
@@ -153,7 +154,7 @@ function table.splice(tbl, start, count, ...)
 			break
 		end
 	end
-	local args = {...}
+	local args = { ... }
 	for i = #args, 1, -1 do table.insert(tbl, start, args[i]) end
 	return removedItems
 end
@@ -181,9 +182,10 @@ function math.truncate(x, precision, round)
 	precision = 10 ^ (precision or 2)
 	return (round and math.round or math.floor)(precision * x) / precision
 end
+
 math.roundDecimal = math.truncate
 
-local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
+local intervals = { 'B', 'KB', 'MB', 'GB', 'TB' }
 function math.countbytes(x)
 	local i = 1
 	while x >= 0x400 and i < 5 do
@@ -202,33 +204,33 @@ end
 ---@return string -- The current device. 'Desktop' or 'Mobile'
 function love.system.getDevice()
 	local os = love.system.getOS()
-    if os == "Android" or os == "iOS" then
-        return "Mobile"
-    elseif os == "OS X" or os == "Windows" or os == "Linux" then
-        return "Desktop"
-    end
-    return "Unknown"
+	if os == "Android" or os == "iOS" then
+		return "Mobile"
+	elseif os == "OS X" or os == "Windows" or os == "Linux" then
+		return "Desktop"
+	end
+	return "Unknown"
 end
 
 -- Backward Compatibility
 if love.graphics.setStencilMode then
 	function love.graphics.stencil(func, action, value, keepvalues)
-	    if not keepvalues then
-	        love.graphics.clear(false, true, false)
-	    end
+		if not keepvalues then
+			love.graphics.clear(false, true, false)
+		end
 
-	    if value == nil then value = 1 end
+		if value == nil then value = 1 end
 
-	    local action2, mode2, value2, readmask2, writemask2 = love.graphics.getStencilMode()
-	    local mr, mg, mb, ma = love.graphics.getColorMask()
+		local action2, mode2, value2, readmask2, writemask2 = love.graphics.getStencilMode()
+		local mr, mg, mb, ma = love.graphics.getColorMask()
 
-	    love.graphics.setStencilMode(action, "always", value)
-	    love.graphics.setColorMask(false)
+		love.graphics.setStencilMode(action, "always", value)
+		love.graphics.setColorMask(false)
 
-	    func()
+		func()
 
-	    love.graphics.setStencilMode(action2, mode2, value2, readmask2, writemask2)
-	    love.graphics.setColorMask(mr, mg, mb, ma)
+		love.graphics.setStencilMode(action2, mode2, value2, readmask2, writemask2)
+		love.graphics.setColorMask(mr, mg, mb, ma)
 	end
 
 	function love.graphics.setStencilTest(mode, value)

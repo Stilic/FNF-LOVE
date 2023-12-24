@@ -62,7 +62,7 @@ end
 	categories slightly differently.
 ]]
 
-local sourceFunction = {keyboardMouse = {}, joystick = {}}
+local sourceFunction = { keyboardMouse = {}, joystick = {} }
 
 -- checks whether a keyboard key is down or not
 function sourceFunction.keyboardMouse.key(key)
@@ -146,7 +146,7 @@ end
 -- initializes a control object for each control defined in the config
 function Player:_initControls()
 	self._controls = {}
-	self._sourceControls = {keyboardMouse = {}, joystick = {}}
+	self._sourceControls = { keyboardMouse = {}, joystick = {} }
 	self._pressBinds = {}
 	self._releaseBinds = {}
 	for controlName, sources in pairs(self.config.controls) do
@@ -284,7 +284,7 @@ function Player:_updatePairs()
 		pair.rawX, pair.rawY = r - l, d - u
 
 		-- limit to 1
-		local len = math.sqrt(pair.rawX^2 + pair.rawY^2)
+		local len = math.sqrt(pair.rawX ^ 2 + pair.rawY ^ 2)
 		if len > 1 then
 			pair.rawX, pair.rawY = pair.rawX / len, pair.rawY / len
 		end

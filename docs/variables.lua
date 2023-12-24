@@ -18,7 +18,7 @@ local curSection
 ---@type number
 local bpm
 
----Interval between beat hits   
+---Interval between beat hits
 ---Needs to be corrected by doing
 ---```lua
 ---crochet * 0.001

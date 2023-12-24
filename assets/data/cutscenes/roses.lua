@@ -7,8 +7,8 @@ function create()
 
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
-	doof.cameras = {state.camHUD}
-	doof.finishThing = function()
+	doof.cameras = { state.camHUD }
+	doof.finishThing = function ()
 		state:startCountdown()
 		close()
 	end
@@ -17,7 +17,7 @@ function create()
 	game.camera:shake(0.001, 0.8)
 	state.camHUD:shake(0.001, 0.8)
 
-	Timer.after(1.5, function()
+	Timer.after(1.5, function ()
 		game.sound.play(paths.getSound('gameplay/ANGRY'))
 		game.camera:shake(0.001, 0.1)
 		state.camHUD:shake(0.001, 0.1)

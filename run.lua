@@ -54,8 +54,8 @@ function love.run()
 			_fps = math.min(love.parallelUpdate and real_fps or _update, love.FPScap)
 			_ram, _vram = math.countbytes(collectgarbage(__count__) * 0x400), math.countbytes(_stats.texturememory)
 			_text = love.parallelUpdate and
-					fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls) or
-					fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls)
+				fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls) or
+				fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls)
 
 			love.graphics.setColor(0, 0, 0, 0.5)
 			love.graphics.printf(_text, consolas, 8, 8, 300, __left__, 0)
@@ -71,7 +71,7 @@ function love.run()
 	local firstTime, fullGC, focused, dt, real_dt, lowfps = true, true, false, 0
 	local nextclock, clock, cap = 0, 0, 0
 
-	return function()
+	return function ()
 		love.event.pump()
 		table.merge(polledEvents, _defaultEvents)
 		for name, a, b, c, d, e, f in love.event.poll() do
@@ -159,7 +159,7 @@ if OS == "Android" or OS == "IOS" then
 end
 
 local function error_printer(msg, layer)
-	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
+	print((debug.traceback("Error: " .. tostring(msg), 1 + (layer or 1)):gsub("\n[^\n]+$", "")))
 end
 
 local og = love.errorhandler or love.errhand
@@ -217,7 +217,7 @@ function love.errorhandler(msg)
 		if love.mouse.isCursorSupported() then love.mouse.setCursor() end
 	end
 	if love.joystick then
-		for i,v in ipairs(love.joystick.getJoysticks()) do
+		for i, v in ipairs(love.joystick.getJoysticks()) do
 			v:setVibration()
 		end
 	end
@@ -250,7 +250,7 @@ function love.errorhandler(msg)
 		fnfFont20 = paths.getFont("phantommuff.ttf", 35) or love.graphics.setNewFont(35)
 
 		bgMusic = paths.getMusic("pause/railways", "static")
-		missSfx = love.audio.newSource(paths.getSound("gameplay/missnote"..love.math.random(1,3)), "static")
+		missSfx = love.audio.newSource(paths.getSound("gameplay/missnote" .. love.math.random(1, 3)), "static")
 
 		bgMusic:setLooping(true)
 		bgMusic:setVolume(0.7)
@@ -298,36 +298,41 @@ function love.errorhandler(msg)
 	end
 
 	local eventhandlers = {
-		quit = function()
+		quit = function ()
 			return 1
 		end,
-		keypressed = function(key)
+		keypressed = function (key)
 			if not love.keyboard.isDown("lctrl", "rctrl") then return end
-			if love.system and key == "c" then copyToClipboard()
+			if love.system and key == "c" then
+				copyToClipboard()
 			elseif key == "r" then
 				return "restart"
 			end
 		end,
-		touchpressed = function()
+		touchpressed = function ()
 			local name = love.window.getTitle()
 			if #name == 0 or name == "Untitled" then name = "Game" end
 
-			local buttons = {"OK", "Cancel", "Restart"}
+			local buttons = { "OK", "Cancel", "Restart" }
 			if love.system then buttons[4] = "Copy to clipboard" end
 
-			local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
-			if pressed == 1 then return 1
-			elseif pressed == 3 then return "restart"
-			elseif pressed == 4 then copyToClipboard() end
+			local pressed = love.window.showMessageBox("Quit " .. name .. "?", "", buttons)
+			if pressed == 1 then
+				return 1
+			elseif pressed == 3 then
+				return "restart"
+			elseif pressed == 4 then
+				copyToClipboard()
+			end
 		end,
-		focus = function(f)
+		focus = function (f)
 			bgMusic:setVolume(f and 0.7 or 0.3)
 		end,
-		resize = function(w, h)
+		resize = function (w, h)
 			gameW, gameH = w, h
 			draw()
 		end,
-		displayrotated = function(force)
+		displayrotated = function (force)
 			gameW, gameH = love.graphics.getDimensions()
 			draw(force)
 		end
@@ -338,7 +343,7 @@ function love.errorhandler(msg)
 		dontDraw = true
 
 		local first, done = true, false
-		return function()
+		return function ()
 			if first then
 				first = false
 				return
@@ -366,7 +371,7 @@ function love.errorhandler(msg)
 	firstPass()
 	eventhandlers.displayrotated(true)
 
-	return function()
+	return function ()
 		name, a, b = love.event.wait()
 		if eventhandlers[name] ~= nil then
 			collectgarbage(__step__)
@@ -375,4 +380,5 @@ function love.errorhandler(msg)
 		end
 	end
 end
+
 love.errhand = love.errorhandler

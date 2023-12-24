@@ -11,7 +11,7 @@ function State:new()
 end
 
 function State:enter()
-	
+
 end
 
 function State:update(dt) State.super.update(self, dt) end

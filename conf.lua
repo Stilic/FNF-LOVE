@@ -1,14 +1,14 @@
 local Project = require "project"
 
 function love.conf(t)
-    t.identity = Project.company
-    t.console = Project.DEBUG_MODE
-    t.gammacorrect = false
-    t.highdpi = false
+	t.identity = Project.company
+	t.console = Project.DEBUG_MODE
+	t.gammacorrect = false
+	t.highdpi = false
 
-    t.window = nil -- we'll initialize it in run.lua
+	t.window = nil -- we'll initialize it in run.lua
 
-    t.modules.physics = false
-    t.modules.touch = false
-    t.modules.video = false
+	t.modules.physics = false
+	t.modules.touch = false
+	t.modules.video = false
 end

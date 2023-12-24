@@ -18,25 +18,25 @@ ClientPrefs.data = {
 }
 
 ClientPrefs.controls = {
-	ui_left = {"key:a", "key:left"},
-	ui_down = {"key:s", "key:down"},
-	ui_up = {"key:w", "key:up"},
-	ui_right = {"key:d", "key:right"},
+	ui_left = { "key:a", "key:left" },
+	ui_down = { "key:s", "key:down" },
+	ui_up = { "key:w", "key:up" },
+	ui_right = { "key:d", "key:right" },
 
-	note_left = {"key:d", "key:left"},
-	note_down = {"key:f", "key:down"},
-	note_up = {"key:j", "key:up"},
-	note_right = {"key:k", "key:right"},
+	note_left = { "key:d", "key:left" },
+	note_down = { "key:f", "key:down" },
+	note_up = { "key:j", "key:up" },
+	note_right = { "key:k", "key:right" },
 
-	accept = {"key:space", "key:return"},
-	back = {"key:backspace", "key:escape"},
-	pause = {"key:return", "key:escape"},
-	reset = {"key:r"},
+	accept = { "key:space", "key:return" },
+	back = { "key:backspace", "key:escape" },
+	pause = { "key:return", "key:escape" },
+	reset = { "key:r" },
 
-	pick_mods = {"key:6"},
+	pick_mods = { "key:6" },
 
-	debug_1 = {"key:7"},
-	debug_2 = {"key:8"},
+	debug_1 = { "key:7" },
+	debug_2 = { "key:8" },
 }
 
 function ClientPrefs.saveData()
@@ -59,7 +59,7 @@ function ClientPrefs.loadData()
 
 	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
 
-	local config = {controls = table.clone(ClientPrefs.controls)}
+	local config = { controls = table.clone(ClientPrefs.controls) }
 	if controls == nil then
 		controls = (require "lib.baton").new(config)
 	else

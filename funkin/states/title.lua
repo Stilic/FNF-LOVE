@@ -3,7 +3,7 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
-	Discord.changePresence({details = "In the Menus"})
+	Discord.changePresence({ details = "In the Menus" })
 
 	self.curWacky = self:getIntroTextShit()
 
@@ -39,7 +39,7 @@ function TitleState:enter()
 	self:add(self.textGroup)
 
 	self.ngSpr = Sprite(0, game.height * 0.52):loadTexture(paths.getImage(
-															   'menus/title/newgrounds_logo'))
+		'menus/title/newgrounds_logo'))
 	self:add(self.ngSpr)
 	self.ngSpr.visible = false
 	self.ngSpr:setGraphicSize(math.floor(self.ngSpr.width * 0.8))
@@ -53,15 +53,15 @@ function TitleState:enter()
 	end
 
 	self.music = Conductor((not game.sound.music or
-							   not game.sound.music:isPlaying()) and
-							   game.sound
-								   .playMusic(paths.getMusic("freakyMenu")) or
-							   game.sound.music, 102)
-	self.music.onBeat = function(b) self:beat(b) end
+			not game.sound.music:isPlaying()) and
+		game.sound
+		.playMusic(paths.getMusic("freakyMenu")) or
+		game.sound.music, 102)
+	self.music.onBeat = function (b) self:beat(b) end
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
-	    local group = ButtonGroup()
+		local group = ButtonGroup()
 		local enter = Button(0, 0, game.width, game.height, "return")
 		enter.pressedAlpha = 0
 		enter.releasedAlpha = 0
@@ -97,9 +97,9 @@ function TitleState:update(dt)
 	if pressedEnter and not self.confirmed and self.skippedIntro then
 		self.confirmed = true
 		self.titleText:play("press")
-		game.camera:flash({1, 1, 1}, 2)
+		game.camera:flash({ 1, 1, 1 }, 2)
 		game.sound.play(paths.getSound("confirmMenu"))
-		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
+		Timer.after(1.5, function () game.switchState(MainMenuState()) end)
 	end
 
 	if pressedEnter and not self.skippedIntro and TitleState.initialized then
@@ -151,7 +151,7 @@ function TitleState:beat(b)
 	elseif self.sickBeats == 4 then
 		self:deleteCoolText()
 	elseif self.sickBeats == 5 then
-		self:createCoolText({'In association', 'with'})
+		self:createCoolText({ 'In association', 'with' })
 	elseif self.sickBeats == 7 then
 		self:addMoreText('newgrounds')
 		self.ngSpr.visible = true
@@ -159,7 +159,7 @@ function TitleState:beat(b)
 		self:deleteCoolText()
 		self.ngSpr.visible = false
 	elseif self.sickBeats == 9 then
-		self:createCoolText({self.curWacky[1]})
+		self:createCoolText({ self.curWacky[1] })
 	elseif self.sickBeats == 11 then
 		self:addMoreText(self.curWacky[2])
 	elseif self.sickBeats == 12 then
@@ -182,7 +182,7 @@ function TitleState:skipIntro()
 		self:add(self.gfDance)
 		self:add(self.logoBl)
 		self:add(self.titleText)
-		game.camera:flash({1, 1, 1}, 4)
+		game.camera:flash({ 1, 1, 1 }, 4)
 		self.skippedIntro = true
 	end
 end

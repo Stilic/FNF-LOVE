@@ -18,21 +18,21 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	self:loadTexture(paths.getImage("icons/" .. icon))
 
 	self.icon = icon
-	self.iconOffset = {x = 0, y = 0}
+	self.iconOffset = { x = 0, y = 0 }
 
 	local hasOldSuffix = icon:endsWith("-old")
 	self.isPixelIcon = icon:endsWith("-pixel") or
-					   (hasOldSuffix and icon:sub(1, -5):endsWith("-pixel"))
+		(hasOldSuffix and icon:sub(1, -5):endsWith("-pixel"))
 	self.isOldIcon = hasOldSuffix or
-					 (self.isPixelIcon and icon:sub(1, -7):endsWith("-old"))
+		(self.isPixelIcon and icon:sub(1, -7):endsWith("-old"))
 
 	self.availableStates = math.max(1, math.round(self.width / self.height))
 	self.state = 0
 
 	if self.availableStates > 1 then
 		self:loadTexture(self.texture, true,
-						 math.floor(self.width / self.availableStates),
-						 math.floor(self.height))
+			math.floor(self.width / self.availableStates),
+			math.floor(self.height))
 
 		local _frames = {}
 		for i = 1, self.availableStates do
@@ -62,7 +62,7 @@ function HealthIcon:update(dt)
 
 	if self.sprTracker ~= nil then
 		self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() + 10,
-						 self.sprTracker.y - 30)
+			self.sprTracker.y - 30)
 	end
 end
 

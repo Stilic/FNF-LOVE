@@ -2,162 +2,160 @@
 local Graphic = Object:extend("Graphic")
 
 function Graphic:new(x, y, width, height, color, type, fill, lined)
-    Graphic.super.new(self, x, y)
+	Graphic.super.new(self, x, y)
 
-    self.width = width or 0
-    self.height = height or 0
+	self.width = width or 0
+	self.height = height or 0
 
-    self.color = color or {0, 0, 0}
-    self.type = type or "rectangle"
-    self.fill = fill or "fill"
-    self.lined = lined or false
+	self.color = color or { 0, 0, 0 }
+	self.type = type or "rectangle"
+	self.fill = fill or "fill"
+	self.lined = lined or false
 
-    self.config = {
-        type = "open",
-        radius = 100,
-        angle = {0, 180},
-        round = {15, 15},
-        segments = 36,
-        vertices = nil
-    }
+	self.config = {
+		type = "open",
+		radius = 100,
+		angle = { 0, 180 },
+		round = { 15, 15 },
+		segments = 36,
+		vertices = nil
+	}
 
-    self.line = {
-        width = 6,
-        color = {1, 1, 1}, -- this only applies for lined graphics
-        join = "miter"
-    }
+	self.line = {
+		width = 6,
+		color = { 1, 1, 1 }, -- this only applies for lined graphics
+		join = "miter"
+	}
 end
 
 function Graphic:getGraphicMidpoint()
-    return self.x + self.width / 2,
-           self.y + self.height / 2
+	return self.x + self.width / 2,
+		self.y + self.height / 2
 end
 
 function Graphic:setSize(width, height)
-    self.width = width or 0
-    self.height = height or 0
+	self.width = width or 0
+	self.height = height or 0
 
-    if self.type == "arc" or self.type == "circle" then
-        self.config.radius = self.width
-    end
+	if self.type == "arc" or self.type == "circle" then
+		self.config.radius = self.width
+	end
 end
 
 function Graphic:updateDimensions()
-    if self.type == "arc" or self.type == "circle" then
-        self.width = 2 * self.config.radius
-        self.height = 2 * self.config.radius
-    end
+	if self.type == "arc" or self.type == "circle" then
+		self.width = 2 * self.config.radius
+		self.height = 2 * self.config.radius
+	end
 end
 
 function Graphic:draw()
-    if self.width > 0 or self.height > 0 or self.config.radius > 0 or
-        self.config.vertices then
-        Graphic.super.draw(self)
-    end
+	if self.width > 0 or self.height > 0 or self.config.radius > 0 or
+		self.config.vertices then
+		Graphic.super.draw(self)
+	end
 end
 
 function Graphic:__render(camera)
-    local r, g, b, a = love.graphics.getColor()
-    local shader = self.shader and love.graphics.getShader()
-    local blendMode, alphaMode = love.graphics.getBlendMode()
+	local r, g, b, a = love.graphics.getColor()
+	local shader = self.shader and love.graphics.getShader()
+	local blendMode, alphaMode = love.graphics.getBlendMode()
 
-    local lineStyle = love.graphics.getLineStyle()
-    local lineWidth = love.graphics.getLineWidth()
-    local lineJoin = love.graphics.getLineJoin()
+	local lineStyle = love.graphics.getLineStyle()
+	local lineWidth = love.graphics.getLineWidth()
+	local lineJoin = love.graphics.getLineJoin()
 
-    love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
-    love.graphics.setLineWidth(self.line.width)
-    love.graphics.setLineJoin(self.line.join)
+	love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
+	love.graphics.setLineWidth(self.line.width)
+	love.graphics.setLineJoin(self.line.join)
 
-    local x, y, w, h = self.x, self.y, self.width, self.height
-    local vert = {}
+	local x, y, w, h = self.x, self.y, self.width, self.height
+	local vert = {}
 
-    x, y = x - (camera.scroll.x * self.scrollFactor.x),
-           y - (camera.scroll.y * self.scrollFactor.y)
+	x, y = x - (camera.scroll.x * self.scrollFactor.x),
+		y - (camera.scroll.y * self.scrollFactor.y)
 
-    local ang1, ang2 = self.config.angle[1] * (math.pi / 180),
-                       self.config.angle[2] * (math.pi / 180)
+	local ang1, ang2 = self.config.angle[1] * (math.pi / 180),
+		self.config.angle[2] * (math.pi / 180)
 
-    local rad, seg, type = self.config.radius, self.config.segments,
-                           self.config.type
+	local rad, seg, type = self.config.radius, self.config.segments,
+		self.config.type
 
-    love.graphics.setShader(self.shader)
-    love.graphics.setBlendMode(self.blend)
-    love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-                           self.alpha)
+	love.graphics.setShader(self.shader)
+	love.graphics.setBlendMode(self.blend)
+	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
+		self.alpha)
 
-    love.graphics.push()
-    love.graphics.rotate(math.rad(self.angle))
+	love.graphics.push()
+	love.graphics.rotate(math.rad(self.angle))
 
-    if self.type == "rectangle" then
-        love.graphics.rectangle(self.fill, x, y, w, h)
+	if self.type == "rectangle" then
+		love.graphics.rectangle(self.fill, x, y, w, h)
+	elseif self.type == "roundrect" then
+		-- https://gist.github.com/gvx/9072860
+		local precision = (self.config.round[1] + self.config.round[2]) * 0.2
+		local angle = math.rad(90)
+		if self.config.round[1] > w * 0.5 then self.config.round[1] = w * 0.5 end
+		if self.config.round[2] > h * 0.5 then self.config.round[2] = h * 0.5 end
 
-    elseif self.type == "roundrect" then
-        -- https://gist.github.com/gvx/9072860
-        local precision = (self.config.round[1] + self.config.round[2]) * 0.2
-        local angle = math.rad(90)
-        if self.config.round[1] > w * 0.5 then self.config.round[1] = w * 0.5 end
-        if self.config.round[2] > h * 0.5 then self.config.round[2] = h * 0.5 end
+		local X1, Y1, X2, Y2 = x + self.config.round[1], y + self.config.round[2],
+			x + w - self.config.round[1], y + h - self.config.round[2]
 
-        local X1, Y1, X2, Y2 = x + self.config.round[1], y + self.config.round[2],
-                               x + w - self.config.round[1], y + h - self.config.round[2]
+		local sin, cos = math.sin, math.cos
+		for i = 0, precision do
+			local a = (i / precision - 1) * angle
+			table.insert(vert, X2 + self.config.round[1] * cos(a))
+			table.insert(vert, Y1 + self.config.round[2] * sin(a))
+		end
+		for i = 0, precision do
+			local a = (i / precision) * angle
+			table.insert(vert, X2 + self.config.round[1] * cos(a))
+			table.insert(vert, Y2 + self.config.round[2] * sin(a))
+		end
+		for i = 0, precision do
+			local a = (i / precision + 1) * angle
+			table.insert(vert, X1 + self.config.round[1] * cos(a))
+			table.insert(vert, Y2 + self.config.round[2] * sin(a))
+		end
+		for i = 0, precision do
+			local a = (i / precision + 2) * angle
+			table.insert(vert, X1 + self.config.round[1] * cos(a))
+			table.insert(vert, Y1 + self.config.round[2] * sin(a))
+		end
+		love.graphics.polygon(self.fill, unpack(vert))
+	elseif self.type == "polygon" and self.config.vertices then
+		love.graphics.translate(x, y)
+		love.graphics.polygon(self.fill, self.config.vertices)
+	elseif self.type == "circle" then
+		love.graphics.circle(self.fill, x, y, rad, seg)
+	elseif self.type == "arc" then
+		love.graphics.arc(self.fill, type, x, y, rad, ang1, ang2, seg)
+	end
 
-        local sin, cos = math.sin, math.cos
-        for i = 0, precision do
-            local a = (i / precision - 1) * angle
-            table.insert(vert, X2 + self.config.round[1] * cos(a))
-            table.insert(vert, Y1 + self.config.round[2] * sin(a))
-        end
-        for i = 0, precision do
-            local a = (i / precision) * angle
-            table.insert(vert, X2 + self.config.round[1] * cos(a))
-            table.insert(vert, Y2 + self.config.round[2] * sin(a))
-        end
-        for i = 0, precision do
-            local a = (i / precision + 1) * angle
-            table.insert(vert, X1 + self.config.round[1] * cos(a))
-            table.insert(vert, Y2 + self.config.round[2] * sin(a))
-        end
-        for i = 0, precision do
-            local a = (i / precision + 2) * angle
-            table.insert(vert, X1 + self.config.round[1] * cos(a))
-            table.insert(vert, Y1 + self.config.round[2] * sin(a))
-        end
-        love.graphics.polygon(self.fill, unpack(vert))
+	if self.lined then
+		love.graphics.setColor(self.line.color[1], self.line.color[2],
+			self.line.color[3], self.alpha)
+		if self.type == "rectangle" then
+			love.graphics.rectangle("line", x, y, w, h)
+		elseif self.type == "roundrect" then
+			love.graphics.polygon("line", vert)
+		elseif self.type == "polygon" and self.config.vertices then
+			love.graphics.polygon("line", self.config.vertices)
+		elseif self.type == "circle" then
+			love.graphics.circle("line", x, y, rad, seg)
+		elseif self.type == "arc" then
+			love.graphics.arc("line", type, x, y, rad, ang1, ang2, seg)
+		end
+	end
 
-    elseif self.type == "polygon" and self.config.vertices then
-        love.graphics.translate(x, y)
-        love.graphics.polygon(self.fill, self.config.vertices)
-    elseif self.type == "circle" then
-        love.graphics.circle(self.fill, x, y, rad, seg)
-    elseif self.type == "arc" then
-        love.graphics.arc(self.fill, type, x, y, rad, ang1, ang2, seg)
-    end
+	love.graphics.pop()
 
-    if self.lined then
-        love.graphics.setColor(self.line.color[1], self.line.color[2],
-                               self.line.color[3], self.alpha)
-        if self.type == "rectangle" then
-            love.graphics.rectangle("line", x, y, w, h)
-        elseif self.type == "roundrect" then
-            love.graphics.polygon("line", vert)
-        elseif self.type == "polygon" and self.config.vertices then
-            love.graphics.polygon("line", self.config.vertices)
-        elseif self.type == "circle" then
-            love.graphics.circle("line", x, y, rad, seg)
-        elseif self.type == "arc" then
-            love.graphics.arc("line", type, x, y, rad, ang1, ang2, seg)
-        end
-    end
-
-    love.graphics.pop()
-
-    love.graphics.setColor(r, g, b, a)
-    love.graphics.setBlendMode(blendMode, alphaMode)
-    love.graphics.setLineStyle(lineStyle)
-    love.graphics.setLineWidth(lineWidth)
-    love.graphics.setLineJoin(lineJoin)
-    if self.shader then love.graphics.setShader(shader) end
+	love.graphics.setColor(r, g, b, a)
+	love.graphics.setBlendMode(blendMode, alphaMode)
+	love.graphics.setLineStyle(lineStyle)
+	love.graphics.setLineWidth(lineWidth)
+	love.graphics.setLineJoin(lineJoin)
+	if self.shader then love.graphics.setShader(shader) end
 end
 
 return Graphic
