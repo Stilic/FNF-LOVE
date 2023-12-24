@@ -1,6 +1,6 @@
 return {
-	DEBUG_MODE = false,
-	splashScreen = false,
+	DEBUG_MODE = true,
+	splashScreen = true,
 
 	title = "Friday Night Funkin' LOVE",
 	file = "FNF-LOVE",

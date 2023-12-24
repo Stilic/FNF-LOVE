@@ -1,16 +1,32 @@
 local ffi, discordRPClib = require "ffi"
 local OS = love.system.getOS()
 if OS == "Windows" then
-	discordRPClib = ffi.load("lib/windows/discord-rpc")
+	if love.filesystem.getInfo("lib/windows/discord-rpc.dll", "file") then
+		discordRPClib = "lib/windows/discord-rpc"
+	else
+		discordRPClib = "discord-rpc"
+	end
 elseif OS == "Linux" then
-	discordRPClib = ffi.load("lib/linux/libdiscord-rpc")
+	if love.filesystem.getInfo("lib/linux/libdiscord-rpc.so", "file") then
+		discordRPClib = "lib/linux/libdiscord-rpc"
+	else
+		discordRPClib = "libdiscord-rpc"
+	end
 elseif OS == "OS X" then
-	discordRPClib = ffi.load("lib/osx/libdiscord-rpc")
-else
-	local __NULL__ = function () end
-	return setmetatable({}, {__index = function () return __NULL__ end})
+	if love.filesystem.getInfo("lib/osx/libdiscord-rpc.dylib", "file") then
+		discordRPClib = "lib/osx/libdiscord-rpc"
+	else
+		discordRPClib = "libdiscord-rpc"
+	end
 end
 
+local success, v
+if discordRPClib then success, v = pcall(ffi.load, discordRPClib) end
+if success then discordRPClib = v
+else
+	local __NULL__ = function() end
+	return setmetatable({}, {__index = function() return __NULL__ end})
+end
 ffi.cdef [[
 typedef struct DiscordRichPresence {
     const char* state;   /* max 128 bytes */
