@@ -209,3 +209,38 @@ function love.system.getDevice()
     end
     return "Unknown"
 end
+
+-- Backward Compatibility
+if love.graphics.setStencilMode then
+	function love.graphics.stencil(func, action, value, keepvalues)
+	    if not keepvalues then
+	        love.graphics.clear(false, true, false)
+	    end
+
+	    if value == nil then value = 1 end
+
+	    local action2, mode2, value2, readmask2, writemask2 = love.graphics.getStencilMode()
+	    local mr, mg, mb, ma = love.graphics.getColorMask()
+
+	    love.graphics.setStencilMode(action, "always", value)
+	    love.graphics.setColorMask(false)
+
+	    func()
+
+	    love.graphics.setStencilMode(action2, mode2, value2, readmask2, writemask2)
+	    love.graphics.setColorMask(mr, mg, mb, ma)
+	end
+
+	function love.graphics.setStencilTest(mode, value)
+		if mode ~= nil then
+			love.graphics.setStencilMode("keep", mode, value)
+		else
+			love.graphics.setStencilMode()
+		end
+	end
+
+	function love.graphics.getStencilTest()
+		local action, mode, value = love.graphics.getStencilMode()
+		return mode, value
+	end
+end
