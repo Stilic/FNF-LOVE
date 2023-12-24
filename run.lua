@@ -7,7 +7,6 @@ local modes = {
 	msaa = 0,
 	resizable = true,
 	centered = true,
-	highdpi = false,
 	usedpiscale = false,
 }
 

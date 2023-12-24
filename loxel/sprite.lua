@@ -12,14 +12,14 @@ local function stencil()
     if stencilSprite then
         love.graphics.push()
         love.graphics.translate(stencilX + stencilSprite.clipRect.x +
-                                    stencilSprite.clipRect.width * 0.5,
+                                    stencilSprite.clipRect.width / 2,
                                 stencilY + stencilSprite.clipRect.y +
-                                    stencilSprite.clipRect.height * 0.5)
+                                    stencilSprite.clipRect.height / 2)
         love.graphics.rotate(stencilSprite.angle)
-        love.graphics.translate(-stencilSprite.clipRect.width * 0.5,
-                                -stencilSprite.clipRect.height * 0.5)
-        love.graphics.rectangle("fill", -stencilSprite.width * 0.5,
-                                -stencilSprite.height * 0.5,
+        love.graphics.translate(-stencilSprite.clipRect.width / 2,
+                                -stencilSprite.clipRect.height / 2)
+        love.graphics.rectangle("fill", -stencilSprite.width / 2,
+                                -stencilSprite.height / 2,
                                 stencilSprite.clipRect.width,
                                 stencilSprite.clipRect.height)
         love.graphics.pop()
@@ -491,9 +491,9 @@ function Sprite:__render(camera)
                            self.alpha)
 
     if self.clipRect then
-        love.graphics.setStencilTest("greater", 0)
         stencilSprite, stencilX, stencilY = self, x, y
         love.graphics.stencil(stencil, "replace", 1, false)
+        love.graphics.setStencilTest("greater", 0)
     end
 
     if self.__rectangleMode then
