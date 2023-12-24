@@ -1,5 +1,4 @@
 io.stdout:setvbuf("no")
-print("")
 
 Project = require "project"
 flags = Project.flags
