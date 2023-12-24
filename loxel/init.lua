@@ -44,9 +44,10 @@ game.buttons = require "loxel.managers.buttonmanager"
 game.sound = require "loxel.managers.soundmanager"
 game.save = require "loxel.util.save"
 
-local fade
+local fade, cancelFade
 local function fadeOut(time, callback)
     if fade and fade.timer then Timer.cancel(fade.timer) end
+    if cancelFade then cancelFade = nil return end
 
     fade = {
         height = game.height * 2,
@@ -65,6 +66,7 @@ local function fadeOut(time, callback)
 end
 local function fadeIn(time, callback)
     if fade and fade.timer then Timer.cancel(fade.timer) end
+    if cancelFade then cancelFade = nil return end
 
     fade = {
         height = game.height * 2,
@@ -98,6 +100,10 @@ function game.resetState(skipTrans, ...)
     game.switchState(getmetatable(Gamestate.stack[1])(...), skipTrans)
 end
 function game.getState() return Gamestate.current() end
+function game.discardTransition()
+    if fade and fade.timer then Timer.cancel(fade.timer) end
+    cancelFade = true
+end
 
 function game.init(app, state)
     game.width = app.width
@@ -159,7 +165,7 @@ local function switch(state)
     end
 
     if paths and getmetatable(state) ~= getmetatable(Gamestate.current()) then
-      paths.clearCache()
+        paths.clearCache()
     end
 
     Gamestate.switch(state)

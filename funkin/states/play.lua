@@ -41,15 +41,12 @@ PlayState.startPos = 0
 function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState.loadSong(song, diff)
-    if type(diff) ~= "string" then
-        diff = PlayState.defaultDifficulty
-    end
-    if diff == "normal" then
-        diff = ""
-    end
-    local path = "songs/" .. song .. "/chart" .. (diff ~= "" and ("-" .. diff) or "")
+    if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
+    if diff == "normal" then diff = "" end
 
+    local path = "songs/" .. song .. "/chart" .. (diff ~= "" and ("-" .. diff) or "")
     local data = paths.getJSON(path)
+
     if data then
         PlayState.SONG = data.song
     else
@@ -256,14 +253,6 @@ function PlayState:enter()
     self.totalPlayed = 0
     self.totalHit = 0.0
 
-    if PlayState.prevCamFollow ~= nil then
-        game.camera.target = {x = PlayState.prevCamFollow.x,
-                              y = PlayState.prevCamFollow.y}
-        PlayState.prevCamFollow = nil
-    else
-        game.camera.target = {x = 0, y = 0}
-    end
-
     self.camHUD = Camera()
     self.camOther = Camera()
     game.cameras.add(self.camHUD, false)
@@ -344,6 +333,13 @@ function PlayState:enter()
 
     self.camFollow = {x = 0, y = 0}
     self:cameraMovement()
+
+    if PlayState.prevCamFollow ~= nil then
+        game.camera.target = PlayState.prevCamFollow
+        PlayState.prevCamFollow = nil
+    else
+        game.camera.target = {x = self.camFollow.x, y = self.camFollow.y}
+    end
 
     self.camZooming = false
     game.camera.zoom = self.stage.camZoom
@@ -450,9 +446,7 @@ function PlayState:enter()
     self:add(self.timeTxt)
     self:add(self.botplayTxt)
 
-    if love.system.getDevice() == "Mobile" then
-        self:add(self.buttons)
-    end
+    if love.system.getDevice() == "Mobile" then self:add(self.buttons) end
 
     self:recalculateRating()
 
@@ -489,7 +483,7 @@ function PlayState:enter()
 
     if love.system.getDevice() == 'Desktop' then
         local detailsText = "Freeplay"
-        if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+        if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
         local diff = "Normal"
         if PlayState.songDifficulty ~= "" then
@@ -672,7 +666,7 @@ function PlayState:update(dt)
 
                 if love.system.getDevice() == 'Desktop' then
                     local detailsText = "Freeplay"
-                    if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+                    if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
                     local diff = "Normal"
                     if PlayState.songDifficulty ~= "" then
@@ -712,7 +706,7 @@ function PlayState:update(dt)
 
         if love.system.getDevice() == 'Desktop' then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+            if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
             local diff = "Normal"
             if PlayState.songDifficulty ~= "" then
@@ -922,7 +916,7 @@ function PlayState:closeSubstate()
 
         if love.system.getDevice() == 'Desktop' then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+            if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
@@ -966,13 +960,15 @@ function PlayState:onSettingChange(setting)
             rep:groupInit()
             rep.visible = true
             if self.middleScroll then
-                if rep.player == 1 then rep.x = rep.x - 318
-                else rep.visible = false end
+                if rep.player == 1 then
+                    rep.x = rep.x - 318
+                else
+                    rep.visible = false
+                end
             end
         end
 
-        self.healthBarBG.y =
-            (self.downScroll and game.height * 0.08 or game.height * 0.9)
+        self.healthBarBG.y = (self.downScroll and game.height * 0.08 or game.height * 0.9)
         self.healthBar.y = self.healthBarBG.y + 4
 
         self.iconP1.y = self.healthBar.y - 75
@@ -985,7 +981,7 @@ function PlayState:onSettingChange(setting)
         self.timeArcBG.y = (self.downScroll and 45 or game.height - 45)
         self.timeArc.y = self.timeArcBG.y
         self.timeTxt.y = (self.downScroll and self.timeArcBG.y - 32 or
-                                                self.timeArcBG.y + 7)
+                          self.timeArcBG.y + 7)
 
         for i = 1, #self.unspawnNotes do
             self.unspawnNotes[i].visible = true
@@ -1002,14 +998,14 @@ function PlayState:onSettingChange(setting)
                 time = time - ogStepCrochet + ogStepCrochet / PlayState.SONG.speed
             end
 
-            local r =
-                (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-                    1]
+            local r = (n.mustPress and self.playerReceptors or self.enemyReceptors)
+                      .members[n.data + 1]
             local sy = r.y + n.scrollOffset.y
 
             n.x = r.x + n.scrollOffset.x
             n.y = sy - (PlayState.notePosition - time) *
-                    (0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
+                  (0.45 * PlayState.SONG.speed) *
+                  (self.downScroll and -1 or 1)
             n.visible = true
             if self.middleScroll and not n.mustPress then
                 n.visible = false
@@ -1222,10 +1218,8 @@ function PlayState:endSong(skip)
         self.startedCountdown = false
 
         local songName = paths.formatToSongPath(PlayState.SONG.song)
-        local fileExist = (paths.exists(paths.getMods('data/cutscenes/'..songName..'-end.lua'),
-                            'file') or
-                             paths.exists(paths.getPath('data/cutscenes/'..songName..'-end.lua'),
-                              'file'))
+        local fileExist = (paths.exists(paths.getMods('data/cutscenes/'..songName..'-end.lua'), 'file') or
+                           paths.exists(paths.getPath('data/cutscenes/'..songName..'-end.lua'), 'file'))
         if fileExist then
             local cutsceneScript = Script('data/cutscenes/'..songName..'-end')
             cutsceneScript:call("create")
@@ -1255,14 +1249,16 @@ function PlayState:endSong(skip)
             table.remove(PlayState.storyPlaylist, 1)
 
             if #PlayState.storyPlaylist > 0 then
-                PlayState.prevCamFollow = {x = game.camera.target.x,
-                                           y = game.camera.target.y}
+                PlayState.prevCamFollow = {
+                    x = game.camera.target.x,
+                    y = game.camera.target.y
+                }
                 PlayState.conductor.sound:stop()
                 if self.vocals then self.vocals:stop() end
 
                 if love.system.getDevice() == 'Desktop' then
                     local detailsText = "Freeplay"
-                    if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+                    if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
                     Discord.changePresence({
                         details = detailsText,
@@ -1423,7 +1419,7 @@ function PlayState:focus(f)
     if love.system.getDevice() == 'Desktop' then
         if f then
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+            if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
             local startTimestamp = os.time(os.date("*t"))
             local endTimestamp = startTimestamp +
@@ -1443,7 +1439,7 @@ function PlayState:focus(f)
             })
         else
             local detailsText = "Freeplay"
-            if self.storyMode then detailsText = "Story Mode: "..PlayState.storyWeek end
+            if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
             local diff = "Normal"
             if PlayState.songDifficulty ~= "" then

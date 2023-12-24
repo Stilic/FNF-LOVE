@@ -22,11 +22,13 @@ love.window.setTitle(Project.title)
 love.window.setMode(Project.width, Project.height, modes)
 love.window.setIcon(love.image.newImageData(Project.icon))
 
+local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14) or love.graphics.setNewFont(14)
+
 local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d"
 local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d"
 
-local __step__, __quit__ = "step", "quit"
-local consolas, real_fps = love.graphics.newFont('assets/fonts/consolas.ttf', 14), 0
+local __step__, __quit__, __count__, __left__ = "step", "quit", "count", "left"
+local real_fps = 0
 function love.run()
 	local _, _, modes = love.window.getMode()
 	love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 60), 8
@@ -40,7 +42,7 @@ function love.run()
 	love.timer.step()
 
 	collectgarbage()
-	collectgarbage(__step__)
+	collectgarbage()
 
 	local _stats, _update, _fps, _ram, _vram, _text
 	local function draw()
@@ -51,15 +53,15 @@ function love.run()
 		if love.showFPS then
 			_stats, _update = love.graphics.getStats(), love.timer.getUpdateFPS()
 			_fps = math.min(love.parallelUpdate and real_fps or _update, love.FPScap)
-			_ram, _vram = math.countbytes(collectgarbage("count") * 0x400), math.countbytes(_stats.texturememory)
+			_ram, _vram = math.countbytes(collectgarbage(__count__) * 0x400), math.countbytes(_stats.texturememory)
 			_text = love.parallelUpdate and
 					fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls) or
 					fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls)
 
 			love.graphics.setColor(0, 0, 0, 0.5)
-			love.graphics.printf(_text, consolas, 8, 8, 300, "left", 0)
+			love.graphics.printf(_text, consolas, 8, 8, 300, __left__, 0)
 			love.graphics.setColor(1, 1, 1, 1)
-			love.graphics.printf(_text, consolas, 6, 6, 300, "left", 0)
+			love.graphics.printf(_text, consolas, 6, 6, 300, __left__, 0)
 		end
 
 		love.graphics.present()
@@ -143,6 +145,19 @@ love.timer.getUpdateFPS = _ogGetFPS
 
 ---@return number -- Returns the current frames per second.
 love.timer.getFPS = love.timer.getDrawFPS
+
+-- fix a bug where love.window.hasFocus doesnt return the actual focus in Mobiles
+if OS == "Android" or OS == "IOS" then
+	local _f = true
+	function love.window.hasFocus()
+		return _f
+	end
+
+	function love.handlers.focus(f)
+		_f = f
+		if love.focus then return love.focus(f) end
+	end
+end
 
 local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
@@ -239,10 +254,10 @@ function love.errorhandler(msg)
 		missSfx = love.audio.newSource(paths.getSound("gameplay/missnote"..love.math.random(1,3)), "static")
 
 		bgMusic:setLooping(true)
-		bgMusic:setVolume(0.3)
+		bgMusic:setVolume(0.7)
 		bgMusic:play()
 
-		missSfx:setVolume(0.1)
+		missSfx:setVolume(0.4)
 		missSfx:play()
 	end
 
@@ -307,14 +322,14 @@ function love.errorhandler(msg)
 			elseif pressed == 4 then copyToClipboard() end
 		end,
 		focus = function(f)
-			bgMusic:setVolume(f and 0.3 or 0.1)
+			bgMusic:setVolume(f and 0.7 or 0.3)
 		end,
 		resize = function(w, h)
 			gameW, gameH = w, h
 			draw()
 		end,
 		displayrotated = function(force)
-			gameW, gameH = love.graphics.getPixelDimensions()
+			gameW, gameH = love.graphics.getDimensions()
 			draw(force)
 		end
 	}

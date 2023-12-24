@@ -53,7 +53,7 @@ function ChartingState:enter()
         }
         PlayState.SONG = self.__song
     end
-    self.curDiff = PlayState.storyDifficulty
+    self.curDiff = PlayState.songDifficulty
     self:loadSong(self.__song.song)
 
     local songName = paths.formatToSongPath(self.__song.song)

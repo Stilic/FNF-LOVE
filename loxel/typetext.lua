@@ -9,6 +9,8 @@ function TypeText:new(x, y, content, font, color, align, limit)
     self.speed = 0.04
     self.timer = 0
 
+    self.completeCallback = nil
+
     self.index = 0
     self.sound = nil
 end
@@ -24,9 +26,8 @@ function TypeText:update(dt)
 
         if self.index == #self.target then
             self.finished = true
+            if self.completeCallback then self.completeCallback() end
         end
-    else
-        if self.isComplete then self.isComplete() end
     end
 end
 
@@ -43,6 +44,7 @@ end
 function TypeText:forceEnd()
     self.content = self.target
     self.finished = true
+    if self.completeCallback then self.completeCallback() end
 end
 
 function TypeText:addLetter(i)

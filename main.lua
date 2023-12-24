@@ -60,6 +60,7 @@ local SplashScreen = require "funkin.states.splash"
 function love.load()
 	if WindowUtil then
 		WindowUtil.setDarkMode(Project.title, true)
+		love.window.minimize(); love.window.restore()
 	end
 
 	if Project.bgColor then
