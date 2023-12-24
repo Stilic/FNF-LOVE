@@ -3,8 +3,14 @@ local NoteSplash = Sprite:extend("NoteSplash")
 function NoteSplash:new(x, y)
     NoteSplash.super.new(self, x, y)
 
-    self:setFrames(paths.getSparrowAtlas("skins/normal/noteSplashes"))
-    self.antialiasing = true
+    if PlayState.pixelStage then
+        self:setFrames(paths.getSparrowAtlas("skins/pixel/noteSplashes"))
+        self:setGraphicSize(math.floor(self.width * 6))
+        self:updateHitbox()
+        self.antialiasing = false
+    else
+        self:setFrames(paths.getSparrowAtlas("skins/normal/noteSplashes"))
+    end
 
     for i = 0, 1, 1 do
         for j = 0, 3, 1 do
@@ -27,7 +33,11 @@ function NoteSplash:setup(data)
     self.curAnim.framerate = 24 + math.random(-2, 2)
     self:updateHitbox()
 
-    self.offset.x, self.offset.y = self.width * 0.3, self.height * 0.3
+    if PlayState.pixelStage then
+        self.offset.x, self.offset.y = self.width * -0.13, self.height * -0.07
+    else
+        self.offset.x, self.offset.y = self.width * 0.3, self.height * 0.3
+    end
 end
 
 function NoteSplash:update(dt)

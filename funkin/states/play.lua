@@ -42,9 +42,8 @@ function PlayState.sortByShit(a, b) return a.time < b.time end
 
 function PlayState.loadSong(song, diff)
     if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
-    if diff == "normal" then diff = "" end
 
-    local path = "songs/" .. song .. "/chart" .. (diff ~= "" and ("-" .. diff) or "")
+    local path = "songs/" .. song .. "/charts/" .. diff
     local data = paths.getJSON(path)
 
     if data then
@@ -53,7 +52,7 @@ function PlayState.loadSong(song, diff)
         local metadata = paths.getJSON('songs/' .. song .. '/meta')
         PlayState.SONG = {
             song = song,
-            bpm = metadata.bpm or 150.0,
+            bpm = metadata.bpm or 150,
             speed = 1,
             needsVoices = true,
             stage = 'stage',
@@ -199,7 +198,7 @@ function PlayState:enter()
 
                     local note = Note(daStrumTime, daNoteData, oldNote)
                     note.mustPress = gottaHitNote
-                    note.altNote = n[4]
+                    note.type = n[4]
                     note:setScrollFactor()
                     if self.middleScroll and not note.mustPress then note.visible = false end
                     table.insert(self.unspawnNotes, note)
@@ -207,7 +206,7 @@ function PlayState:enter()
                     if n[3] ~= nil then
                         local susLength = tonumber(n[3])
                         if susLength ~= nil and susLength > 0 then
-                            susLength = math.round(n[3] /
+                            susLength = math.round(susLength /
                                                        PlayState.conductor
                                                            .stepCrochet)
                             if susLength > 0 then
@@ -222,7 +221,7 @@ function PlayState:enter()
                                                          daNoteData, oldNote,
                                                          true, note)
                                     sustain.mustPress = note.mustPress
-                                    sustain.altNote = note.altNote
+                                    sustain.type = note.type
                                     sustain:setScrollFactor()
                                     if self.middleScroll and not sustain.mustPress then
                                         sustain.visible = false
@@ -470,8 +469,11 @@ function PlayState:enter()
     if self.storyMode and not self.seenCutscene then
         PlayState.seenCutscene = true
 
-        if paths.exists(paths.getPath('data/cutscenes/'..songName..'.lua'), 'file') then
-            local cutsceneScript = Script('data/cutscenes/'..songName)
+        local fileExist = paths.exists(paths.getMods('data/cutscenes/' .. songName .. '.lua'), 'file') or
+                          paths.exists(paths.getPath('data/cutscenes/' .. songName .. '.lua'), 'file')
+        if fileExist then
+            local cutsceneScript = Script('data/cutscenes/' .. songName)
+
             cutsceneScript:call("create")
             table.insert(self.scripts.scripts, cutsceneScript)
         else
@@ -485,7 +487,7 @@ function PlayState:enter()
         local detailsText = "Freeplay"
         if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
-        local diff = "Normal"
+        local diff = PlayState.defaultDifficulty
         if PlayState.songDifficulty ~= "" then
             diff = PlayState.songDifficulty:gsub("^%l", string.upper)
         end
@@ -589,7 +591,7 @@ function PlayState:update(dt)
                 local endTimestamp = startTimestamp +
                                         PlayState.conductor.sound:getDuration()
 
-                local diff = "Normal"
+                local diff = PlayState.defaultDifficulty
                 if PlayState.songDifficulty ~= "" then
                     diff = PlayState.songDifficulty:gsub("^%l", string.upper)
                 end
@@ -668,7 +670,7 @@ function PlayState:update(dt)
                     local detailsText = "Freeplay"
                     if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
-                    local diff = "Normal"
+                    local diff = PlayState.defaultDifficulty
                     if PlayState.songDifficulty ~= "" then
                         diff = PlayState.songDifficulty:gsub("^%l", string.upper)
                     end
@@ -708,7 +710,7 @@ function PlayState:update(dt)
             local detailsText = "Freeplay"
             if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
-            local diff = "Normal"
+            local diff = PlayState.defaultDifficulty
             if PlayState.songDifficulty ~= "" then
                 diff = PlayState.songDifficulty:gsub("^%l", string.upper)
             end
@@ -923,7 +925,7 @@ function PlayState:closeSubstate()
                                      PlayState.conductor.sound:getDuration()
             endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
-            local diff = "Normal"
+            local diff = PlayState.defaultDifficulty
             if PlayState.songDifficulty ~= "" then
                 diff = PlayState.songDifficulty:gsub("^%l", string.upper)
             end
@@ -1426,7 +1428,7 @@ function PlayState:focus(f)
                                      PlayState.conductor.sound:getDuration()
             endTimestamp = endTimestamp - PlayState.notePosition / 1000
 
-            local diff = "Normal"
+            local diff = PlayState.defaultDifficulty
             if PlayState.songDifficulty ~= "" then
                 diff = PlayState.songDifficulty:gsub("^%l", string.upper)
             end
@@ -1441,7 +1443,7 @@ function PlayState:focus(f)
             local detailsText = "Freeplay"
             if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
-            local diff = "Normal"
+            local diff = PlayState.defaultDifficulty
             if PlayState.songDifficulty ~= "" then
                 diff = PlayState.songDifficulty:gsub("^%l", string.upper)
             end

@@ -9,6 +9,8 @@ function StoryMenuState:enter()
         Discord.changePresence({details = "In the Menus"})
     end
 
+    self.diffs = {'Easy', PlayState.defaultDifficulty, 'Hard'}
+
     self.lerpScore = 0
     self.intendedScore = 0
 
@@ -33,7 +35,8 @@ function StoryMenuState:enter()
 
     local ui_tex = paths.getSparrowAtlas(
                        'menus/storymenu/campaign_menu_UI_assets');
-    local bgYellow = Graphic(0, 56, game.width, 386, Color.fromRGB(249, 207, 81))
+    local bgYellow =
+        Graphic(0, 56, game.width, 386, Color.fromRGB(249, 207, 81))
 
     self.grpWeekText = Group()
     self:add(self.grpWeekText)
@@ -54,7 +57,7 @@ function StoryMenuState:enter()
         for i, week in pairs(self.weeksData) do
             local isLocked = (week.locked == true)
             local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10,
-                                        week.sprite)
+                                       week.sprite)
             weekThing.y = weekThing.y + ((weekThing.height + 20) * (i - 1))
             weekThing.targetY = num
             self.grpWeekText:add(weekThing)
@@ -163,7 +166,8 @@ function StoryMenuState:update(dt)
     self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 0.5)
     self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
-    if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and not self.inSubstate then
+    if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and
+        not self.inSubstate then
         if controls:pressed("ui_up") then self:changeWeek(-1) end
         if controls:pressed("ui_down") then self:changeWeek(1) end
 
@@ -184,8 +188,8 @@ function StoryMenuState:update(dt)
         if controls:pressed("accept") then self:selectWeek() end
     end
 
-    if controls:pressed("back") and not self.movedBack and not self.selectedWeek
-        and not self.inSubstate then
+    if controls:pressed("back") and not self.movedBack and not self.selectedWeek and
+        not self.inSubstate then
         game.sound.play(paths.getSound("cancelMenu"))
         self.movedBack = true
         game.switchState(MainMenuState())
@@ -211,7 +215,7 @@ function StoryMenuState:selectWeek()
             table.insert(songTable, paths.formatToSongPath(leWeek.songs[i]))
         end
 
-        local diff = ""
+        local diff = PlayState.defaultDifficulty
         switch(StoryMenuState.curDifficulty, {
             [1] = function() diff = "easy" end,
             [3] = function() diff = "hard" end
@@ -237,8 +241,7 @@ function StoryMenuState:selectWeek()
         else
             local pathTable = {}
             for i = 1, #songTable do
-                local suffix = (diff ~= "" and "-" .. diff or "")
-                local path = 'songs/' .. songTable[i] .. '/chart' .. suffix
+                local path = 'songs/' .. songTable[i] .. '/charts/' .. diff
                 if not paths.getJSON(path) then
                     table.insert(pathTable, path .. '.json')
                 end
@@ -251,8 +254,6 @@ function StoryMenuState:selectWeek()
     end
 end
 
-local diffString = {'Easy', 'Normal', 'Hard'}
-
 function StoryMenuState:changeDifficulty(change)
     if change == nil then change = 0 end
 
@@ -264,7 +265,7 @@ function StoryMenuState:changeDifficulty(change)
         StoryMenuState.curDifficulty = 3
     end
 
-    local storyDiff = diffString[StoryMenuState.curDifficulty]
+    local storyDiff = self.diffs[StoryMenuState.curDifficulty]
     local newImage = paths.getImage('menus/storymenu/difficulties/' ..
                                         paths.formatToSongPath(storyDiff))
 
@@ -321,9 +322,7 @@ function StoryMenuState:changeWeek(change)
         spr.visible = not leWeek.locked
     end
 
-    if #self.weeksData > 1 then
-        game.sound.play(paths.getSound('scrollMenu'))
-    end
+    if #self.weeksData > 1 then game.sound.play(paths.getSound('scrollMenu')) end
 
     self:updateText()
 end
@@ -363,15 +362,11 @@ function StoryMenuState:closeSubstate()
 end
 
 function StoryMenuState:checkSongsDifficulty()
-    local weekSongs = self.weeksData[StoryMenuState.curWeek].songs
-    local diff = ""
-    if diffString[StoryMenuState.curDifficulty] ~= "Normal" then
-        diff = "-" .. diffString[StoryMenuState.curDifficulty]:lower()
-    end
     local checkSongs = {}
-    for _, s in ipairs(weekSongs) do
+    for _, s in ipairs(self.weeksData[StoryMenuState.curWeek].songs) do
         local song = paths.formatToSongPath(s)
-        if paths.getJSON('songs/'..song..'/chart'..diff) then
+        if paths.getJSON('songs/' .. song .. '/charts/' ..
+                             self.diffs[StoryMenuState.curDifficulty]:lower()) then
             table.insert(checkSongs, true)
         else
             table.insert(checkSongs, false)
@@ -384,18 +379,19 @@ end
 function StoryMenuState:loadWeeks()
     if Mods.currentMod then
         if paths.exists(paths.getMods('data/weekList.txt'), 'file') then
-            local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+            local listData = paths.getText('weekList'):gsub('\r', '')
+                                 :split('\n')
             for _, week in pairs(listData) do
-                local data = paths.getJSON('data/weeks/weeks/'..week)
+                local data = paths.getJSON('data/weeks/weeks/' .. week)
                 data.file = week
                 table.insert(self.weeksData, data)
             end
         else
             for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
-                                                              'data/weeks/weeks'))) do
+                                                                      'data/weeks/weeks'))) do
                 local week = str:withoutExt()
                 if str:endsWith('.json') then
-                    local data = paths.getJSON('data/weeks/weeks/'..week)
+                    local data = paths.getJSON('data/weeks/weeks/' .. week)
                     data.file = week
                     table.insert(self.weeksData, data)
                 end
@@ -403,18 +399,19 @@ function StoryMenuState:loadWeeks()
         end
     else
         if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
-            local listData = paths.getText('weekList'):gsub('\r',''):split('\n')
+            local listData = paths.getText('weekList'):gsub('\r', '')
+                                 :split('\n')
             for _, week in pairs(listData) do
-                local data = paths.getJSON('data/weeks/weeks/'..week)
+                local data = paths.getJSON('data/weeks/weeks/' .. week)
                 data.file = week
                 table.insert(self.weeksData, data)
             end
         else
             for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-                                                              'data/weeks/weeks'))) do
+                                                                      'data/weeks/weeks'))) do
                 local week = str:withoutExt()
                 if str:endsWith('.json') then
-                    local data = paths.getJSON('data/weeks/weeks/'..week)
+                    local data = paths.getJSON('data/weeks/weeks/' .. week)
                     data.file = week
                     table.insert(self.weeksData, data)
                 end

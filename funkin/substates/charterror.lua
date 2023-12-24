@@ -16,7 +16,7 @@ function ChartErrorSubstate:new(songpath)
     self.bg:setScrollFactor()
     self:add(self.bg)
 
-    self.titleTxt = Alphabet(0, -80, #listPaths .. ' Chart Not Found', true, false)
+    self.titleTxt = Alphabet(0, -80, #listPaths .. ' Chart(s) Not Found', true, false)
     self.titleTxt:screenCenter('x')
     self:add(self.titleTxt)
 
