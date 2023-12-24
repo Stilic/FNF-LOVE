@@ -9,15 +9,6 @@ local canvasTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
 
-local _ogSetColor, _simpleCamera
-local function setSimpleColor(v, ...)
-	if type(v) == "table" then
-		_ogSetColor(_simpleCamera:getMultColor(unpack(v)))
-	else
-		_ogSetColor(_simpleCamera:getMultColor(v, ...))
-	end
-end
-
 function Camera.__init(canv)
 	canvas = canv
 	canvasTable[1] = canv
@@ -29,8 +20,8 @@ function Camera:new(x, y, width, height)
 	self.simple = true
 	self.isSimple = true -- indicates if its in simple render
 
-	-- these will turn complex rendering mode
-	self.clipCam = flags.LoxelDefaultClipCamera or false
+	-- these will turn complex rendering mode in some cases
+	self.clipCam = flags.LoxelDefaultClipCamera == nil and true or flags.LoxelDefaultClipCamera
 	self.antialiasing = true
 
 	self.width = width and (width > 0 and width) or game.width
@@ -150,6 +141,29 @@ function Camera:draw()
 	end
 end
 
+-- Simple Render
+local _simpleCamera
+
+local _ogSetColor
+local function setSimpleColor(r, g, b, a)
+	if type(r) == "table" then
+		_ogSetColor(_simpleCamera:getMultColor(r[1], r[2], r[3], r[4]))
+	else
+		_ogSetColor(_simpleCamera:getMultColor(r, g, b, a))
+	end
+end
+
+local _ogSetScissor, _scX, _scY, _scW, _scH, _scSX, _scSY
+local function setSimpleScissor(x, y, w, h)
+	if not x then return _ogSetScissor() end
+	_ogSetScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
+end
+
+local _ogIntersectScissor
+local function intersectSimpleScissor(x, y, w, h)
+	_ogIntersectScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
+end
+
 function Camera:drawSimple(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
 	self.isSimple = true
@@ -161,40 +175,47 @@ function Camera:drawSimple(_skipCheck)
 	love.graphics.push()
 
 	local w2, h2 = self.width / 2, self.height / 2
-	local winWidth, winHeight = love.graphics.getDimensions()
-	local scale = math.min(winWidth / game.width, winHeight / game.height)
+	local winW, winH = love.graphics.getDimensions()
+	local scale = math.min(winW / game.width, winH / game.height)
 
-	love.graphics.translate((winWidth - scale * game.width) / 2,
-							(winHeight - scale * game.height) / 2)
-	if not flags.LoxelDisableScissorOnRenderCameraSimple then
-		local x, y = (winWidth - (scale * self.scale.x) * game.width) / 2,
-				 (winHeight - (scale * self.scale.y) * game.height) / 2
-
-		if self.clipCam then
-			x, y = self.x * scale + x, self.y * scale + y
-		end
-		love.graphics.setScissor(math.round(x), math.round(y),
-								 math.round(self.width * scale * self.scale.x) - 1,
-								 math.round(self.height * scale * self.scale.y) - 1)
-	end
-
-	love.graphics.setColor(self.bgColor[1], self.bgColor[2],
-						   self.bgColor[3], self.bgColor[4])
-	love.graphics.rectangle("fill", 0, 0, self.width, self.height)
-	love.graphics.setColor(r, g, b, a)
-
+	love.graphics.translate(math.floor((winW - scale * game.width) / 2),
+							math.floor((winH - scale * game.height) / 2))
 	love.graphics.scale(scale)
 
-	love.graphics.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+	_scSX, _scSY = scale * self.scale.x, scale * self.scale.y
+	_scX, _scY = (winW - _scSX * game.width) / 2,
+				 (winH - _scSY * game.height) / 2
+
+	_scW, _scH = math.floor(self.width * _scSX),
+				 math.floor(self.height * _scSY)
+
+	local _x, _y = math.floor(self.x * scale + _scX), math.floor(self.y * scale + _scY)
+	if not flags.LoxelDisableScissorOnRenderCameraSimple then
+		if self.clipCam then
+			love.graphics.setScissor(_x, _y, _scW, _scH)
+		else
+			love.graphics.setScissor(math.floor(_scX), math.floor(_scY), _scW, _scH)
+		end
+	end
+	_scX, _scY = _x, _y
+
+	_simpleCamera = self
+	_ogSetColor, love.graphics.setColor = love.graphics.setColor, setSimpleColor
+	_ogSetScissor, love.graphics.setScissor = love.graphics.setScissor, setSimpleScissor
+	_ogIntersectScissor, love.graphics.intersectScissor = love.graphics.intersectScissor, intersectSimpleScissor
+
+	if self.bgColor ~= nil and (not self.bgColor[4] or self.bgColor[4] > 0) then
+		setSimpleColor(self.bgColor)
+		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+		setSimpleColor(r, g, b, a)
+	end
+
+	love.graphics.translate(w2 + self.x + self.__shakeX, h2 + self.y + self.__shakeY)
 	love.graphics.scale(self.__zoom.x * self.scale.x, self.__zoom.y * self.scale.y)
 	love.graphics.rotate(math.rad(self.angle + self.rotation))
 	love.graphics.translate(-w2, -h2)
 
 	love.graphics.setBlendMode("alpha", "alphamultiply")
-
-	_ogSetColor = love.graphics.setColor
-	love.graphics.setColor = setSimpleColor
-	_simpleCamera = self
 
 	for i, o in next, self.__renderQueue do
 		if type(o) == "function" then
@@ -205,17 +226,17 @@ function Camera:drawSimple(_skipCheck)
 		self.__renderQueue[i] = nil
 	end
 
-	love.graphics.setColor = _ogSetColor
+	if self.__flashAlpha > 0 then
+		setSimpleColor(self.__flashColor[1], self.__flashColor[2],
+					   self.__flashColor[3], self.__flashAlpha)
+		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+	end
 
 	love.graphics.pop()
 
-	if self.__flashAlpha > 0 then
-		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
-							   self.__flashColor[3], self.__flashAlpha)
-		love.graphics.rectangle("fill", (winWidth - scale * game.width) / 2,
-										(winHeight - scale * game.height) / 2,
-										self.width, self.height)
-	end
+	love.graphics.setColor = _ogSetColor
+	love.graphics.setScissor = _ogSetScissor
+	love.graphics.intersectScissor = _ogIntersectScissor
 
 	love.graphics.setScissor(xc, yc, wc, hc)
 	love.graphics.setColor(r, g, b, a)
@@ -242,8 +263,7 @@ function Camera:drawComplex(_skipCheck)
 
 	local w2, h2 = self.width / 2, self.height / 2
 	if not self.clipCam then
-		love.graphics.translate(w2 + self.x,
-								h2 + self.y)
+		love.graphics.translate(w2 + self.x, h2 + self.y)
 	else
 		love.graphics.translate(w2 + self.__shakeX, h2 + self.__shakeY)
 	end
@@ -282,18 +302,18 @@ function Camera:drawComplex(_skipCheck)
 	mode = self.antialiasing and "linear" or "nearest"
 	canvas:setFilter(mode, mode, anisotropy)
 
-	local winWidth, winHeight = love.graphics.getDimensions()
-	local scale = math.min(winWidth / game.width, winHeight / game.height)
+	local winW, winH = love.graphics.getDimensions()
+	local scale = math.min(winW / game.width, winH / game.height)
 
 	if self.clipCam then
 		love.graphics.draw(canvas,
-						   (winWidth / 2) + (self.x * scale),
-						   (winHeight / 2) + (self.y * scale),
+						   (winW / 2) + (self.x * scale),
+						   (winH / 2) + (self.y * scale),
 						   math.rad(self.rotation),
 						   scale * self.scale.x, scale * self.scale.y,
 						   game.width / 2, game.height / 2)
 	else
-		love.graphics.draw(canvas, winWidth / 2, winHeight / 2,
+		love.graphics.draw(canvas, winW / 2, winH / 2,
 						   math.rad(self.rotation),
 						   scale * self.scale.x, scale * self.scale.y,
 						   game.width / 2, game.height / 2)
