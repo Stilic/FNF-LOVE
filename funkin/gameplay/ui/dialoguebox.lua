@@ -112,6 +112,15 @@ function DialogueBox:new(dialogueList)
 	self.dialogueOpened = false
 	self.dialogueStarted = false
 	self.dialogueEnded = false
+
+    if love.system.getDevice() == "Mobile" then
+		self.buttons = ButtonGroup()
+		local enter = Button(0, 0, game.width, game.height, "return")
+		enter.pressedAlpha = 0
+		enter.releasedAlpha = 0
+		self.buttons:add(enter)
+		game.buttons.add(self.buttons)
+	end
 end
 
 function DialogueBox:update(dt)
@@ -127,7 +136,11 @@ function DialogueBox:update(dt)
 		self.dialogueStarted = true
 	end
 
-	if controls:pressed('accept') then
+    local ACCEPTED = controls:pressed("accept")
+    if love.system.getDevice() == "Mobile" then
+        ACCEPTED = Keyboard.justPressed.ENTER
+    end
+	if ACCEPTED then
 		if self.dialogueEnded then
 			if self.dialogueList[2] == nil and self.dialogueList[1] ~= nil then
 				if not self.isEnding then
@@ -135,7 +148,7 @@ function DialogueBox:update(dt)
 					game.sound.play(paths.getSound('gameplay/clickText'), 0.8)
 
 					for loop = 1, 5 do
-						Timer.after(0.2 * loop, function ()
+						Timer.after(0.2 * loop, function()
 							self.box.alpha = self.box.alpha - 1 / 5
 							self.bgFade.alpha = self.bgFade.alpha - 1 / 5 * 0.7
 							self.portraitLeft.visible = false
@@ -145,7 +158,8 @@ function DialogueBox:update(dt)
 						end)
 					end
 
-					Timer.after(1, function ()
+					Timer.after(1, function()
+                        game.buttons.remove(self.buttons)
 						self.finishThing()
 						self:kill()
 					end)

@@ -100,6 +100,41 @@ function OptionsSubstate:new()
 	self.hitboxdown = {y = game.width - 65, height = 65}
 	self.hitboxup = {y = -65, height = 65}
 
+    if love.system.getDevice() == "Mobile" then
+        local camButtons = Camera()
+        game.cameras.add(camButtons, false)
+
+		self.buttons = ButtonGroup()
+		self.buttons.type = "roundrect"
+		self.buttons.lined = true
+		self.buttons.width = 134
+		self.buttons.height = 134
+        self.buttons.cameras = {camButtons}
+
+		local w = self.buttons.width
+
+		local left = Button(2, game.height - w, 0, 0, "left")
+		local up = Button(left.x + w, left.y - w, 0, 0, "up")
+		local down = Button(up.x, left.y, 0, 0, "down")
+		local right = Button(down.x + w, left.y, 0, 0, "right")
+
+		local enter = Button(game.width - w, left.y, 0, 0, "return")
+		enter:setColor(Color.GREEN)
+		local back = Button(enter.x - w, left.y, 0, 0, "escape")
+		back:setColor(Color.RED)
+
+		self.buttons:add(left)
+		self.buttons:add(up)
+		self.buttons:add(down)
+		self.buttons:add(right)
+
+		self.buttons:add(enter)
+		self.buttons:add(back)
+
+		self:add(self.buttons)
+		game.buttons.add(self.buttons)
+	end
+
 	self:reset_Tabs()
 	self:changeTab()
 end
@@ -182,6 +217,11 @@ function OptionsSubstate:update(dt)
 			end
 		else
 			self.parent.grpShitMenu.visible = true
+            if love.system.getDevice() == "Mobile" then
+                game.buttons.remove(self.buttons)
+                self.parent.buttons.visible = true
+                game.buttons.add(self.parent.buttons)
+            end
 			self:close()
 		end
 	end

@@ -25,6 +25,29 @@ function PauseSubstate:new()
 		item.targetY = i
 		self.grpShitMenu:add(item)
 	end
+
+    if love.system.getDevice() == "Mobile" then
+		self.buttons = ButtonGroup()
+		self.buttons.type = "roundrect"
+		self.buttons.lined = true
+		self.buttons.width = 134
+		self.buttons.height = 134
+
+		local w = self.buttons.width
+
+		local down = Button(2, game.height - w, 0, 0, "down")
+		local up = Button(down.x, down.y - w, 0, 0, "up")
+
+		local enter = Button(game.width - w, down.y, 0, 0, "return")
+		enter:setColor(Color.GREEN)
+
+		self.buttons:add(up)
+		self.buttons:add(down)
+		self.buttons:add(enter)
+
+		self:add(self.buttons)
+		game.buttons.add(self.buttons)
+	end
 end
 
 function PauseSubstate:enter()
@@ -57,6 +80,10 @@ function PauseSubstate:update(dt)
 					self.parent:onSettingChange(setting)
 				end
 				self.grpShitMenu.visible = false
+                if love.system.getDevice() == "Mobile" then
+                    self.buttons.visible = false
+                    game.buttons.remove(self.buttons)
+                end
 				self:openSubstate(toSubstate)
 			end,
 			["Exit to menu"] = function ()
@@ -100,6 +127,7 @@ end
 
 function PauseSubstate:close()
 	self.music:kill()
+    if love.system.getDevice() == "Mobile" then game.buttons.remove(self.buttons) end
 	PauseSubstate.super.close(self)
 end
 

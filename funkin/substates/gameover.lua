@@ -24,6 +24,31 @@ function GameOverSubstate:new(x, y)
 
 	local boyfriendMidpointX, boyfriendMidpointY = self.boyfriend:getGraphicMidpoint()
 	self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
+
+	if love.system.getDevice() == "Mobile" then
+		local camButtons = Camera()
+		game.cameras.add(camButtons, false)
+
+		self.buttons = ButtonGroup()
+		self.buttons.type = "roundrect"
+		self.buttons.lined = true
+		self.buttons.width = 134
+		self.buttons.height = 134
+		self.buttons.cameras = {camButtons}
+
+		local w = self.buttons.width
+
+		local enter = Button(game.width - w, game.height - w, 0, 0, "return")
+		enter:setColor(Color.GREEN)
+		local back = Button(enter.x - w, enter.y, 0, 0, "escape")
+		back:setColor(Color.RED)
+
+		self.buttons:add(enter)
+		self.buttons:add(back)
+
+		self:add(self.buttons)
+		game.buttons.add(self.buttons)
+	end
 end
 
 function GameOverSubstate:enter(x, y)

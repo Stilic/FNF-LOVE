@@ -419,6 +419,7 @@ function PlayState:enter()
 		self.buttons.height = game.height
 		self.buttons.cameras = {self.camOther}
 		self.buttons.fill = "line"
+        self.buttons.visible = false
 
 		local bl = Button(0, 0, 0, 0, "left", {1, 0, 1})
 		local bd = Button(width, 0, 0, 0, "down", Color.BLUE)
@@ -429,8 +430,6 @@ function PlayState:enter()
 		self.buttons:add(bd)
 		self.buttons:add(bu)
 		self.buttons:add(br)
-
-		game.buttons.add(self.buttons)
 	end
 
 	self:add(self.receptors)
@@ -509,6 +508,10 @@ function PlayState:enter()
 end
 
 function PlayState:startCountdown()
+    if love.system.getDevice() == "Mobile" then
+        self.buttons.visible = true
+        game.buttons.add(self.buttons)
+    end
 	self:section(0)
 
 	local event = self.scripts:call("startCountdown")
@@ -661,7 +664,11 @@ function PlayState:update(dt)
 	end
 
 	if self.startedCountdown then
-		if controls:pressed("pause") then
+        local PAUSE_PRESSED = controls:pressed("pause")
+        if love.system.getDevice() == "Mobile" then
+            PAUSE_PRESSED = Keyboard.justPressed.ESCAPE
+        end
+		if PAUSE_PRESSED then
 			local event = self.scripts:call("paused")
 			if not event.cancelled then
 				PlayState.conductor.sound:pause()
@@ -683,6 +690,11 @@ function PlayState:update(dt)
 						state = self.SONG.song .. ' - [' .. diff .. ']'
 					})
 				end
+
+                if love.system.getDevice() == "Mobile" then
+                    self.buttons.visible = false
+                    game.buttons.remove(self.buttons)
+                end
 
 				local pause = PauseSubstate()
 				pause.cameras = {self.camOther}
@@ -731,6 +743,11 @@ function PlayState:update(dt)
 
 		self.camHUD.visible = false
 		self.boyfriend.visible = false
+
+        if love.system.getDevice() == "Mobile" then
+            self.buttons.visible = false
+            game.buttons.remove(self.buttons)
+        end
 
 		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
 			self.stage.boyfriendPos.y))
@@ -939,6 +956,11 @@ function PlayState:closeSubstate()
 				endTimestamp = math.floor(endTimestamp)
 			})
 		end
+
+        if love.system.getDevice() == "Mobile" then
+            self.buttons.visible = true
+            game.buttons.add(self.buttons)
+        end
 	end
 end
 
