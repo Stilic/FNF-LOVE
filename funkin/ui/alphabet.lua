@@ -121,7 +121,7 @@ function Alphabet:update(dt)
 	if self.isMenuItem then
 		local scaledY = math.remapToRange(self.targetY, 0, 1, 0, 1.3)
 
-		local lerpVal = math.bound(dt * 9.6, 0, 1)
+		local lerpVal = math.clamp(dt * 9.6, 0, 1)
 		self.y = math.lerp(self.y,
 			(scaledY * self.yMult) + (game.height * 0.48) +
 			self.yAdd, lerpVal)

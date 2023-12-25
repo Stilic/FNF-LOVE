@@ -15,7 +15,7 @@ function MenuItem:update(dt)
 	MenuItem.super.update(self, dt)
 
 	self.y = math.lerp(self.y, (self.targetY * 120) + 480,
-		math.bound(dt * 10.2, 0, 1))
+		math.clamp(dt * 10.2, 0, 1))
 
 	if self.__isFlashing then self.flashingInt = self.flashingInt + 1 end
 

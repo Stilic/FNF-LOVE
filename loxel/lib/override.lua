@@ -65,7 +65,10 @@ end
 
 function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
 
-math.bound = math.clamp
+math.bound = function(...)
+	love.markDeprecated(2, "math.bound", "function", "renamed", "math.clamp")
+	return math.clamp(...)
+end
 
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
@@ -80,6 +83,13 @@ function __NULL__() end
 -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
 function switch(param, case_table)
 	return (case_table[param] or case_table.default or __NULL__)()
+end
+
+local checktype_str = "bad argument #%d to '%s' (%s expected, got %s)"
+function checktype(value, arg, functionName, expectedType)
+	if type(value) ~= expectedType then
+		error(checktype_str:format(arg, functionName, expectedType, type(value)), 3)
+	end
 end
 
 function table.merge(a, b)
@@ -183,7 +193,10 @@ function math.truncate(x, precision, round)
 	return (round and math.round or math.floor)(precision * x) / precision
 end
 
-math.roundDecimal = math.truncate
+math.roundDecimal = function(...)
+	love.markDeprecated(2, "math.roundDecimal", "function", "renamed", "math.truncate")
+	return math.clamp(...)
+end
 
 local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
 function math.countbytes(x)
@@ -210,4 +223,49 @@ function love.system.getDevice()
 		return "Desktop"
 	end
 	return "Unknown"
+end
+
+if --[[not love.markDeprecated actually this is better and]] debug then
+	local functionName = "markDeprecated"
+	local deprecated = {}
+	local ignore = {
+		["love.graphics.stencil"] = true,
+		["love.graphics.setStencilTest"] = true
+	}
+	function love.markDeprecated(level, name, apiname, deprecationtname, replacement)
+		checktype(level, 1, functionName, "number")
+		checktype(name, 2, functionName, "string")
+		if ignore[name] then return end
+
+		checktype(apiname, 3, functionName, "string")
+		checktype(deprecationtname, 4, functionName, "string")
+
+		local info = debug.getinfo(level + 1, "Sl")
+		if not deprecated[name] then deprecated[name] = {} end
+		if deprecated[name][info.source .. info.currentline] then return end
+		deprecated[name][info.source .. info.currentline] = true
+
+		local what
+		if apiname == "functionvariant" then
+			what = "function variant in"
+		elseif apiname == "methodvariant" then
+			what = "method variant in"
+		else
+			what = apiname
+		end
+
+		local extra
+		if deprecationtname == "replaced" then
+			checktype(replacement, 5, functionName, "string")
+			extra = "(replaced by " .. replacement .. ")"
+		elseif deprecationtname == "renamed" then
+			checktype(replacement, 5, functionName, "string")
+			extra = "renamed to " .. replacement .. ")"
+		end
+
+		local notice = ("%s:%d: Using deprecated %s %s %s"):format(info.source:sub(2),
+			info.currentline, what, name, extra or "")
+
+		print("LOVE - Warning: " .. notice)
+	end
 end
