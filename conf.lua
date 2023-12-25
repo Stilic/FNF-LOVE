@@ -5,6 +5,7 @@ function love.conf(t)
 	t.console = Project.DEBUG_MODE
 	t.gammacorrect = false
 	t.highdpi = false
+	t.renderers = {"vulkan", "opengl", "metal"}
 
 	t.window = nil -- we'll initialize it in run.lua
 

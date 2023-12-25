@@ -37,7 +37,7 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 			local og = func
 			return function(a, ...)
 				return og(type(a) == "string" and love.filesystem.newFileData(a) or a,
-						  ...)
+					...)
 			end
 		end
 
