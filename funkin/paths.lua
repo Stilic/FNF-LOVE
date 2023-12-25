@@ -81,7 +81,7 @@ function paths.getFont(key, size)
 		obj = paths.fonts[path .. "_" .. size]
 		if obj then return obj end
 		if paths.exists(path, "file") then
-			obj = love.graphics.newFont(path, size)
+			obj = love.graphics.newFont(love.filesystem.newFileData(path), size)
 			paths.fonts[path .. "_" .. size] = obj
 			return obj
 		end
@@ -90,7 +90,7 @@ function paths.getFont(key, size)
 	obj = paths.fonts[path .. "_" .. size]
 	if obj then return obj end
 	if paths.exists(path, "file") then
-		obj = love.graphics.newFont(path, size)
+		obj = love.graphics.newFont(love.filesystem.newFileData(path), size)
 		paths.fonts[path .. "_" .. size] = obj
 		return obj
 	end
@@ -107,7 +107,7 @@ function paths.getImage(key)
 		obj = paths.images[path]
 		if obj then return obj end
 		if paths.exists(path, "file") then
-			obj = love.graphics.newImage(path)
+			obj = love.graphics.newImage(love.filesystem.newFileData(path))
 			paths.images[path] = obj
 			return obj
 		end
@@ -116,7 +116,7 @@ function paths.getImage(key)
 	obj = paths.images[path]
 	if obj then return obj end
 	if paths.exists(path, "file") then
-		obj = love.graphics.newImage(path)
+		obj = love.graphics.newImage(love.filesystem.newFileData(path))
 		paths.images[path] = obj
 		return obj
 	end
@@ -133,8 +133,13 @@ function paths.getAudio(key, stream)
 		obj = paths.audio[path]
 		if obj then return obj end
 		if paths.exists(path, "file") then
-			obj = stream and love.audio.newSource(path, "stream") or
-				love.sound.newSoundData(path)
+			if love.filesystem.isFused() then
+			obj = love.filesystem.newFileData(path)
+		else
+			obj = path
+		end
+			obj = stream and love.audio.newSource(obj, "stream") or
+				love.sound.newSoundData(obj)
 			paths.audio[path] = obj
 			return obj
 		end
@@ -143,8 +148,13 @@ function paths.getAudio(key, stream)
 	obj = paths.audio[path]
 	if obj then return obj end
 	if paths.exists(path, "file") then
-		obj = stream and love.audio.newSource(path, "stream") or
-			love.sound.newSoundData(path)
+		if love.filesystem.isFused() then
+			obj = love.filesystem.newFileData(path)
+		else
+			obj = path
+		end
+		obj = stream and love.audio.newSource(obj, "stream") or
+			love.sound.newSoundData(obj)
 		paths.audio[path] = obj
 		return obj
 	end

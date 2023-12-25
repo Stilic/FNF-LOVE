@@ -25,11 +25,6 @@ luac.out
 *.def
 *.exp
 
-# Shared objects (inc. Windows DLLs)
-*.so
-*.so.*
-*.dylib
-
 # Executables
 *.exe
 *.out
@@ -41,3 +36,4 @@ luac.out
 # Ignore
 *.sublime-workspace
 mods
+test

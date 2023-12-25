@@ -24,5 +24,6 @@ INFO: we made loxel for this game, so this library is similar to [HaxeFlixel](ht
 - timer - [https://github.com/vrld/hump/blob/master/timer.lua](https://github.com/vrld/hump/blob/master/timer.lua)
 - gamestate - [https://github.com/vrld/hump/blob/master/gamestate.lua](https://github.com/vrld/hump/blob/master/gamestate.lua)
 - xml - [https://github.com/Cluain/Lua-Simple-XML-Parser](https://github.com/Cluain/Lua-Simple-XML-Parser)
+- nativefs - [https://github.com/EngineerSmith/nativefs](https://github.com/EngineerSmith/nativefs)
 - lua-discordRPC - [https://github.com/pfirsich/lua-discordRPC](https://github.com/pfirsich/lua-discordRPC)
 - lua-https - [https://github.com/love2d/lua-https](https://github.com/love2d/lua-https)

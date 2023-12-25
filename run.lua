@@ -17,11 +17,23 @@ if OS == "Android" or OS == "iOS" then
 	modes.fullscreen = true
 end
 
+if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
+	local lovefs = love.filesystem
+	love.filesystem = setmetatable(require "lib.nativefs", {
+		__index = lovefs
+	})
+
+	function love.filesystem.isFused()
+		return true
+	end
+end
+
 love.window.setTitle(Project.title)
 love.window.setMode(Project.width, Project.height, modes)
 love.window.setIcon(love.image.newImageData(Project.icon))
 
-local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14) or love.graphics.setNewFont(14)
+local consolas = love.graphics.newFont(love.filesystem.newFileData('assets/fonts/consolas.ttf'), 14) or
+				 love.graphics.setNewFont(14)
 
 local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d"
 local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d"
