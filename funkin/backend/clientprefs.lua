@@ -53,6 +53,8 @@ function ClientPrefs.loadData()
 
 	if game.save.data.prefs then
 		love.FPScap = ClientPrefs.data.fps
+	else
+		ClientPrefs.data.fps = love.FPScap
 	end
 	love.showFPS = ClientPrefs.data.showFps
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
