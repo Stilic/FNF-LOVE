@@ -89,10 +89,13 @@ function MainMenuState:enter()
 		local back = Button(enter.x - w, down.y, 0, 0, "escape")
 		back:setColor(Color.RED)
 
+		local mods = Button(enter.x, game.height/2 - w/2, 0, 0, "6")
+
 		self.buttons:add(up)
 		self.buttons:add(down)
 		self.buttons:add(enter)
 		self.buttons:add(back)
+		self.buttons:add(mods)
 
 		self:add(self.buttons)
 		game.buttons.add(self.buttons)

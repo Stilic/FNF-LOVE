@@ -7,7 +7,11 @@ function ButtonManager.remap(x, y)
 		(y - (winHeight - scale * game.height) / 2) / scale
 end
 
-function ButtonManager.add(o) table.insert(ButtonManager.list, o) end
+function ButtonManager.add(o)
+	if not table.find(ButtonManager.list, o) then
+		table.insert(ButtonManager.list, o)
+	end
+end
 
 function ButtonManager.reset()
 	for i = #ButtonManager.list, 1, -1 do
