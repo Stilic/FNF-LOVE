@@ -249,6 +249,12 @@ function PlayState:enter()
 	self.accuracy = 0
 	self.health = 1
 
+    -- for ratings
+    self.sicks = 0
+    self.goods = 0
+    self.bads = 0
+    self.shits = 0
+
 	self.totalPlayed = 0
 	self.totalHit = 0.0
 
@@ -839,7 +845,9 @@ function PlayState:update(dt)
 			if not n.ignoreNote and n.mustPress and not n.wasGoodHit and
 				(not n.isSustain or not n.parentNote.tooLate) then
 				if self.vocals then self.vocals:setVolume(0) end
-				self.combo = 0
+
+				if self.combo > 0 then self.combo = 0 end
+                self.combo = self.combo - 1
 				self.score = self.score - 100
 				self.misses = self.misses + 1
 
@@ -863,6 +871,7 @@ function PlayState:update(dt)
 					self.gf:playAnim('sad', true)
 					self.gf.lastHit = math.floor(PlayState.conductor.time)
 				end
+				self:popUpScore()
 			end
 
 			self:removeNote(n)
@@ -1206,7 +1215,8 @@ function PlayState:goodNoteHit(n)
 				end
 
 				if not n.ignoreNote then
-					self.combo = self.combo + 1
+					if self.combo < 0 then self.combo = 0 end
+                    self.combo = self.combo + 1
 					self.score = self.score + rating.score
 
 					if self.health > 2 then self.health = 2 end
@@ -1220,11 +1230,11 @@ function PlayState:goodNoteHit(n)
 					splash.x, splash.y = receptor.x, receptor.y
 					splash:setup(n.data)
 				end
-				self:popUpScore(rating)
+				self:popUpScore(rating.name)
 
 				self.totalHit = self.totalHit + rating.mod
 				self.totalPlayed = self.totalPlayed + 1
-				self:recalculateRating()
+				self:recalculateRating(rating.name)
 			end
 
 			self:removeNote(n)
@@ -1370,74 +1380,80 @@ function PlayState:section(s)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = PlayState.conductor.crochet * 0.001
+    local accel = PlayState.conductor.crochet * 0.001
 
-	local judgeSpr = self.judgeSprites:recycle()
+    local judgeSpr = self.judgeSprites:recycle()
 
 	local antialias = not PlayState.pixelStage
 	local uiStage = PlayState.pixelStage and "pixel" or "normal"
 
-	judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
-		rating.name))
-	judgeSpr.alpha = 1
-	judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
-		(PlayState.pixelStage and 4.7 or 0.7)))
-	judgeSpr:updateHitbox()
-	judgeSpr:screenCenter()
-	judgeSpr.moves = true
-	-- use fixed values to display at the same position on a different resolution
-	judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
-	judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
-	judgeSpr.velocity.x = 0
-	judgeSpr.velocity.y = 0
-	judgeSpr.alpha = 1
-	judgeSpr.antialiasing = antialias
+    if rating == nil then rating = "shit" end
+    judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
+                                            rating))
+    judgeSpr.alpha = 1
+    judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
+                                           (PlayState.pixelStage and 4.7 or 0.7)))
+    judgeSpr:updateHitbox()
+    judgeSpr:screenCenter()
+    judgeSpr.moves = true
+    -- use fixed values to display at the same position on a different resolution
+    judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
+    judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
+    judgeSpr.velocity.x = 0
+    judgeSpr.velocity.y = 0
+    judgeSpr.alpha = 1
+    if self.combo <= 0 then judgeSpr.alpha = 0 end
+    judgeSpr.antialiasing = antialias
 
-	judgeSpr.acceleration.y = 550
-	judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
-	judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
+    judgeSpr.acceleration.y = 550
+    judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
+    judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
-	Timer.after(accel, function ()
-		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function ()
-			Timer.cancelTweensOf(judgeSpr)
-			judgeSpr:kill()
-		end)
-	end)
+    Timer.after(accel, function()
+        Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
+            Timer.cancelTweensOf(judgeSpr)
+            judgeSpr:kill()
+        end)
+    end)
 
-	if self.combo >= 10 then
-		local lastSpr
-		local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
-		for i = 1, #comboStr do
-			local digit = tonumber(comboStr:sub(i, i)) or 0
-			local numScore = self.judgeSprites:recycle()
-			numScore:loadTexture(paths.getImage(
-				"skins/" .. uiStage .. "/num" .. digit))
-			numScore:setGraphicSize(math.floor(numScore.width *
-				(PlayState.pixelStage and 4.5 or
-					0.5)))
-			numScore:updateHitbox()
-			numScore.moves = true
-			numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
-			numScore.y = judgeSpr.y + 115
-			numScore.velocity.y = 0
-			numScore.velocity.x = 0
-			numScore.alpha = 1
-			numScore.antialiasing = antialias
+    local lastSpr
+    local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
+    if self.combo < 0 then comboStr = string.format("-%03d", math.abs(self.combo)) end
+    for i = 1, #comboStr do
+        if self.combo >= 10 or self.combo <= 0 then
+            local digit = tostring(comboStr:sub(i, i)) or ""
 
-			numScore.acceleration.y = math.random(200, 300)
-			numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
-			numScore.velocity.x = math.random(-5.0, 5.0)
+            if digit == "-" then digit = "negative" end
 
-			Timer.after(accel * 2, function ()
-				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function ()
-					Timer.cancelTweensOf(numScore)
-					numScore:kill()
-				end)
-			end)
+            local numScore = self.judgeSprites:recycle()
+            numScore:loadTexture(paths.getImage(
+                                     "skins/" .. uiStage .. "/num" .. digit))
+            numScore:setGraphicSize(math.floor(numScore.width *
+                                                   (PlayState.pixelStage and 4.5 or
+                                                       0.5)))
+            numScore:updateHitbox()
+            numScore.moves = true
+            numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
+            numScore.y = judgeSpr.y + 115
+            numScore.velocity.y = 0
+            numScore.velocity.x = 0
+            numScore.alpha = 1
+            numScore.antialiasing = antialias
 
-			lastSpr = numScore
-		end
-	end
+            numScore.acceleration.y = math.random(200, 300)
+            numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
+            numScore.velocity.x = math.random(-5.0, 5.0)
+
+            Timer.after(accel * 2, function()
+                Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
+                    Timer.cancelTweensOf(numScore)
+                    numScore:kill()
+                end)
+            end)
+
+            lastSpr = numScore
+        end
+    end
 end
 
 function PlayState:focus(f)
@@ -1479,16 +1495,60 @@ function PlayState:focus(f)
 	end
 end
 
-function PlayState:recalculateRating()
-	if self.totalPlayed > 0 then
-		self.accuracy = math.min(1,
-			math.max(0, self.totalHit / self.totalPlayed))
-	end
+function PlayState:recalculateRating(rating)
+    if self.totalPlayed > 0 then
+        self.accuracy = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
+    end
 
-	self.scoreTxt.content = "Score: " .. self.score .. " // Combo Breaks: " ..
-		self.misses .. " // " ..
-		util.floorDecimal(self.accuracy * 100, 2) .. "%"
-	self.scoreTxt:screenCenter("x")
+    local ratingStr = (self.totalPlayed > 0 and "({fc}) {r}" or "?")
+
+    if rating then
+        local category = rating .. "s"
+        if self[category] then
+            self[category] = self[category] + 1
+        end
+    end
+
+    local class = ""
+    if self.accuracy >= 0.995 then
+        class = "S+"
+    elseif self.accuracy >= 0.960 then
+        class = "S"
+    elseif self.accuracy >= 0.905 then
+        class = "A"
+    elseif self.accuracy >= 0.850 then
+        class = "B"
+    elseif self.accuracy >= 0.795 then
+        class = "C"
+    elseif self.accuracy >= 0.745 then
+        class = "D"
+    elseif self.accuracy < 0.750 then
+        class = "E"
+    end
+
+    local FC = ""
+    if self.misses < 1 then
+        if self.sicks > 0 and self.goods < 1 and self.bads < 1 and self.shits < 1 then
+            FC = "SFC"
+        elseif self.goods > 0 and self.bads < 1 and self.shits < 1 then
+            FC = "GFC"
+        elseif self.bads > 0 or self.shits > 0 then
+            FC = "FC"
+        end
+    else
+        FC = "SDCB"
+        if self.misses >= 10 then
+            FC = "Clear"
+        end
+    end
+    self.rating = ratingStr:gsub("{fc}", FC):gsub("{r}", class)
+
+    self.scoreTxt.content = "Score: " .. self.score ..
+                            " // Combo Breaks: " .. self.misses ..
+                            " // " .. util.floorDecimal(self.accuracy * 100, 2) ..
+                            "% - " .. self.rating
+
+    self.scoreTxt:screenCenter("x")
 end
 
 function PlayState:leave()
