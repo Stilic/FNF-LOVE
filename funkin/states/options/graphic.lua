@@ -1,16 +1,17 @@
 local Graphic = {}
 
 local optionsVar = {
-	{'fps', 'FPS', false, 'number', {30, 250}, function ()
+	{'lowQuality', 'Low Quality', false, 'boolean'},
+	{'shader', 'Shader', false, 'boolean'},
+	{'fps', 'FPS', false, 'number', {30, 250}, function()
 		love.FPScap = ClientPrefs.data.fps
 	end},
-	{'showFps', 'Show FPS', false, 'boolean', function ()
+	{'showFps', 'Show FPS', false, 'boolean', function()
 		love.showFPS = ClientPrefs.data.showFps
 	end},
-	{'antialiasing', 'Antialiasing', false, 'boolean', function ()
+	{'antialiasing', 'Antialiasing', false, 'boolean', function()
 		Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 	end},
-	{'shader', 'Shader', false, 'boolean'}
 }
 
 local curSelected = 1

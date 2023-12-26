@@ -1,7 +1,8 @@
 local decodeJson = (require "lib.json").decode
+local nativefs = require "lib.nativefs"
 
 local function readFile(key)
-	if paths.exists(key, "file") then return love.filesystem.read(key) end
+	if paths.exists(key, "file") then return nativefs.read(key) end
 	return nil
 end
 

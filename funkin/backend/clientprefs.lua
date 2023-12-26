@@ -14,6 +14,7 @@ ClientPrefs.data = {
 	fps = 0,
 	showFps = false,
 	antialiasing = true,
+	lowQuality = false,
 	shader = true,
 }
 

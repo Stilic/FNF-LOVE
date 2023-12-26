@@ -1,8 +1,5 @@
 local AlphaCharacter = Sprite:extend("AlphaCharacter")
 
-AlphaCharacter.alphabet = "abcdefghijklmnopqrstuvwxyz"
-AlphaCharacter.numbers = "1234567890"
-AlphaCharacter.symbols = "|~#$%()*+-:;<=>@[]^_.,'!?"
 AlphaCharacter.row = 0
 AlphaCharacter.textSize = 1
 

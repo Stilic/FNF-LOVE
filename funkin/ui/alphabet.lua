@@ -72,9 +72,9 @@ function Alphabet:addText()
 			self.consecutiveSpace = self.consecutiveSpace + 1
 		end
 
-		local isNumber = AlphaCharacter.numbers:find(character)
-		local isSymbol = AlphaCharacter.symbols:find(character)
-		local isAlphabet = AlphaCharacter.alphabet:find(character:lower())
+		local isNumber = character:match("%d") ~= nil
+		local isSymbol = character:match("[^%w%s]") ~= nil
+		local isAlphabet = character:match("[a-zA-Z]") ~= nil
 		if (isAlphabet or isSymbol or isNumber) and
 			(not self.isBold or not spaceChar) then
 			if self.lastSprite ~= nil then
