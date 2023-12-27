@@ -37,9 +37,7 @@ function table.remove(list, callback)
 end
 
 function table.reverse(list)
-	for i = 1, #list / 2, 1 do
-		list[i], list[#list - i + 1] = list[#list - 1 + 1], list[i]
-	end
+	for i = 1, #list / 2, 1 do list[i], list[#list - i + 1] = list[#list - 1 + 1], list[i] end
 end
 
 function table.delete(list, object)
@@ -112,9 +110,8 @@ function string.withoutExt(self)
 end
 
 function string.fileName(self, parts)
-	local separator = package.config:sub(1, 1)
 	parts = parts or {}
-	for part in self:split(separator) do
+	for part in self:split(package.config:sub(1, 1)) do
 		table.insert(parts, part)
 	end
 	return parts[#parts]
@@ -149,21 +146,19 @@ end
 
 function string.trim(self) return self:ltrim():rtrim() end
 
-function table.splice(tbl, start, count, ...)
-	local removedItems = {}
-	if start < 0 then start = #tbl + start + 1 end
-	count = count or 0
-	for i = 1, count do
-		if tbl[start] then
-			table.insert(removedItems, tbl[start])
-			table.remove(tbl, start)
+function table.splice(list, start, count, ...)
+	local removed, args = {}, {...}
+	if start < 0 then start = #list + start + 1 end
+	for i = 1, count or 0 do
+		if list[start] then
+			table.insert(removed, list[start])
+			table.remove(list, start)
 		else
 			break
 		end
 	end
-	local args = {...}
-	for i = #args, 1, -1 do table.insert(tbl, start, args[i]) end
-	return removedItems
+	for i = #args, 1, -1 do table.insert(list, start, args[i]) end
+	return removed
 end
 
 function table.clone(list, includeIndices, clone)
@@ -199,8 +194,7 @@ local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
 function math.countbytes(x)
 	local i = 1
 	while x >= 0x400 and i < 5 do
-		x = x / 0x400
-		i = i + 1
+		x, i = x / 0x400, i + 1
 	end
 	return math.truncate(x, 2, true) .. " " .. intervals[i]
 end
