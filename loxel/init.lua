@@ -28,6 +28,10 @@ Mouse = require "loxel.input.mouse"
 Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
+if love.system.getDevice() == "Mobile" then
+	ScreenPrint = require "loxel.screenprint"
+end
+
 ui = {
 	UIButton = require "loxel.ui.button",
 	UICheckbox = require "loxel.ui.checkbox",
@@ -127,6 +131,7 @@ function game.init(app, state)
 	game.cameras.reset()
 
 	Gamestate.switch(state())
+	if ScreenPrint then ScreenPrint.init(app.width, app.height) end
 end
 
 local function callUIInput(func, ...)
@@ -210,6 +215,8 @@ function game.update(dt)
 
 	if not game.isSwitchingState then Gamestate.update(dt) end
 
+	if ScreenPrint then ScreenPrint.update(dt) end
+
 	Keyboard.update()
 	Mouse.update()
 end
@@ -221,6 +228,7 @@ function game.draw()
 			fade.draw)
 	end
 	for _, c in ipairs(game.cameras.list) do c:draw() end
+	if ScreenPrint then ScreenPrint.draw() end
 end
 
 function game.resize(w, h) Gamestate.resize(w, h) end
@@ -231,3 +239,12 @@ function game.focus(f)
 end
 
 function game.quit() ClientPrefs.saveData() end
+
+local ogprint = print
+function print(...)
+    if ScreenPrint then
+	    local text = table.concat({...}, "\n")
+		ScreenPrint.new(text, love.graphics.newFont(18))
+	end
+    ogprint(...)
+end
