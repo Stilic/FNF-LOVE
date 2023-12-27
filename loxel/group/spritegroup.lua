@@ -26,7 +26,7 @@ function SpriteGroup:getWidth()
 	if not next(self.members) then return 0 end
 
 	min, max = 0, 0
-	for _, member in next, self.members do
+	for _, member in pairs(self.members) do
 		maxMember = member.x + member.width
 		if maxMember > max then max = maxMember end
 		if member.x < min then min = member.x end
@@ -40,7 +40,7 @@ function SpriteGroup:getHeight()
 	if not next(self.members) then return 0 end
 
 	min, max = 0, 0
-	for _, member in next, self.members do
+	for _, member in pairs(self.members) do
 		maxMember = member.y + member.height
 		if maxMember > max then max = maxMember end
 		if member.y < min then min = member.y end
@@ -69,7 +69,7 @@ function SpriteGroup:draw()
 	if not next(self.__cameraQueue) then return end
 
 	local cameras, oldCameras = self.cameras or Camera.__defaultCameras
-	for _, member in next, self.members do
+	for _, member in pairs(self.members) do
 		oldCameras, member.cameras = member.cameras, cameras
 		member:draw()
 		member.cameras = oldCameras
@@ -95,7 +95,7 @@ function SpriteGroup:__render(camera)
 	love.graphics.translate(-self.origin.x, -self.origin.y)
 
 	local f
-	for i, member in next, self.__renderQueue do
+	for i, member in pairs(self.__renderQueue) do
 		member:__render(camera)
 		self.__renderQueue[i] = nil
 	end

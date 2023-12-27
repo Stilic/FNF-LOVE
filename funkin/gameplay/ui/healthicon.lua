@@ -34,7 +34,7 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 			math.floor(self.width / self.availableStates),
 			math.floor(self.height))
 
-		local _frames = {}
+		local _frames = table.new(self.availableStates, 0)
 		for i = 1, self.availableStates do
 			_frames[i] = i - 1
 		end

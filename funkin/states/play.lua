@@ -1101,7 +1101,7 @@ function PlayState:onSettingChange(setting)
 end
 
 function PlayState:getKeyFromEvent(controls)
-	for _, control in next, controls do
+	for _, control in pairs(controls) do
 		if PlayState.controlDirs[control] then
 			return PlayState.controlDirs[control]
 		end
@@ -1137,7 +1137,7 @@ function PlayState:onKeyPress(key, type)
 					table.sort(noteList, PlayState.sortByShit)
 					local coolNote = table.remove(noteList, 1)
 
-					for _, n in next, noteList do
+					for _, n in pairs(noteList) do
 						if n.time - coolNote.time < 2 then
 							self:removeNote(n)
 						end
@@ -1207,7 +1207,7 @@ function PlayState:goodNoteHit(n)
 				local diff, rating =
 					math.abs(n.time - PlayState.conductor.time),
 					PlayState.ratings[#PlayState.ratings - 1]
-				for _, r in next, PlayState.ratings do
+				for _, r in pairs(PlayState.ratings) do
 					if diff <= r.time then
 						rating = r
 						break

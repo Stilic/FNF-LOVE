@@ -227,7 +227,9 @@ function Camera:drawSimple(_skipCheck)
 
 	love.graphics.setBlendMode("alpha", "alphamultiply")
 
-	for i, o in next, self.__renderQueue do
+	local o
+	for i = 1, #self.__renderQueue do
+		o = self.__renderQueue[i]
 		if type(o) == "function" then
 			o(self)
 		else
@@ -285,11 +287,14 @@ function Camera:drawComplex(_skipCheck)
 
 	love.graphics.setBlendMode("alpha", "alphamultiply")
 
-	for i, o in next, self.__renderQueue do
+	local o
+	for i = 1, #self.__renderQueue do
+		o = self.__renderQueue[i]
 		if type(o) == "function" then
 			o(self)
 		else
 			o:__render(self)
+			table.clear(self.__cameraQueue)
 		end
 		self.__renderQueue[i] = nil
 	end

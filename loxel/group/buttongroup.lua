@@ -2,7 +2,7 @@
 local function tranformChildren(self, func, value)
 	if self.group == nil then return end
 
-	for _, button in ipairs(self.__graphics) do
+	for _, button in pairs(self.__graphics) do
 		if button ~= nil then func(button, value) end
 	end
 end
@@ -109,7 +109,7 @@ end
 
 function ButtonGroup:checkPress(x, y)
 	if not self.stunned then
-		for _, button in ipairs(self.__graphics) do
+		for _, button in pairs(self.__graphics) do
 			if not button.stunned and x >= button.x and
 				x <= button.x + button.width and y >= button.y and
 				y <= button.y + button.height then

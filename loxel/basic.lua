@@ -72,7 +72,7 @@ end
 function Basic:draw()
 	if self.__render and self.visible and self.exists then
 		local cams = self.cameras or Camera.__defaultCameras
-		for _, c in next, cams do
+		for _, c in pairs(cams) do
 			if c.visible and c.exists and self:isOnScreen(c) then
 				table.insert(c.__renderQueue, self)
 				table.insert(self.__cameraQueue, c)
@@ -82,7 +82,7 @@ function Basic:draw()
 end
 
 function Basic:cancelDraw()
-	for i, c in next, self.__cameraQueue do
+	for i, c in pairs(self.__cameraQueue) do
 		for i = #c.__renderQueue, 1, -1 do
 			if c.__renderQueue[i] == self then
 				table.remove(c.__renderQueue, i)

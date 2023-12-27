@@ -16,23 +16,54 @@ function string.replace(self, pattern, rep) -- note: you could just do gsub inst
 	return self:gsub('%' .. pattern, rep)
 end
 
-function table.find(list, value)
-	for i, v in next, list do if v == value then return i end end
+local s -- see https://luajit.org/extensions.html
+
+s, table.new = pcall(require, "table.new")
+if not s then
+	function table.new(--[[narr, nrec]])
+		return {}
+	end
 end
 
-function table.remove(list, callback)
-	local idx, v = type(callback) == __number__ and callback or (callback == nil and #list) or nil
-	local j = idx or 1
+s, table.clear = pcall(require, "table.clear")
+if not s then
+	function table.clear(list)
+		for i in pairs(list) do list[i] = nil end
+	end
+end
 
-	for i = j, #list do
-		if (idx == nil and callback(list, i, j) or i == idx) then
-			v, list[i] = list[i]
-		else
-			if i ~= j then list[j], list[i] = list[i] end
-			j = j + 1
+if not table.move then
+	function table.move(a1, f, e, t, a2)
+		a2 = a2 or a1
+		for i = f, e do a2[i + t - 1] = a1[i] end
+		return a2
+	end
+end
+
+function table.find(list, value)
+	for i = 1, #list do if list[i] == value then return i end end
+end
+
+function table.remove(list, idx)
+	local v
+	if idx == nil then idx = #list end
+	if type(idx) == __number__ then
+		v = list[idx]
+		table.move(list, idx + 1, #list, idx)
+		list[#list] = nil
+	else
+		local j = 1
+		for i = j, #list do
+			if idx(list, i, j) then v, list[i] = list[i]
+			else
+				if i ~= j then
+					list[j], list[i] = list[i]
+					if list[i] == nil then break end
+				end
+				j = j + 1
+			end
 		end
 	end
-
 	return v
 end
 
@@ -47,10 +78,6 @@ function table.delete(list, object)
 		return true
 	end
 	return false
-end
-
-function table.clear(list)
-	for i in next, list do list[i] = nil end
 end
 
 function math.type(v)
@@ -88,7 +115,7 @@ function checktype(level, value, arg, functionName, expectedType)
 end
 
 function table.merge(a, b)
-	for i, v in next, b do a[i] = v end
+	for i, v in pairs(b) do a[i] = v end
 end
 
 function table.keys(list, includeIndices, keys)
@@ -161,6 +188,7 @@ function table.splice(list, start, count, ...)
 	return removed
 end
 
+-- this is bad
 function table.clone(list, includeIndices, clone)
 	clone = clone or {}
 	for i, v in includeIndices and iter or next, list, includeIndices and 0 or nil do
