@@ -17,15 +17,16 @@ if OS == "Android" or OS == "iOS" then
 	modes.fullscreen = true
 end
 
--- Unrestrict the filesystem
 local restrictedfs = false
 function love.filesystem.isRestricted()
 	return restrictedfs
 end
+
+-- unrestrict the filesystem
 if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 	if love.filesystem.mountFullPath then
 		love.filesystem.mountFullPath(love.filesystem.getSourceBaseDirectory(), "")
-	else
+	elseif OS ~= "Android" and OS ~= "IOS" then
 		restrictedfs = true
 
 		local lovefs = love.filesystem
@@ -34,9 +35,8 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		})
 
 		local function replace(func)
-			local og = func
 			return function(a, ...)
-				return og(type(a) == "string" and love.filesystem.newFileData(a) or a,
+				return func(type(a) == "string" and love.filesystem.newFileData(a) or a,
 					...)
 			end
 		end
@@ -49,6 +49,8 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		love.graphics.setNewFont = replace(love.graphics.setNewFont)
 		love.image.newImageData = replace(love.image.newImageData)
 		love.sound.newSoundData = replace(love.sound.newSoundData)
+	else
+		restrictedfs = true
 	end
 end
 
@@ -57,10 +59,10 @@ love.window.setMode(Project.width, Project.height, modes)
 love.window.setIcon(love.image.newImageData(Project.icon))
 
 local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14) or
-				 love.graphics.setNewFont(14)
+	love.graphics.setNewFont(14)
 
-local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d"
-local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d"
+local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d\n%s"
+local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d\n%s"
 
 local __step__, __quit__, __count__, __left__ = "step", "quit", "count", "left"
 local real_fps = 0
@@ -80,6 +82,7 @@ function love.run()
 	collectgarbage()
 
 	local _stats, _update, _fps, _ram, _vram, _text
+	local rname, rversion, rvendor, rdevice = love.graphics.getRendererInfo()
 	local function draw()
 		love.graphics.origin()
 		love.graphics.clear(love.graphics.getBackgroundColor())
@@ -90,8 +93,8 @@ function love.run()
 			_fps = math.min(love.parallelUpdate and real_fps or _update, love.FPScap)
 			_ram, _vram = math.countbytes(collectgarbage(__count__) * 0x400), math.countbytes(_stats.texturememory)
 			_text = love.parallelUpdate and
-				fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls) or
-				fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls)
+				fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls, rname) or
+				fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls, rname)
 
 			love.graphics.setColor(0, 0, 0, 0.5)
 			love.graphics.printf(_text, consolas, 8, 8, 300, __left__, 0)

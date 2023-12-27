@@ -98,7 +98,9 @@ function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5)
 math.positive_infinity = math.huge
 math.negative_infinity = -math.huge
 
-math.noise = love.math.noise
+math.noise = love.math.perlinNoise or love.math.noise
+math.simplex = love.math.simplexNoise or math.noise
+math.perlin = math.noise
 
 function __NULL__() end
 
@@ -218,13 +220,13 @@ math.roundDecimal = function(...)
 	return math.clamp(...)
 end
 
-local intervals = {'B', 'KB', 'MB', 'GB', 'TB'}
+local intervals, countbytesf, i = {"B", "KB", "MB", "GB"--[[, "TB"]]}, "%.2f %s"
 function math.countbytes(x)
-	local i = 1
-	while x >= 0x400 and i < 5 do
+	i = 1
+	while x >= 0x400 and i < 4 do
 		x, i = x / 0x400, i + 1
 	end
-	return math.truncate(x, 2, true) .. " " .. intervals[i]
+	return countbytesf:format(x, intervals[i])
 end
 
 -- LOVE2D EXTRA FUNCTIONS
