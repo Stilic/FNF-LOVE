@@ -61,8 +61,8 @@ love.window.setIcon(love.image.newImageData(Project.icon))
 local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14) or
 	love.graphics.setNewFont(14)
 
-local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d\n%s"
-local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d\n%s"
+local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d\n%s | %s"
+local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d\n%s | %s"
 
 local __step__, __quit__, __count__, __left__ = "step", "quit", "count", "left"
 local real_fps = 0
@@ -93,8 +93,8 @@ function love.run()
 			_fps = math.min(love.parallelUpdate and real_fps or _update, love.FPScap)
 			_ram, _vram = math.countbytes(collectgarbage(__count__) * 0x400), math.countbytes(_stats.texturememory)
 			_text = love.parallelUpdate and
-				fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls, rname) or
-				fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls, rname)
+				fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls, rname, rdevice) or
+				fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls, rname, rdevice)
 
 			love.graphics.setColor(0, 0, 0, 0.5)
 			love.graphics.printf(_text, consolas, 8, 8, 300, __left__, 0)

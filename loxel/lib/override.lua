@@ -52,16 +52,14 @@ function table.remove(list, idx)
 		table.move(list, idx + 1, #list, idx)
 		list[#list] = nil
 	else
-		local j = 1
-		for i = j, #list do
+		local j, i = 1, 1
+		while i <= #list do
 			if idx(list, i, j) then v, list[i] = list[i]
 			else
-				if i ~= j then
-					list[j], list[i] = list[i]
-					if list[i] == nil then break end
-				end
+				if i ~= j then list[j], list[i] = list[i] end
 				j = j + 1
 			end
+			i = i + 1
 		end
 	end
 	return v
