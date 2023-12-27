@@ -1,6 +1,8 @@
 ---@diagnostic disable: duplicate-set-field
 -- LUA 5.2-LUA 5.3 and LUA 5.0 BELOW REIMPLEMENTATIONS
 bit32, iter, utf8 = bit, ipairs(math), require "utf8"
+local __string__, __number__, __table__ = "string", "number", "table"
+local __integer__, __float__ = "integer", "float"
 
 function string.split(self, sep, t)
 	t = t or {}
@@ -19,18 +21,14 @@ function table.find(list, value)
 end
 
 function table.remove(list, callback)
-	local idx, j, v = type(callback) == "number" and callback or
-		(callback == nil and #list) or nil, 1
+	local idx, v = type(callback) == __number__ and callback or (callback == nil and #list) or nil
+	local j = idx or 1
 
-	for i = 1, #list do
+	for i = j, #list do
 		if (idx == nil and callback(list, i, j) or i == idx) then
-			v = list[i]
-			list[i] = nil
+			v, list[i] = list[i]
 		else
-			if i ~= j then
-				list[j] = list[i]
-				list[i] = nil
-			end
+			if i ~= j then list[j], list[i] = list[i] end
 			j = j + 1
 		end
 	end
@@ -42,16 +40,13 @@ function table.reverse(list)
 	for i = 1, #list / 2, 1 do
 		list[i], list[#list - i + 1] = list[#list - 1 + 1], list[i]
 	end
-	return list
 end
 
 function table.delete(list, object)
-	if object then
-		local index = table.find(list, object)
-		if index then
-			table.remove(list, index)
-			return true
-		end
+	local index = table.find(list, object)
+	if index then
+		table.remove(list, index)
+		return true
 	end
 	return false
 end
@@ -60,8 +55,6 @@ function table.clear(list)
 	for i in next, list do list[i] = nil end
 end
 
-local __integer__ = "integer"
-local __float__ = "float"
 function math.type(v)
 	return (v >= -2147483648 and v <= 2147483647 and math.floor(v) == v) and
 		__integer__ or __float__
@@ -176,7 +169,7 @@ end
 function table.clone(list, includeIndices, clone)
 	clone = clone or {}
 	for i, v in includeIndices and iter or next, list, includeIndices and 0 or nil do
-		clone[i] = type(v) == "table" and table.clone(v) or v
+		clone[i] = type(v) == __table__ and table.clone(v) or v
 	end
 	return clone
 end
@@ -231,13 +224,12 @@ end
 
 if --[[not love.markDeprecated actually this is better and]] debug then
 	-- this is stupid
-	local __markDeprecated__, __string__, __number__ = "markDeprecated", "string", "number"
+	local __markDeprecated__, __Sl__, __none__ = "markDeprecated", "Sl", ""
 	local __functionvariant__, __functionvariantin__ = "functionvariant", "function variant in"
 	local __methodvariant__, __methodvariantin__ = "methodvariant", "method variant in"
 	local __replaced__, __replcaedby__ = "replcaed", "(replaced by %s)"
 	local __renamed__, __renamedto__ = "renamed", "(renamed to %s)"
 	local __warning__ = "LOVE - Warning: %s:%d: Using deprecated %s %s %s"
-	local __Sl__, __none__ = "Sl", ""
 	local deprecated = {}
 	local ignore = {
 		["love.graphics.stencil"] = true,
