@@ -57,6 +57,11 @@ function Object:screenCenter(axes)
 	return self
 end
 
+function Object:getMultColor(r, g, b, a)
+	return self.color[1] * math.min(r, 1), self.color[2] * math.min(g, 1),
+		self.color[3] * math.min(b, 1), self.alpha * (math.min(a or 1, 1))
+end
+
 function Object:update(dt)
 	if self.moves then
 		self.velocity.x = self.velocity.x + self.acceleration.x * dt

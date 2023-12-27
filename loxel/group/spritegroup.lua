@@ -1,41 +1,13 @@
--- Children Function
-local function tranformChildren(self, func, value)
-	if self.group == nil then return end
+local _spriteGroup
 
-	for _, sprite in ipairs(self.__sprites) do
-		if sprite ~= nil then func(sprite, value) end
-	end
-end
-
-local function xTransform(sprite, x) sprite.x = sprite.x + x end
-local function yTransform(sprite, y) sprite.y = sprite.y + y end
-local function angleTransform(sprite, angle) sprite.angle = sprite.angle + angle end
-local function alphaTransform(sprite, alpha) sprite.alpha = alpha end
-local function flipXTransform(sprite, flipX) sprite.flipX = flipX end
-local function flipYTransform(sprite, flipY) sprite.flipY = flipY end
-local function colorTransform(sprite, color) sprite.color = color end
-local function visibleTransform(sprite, visible) sprite.visible = visible end
-local function aliveTransform(sprite, alive) sprite.alive = alive end
-local function existsTransform(sprite, exists) sprite.exists = exists end
-local function camerasTransform(sprite, cameras) sprite.cameras = cameras end
-local function offsetTransform(sprite, offset) sprite.offset = offset end
-local function originTransform(sprite, origin) sprite.origin = origin end
-local function scaleTransform(sprite, scale) sprite.scale = scale end
-local function scrollFactorTransform(sprite, scrollFactor)
-	sprite.scrollFactor = scrollFactor
-end
-local function clipRectTransform(sprite, clipRect, self)
-	if clipRect == nil then
-		sprite.clipRect = nil
+local _ogSetColor
+local function setColor(r, g, b, a)
+	if type(r) == "table" then
+		_ogSetColor(_spriteGroup:getMultColor(r[1], r[2], r[3], r[4]))
 	else
-		sprite.clipRect.x = clipRect.x - sprite.x + self.x
-		sprite.clipRect.y = clipRect.y - sprite.y + self.y
-		sprite.clipRect.width = clipRect.width
-		sprite.clipRect.height = clipRect.height
+		_ogSetColor(_spriteGroup:getMultColor(r, g, b, a))
 	end
 end
-
---------------
 
 ---@class SpriteGroup:Sprite
 local SpriteGroup = Sprite:extend("SpriteGroup")
@@ -43,205 +15,118 @@ local SpriteGroup = Sprite:extend("SpriteGroup")
 function SpriteGroup:new(x, y)
 	SpriteGroup.super.new(self, x, y)
 
-	self.__x = self.x
-	self.__y = self.y
-
-	self.__cameras = self.cameras
-
-	self.__alive = self.alive
-	self.__exists = self.exists
-
-	self.__origin = self.origin
-	self.__offset = self.offset
-	self.__scale = self.scale
-	self.__scrollFactor = self.scrollFactor
-	self.__clipRect = self.clipRect
-	self.__flipX = self.flipX
-	self.__flipY = self.flipY
-
-	self.__visible = self.visible
-	self.__color = self.color
-	self.__alpha = self.alpha
-	self.__angle = self.angle
-
 	self.group = Group()
-	self.__sprites = self.group.members
+	self.members = self.group.members
+
+	self.__renderQueue = {}
 end
 
-function SpriteGroup:update(dt)
-	if self.__cameras ~= self.cameras then
-		tranformChildren(self, camerasTransform, self.cameras)
-		self.__cameras = self.cameras
-	end
-	if self.__exists ~= self.exists then
-		tranformChildren(self, existsTransform, self.exists)
-		self.__exists = self.exists
-	end
-	if self.__visible ~= self.visible then
-		if self.exists then
-			tranformChildren(self, visibleTransform, self.visible)
-			self.__visible = self.visible
+function SpriteGroup:draw()
+	Sprite.super.draw(self)
+
+	if not next(self.__cameraQueue) then return end
+
+	local cameras, oldCameras = self.cameras or Camera.__defaultCameras
+	for _, member in next, self.members do
+		if member.is and member:is(Basic) then
+			oldCameras, member.cameras, ok = member.cameras, cameras, false
+			member:draw()
+			if next(member.__cameraQueue) then
+				member:cancelDraw()
+				table.insert(self.__renderQueue, member)
+			end
+			member.cameras = oldCameras
 		end
 	end
-	if self.__alive ~= self.alive then
-		if self.exists then
-			tranformChildren(self, aliveTransform, self.alive)
-			self.__alive = self.alive
-		end
-	end
-	if self.__x ~= self.x then
-		if self.exists then
-			tranformChildren(self, xTransform, self.x - self.__x)
-			self.__x = self.x
-		end
-	end
-	if self.__y ~= self.y then
-		if self.exists then
-			tranformChildren(self, yTransform, self.y - self.__y)
-			self.__y = self.y
-		end
-	end
-	if self.__angle ~= self.angle then
-		if self.exists then
-			tranformChildren(self, angleTransform, self.angle - self.__angle)
-			self.__angle = self.angle
-		end
-	end
-	if self.__alpha ~= self.alpha then
-		if self.exists then
-			tranformChildren(self, alphaTransform, self.alpha)
-			self.__alpha = self.alpha
-		end
-	end
-	if self.__flipX ~= self.flipX then
-		if self.exists then
-			tranformChildren(self, flipXTransform, self.flipX)
-			self.__flipX = self.flipX
-		end
-	end
-	if self.__flipY ~= self.flipY then
-		if self.exists then
-			tranformChildren(self, flipYTransform, self.flipY)
-			self.__flipY = self.flipY
-		end
-	end
-	if self.__color ~= self.color then
-		if self.exists then
-			tranformChildren(self, colorTransform, self.color)
-			self.__color = self.color
-		end
-	end
-	if self.__clipRect ~= self.clipRect then
-		if self.exists then
-			tranformChildren(self, clipRectTransform, self.clipRect, self)
-			self.__clipRect = self.clipRect
-		end
-	end
-	if self.__origin ~= self.origin then
-		if self.exists then
-			tranformChildren(self, originTransform, self.origin)
-			self.__origin = self.origin
-		end
-	end
-	if self.__offset ~= self.offset then
-		if self.exists then
-			tranformChildren(self, offsetTransform, self.offset)
-			self.__offset = self.offset
-		end
-	end
-	if self.__scale ~= self.scale then
-		if self.exists then
-			tranformChildren(self, scaleTransform, self.scale)
-			self.__scale = self.scale
-		end
-	end
-	if self.__scrollFactor ~= self.scrollFactor then
-		if self.exists then
-			tranformChildren(self, scrollFactorTransform, self.scrollFactor)
-			self.__scrollFactor = self.scrollFactor
-		end
+end
+--SpriteGroup.draw = Sprite.super.draw -- skips the Sprite:draw
+
+function SpriteGroup:__render(camera)
+	if not next(self.__renderQueue) then return end
+	local r, g, b, a = love.graphics.getColor()
+
+	love.graphics.push()
+
+	_spriteGroup = self
+	_ogSetColor, love.graphics.setColor = love.graphics.setColor, setColor
+
+	love.graphics.translate(self.x + self.origin.x + self.offset.x, self.y + self.origin.y + self.offset.y)
+	love.graphics.scale(self.scale.x * self.zoom.x, self.scale.y * self.zoom.y)
+	love.graphics.rotate(math.rad(self.angle))
+	love.graphics.translate(-self.origin.x, -self.origin.y)
+
+	local f
+	for i, member in next, self.__renderQueue do
+		member:__render(camera)
+		self.__renderQueue[i] = nil
 	end
 
-	self.group:update(dt)
+	love.graphics.pop()
+
+	love.graphics.setColor = _ogSetColor
+
+	love.graphics.setColor(r, g, b, a)
 end
 
-function SpriteGroup:draw() self.group:draw() end
-
-function SpriteGroup:add(sprite)
-	self:preAdd(sprite)
-	return self.group:add(sprite)
-end
-
-function SpriteGroup:preAdd(sprite)
-	local spr = sprite
-	spr.x = spr.x + self.x
-	spr.y = spr.y + self.y
-	spr.alpha = spr.alpha * self.alpha
-	spr.scrollFactor = self.scrollFactor
-	spr.cameras = self.cameras
-
-	if self.clipRect ~= nil then clipRectTransform(spr, self.clipRect, self) end
-end
-
-function SpriteGroup:recycle(class, factory, revive)
-	return self.group:recycle(class, factory, revive)
-end
-
-function SpriteGroup:remove(sprite)
-	local spr = sprite
-	spr.x = spr.x - self.x
-	spr.y = spr.y - self.y
-	spr.cameras = nil
-	return self.group:remove(sprite)
-end
-
-function SpriteGroup:sort(func) self.group:sort(func) end
-
+local min, max, maxMember
 function SpriteGroup:getWidth()
-	if #self.group.members == 0 then return 0 end
+	if #self.members == 0 then return 0 end
 
-	local minX = 0
-	local maxX = 0
-	for _, member in ipairs(self.__sprites) do
+	min, max = 0, 0
+	for _, member in next, self.members do
 		if member ~= nil then
-			local minMemberX = member.x
-			local maxMemberX = minMemberX + member.width
-
-			if maxMemberX > maxX then maxX = maxMemberX end
-			if minMemberX < minX then minX = minMemberX end
+			maxMember = member.x + member.width
+			if maxMember > max then max = maxMember end
+			if member.x < min then min = member.x end
 		end
 	end
-	return (maxX - minX) - self.x
+
+	self.width = max - min
+	return self.width
 end
 
 function SpriteGroup:getHeight()
-	if #self.group.members == 0 then return 0 end
+	if #self.members == 0 then return 0 end
 
-	local minY = 0
-	local maxY = 0
-	for _, member in ipairs(self.__sprites) do
+	min, max = 0, 0
+	for _, member in next, self.members do
 		if member ~= nil then
-			local minMemberY = member.y
-			local maxMemberY = minMemberY + member.height
-
-			if maxMemberY > maxY then maxY = maxMemberY end
-			if minMemberY < minY then minY = minMemberY end
+			maxMember = member.y + member.height
+			if maxMember > max then max = maxMember end
+			if member.y < min then min = member.y end
 		end
 	end
-	return (maxY - minY) - self.y
+
+	self.height = max - min
+	return self.height
 end
 
 function SpriteGroup:screenCenter(axes)
-	if axes == nil then axes = "xy" end
-	if axes:find("x") then self.x = (game.width - self:getWidth()) * 0.5 end
-	if axes:find("y") then self.y = (game.height - self:getHeight()) * 0.5 end
-	return self
+	self:getWidth(); self:getHeight()
+	return SpriteGroup.super.screenCenter(self, axes)
 end
 
--- Not Supported
+function SpriteGroup:centerOffsets()
+	self.offset.x, self.offset.y = 0, 0
+end
 
+function SpriteGroup:centerOrigin(__width, __height)
+	self.origin.x = (__width or self:getWidth()) / 2
+	self.origin.y = (__height or self:getHeight()) / 2
+end
+
+function SpriteGroup:updateHitbox() self:centerOffsets(); self:centerOrigin() end
 function SpriteGroup:loadTexture() return self end
-
 function SpriteGroup:setFrames() return self.__frames end
+
+function SpriteGroup:add(obj) return self.group:add(obj) end
+function SpriteGroup:remove(obj) return self.group:remove(obj) end
+function SpriteGroup:sort(func) return self.group:sort(func) end
+function SpriteGroup:recycle(class, factory, revive) return self.group:recycle(class, factory, revive) end
+function SpriteGroup:update(dt) self.group:update(dt) end
+function SpriteGroup:clear() self.group:clear() end
+function SpriteGroup:kill() self.group:kill(); Sprite.super.kill(self) end
+function SpriteGroup:revive() self.group:revive(); Sprite.super.revive(self) end
+function SpriteGroup:destroy() self.group:destroy(); Sprite.super.destroy(self) end
 
 return SpriteGroup

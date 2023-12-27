@@ -11,7 +11,7 @@ function create()
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
 	doof.cameras = {state.camHUD}
-	doof.finishThing = function ()
+	doof.finishThing = function()
 		state:startCountdown()
 		close()
 	end
@@ -23,7 +23,7 @@ function create()
 	game.discardTransition()
 
 	for delay = 1, 7 do
-		Timer.after(0.3 * delay, function ()
+		Timer.after(0.3 * delay, function()
 			if black.alpha == 1 then
 				game.camera.target.y = game.camera.target.y - 64
 			end

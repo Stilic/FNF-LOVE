@@ -12,7 +12,7 @@ function Group:add(obj)
 end
 
 function Group:remove(obj)
-	for i, o in ipairs(self.members) do
+	for i, o in next, self.members do
 		if o == obj then
 			table.remove(self.members, i)
 			break
@@ -21,7 +21,7 @@ function Group:remove(obj)
 	return obj
 end
 
-function Group:clear() for i in ipairs(self.members) do self.members[i] = nil end end
+function Group:clear() for i in next, self.members do self.members[i] = nil end end
 
 function Group:sort(func) return table.sort(self.members, func) end
 
@@ -31,7 +31,7 @@ function Group:recycle(class, factory, revive)
 	if revive == nil then revive = true end
 
 	local newObject
-	for _, o in ipairs(self.members) do
+	for _, o in next, self.members do
 		if o and not o.exists and (o.is and o:is(class)) then
 			newObject = o
 			break
@@ -49,7 +49,7 @@ function Group:recycle(class, factory, revive)
 end
 
 function Group:update(dt)
-	for _, o in ipairs(self.members) do
+	for _, o in next, self.members do
 		if o.exists and o.active then
 			local f = o.update
 			if f then f(o, dt) end
@@ -61,7 +61,7 @@ function Group:draw()
 	local oldDefaultCameras = Camera.__defaultCameras
 	if self.cameras then Camera.__defaultCameras = self.cameras end
 
-	for _, o in ipairs(self.members) do
+	for _, o in next, self.members do
 		if o.exists and o.visible then
 			local f = o.draw
 			if f then f(o) end
@@ -72,7 +72,7 @@ function Group:draw()
 end
 
 function Group:kill()
-	for _, o in ipairs(self.members) do
+	for _, o in next, self.members do
 		local f = o.kill
 		if f then f(o) end
 	end
@@ -81,7 +81,7 @@ function Group:kill()
 end
 
 function Group:revive()
-	for _, o in ipairs(self.members) do
+	for _, o in next, self.members do
 		local f = o.revive
 		if f then f(o) end
 	end
@@ -92,7 +92,7 @@ end
 function Group:destroy()
 	Group.super.destroy(self)
 
-	for _, o in ipairs(self.members) do
+	for _, o in next, self.members do
 		local f = o.destroy
 		if f then f(o) end
 	end

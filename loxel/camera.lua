@@ -122,11 +122,6 @@ function Camera:canDraw()
 		(self.scale.y * self.__zoom.y) ~= 0
 end
 
-function Camera:getMultColor(r, g, b, a)
-	return self.color[1] * math.min(r, 1), self.color[2] * math.min(g, 1),
-		self.color[3] * math.min(b, 1), self.alpha * (math.min(a or 1, 1))
-end
-
 function Camera:draw()
 	if not self:canDraw() then return end
 	local winWidth, winHeight = love.graphics.getDimensions()
@@ -237,6 +232,7 @@ function Camera:drawSimple(_skipCheck)
 			o(self)
 		else
 			o:__render(self)
+			table.clear(self.__cameraQueue)
 		end
 		self.__renderQueue[i] = nil
 	end

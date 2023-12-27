@@ -11,7 +11,7 @@ local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, c)
 end
 
 ---@class Basic:Classic
-local Basic = Classic:extend()
+local Basic = Classic:extend("Basic")
 
 function Basic:new()
 	self.active = true
@@ -21,6 +21,7 @@ function Basic:new()
 	self.exists = true
 
 	self.cameras = nil
+	self.__cameraQueue = {}
 end
 
 function Basic:kill()
@@ -53,7 +54,7 @@ function Basic:isOnScreen(camera)
 	x, y = ((self.x or 0) - x), ((self.y or 0) - y)
 
 	local w, h = 0, 0
-	if self:is(Text) then
+	if self.getWidth then
 		w, h = self:getWidth(), self:getHeight()
 	else
 		w, h = self.getFrameWidth and
@@ -74,8 +75,21 @@ function Basic:draw()
 		for _, c in next, cams do
 			if c.visible and c.exists and self:isOnScreen(c) then
 				table.insert(c.__renderQueue, self)
+				table.insert(self.__cameraQueue, c)
 			end
 		end
+	end
+end
+
+function Basic:cancelDraw()
+	for i, c in next, self.__cameraQueue do
+		for i = #c.__renderQueue, 1, -1 do
+			if c.__renderQueue[i] == self then
+				table.remove(c.__renderQueue, i)
+				break
+			end
+		end
+		self.__cameraQueue[i] = nil
 	end
 end
 

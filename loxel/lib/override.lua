@@ -56,6 +56,10 @@ function table.delete(list, object)
 	return false
 end
 
+function table.clear(list)
+	for i in next, list do list[i] = nil end
+end
+
 local __integer__ = "integer"
 local __float__ = "float"
 function math.type(v)
@@ -86,9 +90,9 @@ function switch(param, case_table)
 end
 
 local checktype_str = "bad argument #%d to '%s' (%s expected, got %s)"
-function checktype(value, arg, functionName, expectedType)
+function checktype(level, value, arg, functionName, expectedType)
 	if type(value) ~= expectedType then
-		error(checktype_str:format(arg, functionName, expectedType, type(value)), 3)
+		error(checktype_str:format(arg, functionName, expectedType, type(value)), level + 1)
 	end
 end
 
@@ -226,46 +230,47 @@ function love.system.getDevice()
 end
 
 if --[[not love.markDeprecated actually this is better and]] debug then
-	local functionName = "markDeprecated"
+	-- this is stupid
+	local __markDeprecated__, __string__, __number__ = "markDeprecated", "string", "number"
+	local __functionvariant__, __functionvariantin__ = "functionvariant", "function variant in"
+	local __methodvariant__, __methodvariantin__ = "methodvariant", "method variant in"
+	local __replaced__, __replcaedby__ = "replcaed", "(replaced by %s)"
+	local __renamed__, __renamedto__ = "renamed", "(renamed to %s)"
+	local __warning__ = "LOVE - Warning: %s:%d: Using deprecated %s %s %s"
+	local __Sl__, __none__ = "Sl", ""
 	local deprecated = {}
 	local ignore = {
 		["love.graphics.stencil"] = true,
 		["love.graphics.setStencilTest"] = true
 	}
 	function love.markDeprecated(level, name, apiname, deprecationtname, replacement)
-		checktype(level, 1, functionName, "number")
-		checktype(name, 2, functionName, "string")
+		checktype(2, level, 1, __markDeprecated__, __number__)
+		checktype(2, name, 2, __markDeprecated__, __string__)
 		if ignore[name] then return end
 
-		checktype(apiname, 3, functionName, "string")
-		checktype(deprecationtname, 4, functionName, "string")
+		checktype(2, apiname, 3, __markDeprecated__, __string__)
+		checktype(2, deprecationtname, 4, __markDeprecated__, __string__)
 
-		local info = debug.getinfo(level + 1, "Sl")
+		local info = debug.getinfo(level + 1, __Sl__)
 		if not deprecated[name] then deprecated[name] = {} end
 		if deprecated[name][info.source .. info.currentline] then return end
-		deprecated[name][info.source .. info.currentline] = true
 
+		deprecated[name][info.source .. info.currentline] = true
 		local what
-		if apiname == "functionvariant" then
-			what = "function variant in"
-		elseif apiname == "methodvariant" then
-			what = "method variant in"
+		if apiname == __functionvariant__ then
+			what = __functionvariantin__
+		elseif apiname == __methodvariant__ then
+			what = __methodvariantin__
 		else
 			what = apiname
 		end
 
-		local extra
-		if deprecationtname == "replaced" then
-			checktype(replacement, 5, functionName, "string")
-			extra = "(replaced by " .. replacement .. ")"
-		elseif deprecationtname == "renamed" then
-			checktype(replacement, 5, functionName, "string")
-			extra = "renamed to " .. replacement .. ")"
+		local isreplaced, extra = deprecationtname == __replaced__
+		if isreplaced or deprecationtname == __renamed__ then
+			checktype(2, replacement, 5, __markDeprecated__, __string__)
+			extra = (isreplaced and __replacedby__ or __renamedto__):format(replacement)
 		end
 
-		local notice = ("%s:%d: Using deprecated %s %s %s"):format(info.source:sub(2),
-			info.currentline, what, name, extra or "")
-
-		print("LOVE - Warning: " .. notice)
+		print(__warning__:format(info.source:sub(2), info.currentline, what, name, extra or __none__))
 	end
 end

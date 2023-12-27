@@ -111,6 +111,8 @@ function Alphabet:addText()
 			self.lastSprite = letter
 		end
 	end
+
+	self:updateHitbox()
 end
 
 function Alphabet:doSplitWords() self.splitWords = self.__finalText:split() end
