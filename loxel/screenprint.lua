@@ -46,6 +46,22 @@ function ScreenPrint.init(width, height)
 end
 
 function ScreenPrint.new(text, font)
+	for _, current in ipairs(ScreenPrint.prints) do
+        if current.text ~= text then
+            current.text = current.text .. "\n" .. text
+            current.timer = math.max(current.timer, (string.len(current.text) * 0.03))
+
+            local _, wt = current.font:getWrap(current.text, current.bg.width - 36)
+            current.bg.height = current.font:getHeight() * #wt + 36
+            current.height = current.font:getHeight() * #wt
+            current.bg.x = (love.graphics.getWidth() - current.bg.width) / 2
+            current.bg.width = math.min(ScreenPrint.game.width - 72,
+                                        font:getWidth(current.text) + 36)
+
+            return
+        end
+	end
+
     local print = {
         text = text,
         font = (font or love.graphics.getFont()),
