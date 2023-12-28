@@ -20,16 +20,12 @@ local s -- see https://luajit.org/extensions.html
 
 s, table.new = pcall(require, "table.new")
 if not s then
-	function table.new(--[[narr, nrec]])
-		return {}
-	end
+	function table.new(--[[narr, nrec]]) return {} end
 end
 
 s, table.clear = pcall(require, "table.clear")
 if not s then
-	function table.clear(list)
-		for i in pairs(list) do list[i] = nil end
-	end
+	function table.clear(list) for i in pairs(list) do list[i] = nil end end
 end
 
 if not table.move then
@@ -52,14 +48,14 @@ function table.remove(list, idx)
 		table.move(list, idx + 1, #list, idx)
 		list[#list] = nil
 	else
-		local j, i = 1, 1
-		while i <= #list do
+		local j = 1
+		for i = j, #list do
+			if i > #list then break end
 			if idx(list, i, j) then v, list[i] = list[i]
 			else
 				if i ~= j then list[j], list[i] = list[i] end
 				j = j + 1
 			end
-			i = i + 1
 		end
 	end
 	return v

@@ -75,10 +75,8 @@ function Text:setOutline(style, width, offset, color)
 	self.outline.color = color or {0, 0, 0}
 end
 
-function Text:draw()
-	if self.content ~= "" then
-		Text.super.draw(self)
-	end
+function Text:_canDraw()
+	return self.content ~= "" and Text.super._canDraw(self)
 end
 
 function Text:__render(camera)

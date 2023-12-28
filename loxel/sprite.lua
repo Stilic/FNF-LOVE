@@ -448,10 +448,9 @@ function Sprite:update(dt)
 	end
 end
 
-function Sprite:draw()
-	if self.texture ~= nil and (self.width ~= 0 or self.height ~= 0) then
-		Sprite.super.draw(self)
-	end
+function Sprite:_canDraw()
+	return self.texture ~= nil and (self.width ~= 0 or self.height ~= 0) and
+		Sprite.super._canDraw(self)
 end
 
 function Sprite:__render(camera)

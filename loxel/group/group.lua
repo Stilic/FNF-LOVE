@@ -45,8 +45,8 @@ function Group:recycle(class, factory, revive)
 	return newObject
 end
 
+local f
 function Group:update(dt)
-	local f
 	for _, member in pairs(self.members) do
 		if member.exists and member.active then
 			f = member.update
@@ -59,11 +59,9 @@ function Group:draw()
 	local oldDefaultCameras = Camera.__defaultCameras
 	if self.cameras then Camera.__defaultCameras = self.cameras end
 
-	local f
 	for _, member in pairs(self.members) do
 		if member.exists and member.visible then
-			f = member.draw
-			if f then f(member) end
+			member:draw()
 		end
 	end
 
@@ -71,7 +69,6 @@ function Group:draw()
 end
 
 function Group:kill()
-	local f
 	for _, member in pairs(self.members) do
 		f = member.kill
 		if f then f(member) end
@@ -81,7 +78,6 @@ function Group:kill()
 end
 
 function Group:revive()
-	local f
 	for _, member in pairs(self.members) do
 		f = member.revive
 		if f then f(member) end
@@ -93,7 +89,6 @@ end
 function Group:destroy()
 	Group.super.destroy(self)
 
-	local f
 	for _, member in pairs(self.members) do
 		f = member.destroy
 		if f then f(member) end

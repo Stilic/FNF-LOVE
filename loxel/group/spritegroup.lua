@@ -64,24 +64,19 @@ function SpriteGroup:centerOrigin(__width, __height)
 	self.origin.y = (__height or self:getHeight()) / 2
 end
 
-function SpriteGroup:draw()
-	Sprite.super.draw(self) -- skips the Sprite:draw
-	if not next(self.__cameraQueue) then return end
-
-	local cameras, oldCameras = self.cameras or Camera.__defaultCameras
-	for _, member in pairs(self.members) do
-		oldCameras, member.cameras = member.cameras, cameras
-		member:draw()
-		member.cameras = oldCameras
-		if next(member.__cameraQueue) then
-			member:cancelDraw()
-			table.insert(self.__renderQueue, member)
+function SpriteGroup:_canDraw()
+	if Sprite.super._canDraw(self) and self:isOnScreen(self.cameras or Camera.__defaultCameras) then -- skips the Sprite check
+		local oldCameras
+		for _, member in pairs(self.members) do
+			oldCameras, member.cameras = member.cameras, self.cameras
+			if member:canDraw() then table.insert(self.__renderQueue, member) end
+			member.cameras = oldCameras
 		end
+		return next(self.__renderQueue) ~= nil
 	end
 end
 
 function SpriteGroup:__render(camera)
-	if not next(self.__renderQueue) then return end
 	local r, g, b, a = love.graphics.getColor()
 
 	love.graphics.push()
@@ -94,7 +89,6 @@ function SpriteGroup:__render(camera)
 	love.graphics.rotate(math.rad(self.angle))
 	love.graphics.translate(-self.origin.x, -self.origin.y)
 
-	local f
 	for i, member in pairs(self.__renderQueue) do
 		member:__render(camera)
 		self.__renderQueue[i] = nil

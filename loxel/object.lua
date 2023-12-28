@@ -72,12 +72,9 @@ function Object:update(dt)
 	end
 end
 
-function Object:draw()
-	if self.alpha > 0 and (self.scale.x * self.zoom.x ~= 0 or
-			self.scale.y * self.zoom.y ~= 0)
-	then
-		Object.super.draw(self)
-	end
+function Object:_canDraw()
+	return self.alpha > 0 and (self.scale.x * self.zoom.x ~= 0 or
+		self.scale.y * self.zoom.y ~= 0) and Object.super._canDraw(self)
 end
 
 return Object

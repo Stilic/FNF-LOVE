@@ -49,11 +49,9 @@ function Graphic:updateDimensions()
 	end
 end
 
-function Graphic:draw()
-	if self.width > 0 or self.height > 0 or self.config.radius > 0 or
-		self.config.vertices then
-		Graphic.super.draw(self)
-	end
+function Graphic:_canDraw()
+	return (self.width > 0 or self.height > 0 or self.config.radius > 0 or
+		self.config.vertices) and Graphic.super._canDraw(self)
 end
 
 function Graphic:__render(camera)
