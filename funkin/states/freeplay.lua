@@ -179,9 +179,8 @@ function FreeplayState:closeSubstate()
 	FreeplayState.super.closeSubstate(self)
 end
 
-function FreeplayState:changeDiff(change, playsound)
+function FreeplayState:changeDiff(change)
 	if change == nil then change = 0 end
-	if playsound == nil then playsound = true end
 	local songdiffs = self.songsData[self.curSelected].difficulties
 
 	FreeplayState.curDifficulty = FreeplayState.curDifficulty + change
@@ -200,7 +199,6 @@ function FreeplayState:changeDiff(change, playsound)
 		self.diffText.content = "< " ..
 			songdiffs[FreeplayState.curDifficulty]:upper() ..
 			" >"
-		if playsound then game.sound.play(paths.getSound('scrollMenu')) end
 	else
 		self.diffText.content = songdiffs[FreeplayState.curDifficulty]:upper()
 	end
@@ -234,7 +232,7 @@ function FreeplayState:changeSelection(change)
 
 	if #self.songsData > 1 then game.sound.play(paths.getSound('scrollMenu')) end
 
-	self:changeDiff(0, false)
+	self:changeDiff(0)
 end
 
 function FreeplayState:positionHighscore()
