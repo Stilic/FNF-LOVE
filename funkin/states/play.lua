@@ -589,7 +589,7 @@ function PlayState:update(dt)
 			PlayState.conductor.sound:seek(self.startPos / 1000)
 			PlayState.conductor.sound:play()
 			if self.vocals then
-				self.vocals.__source:seek(PlayState.conductor.sound:tell())
+				self.vocals:seek(PlayState.conductor.sound:tell())
 				self.vocals:play()
 			end
 			PlayState.notePosition = PlayState.conductor.time
@@ -1342,18 +1342,22 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
-	self.scripts:set("curBeat", b)
-	self.scripts:call("beat")
+	if not self.startingSong then
+		self.scripts:set("curBeat", b)
+		self.scripts:call("beat")
 
-	local scaleNum = 1.2
-	self.iconP1.scale = {x = scaleNum, y = scaleNum}
-	self.iconP2.scale = {x = scaleNum, y = scaleNum}
+		local scaleNum = 1.2
+		self.iconP1.scale = {x = scaleNum, y = scaleNum}
+		self.iconP2.scale = {x = scaleNum, y = scaleNum}
+	end
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	self.scripts:call("postBeat")
+	if not self.startingSong then
+		self.scripts:call("postBeat")
+	end
 end
 
 function PlayState:section(s)
@@ -1389,10 +1393,10 @@ function PlayState:popUpScore(rating)
 
 	if rating == nil then rating = "shit" end
 	judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
-											rating))
+		rating))
 	judgeSpr.alpha = 1
 	judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
-										   (PlayState.pixelStage and 4.7 or 0.7)))
+		(PlayState.pixelStage and 4.7 or 0.7)))
 	judgeSpr:updateHitbox()
 	judgeSpr:screenCenter()
 	judgeSpr.moves = true
@@ -1409,8 +1413,8 @@ function PlayState:popUpScore(rating)
 	judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
 	judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
-	Timer.after(accel, function()
-		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
+	Timer.after(accel, function ()
+		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function ()
 			Timer.cancelTweensOf(judgeSpr)
 			judgeSpr:kill()
 		end)
@@ -1427,10 +1431,10 @@ function PlayState:popUpScore(rating)
 
 			local numScore = self.judgeSprites:recycle()
 			numScore:loadTexture(paths.getImage(
-									 "skins/" .. uiStage .. "/num" .. digit))
+				"skins/" .. uiStage .. "/num" .. digit))
 			numScore:setGraphicSize(math.floor(numScore.width *
-												   (PlayState.pixelStage and 4.5 or
-													   0.5)))
+				(PlayState.pixelStage and 4.5 or
+					0.5)))
 			numScore:updateHitbox()
 			numScore.moves = true
 			numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
@@ -1444,8 +1448,8 @@ function PlayState:popUpScore(rating)
 			numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
 			numScore.velocity.x = math.random(-5.0, 5.0)
 
-			Timer.after(accel * 2, function()
-				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
+			Timer.after(accel * 2, function ()
+				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function ()
 					Timer.cancelTweensOf(numScore)
 					numScore:kill()
 				end)
@@ -1544,9 +1548,9 @@ function PlayState:recalculateRating(rating)
 	self.rating = ratingStr:gsub("{fc}", FC):gsub("{r}", class)
 
 	self.scoreTxt.content = "Score: " .. self.score ..
-							" // Combo Breaks: " .. self.misses ..
-							" // " .. util.floorDecimal(self.accuracy * 100, 2) ..
-							"% - " .. self.rating
+		" // Combo Breaks: " .. self.misses ..
+		" // " .. util.floorDecimal(self.accuracy * 100, 2) ..
+		"% - " .. self.rating
 
 	self.scoreTxt:screenCenter("x")
 end
