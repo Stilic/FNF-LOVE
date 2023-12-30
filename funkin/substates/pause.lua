@@ -26,7 +26,7 @@ function PauseSubstate:new()
 		self.grpShitMenu:add(item)
 	end
 
-    if love.system.getDevice() == "Mobile" then
+	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
 		self.buttons.type = "roundrect"
 		self.buttons.lined = true
@@ -72,7 +72,7 @@ function PauseSubstate:update(dt)
 
 		switch(daChoice, {
 			["Resume"] = function () self:close() end,
-			["Restart Song"] = function () game.resetState() end,
+			["Restart Song"] = function () game.resetState(true) end,
 			["Options"] = function ()
 				local toSubstate = OptionsSubstate()
 				toSubstate.cameras = {self.parent.camOther}
@@ -80,10 +80,10 @@ function PauseSubstate:update(dt)
 					self.parent:onSettingChange(setting)
 				end
 				self.grpShitMenu.visible = false
-                if love.system.getDevice() == "Mobile" then
-                    self.buttons.visible = false
-                    game.buttons.remove(self.buttons)
-                end
+				if love.system.getDevice() == "Mobile" then
+					self.buttons.visible = false
+					game.buttons.remove(self.buttons)
+				end
 				self:openSubstate(toSubstate)
 			end,
 			["Exit to menu"] = function ()
@@ -127,7 +127,7 @@ end
 
 function PauseSubstate:close()
 	self.music:kill()
-    if love.system.getDevice() == "Mobile" then game.buttons.remove(self.buttons) end
+	if love.system.getDevice() == "Mobile" then game.buttons.remove(self.buttons) end
 	PauseSubstate.super.close(self)
 end
 
