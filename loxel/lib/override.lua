@@ -20,7 +20,7 @@ local s -- see https://luajit.org/extensions.html
 
 s, table.new = pcall(require, "table.new")
 if not s then
-	function table.new(--[[narr, nrec]]) return {} end
+	function table.new( --[[narr, nrec]]) return {} end
 end
 
 s, table.clear = pcall(require, "table.clear")
@@ -51,7 +51,8 @@ function table.remove(list, idx)
 		local j = 1
 		for i = j, #list do
 			if i > #list then break end
-			if idx(list, i, j) then v, list[i] = list[i]
+			if idx(list, i, j) then
+				v, list[i] = list[i]
 			else
 				if i ~= j then list[j], list[i] = list[i] end
 				j = j + 1
@@ -81,7 +82,7 @@ end
 
 function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
 
-math.bound = function(...)
+math.bound = function (...)
 	love.markDeprecated(2, "math.bound", "function", "renamed", "math.clamp")
 	return math.clamp(...)
 end
@@ -209,12 +210,12 @@ function math.truncate(x, precision, round)
 	return (round and math.round or math.floor)(precision * x) / precision
 end
 
-math.roundDecimal = function(...)
+math.roundDecimal = function (...)
 	love.markDeprecated(2, "math.roundDecimal", "function", "renamed", "math.truncate")
 	return math.clamp(...)
 end
 
-local intervals, countbytesf, i = {"B", "KB", "MB", "GB"--[[, "TB"]]}, "%.2f %s"
+local intervals, countbytesf, i = {"B", "KB", "MB", "GB" --[[, "TB"]]}, "%.2f %s"
 function math.countbytes(x)
 	i = 1
 	while x >= 0x400 and i < 4 do

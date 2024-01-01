@@ -74,8 +74,10 @@ function Basic:isOnScreen(cameras)
 				x2, y2 = x - c.scroll.x, y - c.scroll.y
 			end
 			if checkCollision(x2, y2, w, h, self.angle or 0, c.x, c.y, c.width, c.height,
-				c.__zoom.x, c.__zoom.y)
-			then return true end
+					c.__zoom.x, c.__zoom.y)
+			then
+				return true
+			end
 		end
 	end
 	return false

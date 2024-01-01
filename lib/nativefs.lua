@@ -18,7 +18,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-]]--
+]]
+   --
 
 local ffi, bit = require('ffi'), require('bit')
 local C = ffi.C
@@ -31,10 +32,10 @@ local function _ptr(p) return p ~= nil and p or nil end -- NULL pointer to nil
 local lovefs = love.filesystem
 
 local File = {
-	getBuffer = function(self) return self._bufferMode, self._bufferSize end,
-	getFilename = function(self) return self._name end,
-	getMode = function(self) return self._mode end,
-	isOpen = function(self) return self._mode ~= 'c' and self._handle ~= nil end,
+	getBuffer = function (self) return self._bufferMode, self._bufferSize end,
+	getFilename = function (self) return self._name end,
+	getMode = function (self) return self._mode end,
+	isOpen = function (self) return self._mode ~= 'c' and self._handle ~= nil end,
 }
 
 function File:open(mode)
@@ -134,7 +135,7 @@ local function lines(file, autoclose)
 	local bytesRead = tonumber(C.fread(buffer, 1, BUFFERSIZE, file._handle))
 
 	local offset = file:tell()
-	return function()
+	return function ()
 		file:seek(offset)
 
 		local line = {}
@@ -318,7 +319,7 @@ function nativefs.setWorkingDirectory(path)
 end
 
 function nativefs.getDriveList()
-	if ffi.os ~= 'Windows' then return { '/' } end
+	if ffi.os ~= 'Windows' then return {'/'} end
 	local drives, bits = {}, C.GetLogicalDrives()
 	for i = 0, 25 do
 		if bit.band(bits, 2 ^ i) > 0 then
@@ -408,7 +409,7 @@ end
 
 -----------------------------------------------------------------------------
 
-MODEMAP = { r = 'rb', w = 'wb', a = 'ab' }
+MODEMAP = {r = 'rb', w = 'wb', a = 'ab'}
 local MAX_PATH = 4096
 
 ffi.cdef([[
@@ -443,7 +444,7 @@ if ffi.os == 'Windows' then
 		int _wrmdir(const wchar_t* path);
 	]])
 
-	BUFFERMODE = { full = 0, line = 64, none = 4 }
+	BUFFERMODE = {full = 0, line = 64, none = 4}
 
 	local function towidestring(str)
 		local size = C.MultiByteToWideChar(65001, 0, str, #str, nil, 0)
@@ -461,14 +462,14 @@ if ffi.os == 'Windows' then
 
 	local nameBuffer = ffi.new('wchar_t[?]', MAX_PATH + 1)
 
-	fopen = function(path, mode) return C._wfopen(towidestring(path), towidestring(mode)) end
-	getcwd = function() return toutf8string(C._wgetcwd(nameBuffer, MAX_PATH)) end
-	chdir = function(path) return C._wchdir(towidestring(path)) == 0 end
-	unlink = function(path) return C._wunlink(towidestring(path)) == 0 end
-	mkdir = function(path) return C.CreateDirectoryW(towidestring(path), nil) ~= 0 end
-	rmdir = function(path) return C._wrmdir(towidestring(path)) == 0 end
+	fopen = function (path, mode) return C._wfopen(towidestring(path), towidestring(mode)) end
+	getcwd = function () return toutf8string(C._wgetcwd(nameBuffer, MAX_PATH)) end
+	chdir = function (path) return C._wchdir(towidestring(path)) == 0 end
+	unlink = function (path) return C._wunlink(towidestring(path)) == 0 end
+	mkdir = function (path) return C.CreateDirectoryW(towidestring(path), nil) ~= 0 end
+	rmdir = function (path) return C._wrmdir(towidestring(path)) == 0 end
 else
-	BUFFERMODE = { full = 0, line = 1, none = 2 }
+	BUFFERMODE = {full = 0, line = 1, none = 2}
 
 	ffi.cdef([[
 		char* getcwd(char *buffer, int maxlen);
@@ -481,12 +482,12 @@ else
 	local nameBuffer = ByteArray(MAX_PATH)
 
 	fopen = C.fopen
-	unlink = function(path) return ffi.C.unlink(path) == 0 end
-	chdir = function(path) return ffi.C.chdir(path) == 0 end
-	mkdir = function(path) return ffi.C.mkdir(path, 0x1ed) == 0 end
-	rmdir = function(path) return ffi.C.rmdir(path) == 0 end
+	unlink = function (path) return ffi.C.unlink(path) == 0 end
+	chdir = function (path) return ffi.C.chdir(path) == 0 end
+	mkdir = function (path) return ffi.C.mkdir(path, 0x1ed) == 0 end
+	rmdir = function (path) return ffi.C.rmdir(path) == 0 end
 
-	getcwd = function()
+	getcwd = function ()
 		local cwd = _ptr(C.getcwd(nameBuffer, MAX_PATH))
 		return cwd and ffi.string(cwd) or nil
 	end

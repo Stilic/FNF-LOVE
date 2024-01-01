@@ -15,8 +15,9 @@ elseif OS == "OS X" then
 end
 
 local success, v = pcall(package.loadlib, https, "luaopen_https")
-if success then return v
+if success then
+	return v
 else
-	local __NULL__ = function() end
-	return setmetatable({}, {__index = function() return __NULL__ end})
+	local __NULL__ = function () end
+	return setmetatable({}, {__index = function () return __NULL__ end})
 end

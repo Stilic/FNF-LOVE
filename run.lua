@@ -35,7 +35,7 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		})
 
 		local function replace(func)
-			return function(a, ...)
+			return function (a, ...)
 				return func(type(a) == "string" and love.filesystem.newFileData(a) or a,
 					...)
 			end

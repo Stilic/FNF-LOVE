@@ -101,18 +101,36 @@ function SpriteGroup:__render(camera)
 	love.graphics.setColor(r, g, b, a)
 end
 
-function SpriteGroup:updateHitbox() self:centerOffsets(); self:centerOrigin() end
+function SpriteGroup:updateHitbox()
+	self:centerOffsets(); self:centerOrigin()
+end
+
 function SpriteGroup:loadTexture() return self end
+
 function SpriteGroup:setFrames() return self.__frames end
 
 function SpriteGroup:update(dt) self.group:update(dt) end
+
 function SpriteGroup:add(obj) return self.group:add(obj) end
+
 function SpriteGroup:remove(obj) return self.group:remove(obj) end
+
 function SpriteGroup:sort(func) return self.group:sort(func) end
+
 function SpriteGroup:recycle(class, factory, revive) return self.group:recycle(class, factory, revive) end
+
 function SpriteGroup:clear() self.group:clear() end
-function SpriteGroup:kill() self.group:kill(); Sprite.super.kill(self) end
-function SpriteGroup:revive() self.group:revive(); Sprite.super.revive(self) end
-function SpriteGroup:destroy() self.group:destroy(); Sprite.super.destroy(self) end
+
+function SpriteGroup:kill()
+	self.group:kill(); Sprite.super.kill(self)
+end
+
+function SpriteGroup:revive()
+	self.group:revive(); Sprite.super.revive(self)
+end
+
+function SpriteGroup:destroy()
+	self.group:destroy(); Sprite.super.destroy(self)
+end
 
 return SpriteGroup

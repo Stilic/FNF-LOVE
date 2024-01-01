@@ -242,9 +242,9 @@ function game.quit() ClientPrefs.saveData() end
 
 local ogprint = print
 function print(...)
-    if ScreenPrint then
-	    local text = table.concat({...}, "\n")
+	if ScreenPrint then
+		local text = table.concat({...}, "\n")
 		ScreenPrint.new(text, love.graphics.newFont(18))
 	end
-    ogprint(...)
+	ogprint(...)
 end

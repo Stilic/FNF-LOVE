@@ -40,7 +40,7 @@ function Text:__updateDimension()
 
 	self.__width = self.font:getWidth(self.content)
 	local _, lines = self.font:getWrap(self.content, self.limit or self.__width)
-    self.__height = self.font:getHeight() * #lines
+	self.__height = self.font:getHeight() * #lines
 end
 
 function Text:getWidth()

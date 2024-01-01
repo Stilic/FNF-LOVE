@@ -2,14 +2,14 @@ local Graphic = {}
 
 local optionsVar = {
 	{'lowQuality', 'Low Quality', false, 'boolean'},
-	{'shader', 'Shader', false, 'boolean'},
-	{'fps', 'FPS', false, 'number', {30, 250}, function()
+	{'shader',     'Shader',      false, 'boolean'},
+	{'fps', 'FPS', false, 'number', {30, 250}, function ()
 		love.FPScap = ClientPrefs.data.fps
 	end},
-	{'showFps', 'Show FPS', false, 'boolean', function()
+	{'showFps', 'Show FPS', false, 'boolean', function ()
 		love.showFPS = ClientPrefs.data.showFps
 	end},
-	{'antialiasing', 'Antialiasing', false, 'boolean', function()
+	{'antialiasing', 'Antialiasing', false, 'boolean', function ()
 		Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 	end},
 }

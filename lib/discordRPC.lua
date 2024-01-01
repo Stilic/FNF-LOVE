@@ -22,10 +22,11 @@ end
 
 local success, v
 if discordRPClib then success, v = pcall(ffi.load, discordRPClib) end
-if success then discordRPClib = v
+if success then
+	discordRPClib = v
 else
-	local __NULL__ = function() end
-	return setmetatable({}, {__index = function() return __NULL__ end})
+	local __NULL__ = function () end
+	return setmetatable({}, {__index = function () return __NULL__ end})
 end
 ffi.cdef [[
 typedef struct DiscordRichPresence {

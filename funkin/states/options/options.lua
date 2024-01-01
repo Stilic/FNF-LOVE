@@ -104,16 +104,16 @@ function OptionsState:enter()
 	self.hitboxdown = {y = game.width - 65, height = 65}
 	self.hitboxup = {y = -65, height = 65}
 
-    if love.system.getDevice() == "Mobile" then
-        local camButtons = Camera()
-        game.cameras.add(camButtons, false)
+	if love.system.getDevice() == "Mobile" then
+		local camButtons = Camera()
+		game.cameras.add(camButtons, false)
 
 		self.buttons = ButtonGroup()
 		self.buttons.type = "roundrect"
 		self.buttons.lined = true
 		self.buttons.width = 134
 		self.buttons.height = 134
-        self.buttons.cameras = {camButtons}
+		self.buttons.cameras = {camButtons}
 
 		local w = self.buttons.width
 
