@@ -1,40 +1,8 @@
-local function makePopup(x, y, w, h, r)
-	if r == nil then r = {20, 20} end
-	-- https://gist.github.com/gvx/9072860
-	local v = {}
-	local precision = (r[1] + r[2]) * 0.18
-	local angle = math.rad(90)
-	if r[1] > w * 0.5 then r[1] = w * 0.5 end
-	if r[2] > h * 0.5 then r[2] = h * 0.5 end
-
-	local x1, y1, x2, y2 = x + r[1], y + r[2],
-		x + w - r[1], y + h - r[2]
-
-	local sin, cos = math.sin, math.cos
-	for i = 0, precision do
-		local a = (i / precision - 1) * angle
-		table.insert(v, x2 + r[1] * cos(a))
-		table.insert(v, y1 + r[2] * sin(a))
-	end
-	for i = 0, precision do
-		local a = (i / precision) * angle
-		table.insert(v, x2 + r[1] * cos(a))
-		table.insert(v, y2 + r[2] * sin(a))
-	end
-	for i = 0, precision do
-		local a = (i / precision + 1) * angle
-		table.insert(v, x1 + r[1] * cos(a))
-		table.insert(v, y2 + r[2] * sin(a))
-	end
-	for i = 0, precision do
-		local a = (i / precision + 2) * angle
-		table.insert(v, x1 + r[1] * cos(a))
-		table.insert(v, y1 + r[2] * sin(a))
-	end
+local function makePopup(x, y, w, h)
 	local r, g, b, a = love.graphics.getColor()
-	love.graphics.polygon("fill", v)
+	love.graphics.rectangle("fill", x, y, w, h, 15, 15, 36)
 	love.graphics.setColor(r + 0.2, g + 0.2, b + 0.2)
-	love.graphics.polygon("line", v)
+	love.graphics.rectangle("line", x, y, w, h, 15, 15, 36)
 	love.graphics.setColor(r, g, b, a)
 end
 
