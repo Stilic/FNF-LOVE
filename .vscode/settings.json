@@ -1,10 +1,10 @@
 {
   "Lua.workspace.library": ["${3rd}/love2d/library"],
-	"Lua.runtime.version": "LuaJIT",
-	"Lua.runtime.special": {
-		"love.filesystem.load": "loadfile"
-	},
-	"Lua.workspace.checkThirdParty": false,
+  "Lua.runtime.version": "LuaJIT",
+  "Lua.runtime.special": {
+    "love.filesystem.load": "loadfile"
+  },
+  "Lua.workspace.checkThirdParty": false,
   "Lua.diagnostics.disable": [
     "lowercase-global",
     "undefined-global",
