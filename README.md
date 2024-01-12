@@ -15,6 +15,7 @@ INFO: we made loxel for this game, so this library is similar to [HaxeFlixel](ht
 - Fellyn
 - VicKaoy
 - BlueColorsin
+- Ralsin
 
 ## Libraries
 
