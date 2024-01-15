@@ -340,10 +340,8 @@ function CharacterEditor:update(dt)
 	self.floor.scale.x = game.width / self.camChar.zoom
 
 	self.camChar.scroll.x, self.camChar.scroll.y =
-		util.coolLerp(self.camChar.scroll.x, self.camFollow.x,
-			0.2),
-		util.coolLerp(self.camChar.scroll.y, self.camFollow.y,
-			0.2)
+		util.coolLerp(self.camChar.scroll.x, self.camFollow.x, 12, dt),
+		util.coolLerp(self.camChar.scroll.y, self.camFollow.y, 12, dt)
 
 	updateCamPoint(self)
 

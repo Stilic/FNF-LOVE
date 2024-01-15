@@ -169,7 +169,7 @@ end
 
 local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
-	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 0.5)
+	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 30, dt)
 	self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
 	if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and

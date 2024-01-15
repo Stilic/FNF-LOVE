@@ -14,8 +14,7 @@ function MenuItem:startFlashing() self.__isFlashing = true end
 function MenuItem:update(dt)
 	MenuItem.super.update(self, dt)
 
-	self.y = math.lerp(self.y, (self.targetY * 120) + 480,
-		math.clamp(dt * 10.2, 0, 1))
+	self.y = util.coolLerp(self.y, 480 + self.targetY * 120, 10, dt)
 
 	if self.__isFlashing then self.flashingInt = self.flashingInt + 1 end
 

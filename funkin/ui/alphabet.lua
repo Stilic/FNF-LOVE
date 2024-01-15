@@ -121,17 +121,14 @@ Alphabet.consecutiveSpace = 0
 
 function Alphabet:update(dt)
 	if self.isMenuItem then
-		local scaledY = math.remapToRange(self.targetY, 0, 1, 0, 1.3)
-
-		local lerpVal = math.clamp(dt * 9.6, 0, 1)
-		self.y = math.lerp(self.y,
-			(scaledY * self.yMult) + (game.height * 0.48) +
-			self.yAdd, lerpVal)
+		self.y = util.coolLerp(self.y,
+			(math.remapToRange(self.targetY, 0, 1, 0, 1.3) * self.yMult) + (game.height * 0.48) + self.yAdd,
+			9.6, dt
+		)
 		if self.forceX ~= math.negative_infinity then
 			self.x = self.forceX
 		else
-			self.x = math.lerp(self.x, (self.targetY * 20) + 90 + self.xAdd,
-				lerpVal)
+			self.x = util.coolLerp(self.x, (self.targetY * 20) + 90 + self.xAdd, 9.6, dt)
 		end
 	end
 

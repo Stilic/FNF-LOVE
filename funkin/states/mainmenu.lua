@@ -109,10 +109,6 @@ function MainMenuState:enter()
 end
 
 function MainMenuState:update(dt)
-	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x, 0.2),
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 0.2)
-
 	if not self.selectedSomethin and self.throttles then
 		if self.throttles.up:check() then self:changeSelection(-1) end
 		if self.throttles.down:check() then self:changeSelection(1) end
@@ -130,6 +126,10 @@ function MainMenuState:update(dt)
 			self:enterSelection(self.optionShit[MainMenuState.curSelected])
 		end
 	end
+
+	game.camera.target.x, game.camera.target.y =
+		util.coolLerp(game.camera.target.x, self.camFollow.x, 10, dt),
+		util.coolLerp(game.camera.target.y, self.camFollow.y, 10, dt)
 
 	MainMenuState.super.update(self, dt)
 

@@ -337,7 +337,7 @@ function Conductor:rollbackSection()
 	end
 
 	local newSection = #self.passedSections
-	while newSection > 0 and self.currentStep < self.passedSections[self.currentSection - 1] do
+	while newSection > 1 and self.currentStep < self.passedSections[self.currentSection - 1] do
 		stepsToDo = table.remove(self.passedSections)
 		newSection = newSection - 1
 	end

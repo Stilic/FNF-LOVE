@@ -120,8 +120,8 @@ function GameOverSubstate:update(dt)
 
 	if self.updateCam then
 		game.camera.target.x, game.camera.target.y =
-			util.coolLerp(game.camera.target.x, self.camFollow.x, 0.04),
-			util.coolLerp(game.camera.target.y, self.camFollow.y, 0.04)
+			util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4, dt),
+			util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4, dt)
 	end
 end
 

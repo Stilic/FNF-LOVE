@@ -14,6 +14,7 @@ return {
 	flags = {
 		CheckForUpdates = false,
 
+		InitialShowFPS = false,
 		InitialAutoFocus = true,
 		InitialParallelUpdate = true,
 		InitialAsyncInput = false,

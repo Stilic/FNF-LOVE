@@ -166,11 +166,11 @@ function game.mousepressed(x, y, button) Mouse.onPressed(button) end
 
 function game.mousereleased(x, y, button) Mouse.onReleased(button) end
 
-function game.touchmoved(id, x, y) game.buttons.move(id, x, y) end
+function game.touchmoved(id, x, y, dx, dy, p, time) game.buttons.move(id, x, y, p, time) end
 
-function game.touchpressed(id, x, y) game.buttons.press(id, x, y) end
+function game.touchpressed(id, x, y, dx, dy, p, time) game.buttons.press(id, x, y, p, time) end
 
-function game.touchreleased(id, x, y) game.buttons.release(id, x, y) end
+function game.touchreleased(id, x, y, dx, dy, p, time) game.buttons.release(id, x, y, p, time) end
 
 local function switch(state)
 	Timer.clear()

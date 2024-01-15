@@ -597,12 +597,10 @@ function PlayState:update(dt)
 	PlayState.super.update(self, dt)
 
 	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x,
-			0.04 * self.stage.camSpeed),
-		util.coolLerp(game.camera.target.y, self.camFollow.y,
-			0.04 * self.stage.camSpeed)
+		util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4 * self.stage.camSpeed, dt),
+		util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4 * self.stage.camSpeed, dt)
 
-	local mult = util.coolLerp(self.iconP1.scale.x, 1, 0.25)
+	local mult = util.coolLerp(self.iconP1.scale.x, 1, 15, dt)
 	self.iconP1.scale = {x = mult, y = mult}
 	self.iconP2.scale = {x = mult, y = mult}
 
@@ -638,9 +636,8 @@ function PlayState:update(dt)
 	self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
 
 	if self.camZooming then
-		game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom,
-			0.0475)
-		self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 0.0475)
+		game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom, 3, dt)
+		self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 3, dt)
 	end
 
 	if self.startedCountdown then
@@ -1471,7 +1468,7 @@ function PlayState:recalculateRating(rating)
 
 	self.scoreTxt.content = "Score: " .. self.score ..
 		" // Combo Breaks: " .. self.misses ..
-		" // " .. util.floorDecimal(self.accuracy * 100, 2) ..
+		" // " .. math.truncate(self.accuracy * 100, 2) ..
 		"% - " .. self.rating
 
 	self.scoreTxt:screenCenter("x")

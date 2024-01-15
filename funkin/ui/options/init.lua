@@ -231,7 +231,7 @@ function Options:update(dt)
 		self.focus = 0
 	end
 
-	self.tabGroup.y = util.coolLerp(self.tabGroup.y, self.taby - self.focus, 0.2)
+	self.tabGroup.y = util.coolLerp(self.tabGroup.y, self.taby - self.focus, 12, dt)
 	self.tabBG.y = self.tabGroup.y
 	self.optionsCursor.y = self.tabBG.y + selecty
 

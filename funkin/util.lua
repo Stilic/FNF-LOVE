@@ -1,16 +1,14 @@
 local util = {}
 
-function util.coolLerp(x, y, i)
-	return math.lerp(x, y, 1 - 1 / math.exp(i * 60 * love.timer.getDelta()))
+function util.coolLerp(x, y, i, delta)
+	if i < 1 then error("BAD, ALSO USE DELTA AS THE 4RD ARG IDIOT") end
+	--if delta == nil then error("USE DELTA IDIOT") end
+	return math.lerp(y, x, math.exp(-(delta or love.timer.getDelta()) * i))
+	--return math.lerp(x, y, 1 - 1 / math.exp(i * 60 * love.timer.getDelta()))
 end
 
 function util.floorDecimal(value, decimals)
-	if decimals < 1 then return math.floor(value) end
-
-	local tempMult = 1
-	for i = 1, decimals do tempMult = tempMult * 10 end
-	local newValue = math.floor(value * tempMult)
-	return newValue / tempMult
+	error("BAD, USE MATH.TRUNCATE INSTEAD IDIOT")
 end
 
 function util.newGradient(dir, ...)

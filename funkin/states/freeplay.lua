@@ -125,7 +125,7 @@ function FreeplayState:enter()
 end
 
 function FreeplayState:update(dt)
-	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 0.4)
+	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 24, dt)
 	self.scoreText.content = "PERSONAL BEST: " .. math.floor(self.lerpScore)
 
 	self:positionHighscore()
@@ -168,11 +168,11 @@ function FreeplayState:update(dt)
 	end
 
 	if #self.songsData > 0 then
-		local colorBG = Color.fromString(
-			self.songsData[FreeplayState.curSelected].color)
-		self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
-		self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
-		self.bg.color[3] = util.coolLerp(self.bg.color[3], colorBG[3], 0.05)
+		local colorBG = Color.fromString(self.songsData[FreeplayState.curSelected].color)
+		self.bg.color[1], self.bg.color[2], self.bg.color[3] =
+			util.coolLerp(self.bg.color[1], colorBG[1], 3, dt),
+			util.coolLerp(self.bg.color[2], colorBG[2], 3, dt),
+			util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
 	end
 
 	FreeplayState.super.update(self, dt)

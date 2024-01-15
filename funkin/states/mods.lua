@@ -71,8 +71,8 @@ function ModsState:update(dt)
 	ModsState.super.update(self, dt)
 
 	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x, 0.2),
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 0.2)
+		util.coolLerp(game.camera.target.x, self.camFollow.x, 12, dt),
+		util.coolLerp(game.camera.target.y, self.camFollow.y, 12, dt)
 
 	if #Mods.mods > 0 then
 		if controls:pressed('ui_left') then self:changeSelection(-1) end
@@ -87,9 +87,10 @@ function ModsState:update(dt)
 
 	if #Mods.mods > 0 then
 		local colorBG = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color)
-		self.bg.color[1] = util.coolLerp(self.bg.color[1], colorBG[1], 0.05)
-		self.bg.color[2] = util.coolLerp(self.bg.color[2], colorBG[2], 0.05)
-		self.bg.color[3] = util.coolLerp(self.bg.color[3], colorBG[3], 0.05)
+		self.bg.color[1], self.bg.color[2], self.bg.color[3] =
+			util.coolLerp(self.bg.color[1], colorBG[1], 3, dt),
+			util.coolLerp(self.bg.color[2], colorBG[2], 3, dt),
+			util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
 	end
 end
 
