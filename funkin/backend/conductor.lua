@@ -8,6 +8,7 @@ local Conductor = Classic:extend("Conductor")
 function Conductor.calculateCrotchet(bpm) return (60 / bpm) * 1000 end
 
 function Conductor.sortByTime(a, b) return a.time < b.time end
+
 function Conductor.sortBySection(a, b) return a.section < b.section end
 
 function Conductor.getDummyBPMChange(bpm)
@@ -72,8 +73,11 @@ function Conductor.getSectionChangesFromSong(song, sectionChanges)
 	sectionChanges = Conductor.newSectionChanges(beats, sectionChanges)
 
 	for i, v in ipairs(song.notes) do
-		if v.sectionBeats ~= nil then beats = v.sectionBeats
-		else beats = 4 end
+		if v.sectionBeats ~= nil then
+			beats = v.sectionBeats
+		else
+			beats = 4
+		end
 		if prev ~= beats then
 			prev, total = beats, total + 1
 			table.insert(sectionChanges, {
@@ -96,8 +100,11 @@ function Conductor.getBPMChangeFromIndex(bpmChanges, index)
 	index = math.min(index or 0, #bpmChanges)
 
 	local lastChange = bpmChanges[index]
-	if lastChange == nil then return bpmChanges[0]
-	elseif lastChange.id == index then return lastChange end
+	if lastChange == nil then
+		return bpmChanges[0]
+	elseif lastChange.id == index then
+		return lastChange
+	end
 
 	Conductor.sortBPMChanges(bpmChanges); lastChange = bpmChanges[index]
 	return lastChange or bpmChanges[0]
@@ -112,8 +119,11 @@ function Conductor.getSectionChangeFromIndex(sectionChanges, index)
 	index = math.min(index or 0, #sectionChanges)
 
 	local lastChange = sectionChanges[index]
-	if lastChange == nil then return sectionChanges[0]
-	elseif lastChange.id == index then return lastChange end
+	if lastChange == nil then
+		return sectionChanges[0]
+	elseif lastChange.id == index then
+		return lastChange
+	end
 
 	Conductor.sortSectionChanges(sectionChanges); lastChange = sectionChanges[index]
 	return lastChange or sectionChanges[0]
@@ -121,8 +131,11 @@ end
 
 function Conductor.getBPMChangeFromTime(bpmChanges, time, from)
 	local size = #bpmChanges
-	if size == 0 or time < bpmChanges[1].time then return bpmChanges[0]
-	elseif time >= bpmChanges[size].time then return bpmChanges[size] end
+	if size == 0 or time < bpmChanges[1].time then
+		return bpmChanges[0]
+	elseif time >= bpmChanges[size].time then
+		return bpmChanges[size]
+	end
 
 	local lastChange = Conductor.getBPMChangeFromIndex(bpmChanges, from)
 	local reverse = lastChange.time > time
@@ -143,8 +156,11 @@ end
 
 function Conductor.getBPMChangeFromStep(bpmChanges, step, from)
 	local size = #bpmChanges
-	if size == 0 or step < bpmChanges[1].step then return bpmChanges[0]
-	elseif step >= bpmChanges[size].step then return bpmChanges[size] end
+	if size == 0 or step < bpmChanges[1].step then
+		return bpmChanges[0]
+	elseif step >= bpmChanges[size].step then
+		return bpmChanges[size]
+	end
 
 	local lastChange = Conductor.getBPMChangeFromIndex(bpmChanges, from), lastChange.step > step
 	local reverse = lastChange.step > step
@@ -165,8 +181,11 @@ end
 
 function Conductor.getSectionChange(sectionChanges, section, from)
 	local size = #sectionChanges
-	if size == 0 or section < sectionChanges[1].section then return sectionChanges[0]
-	elseif section >= sectionChanges[size].section then return sectionChanges[size] end
+	if size == 0 or section < sectionChanges[1].section then
+		return sectionChanges[0]
+	elseif section >= sectionChanges[size].section then
+		return sectionChanges[size]
+	end
 
 	local lastChange = Conductor.getSectionChangeFromIndex(sectionChanges, from), lastChange.section > section
 	local reverse = lastChange.section > section
@@ -303,7 +322,8 @@ function Conductor:updateSection(dontHit)
 
 	self.currentSectionChange = sectionChange
 	self.currentSectionFloat = self.currentSection +
-		(self.currentStepFloat - (passedSections[self.currentSection - 1] or -self.stepsOnSection)) / self.stepsOnSection
+		(self.currentStepFloat - (passedSections[self.currentSection - 1] or -self.stepsOnSection)) / self
+		.stepsOnSection
 end
 
 function Conductor:rollbackSection()

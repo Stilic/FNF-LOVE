@@ -74,9 +74,9 @@ function GameOverSubstate:update(dt)
 			self.boyfriend:playAnim('deathConfirm', true)
 			game.sound.music:stop()
 			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName))
-			Timer.after(0.7, function ()
+			Timer.after(0.7, function()
 				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
-					function () game.resetState() end)
+					function() game.resetState() end)
 			end)
 			Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
 		end
@@ -108,7 +108,7 @@ function GameOverSubstate:update(dt)
 						love.math.random(1, 25)
 					game.sound.play(paths.getSound(
 							'gameplay/jeffGameover/' .. tankmanLines),
-						1, false, true, function ()
+						1, false, true, function()
 							if not self.isEnding then
 								game.sound.music:setVolume(1)
 							end

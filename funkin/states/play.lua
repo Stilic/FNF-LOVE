@@ -266,19 +266,19 @@ function PlayState:enter()
 	local gfVersion = PlayState.SONG.gfVersion
 	if gfVersion == nil then
 		switch(curStage, {
-			["limo"] = function () gfVersion = "gf-car" end,
-			["mall"] = function () gfVersion = "gf-christmas" end,
-			["mall-evil"] = function () gfVersion = "gf-christmas" end,
-			["school"] = function () gfVersion = "gf-pixel" end,
-			["school-evil"] = function () gfVersion = "gf-pixel" end,
-			["tank"] = function ()
+			["limo"] = function() gfVersion = "gf-car" end,
+			["mall"] = function() gfVersion = "gf-christmas" end,
+			["mall-evil"] = function() gfVersion = "gf-christmas" end,
+			["school"] = function() gfVersion = "gf-pixel" end,
+			["school-evil"] = function() gfVersion = "gf-pixel" end,
+			["tank"] = function()
 				if songName == 'stress' then
 					gfVersion = "pico-speaker"
 				else
 					gfVersion = "gf-tankmen"
 				end
 			end,
-			default = function () gfVersion = "gf" end
+			default = function() gfVersion = "gf" end
 		})
 		PlayState.SONG.gfVersion = gfVersion
 	end
@@ -435,10 +435,10 @@ function PlayState:enter()
 
 	self.lastTick = love.timer.getTime()
 
-	self.bindedKeyPress = function (...) self:onKeyPress(...) end
+	self.bindedKeyPress = function(...) self:onKeyPress(...) end
 	controls:bindPress(self.bindedKeyPress)
 
-	self.bindedKeyRelease = function (...) self:onKeyRelease(...) end
+	self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
 	controls:bindRelease(self.bindedKeyRelease)
 
 	self.startingSong = true
@@ -506,7 +506,7 @@ function PlayState:startCountdown()
 
 		local crotchet = PlayState.conductor.crotchet / 1000
 		for swagCounter = 0, 4 do
-			self.countdownTimer:after(crotchet * (swagCounter + 1), function ()
+			self.countdownTimer:after(crotchet * (swagCounter + 1), function()
 				local data = countdownData[swagCounter + 1]
 				if data then
 					if data.sound then
@@ -524,7 +524,7 @@ function PlayState:startCountdown()
 						countdownSprite:screenCenter()
 
 						Timer.tween(crotchet, countdownSprite, {alpha = 0},
-							"in-out-cubic", function ()
+							"in-out-cubic", function()
 								self:remove(countdownSprite)
 								countdownSprite:destroy()
 							end)
@@ -999,12 +999,12 @@ function PlayState:onSettingChange(setting)
 
 		local n
 		for i = 1, #self.unspawnNotes do
-			n =  self.unspawnNotes[i]
+			n = self.unspawnNotes[i]
 			n.visible = not self.middleScroll or n.mustPress
 		end
 
 		for i = 1, #self.allNotes.members do
-			n =  self.allNotes.members[i]
+			n = self.allNotes.members[i]
 			n.visible = not self.middleScroll or n.mustPress
 		end
 
@@ -1129,7 +1129,8 @@ function PlayState:goodNoteHit(n)
 
 		if not n.isSustain then
 			if n.mustPress then
-				local diff, rating = math.abs(n.time - PlayState.conductor.time), PlayState.ratings[#PlayState.ratings - 1]
+				local diff, rating = math.abs(n.time - PlayState.conductor.time),
+					PlayState.ratings[#PlayState.ratings - 1]
 				for _, r in pairs(PlayState.ratings) do
 					if diff <= r.time then
 						rating = r
@@ -1334,8 +1335,8 @@ function PlayState:popUpScore(rating)
 	judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
 	judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
-	Timer.after(accel, function ()
-		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function ()
+	Timer.after(accel, function()
+		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
 			Timer.cancelTweensOf(judgeSpr)
 			judgeSpr:kill()
 		end)
@@ -1369,8 +1370,8 @@ function PlayState:popUpScore(rating)
 			numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
 			numScore.velocity.x = math.random(-5.0, 5.0)
 
-			Timer.after(accel * 2, function ()
-				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function ()
+			Timer.after(accel * 2, function()
+				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
 					Timer.cancelTweensOf(numScore)
 					numScore:kill()
 				end)

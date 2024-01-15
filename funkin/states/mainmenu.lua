@@ -155,9 +155,9 @@ local triggerChoices = {
 			if device == "Desktop" then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 			elseif device == "Mobile" then
-                self.buttons.visible = true
-                game.buttons.add(self.buttons)
-            end
+				self.buttons.visible = true
+				game.buttons.add(self.buttons)
+			end
 		end)
 		self.optionsUI:setScrollFactor()
 		self.optionsUI:screenCenter()

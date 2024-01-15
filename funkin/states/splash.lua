@@ -44,9 +44,9 @@ function Splash:startSplash()
 	self:add(self.skipText)
 
 	game.sound.play(paths.getMusic('titleShoot'), 0.5)
-	Timer.after(3, function () Timer.tween(0.5, self.skipText, {alpha = 1}) end)
+	Timer.after(3, function() Timer.tween(0.5, self.skipText, {alpha = 1}) end)
 
-	Timer.script(function (setTimer)
+	Timer.script(function(setTimer)
 		self.funkinLogo.alpha = 0
 		self.funkinLogo.visible = true
 		Timer.tween(5, self.funkinLogo.scale, {x = 0.65, y = 0.65})

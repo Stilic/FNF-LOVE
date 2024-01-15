@@ -1,5 +1,5 @@
 function create()
-	Timer.after(0.5, function ()
+	Timer.after(0.5, function()
 		state.camHUD.visible = false
 
 		game.sound.play(paths.getSound('gameplay/Lights_Shut_off'))
@@ -10,5 +10,5 @@ function create()
 		state:add(blackScreen)
 	end)
 
-	Timer.after(3, function () state:endSong(true) end)
+	Timer.after(3, function() state:endSong(true) end)
 end

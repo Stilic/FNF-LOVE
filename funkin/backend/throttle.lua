@@ -24,7 +24,7 @@ function ThrottleObject:update(dt)
 	if hold then
 		if self.time > 0 then
 			self.timeStep = self.timeStep + dt
-			if self.time > self.delay and self.timeStep > self.step then self.timeStep = 0 end 
+			if self.time > self.delay and self.timeStep > self.step then self.timeStep = 0 end
 		end
 		self.time = self.time + dt
 	else
@@ -50,7 +50,7 @@ function Throttle:make(inputs, step, delay)
 end
 
 function Throttle:update(dt)
-	for _, v in ipairs(self.list) do  v:update(dt) end
+	for _, v in ipairs(self.list) do v:update(dt) end
 	while #dead > deadmax do table.remove(dead) end
 end
 

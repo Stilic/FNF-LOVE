@@ -87,19 +87,19 @@ function ChartingState:enter()
 	local gfVersion = self.__song.gfVersion
 	if gfVersion == nil then
 		switch(curStage, {
-			["limo"] = function () gfVersion = "gf-car" end,
-			["mall"] = function () gfVersion = "gf-christmas" end,
-			["mall-evil"] = function () gfVersion = "gf-christmas" end,
-			["school"] = function () gfVersion = "gf-pixel" end,
-			["school-evil"] = function () gfVersion = "gf-pixel" end,
-			["tank"] = function ()
+			["limo"] = function() gfVersion = "gf-car" end,
+			["mall"] = function() gfVersion = "gf-christmas" end,
+			["mall-evil"] = function() gfVersion = "gf-christmas" end,
+			["school"] = function() gfVersion = "gf-pixel" end,
+			["school-evil"] = function() gfVersion = "gf-pixel" end,
+			["tank"] = function()
 				if songName == 'stress' then
 					gfVersion = "pico-speaker"
 				else
 					gfVersion = "gf-tankmen"
 				end
 			end,
-			default = function () gfVersion = "gf" end
+			default = function() gfVersion = "gf" end
 		})
 		self.__song.gfVersion = gfVersion
 	end
@@ -199,7 +199,7 @@ end
 function ChartingState:add_UI_Song()
 	local input_song = ui.UIInputTextBox(45, 10, 135, 20)
 	input_song.text = self.__song.song
-	input_song.onChanged = function (value) self.__song.song = value end
+	input_song.onChanged = function(value) self.__song.song = value end
 
 	local metadata = paths.getJSON('songs/' ..
 		paths.formatToSongPath(self.__song.song) ..
@@ -214,31 +214,31 @@ function ChartingState:add_UI_Song()
 	local diff_dropdown = ui.UIDropDown(70, 40, diffs)
 	if self.curDiff == "" then self.curDiff = "normal" end
 	diff_dropdown.selectedLabel = self.curDiff
-	diff_dropdown.onChanged = function (value) self.curDiff = value end
+	diff_dropdown.onChanged = function(value) self.curDiff = value end
 
 	local load_audio_button = ui.UIButton(300, 10, 80, 20, 'Load Audio',
-		function ()
+		function()
 			self:loadSong(input_song.text)
 		end)
 
 	local load_json_button = ui.UIButton(300, 40, 80, 20, 'Load JSON',
-		function ()
+		function()
 			ChartingState.conductor.sound:pause()
 			if self.vocals then self.vocals:pause() end
 			self:loadJson(input_song.text)
 		end)
 
 	local save_song_button = ui.UIButton(200, 10, 80, 20, 'Save Chart',
-		function () self:saveJson() end)
+		function() self:saveJson() end)
 
 	local voice_track = ui.UICheckbox(10, 70, 20)
 	voice_track.checked = self.__song.needsVoices
-	voice_track.callback = function ()
+	voice_track.callback = function()
 		self.__song.needsVoices = voice_track.checked
 	end
 
 	local bpm_stepper = ui.UINumericStepper(10, 140, 1, self.__song.bpm, 1, 400)
-	bpm_stepper.onChanged = function (value)
+	bpm_stepper.onChanged = function(value)
 		self.__song.bpm = value
 		ChartingState.conductor:mapBPMChanges(self.__song)
 		ChartingState.conductor:setBPM(value)
@@ -247,7 +247,7 @@ function ChartingState:add_UI_Song()
 
 	local speed_stepper = ui.UINumericStepper(10, 190, 0.1, self.__song.speed,
 		0.1, 10)
-	speed_stepper.onChanged = function (value) self.__song.speed = value end
+	speed_stepper.onChanged = function(value) self.__song.speed = value end
 
 	local optionsChar = {}
 	if Mods.currentMod then
@@ -269,21 +269,21 @@ function ChartingState:add_UI_Song()
 
 	local boyfriend_dropdown = ui.UIDropDown(10, 250, optionsChar)
 	boyfriend_dropdown.selectedLabel = self.__song.player1 or 'boyfriend'
-	boyfriend_dropdown.onChanged = function (value)
+	boyfriend_dropdown.onChanged = function(value)
 		self.__song.player1 = value
 		self:updateIcon()
 	end
 
 	local opponent_dropdown = ui.UIDropDown(10, 310, optionsChar)
 	opponent_dropdown.selectedLabel = self.__song.player2 or 'boyfriend'
-	opponent_dropdown.onChanged = function (value)
+	opponent_dropdown.onChanged = function(value)
 		self.__song.player2 = value
 		self:updateIcon()
 	end
 
 	local girlfriend_dropdown = ui.UIDropDown(10, 370, optionsChar)
 	girlfriend_dropdown.selectedLabel = self.__song.gfVersion or 'boyfriend'
-	girlfriend_dropdown.onChanged = function (value)
+	girlfriend_dropdown.onChanged = function(value)
 		self.__song.gfVersion = value
 	end
 
@@ -303,7 +303,7 @@ function ChartingState:add_UI_Song()
 
 	local stage_dropdown = ui.UIDropDown(140, 250, optionsStage)
 	stage_dropdown.selectedLabel = self.__song.stage or 'stage'
-	stage_dropdown.onChanged = function (value) self.__song.stage = value end
+	stage_dropdown.onChanged = function(value) self.__song.stage = value end
 
 	local song_text = Text(4, 10, "Song:")
 	song_text:setScrollFactor()
@@ -364,7 +364,7 @@ function ChartingState:add_UI_Section()
 	self.must_hit_sec = ui.UICheckbox(10, 20, 20)
 	self.must_hit_sec.checked = self.__song.notes[self.curSection + 1]
 		.mustHitSection
-	self.must_hit_sec.callback = function ()
+	self.must_hit_sec.callback = function()
 		self.__song.notes[self.curSection + 1].mustHitSection =
 			self.must_hit_sec.checked
 		for _, n in ipairs(self.__song.notes[self.curSection + 1].sectionNotes) do
@@ -400,7 +400,7 @@ end
 function ChartingState:add_UI_Charting()
 	local metronome = ui.UICheckbox(10, 20, 20)
 	metronome.checked = self.metronome
-	metronome.callback = function ()
+	metronome.callback = function()
 		self.metronome = metronome.checked
 		self.saveData.metronome = self.metronome
 		game.save.data.chartingData = self.saveData
@@ -408,7 +408,7 @@ function ChartingState:add_UI_Charting()
 
 	local player_hitsound = ui.UICheckbox(10, 50, 20)
 	player_hitsound.checked = self.playerTick
-	player_hitsound.callback = function ()
+	player_hitsound.callback = function()
 		self.playerTick = player_hitsound.checked
 		self.saveData.playerTick = self.playerTick
 		game.save.data.chartingData = self.saveData
@@ -416,7 +416,7 @@ function ChartingState:add_UI_Charting()
 
 	local opponent_hitsound = ui.UICheckbox(10, 80, 20)
 	opponent_hitsound.checked = self.opponentTick
-	opponent_hitsound.callback = function ()
+	opponent_hitsound.callback = function()
 		self.opponentTick = opponent_hitsound.checked
 		self.saveData.opponentTick = self.opponentTick
 		game.save.data.chartingData = self.saveData
@@ -430,7 +430,7 @@ function ChartingState:add_UI_Charting()
 
 	local mute_inst = ui.UICheckbox(110, 140, 20)
 	mute_inst.checked = false
-	mute_inst.callback = function ()
+	mute_inst.callback = function()
 		if mute_inst.checked then
 			ChartingState.conductor.sound:setVolume(0)
 		else
@@ -440,7 +440,7 @@ function ChartingState:add_UI_Charting()
 
 	local mute_voices = ui.UICheckbox(110, 190, 20)
 	mute_voices.checked = false
-	mute_voices.callback = function ()
+	mute_voices.callback = function()
 		if mute_voices.checked then
 			if self.vocals then self.vocals:setVolume(0) end
 		else
@@ -449,7 +449,7 @@ function ChartingState:add_UI_Charting()
 	end
 
 	local vol_inst_stepper = ui.UINumericStepper(10, 140, 0.05, inst_vol, 0, 1)
-	vol_inst_stepper.onChanged = function (value)
+	vol_inst_stepper.onChanged = function(value)
 		if not mute_inst.checked then
 			inst_vol = value
 			ChartingState.conductor.sound:setVolume(inst_vol)
@@ -458,7 +458,7 @@ function ChartingState:add_UI_Charting()
 
 	local vol_voices_stepper = ui.UINumericStepper(10, 190, 0.05, voices_vol, 0,
 		1)
-	vol_voices_stepper.onChanged = function (value)
+	vol_voices_stepper.onChanged = function(value)
 		if not mute_voices.checked then
 			voices_vol = value
 			if self.vocals then self.vocals:setVolume(voices_vol) end
@@ -853,7 +853,7 @@ function ChartingState:loadSong(song)
 	ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
 	ChartingState.conductor:mapBPMChanges(self.__song)
 	ChartingState.conductor.sound:setLooping(true)
-	ChartingState.conductor.onStep = function (s)
+	ChartingState.conductor.onStep = function(s)
 		self:resyncVocals()
 
 		if self.__song.notes[self.curSection + 2] == nil then
@@ -878,7 +878,7 @@ function ChartingState:loadSong(song)
 			self:update_UI_Section()
 		end
 	end
-	ChartingState.conductor.onBeat = function (b)
+	ChartingState.conductor.onBeat = function(b)
 		if self.metronome then
 			game.sound.play(paths.getSound('metronome'), 0.8)
 		end

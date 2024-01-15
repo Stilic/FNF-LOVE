@@ -78,9 +78,9 @@ function PauseSubstate:update(dt)
 		local daChoice = self.menuItems[self.curSelected]
 
 		switch(daChoice, {
-			["Resume"] = function () self:close() end,
-			["Restart Song"] = function () game.resetState(true) end,
-			["Options"] = function ()
+			["Resume"] = function() self:close() end,
+			["Restart Song"] = function() game.resetState(true) end,
+			["Options"] = function()
 				local device = love.system.getDevice()
 				if device == "Mobile" then
 					self.buttons.visible = false
@@ -90,11 +90,11 @@ function PauseSubstate:update(dt)
 					self.blockInput = false
 
 					if device == "Mobile" then
-		                self.buttons.visible = true
-		                game.buttons.add(self.buttons)
-		            end
+						self.buttons.visible = true
+						game.buttons.add(self.buttons)
+					end
 
-		            for _, item in ipairs(self.grpShitMenu.members) do
+					for _, item in ipairs(self.grpShitMenu.members) do
 						item.alpha = 0.6
 						if item.targetY == 0 then item.alpha = 1 end
 					end
@@ -112,7 +112,7 @@ function PauseSubstate:update(dt)
 					item.alpha = 0.25
 				end
 			end,
-			["Exit to menu"] = function ()
+			["Exit to menu"] = function()
 				game.sound.playMusic(paths.getMusic("freakyMenu"))
 				PlayState.chartingMode = false
 				PlayState.startPos = 0

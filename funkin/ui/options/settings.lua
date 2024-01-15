@@ -133,9 +133,13 @@ end
 function Settings:makeOption(group, i, font, tabWidth, titleWidth, binds)
 	local margin, option = self.margin, self.settings[i]
 	local optiontype = type(option[3])
-	if optiontype == "table" then binds = #option[3]
-	elseif optiontype == "number" then binds = options[3]
-	elseif optiontype == "string" then binds = 1 end
+	if optiontype == "table" then
+		binds = #option[3]
+	elseif optiontype == "number" then
+		binds = options[3]
+	elseif optiontype == "string" then
+		binds = 1
+	end
 
 	group:add(Text(margin, margin / 2, option[2], font, Color.WHITE, "left", titleWidth - margin))
 	group.texts = {}

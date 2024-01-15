@@ -28,40 +28,40 @@ end
 
 function AlphaCharacter:createBoldSymbol(letter)
 	switch(letter, {
-		["."] = function ()
+		["."] = function()
 			self:addAnimByPrefix(letter, 'PERIOD bold', 24)
 		end,
-		["\'"] = function ()
+		["\'"] = function()
 			self:addAnimByPrefix(letter, 'APOSTRAPHIE bold', 24)
 		end,
-		["?"] = function ()
+		["?"] = function()
 			self:addAnimByPrefix(letter, 'QUESTION MARK bold', 24)
 		end,
-		["!"] = function ()
+		["!"] = function()
 			self:addAnimByPrefix(letter, 'EXCLAMATION POINT bold', 24)
 		end,
-		["("] = function () self:addAnimByPrefix(letter, 'bold (', 24) end,
-		[")"] = function () self:addAnimByPrefix(letter, 'bold )', 24) end,
-		default = function ()
+		["("] = function() self:addAnimByPrefix(letter, 'bold (', 24) end,
+		[")"] = function() self:addAnimByPrefix(letter, 'bold )', 24) end,
+		default = function()
 			self:addAnimByPrefix(letter, 'bold ' .. letter, 24)
 		end
 	})
 	self:play(letter)
 	self:updateHitbox()
 	switch(letter, {
-		["\'"] = function () self.y = self.y - 20 * self.textSize end,
-		["-"] = function () self.y = self.y + 20 * self.textSize end,
-		["("] = function ()
+		["\'"] = function() self.y = self.y - 20 * self.textSize end,
+		["-"] = function() self.y = self.y + 20 * self.textSize end,
+		["("] = function()
 			self.x = self.x - 65 * self.textSize
 			self.y = self.y - 5 * self.textSize
 			self.offset.x = -58 * self.textSize
 		end,
-		[")"] = function ()
+		[")"] = function()
 			self.x = self.x - 20 / self.textSize
 			self.y = self.y - 5 * self.textSize
 			self.offset.x = 12 * self.textSize
 		end,
-		["."] = function ()
+		["."] = function()
 			self.y = self.y + 45 * self.textSize
 			self.x = self.x + 5 * self.textSize
 			self.offset.x = self.offset.x + 3 * self.textSize
@@ -93,19 +93,19 @@ end
 
 function AlphaCharacter:createSymbol(letter)
 	switch(letter, {
-		["#"] = function () self:addAnimByPrefix(letter, 'hashtag', 24) end,
-		["."] = function () self:addAnimByPrefix(letter, 'period', 24) end,
-		["\'"] = function ()
+		["#"] = function() self:addAnimByPrefix(letter, 'hashtag', 24) end,
+		["."] = function() self:addAnimByPrefix(letter, 'period', 24) end,
+		["\'"] = function()
 			self:addAnimByPrefix(letter, 'apostraphie', 24)
 		end,
-		["?"] = function ()
+		["?"] = function()
 			self:addAnimByPrefix(letter, 'question mark', 24)
 		end,
-		["!"] = function ()
+		["!"] = function()
 			self:addAnimByPrefix(letter, 'exclamation point', 24)
 		end,
-		[","] = function () self:addAnimByPrefix(letter, 'comma', 24) end,
-		default = function () self:addAnimByPrefix(letter, letter, 24) end
+		[","] = function() self:addAnimByPrefix(letter, 'comma', 24) end,
+		default = function() self:addAnimByPrefix(letter, letter, 24) end
 	})
 	self:play(letter)
 
@@ -114,8 +114,8 @@ function AlphaCharacter:createSymbol(letter)
 	self.y = (110 - self.height)
 	self.y = self.y + self.row * 60
 	switch(letter, {
-		["\'"] = function () self.y = self.y - 20 end,
-		["-"] = function () self.y = self.y - 16 end
+		["\'"] = function() self.y = self.y - 20 end,
+		["-"] = function() self.y = self.y - 16 end
 	})
 end
 

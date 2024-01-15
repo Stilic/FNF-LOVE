@@ -153,8 +153,8 @@ function Character:sing(dir, type)
 	local anim = "sing" .. string.upper(Note.directions[dir + 1])
 	local suffix = ''
 	switch(type:lower(), {
-		['miss'] = function () suffix = "miss" end,
-		['alt'] = function () suffix = "-alt" end
+		['miss'] = function() suffix = "miss" end,
+		['alt'] = function() suffix = "-alt" end
 	})
 	if self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, true)

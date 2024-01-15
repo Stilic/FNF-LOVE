@@ -67,12 +67,12 @@ function step()
 		end
 		if curStep % 4 == 0 then
 			if curStep >= 256 then
-				Timer.tween(0.1, noteModchart, {beat = ((curBeat % 2 == 0) and 10 or -10)}, 'in-out-sine', function ()
+				Timer.tween(0.1, noteModchart, {beat = ((curBeat % 2 == 0) and 10 or -10)}, 'in-out-sine', function()
 					Timer.tween(0.1, noteModchart, {beat = 0}, 'in-out-sine')
 				end)
 			end
 			if curStep >= 384 and curStep < 512 or curStep >= 768 and curStep < 896 then
-				Timer.tween(stepCrotchet * 0.002, noteModchart, {bounce = 10}, 'out-circ', function ()
+				Timer.tween(stepCrotchet * 0.002, noteModchart, {bounce = 10}, 'out-circ', function()
 					Timer.tween(stepCrotchet * 0.002, noteModchart, {bounce = 0}, 'in-sine')
 				end)
 			end

@@ -19,8 +19,8 @@ function MenuCharacter:changeCharacter(char)
 
 	self.hasConfirmAnimation = false
 	switch(self.character, {
-		[''] = function () self.visible = false end,
-		default = function ()
+		[''] = function() self.visible = false end,
+		default = function()
 			local path = 'data/weeks/characters/' .. self.character
 			if not (paths.exists(paths.getMods(path .. '.json'), "file") or
 					paths.exists(paths.getPath(path .. '.json'), "file")) then

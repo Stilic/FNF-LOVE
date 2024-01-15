@@ -12,7 +12,7 @@ function DialogueBox:new(dialogueList)
 	self:add(self.bgFade)
 
 	for loop = 1, 5 do
-		Timer.after(0.83 * loop, function ()
+		Timer.after(0.83 * loop, function()
 			self.bgFade.alpha = self.bgFade.alpha + (1 / 5) * 0.7
 			if self.bgFade.alpha > 0.7 then
 				self.bgFade.alpha = 0.7
@@ -45,17 +45,17 @@ function DialogueBox:new(dialogueList)
 
 	local hasDialog = true
 	switch(PlayState.SONG.song:lower(), {
-		["senpai"] = function ()
+		["senpai"] = function()
 			self.box:setFrames(paths.getSparrowAtlas('stages/school/pixelUI/dialogueBox-pixel'))
 			self.box:addAnimByPrefix('normalOpen', 'Text Box Appear', 24, false)
 			self.box:addAnimByIndices('normal', 'Text Box Appear', {4}, "", 24)
 		end,
-		["roses"] = function ()
+		["roses"] = function()
 			self.box:setFrames(paths.getSparrowAtlas('stages/school/pixelUI/dialogueBox-senpaiMad'))
 			self.box:addAnimByPrefix('normalOpen', 'SENPAI ANGRY IMPACT SPEECH', 24, false)
 			self.box:addAnimByIndices('normal', 'SENPAI ANGRY IMPACT SPEECH', {4}, nil, 24)
 		end,
-		["thorns"] = function ()
+		["thorns"] = function()
 			self.box:setFrames(paths.getSparrowAtlas('stages/school-evil/pixelUI/dialogueBox-evil'))
 			self.box:addAnimByPrefix('normalOpen', 'Spirit Textbox spawn', 24, false)
 			self.box:addAnimByIndices('normal', 'Spirit Textbox spawn', {11}, nil, 24)
@@ -66,7 +66,7 @@ function DialogueBox:new(dialogueList)
 			face:setGraphicSize(math.floor(face.width * 6))
 			self:add(face)
 		end,
-		default = function ()
+		default = function()
 			hasDialog = false
 		end
 	})
@@ -148,7 +148,7 @@ function DialogueBox:update(dt)
 					game.sound.play(paths.getSound('gameplay/clickText'), 0.8)
 
 					for loop = 1, 5 do
-						Timer.after(0.2 * loop, function ()
+						Timer.after(0.2 * loop, function()
 							self.box.alpha = self.box.alpha - 1 / 5
 							self.bgFade.alpha = self.bgFade.alpha - 1 / 5 * 0.7
 							self.portraitLeft.visible = false
@@ -158,7 +158,7 @@ function DialogueBox:update(dt)
 						end)
 					end
 
-					Timer.after(1, function ()
+					Timer.after(1, function()
 						game.buttons.remove(self.buttons)
 						self.finishThing()
 						self:kill()
@@ -186,20 +186,20 @@ function DialogueBox:startDialogue()
 	self.handSelect.visible = false
 	self.dialogueEnded = false
 
-	self.swagDialogue.completeCallback = function ()
+	self.swagDialogue.completeCallback = function()
 		self.handSelect.visible = true
 		self.dialogueEnded = true
 	end
 
 	switch(self.curCharacter, {
-		["dad"] = function ()
+		["dad"] = function()
 			self.portraitRight.visible = false
 			if not self.portraitLeft.visible then
 				self.portraitLeft.visible = (PlayState.SONG.song:lower() == 'senpai')
 				self.portraitLeft:play('enter')
 			end
 		end,
-		["bf"] = function ()
+		["bf"] = function()
 			self.portraitLeft.visible = false
 			if not self.portraitRight.visible then
 				self.portraitRight.visible = true

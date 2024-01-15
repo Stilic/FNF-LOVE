@@ -26,16 +26,16 @@ function postCreate()
 	game.sound.play(paths.getSound('gameplay/tankSong2'))
 	Timer.tween(4, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
 
-	cutsceneTimer:after(4, function ()
+	cutsceneTimer:after(4, function()
 		Timer.tween(0.5, game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 'in-out-quad')
 		state.gf:playAnim('sad', true)
 	end)
 
-	cutsceneTimer:after(4.5, function ()
+	cutsceneTimer:after(4.5, function()
 		Timer.tween(1, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
 	end)
 
-	cutsceneTimer:after(11.5, function ()
+	cutsceneTimer:after(11.5, function()
 		tankman:destroy()
 		state.dad.alpha = 1
 		state.camHUD.visible = true

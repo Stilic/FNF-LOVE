@@ -22,7 +22,7 @@ function create()
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
 	doof.cameras = {state.camHUD}
-	doof.finishThing = function ()
+	doof.finishThing = function()
 		state:startCountdown()
 		close()
 	end
@@ -35,12 +35,12 @@ function create()
 
 	state.camHUD.visible = false
 
-	Timer.after(2.1, function ()
+	Timer.after(2.1, function()
 		state:add(senpaiEvil)
 		senpaiEvil.alpha = 0
 		state:add(white)
 		for delay = 1, 7 do
-			Timer.after(0.3 * delay, function ()
+			Timer.after(0.3 * delay, function()
 				senpaiEvil.alpha = senpaiEvil.alpha + 0.15
 				if senpaiEvil.alpha > 1 then
 					senpaiEvil.alpha = 1
@@ -48,7 +48,7 @@ function create()
 					Timer.tween(2.4, game.camera, {zoom = state.stage.camZoom - 0.2}, 'in-sine')
 
 					senpaiEvil:play('idle')
-					game.sound.play(paths.getSound('gameplay/Senpai_Dies'), 1, false, true, function ()
+					game.sound.play(paths.getSound('gameplay/Senpai_Dies'), 1, false, true, function()
 						state:remove(senpaiEvil)
 						state:remove(red)
 						state:remove(white)
@@ -56,12 +56,12 @@ function create()
 						state:add(doof)
 						state.camHUD.visible = true
 					end)
-					Timer.after(2.4, function ()
+					Timer.after(2.4, function()
 						game.camera.zoom = 1.4
 						Timer.tween(1, game.camera, {zoom = state.stage.camZoom - 0.2}, 'out-circ')
 						game.camera:shake(0.005, 2.5)
 					end)
-					Timer.after(3.2, function ()
+					Timer.after(3.2, function()
 						Timer.tween(1.6, white, {alpha = 1})
 					end)
 				end

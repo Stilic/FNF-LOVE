@@ -100,7 +100,7 @@ function TitleState:update(dt)
 		self.titleText:play("press")
 		game.camera:flash({1, 1, 1}, 2)
 		game.sound.play(paths.getSound("confirmMenu"))
-		Timer.after(1.5, function () game.switchState(MainMenuState()) end)
+		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
 	end
 
 	if pressedEnter and not self.skippedIntro and TitleState.initialized then

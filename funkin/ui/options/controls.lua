@@ -2,24 +2,24 @@ local Settings = require "funkin.ui.options.settings"
 
 local data = {
 	{"NOTES"},
-	{"note_left", "Left"},
-	{"note_down", "Down"},
-	{"note_up", "Up"},
-	{"note_right", "Right"},
+	{"note_left",    "Left"},
+	{"note_down",    "Down"},
+	{"note_up",      "Up"},
+	{"note_right",   "Right"},
 
 	{"UI"},
-	{"ui_left", "Left"},
-	{"ui_down", "Down"},
-	{"ui_up", "Up"},
-	{"ui_right", "Right"},
-	{"reset", "Reset"},
-	{"accept", "Accept"},
-	{"back", "Back"},
-	{"pause",  "Pause"},
+	{"ui_left",      "Left"},
+	{"ui_down",      "Down"},
+	{"ui_up",        "Up"},
+	{"ui_right",     "Right"},
+	{"reset",        "Reset"},
+	{"accept",       "Accept"},
+	{"back",         "Back"},
+	{"pause",        "Pause"},
 
 	{"MISCELLANEOUS"},
-	{"fullscreen", "Fullscreen"},
-	{"pick_mods", "Mods"},
+	{"fullscreen",   "Fullscreen"},
+	{"pick_mods",    "Mods"},
 	{"asyncInput", "Asynchronous Input", "boolean", function()
 		love.asyncInput = not ClientPrefs.data.asyncInput
 		ClientPrefs.data.asyncInput = love.asyncInput

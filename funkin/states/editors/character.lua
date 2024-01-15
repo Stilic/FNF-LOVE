@@ -95,11 +95,11 @@ function CharacterEditor:add_UI_Character()
 	tab_char.name = 'Character'
 
 	local save_char = ui.UIButton(140, 10, 100, 20, 'Save',
-		function () self:saveCharacter() end)
+		function() self:saveCharacter() end)
 
 	local playable_check = ui.UICheckbox(10, 40, 20)
 	playable_check.checked = self.isPlayer
-	playable_check.callback = function ()
+	playable_check.callback = function()
 		self.isPlayer = not self.isPlayer
 
 		self.char.__reverseDraw = not self.char.__reverseDraw
@@ -121,7 +121,7 @@ function CharacterEditor:add_UI_Character()
 	local flipX_check = ui.UICheckbox(10, 70, 20)
 	flipX_check.checked = self.char.flipX
 	if self.isPlayer then flipX_check.checked = not flipX_check.checked end
-	flipX_check.callback = function ()
+	flipX_check.callback = function()
 		self.char.jsonFlipX = not self.char.jsonFlipX
 		self.char.flipX = self.char.jsonFlipX
 		if self.isPlayer then self.char.flipX = not self.char.flipX end
@@ -130,7 +130,7 @@ function CharacterEditor:add_UI_Character()
 	local camX_stepper = ui.UINumericStepper(10, 168, 10,
 		self.char.cameraPosition.x, -9000,
 		9000)
-	camX_stepper.onChanged = function (value)
+	camX_stepper.onChanged = function(value)
 		self.char.cameraPosition.x = value
 	end
 
@@ -138,7 +138,7 @@ function CharacterEditor:add_UI_Character()
 		camX_stepper.y, 10,
 		self.char.cameraPosition.y, -9000,
 		9000)
-	camY_stepper.onChanged = function (value)
+	camY_stepper.onChanged = function(value)
 		self.char.cameraPosition.y = value
 	end
 
@@ -146,7 +146,7 @@ function CharacterEditor:add_UI_Character()
 		camX_stepper.y + 50, 10,
 		self.char.positionTable.x, -9000,
 		9000)
-	posX_stepper.onChanged = function (value)
+	posX_stepper.onChanged = function(value)
 		self.char.positionTable.x = value
 		self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
 	end
@@ -154,14 +154,14 @@ function CharacterEditor:add_UI_Character()
 		posX_stepper.y, 10,
 		self.char.positionTable.y, -9000,
 		9000)
-	posY_stepper.onChanged = function (value)
+	posY_stepper.onChanged = function(value)
 		self.char.positionTable.y = value
 		self.char.y = 100 + self.char.positionTable.y
 	end
 
 	local healthIcon_input = ui.UIInputTextBox(10, 118, 80, 20)
 	healthIcon_input.text = self.char.icon
-	healthIcon_input.onChanged = function (value)
+	healthIcon_input.onChanged = function(value)
 		self.char.icon = value
 
 		self.charLayer:add(self.healthIcon)
@@ -194,7 +194,7 @@ function CharacterEditor:add_UI_Character()
 
 	local char_dropdown = ui.UIDropDown(10, 10, optionsChar)
 	char_dropdown.selectedLabel = self.curChar
-	char_dropdown.onChanged = function (value)
+	char_dropdown.onChanged = function(value)
 		self.isPlayer = value:startsWith('bf')
 		playable_check.checked = self.isPlayer
 

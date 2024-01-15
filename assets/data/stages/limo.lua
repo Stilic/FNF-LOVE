@@ -63,7 +63,7 @@ function fastCarDrive()
 
 	fastCar.velocity.x = (fastCarSpeed / updateElapsed)
 	fastCarCanDrive = false
-	Timer.after(2, function () resetFastCar() end)
+	Timer.after(2, function() resetFastCar() end)
 end
 
 function beat()

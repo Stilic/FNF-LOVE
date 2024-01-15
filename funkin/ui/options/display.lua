@@ -12,14 +12,14 @@ local data = {
 		Object.defaultAntialiasing = value
 	end},
 	{"lowQuality", "Low Quality", "boolean"},
-	{"shader", "Shader", "boolean"},
+	{"shader",     "Shader",      "boolean"},
 
 	{"WINDOW"},
 	{"fullscreen", "Fullscreen", "boolean", function()
 		local value = not ClientPrefs.data.fullscreen
 		ClientPrefs.data.fullscreen = value
 
-		local res =ClientPrefs.data.resolution
+		local res = ClientPrefs.data.resolution
 		love.window.updateMode(Project.width * res, Project.height * res, {
 			fullscreen = value
 		})
@@ -28,7 +28,10 @@ local data = {
 		local value = ClientPrefs.data.resolution
 		if value <= resolutions[#resolutions] then
 			local i = #resolutions
-			for i2 = i, 1, -1 do if value >= resolutions[i2] then i = i2 break end end
+			for i2 = i, 1, -1 do if value >= resolutions[i2] then
+					i = i2
+					break
+				end end
 			value = resolutions[math.max(i + add, 1)] or value + add / 8
 		else
 			value = value + add / 8

@@ -223,8 +223,8 @@ function StoryMenuState:selectWeek()
 
 		local diff = PlayState.defaultDifficulty
 		switch(StoryMenuState.curDifficulty, {
-			[1] = function () diff = "easy" end,
-			[3] = function () diff = "hard" end
+			[1] = function() diff = "easy" end,
+			[3] = function() diff = "hard" end
 		})
 
 		if self:checkSongsDifficulty() then
@@ -243,7 +243,7 @@ function StoryMenuState:selectWeek()
 				self.selectedWeek = true
 			end
 
-			Timer.after(1, function () game.switchState(toState) end)
+			Timer.after(1, function() game.switchState(toState) end)
 		else
 			local pathTable = {}
 			for i = 1, #songTable do
@@ -288,8 +288,8 @@ function StoryMenuState:changeDifficulty(change)
 
 	local diff = ""
 	switch(StoryMenuState.curDifficulty, {
-		[1] = function () diff = "easy" end,
-		[3] = function () diff = "hard" end
+		[1] = function() diff = "easy" end,
+		[3] = function() diff = "hard" end
 	})
 
 	local weekName = self.weeksData[StoryMenuState.curWeek].file
@@ -352,8 +352,8 @@ function StoryMenuState:updateText()
 
 	local diff = ""
 	switch(StoryMenuState.curDifficulty, {
-		[1] = function () diff = "easy" end,
-		[3] = function () diff = "hard" end
+		[1] = function() diff = "easy" end,
+		[3] = function() diff = "hard" end
 	})
 
 	local weekName = self.weeksData[StoryMenuState.curWeek].file

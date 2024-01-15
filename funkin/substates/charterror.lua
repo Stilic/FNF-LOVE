@@ -7,8 +7,8 @@ function ChartErrorSubstate:new(songpath)
 
 	local listPaths = {}
 	switch(type(songpath), {
-		['string'] = function () table.insert(listPaths, songpath) end,
-		['table'] = function () listPaths = songpath end
+		['string'] = function() table.insert(listPaths, songpath) end,
+		['table'] = function() listPaths = songpath end
 	})
 
 	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
@@ -56,7 +56,7 @@ function ChartErrorSubstate:update(dt)
 			Timer.tween(0.4, self.continueTxt, {alpha = 0}, 'in-quart')
 			Timer.tween(0.4, self.listTxt, {y = 720}, 'in-quart')
 			Timer.tween(0.4, self.titleTxt, {y = -80}, 'in-quart')
-			Timer.tween(0.4, self.bg, {alpha = 0}, 'in-out-quart', function ()
+			Timer.tween(0.4, self.bg, {alpha = 0}, 'in-out-quart', function()
 				self:close()
 			end)
 		end

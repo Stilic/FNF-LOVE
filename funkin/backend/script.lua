@@ -30,7 +30,7 @@ function Script:new(path, notFoundMsg)
 	self:set('Event_Continue', Script.Event_Continue)
 	self:set('Event_Cancel', Script.Event_Cancel)
 	self:set("SCRIPT_PATH", p)
-	self:set("close", function () self:close() end)
+	self:set("close", function() self:close() end)
 	self:set("state", game.getState())
 end
 

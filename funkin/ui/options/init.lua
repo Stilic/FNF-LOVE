@@ -67,15 +67,15 @@ function Options:enter(parent)
 	if device == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Options Menu"})
 	elseif device == "Mobile" then
-        local camButtons = Camera()
-        game.cameras.add(camButtons, false)
+		local camButtons = Camera()
+		game.cameras.add(camButtons, false)
 
 		self.buttons = ButtonGroup()
 		self.buttons.type = "roundrect"
 		self.buttons.lined = true
 		self.buttons.width = 134
 		self.buttons.height = 134
-        self.buttons.cameras = {camButtons}
+		self.buttons.cameras = {camButtons}
 
 		local w = self.buttons.width
 
@@ -196,11 +196,17 @@ function Options:update(dt)
 	if not self.blockInput then
 		shift = Keyboard.pressed.SHIFT or controls:down("reset")
 		if controls:pressed("accept") then
-			if self.onTab then self:acceptOption()
-			else self:enterTab() end
+			if self.onTab then
+				self:acceptOption()
+			else
+				self:enterTab()
+			end
 		elseif controls:pressed("back") then
-			if self.onTab then self:exitTab()
-			else return self.parent:remove(self) end
+			if self.onTab then
+				self:exitTab()
+			else
+				return self.parent:remove(self)
+			end
 		end
 	end
 
