@@ -21,7 +21,7 @@ function Button:setColor(color) self.color = color end
 
 function Button:update(dt)
 	if not self.pressed then
-		self.alpha = util.coolLerp(self.alpha, self.releasedAlpha, 0.24)
+		self.alpha = math.lerp(self.alpha, self.releasedAlpha, 0.24)
 	else
 		self.alpha = self.pressedAlpha
 	end

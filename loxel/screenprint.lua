@@ -60,10 +60,10 @@ function ScreenPrint.update(dt)
 		print.timer = print.timer - dt
 
 		if print.timer > 0 then
-			print.bg.y = util.coolLerp(print.bg.y,
+			print.bg.y = math.lerp(print.bg.y,
 				ScreenPrint.game.height - 15 - print.bg.height, 0.2)
 		else
-			print.bg.y = util.coolLerp(print.bg.y,
+			print.bg.y = math.lerp(print.bg.y,
 				ScreenPrint.game.height + print.bg.height + 5, 0.1)
 		end
 

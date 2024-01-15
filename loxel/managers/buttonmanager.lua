@@ -95,7 +95,7 @@ function ButtonManager._press(key, time)
 	love.keypressed(key, code, false, time)
 end
 
-function ButtonManager._release(key. time)
+function ButtonManager._release(key, time)
 	local code = love.keyboard.getScancodeFromKey(key)
 	keys[key], sc[code] = false, false
 	love.keyreleased(key, code, time)
