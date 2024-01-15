@@ -5,7 +5,7 @@ MainMenuState.curSelected = 1
 function MainMenuState:enter()
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({details = "In the Menus"})
+		Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 	end
 
 	self.optionShit = {'story_mode', 'freeplay', 'donate', 'options'}
@@ -72,6 +72,10 @@ function MainMenuState:enter()
 	self.engineCreated:setScrollFactor()
 	self:add(self.engineCreated)
 
+	self.throttles = {}
+	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
+	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
+
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
 		self.buttons.type = "roundrect"
@@ -109,9 +113,9 @@ function MainMenuState:update(dt)
 		util.coolLerp(game.camera.target.x, self.camFollow.x, 0.2),
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 0.2)
 
-	if not self.selectedSomethin then
-		if controls:pressed('ui_up') then self:changeSelection(-1) end
-		if controls:pressed('ui_down') then self:changeSelection(1) end
+	if not self.selectedSomethin and self.throttles then
+		if self.throttles.up:check() then self:changeSelection(-1) end
+		if self.throttles.down:check() then self:changeSelection(1) end
 
 		if controls:pressed("back") then
 			game.sound.play(paths.getSound('cancelMenu'))
@@ -123,43 +127,68 @@ function MainMenuState:update(dt)
 		end
 
 		if controls:pressed("accept") then
-			local selected = self.optionShit[MainMenuState.curSelected]
-			if selected == 'donate' then
-				love.system.openURL('https://ninja-muffin24.itch.io/funkin')
-			else
-				self.selectedSomethin = true
-				game.sound.play(paths.getSound('confirmMenu'))
-
-				Flicker(self.magentaBg, 1.1, 0.15, false)
-
-				for i, spr in ipairs(self.menuItems.members) do
-					if MainMenuState.curSelected ~= spr.ID then
-						Timer.tween(0.4, spr, {alpha = 0}, 'out-quad',
-							function ()
-								spr:destroy()
-							end)
-					else
-						Flicker(spr, 1, 0.06, false, false, function ()
-							local daChoice =
-								self.optionShit[MainMenuState.curSelected]
-
-							if daChoice == 'story_mode' then
-								game.switchState(StoryMenuState())
-							elseif daChoice == 'freeplay' then
-								game.switchState(FreeplayState())
-							elseif daChoice == 'options' then
-								game.switchState(OptionsState())
-							end
-						end)
-					end
-				end
-			end
+			self:enterSelection(self.optionShit[MainMenuState.curSelected])
 		end
 	end
 
 	MainMenuState.super.update(self, dt)
 
 	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
+end
+
+local triggerChoices = {
+	story_mode = {true, function(self)
+		game.switchState(StoryMenuState())
+	end},
+	freeplay = {true, function(self)
+		game.switchState(FreeplayState())
+	end},
+	options = {false, function(self)
+		local device = love.system.getDevice()
+		if device == "Mobile" then
+			self.buttons.visible = false
+			game.buttons.remove(self.buttons)
+		end
+		self.optionsUI = self.optionsUI or Options(true, function()
+			self.selectedSomethin = false
+
+			if device == "Desktop" then
+				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
+			elseif device == "Mobile" then
+                self.buttons.visible = true
+                game.buttons.add(self.buttons)
+            end
+		end)
+		self.optionsUI:setScrollFactor()
+		self.optionsUI:screenCenter()
+		self.optionsUI.dontResetTab = true
+		self:add(self.optionsUI)
+		return false
+	end},
+	donate = {false, function(self)
+		love.system.openURL('https://ninja-muffin24.itch.io/funkin')
+		return true
+	end}
+}
+
+function MainMenuState:enterSelection(choice)
+	local switch = triggerChoices[choice]
+	self.selectedSomethin = true
+
+	game.sound.play(paths.getSound('confirmMenu'))
+	Flicker(self.magentaBg, switch[1] and 1.1 or 1, 0.15, false)
+
+	for i, spr in ipairs(self.menuItems.members) do
+		if MainMenuState.curSelected == spr.ID then
+			Flicker(spr, 1, 0.05, not switch[1], false, function()
+				self.selectedSomethin = not switch[2](self)
+			end)
+		elseif switch[1] then
+			Timer.tween(0.4, spr, {alpha = 0}, 'out-quad', function()
+				spr:destroy()
+			end)
+		end
+	end
 end
 
 function MainMenuState:changeSelection(huh)
@@ -187,6 +216,14 @@ function MainMenuState:changeSelection(huh)
 			spr:centerOffsets()
 		end
 	end
+end
+
+function MainMenuState:leave()
+	if self.optionsUI then self.optionsUI:destroy() end
+	self.optionsUI = nil
+
+	for _, v in ipairs(self.throttles) do v:destroy() end
+	self.throttles = nil
 end
 
 return MainMenuState

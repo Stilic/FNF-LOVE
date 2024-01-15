@@ -53,7 +53,7 @@ function postCreate()
 				if n.prevNote.isSustain then
 					n.prevNote:play(Note.colors[n.prevNote.data + 1] .. "hold")
 					n.prevNote.scale.y = (n.prevNote.width / n.prevNote:getFrameWidth()) *
-						((PlayState.conductor.stepCrochet / 100) *
+						((PlayState.conductor.stepCrotchet / 100) *
 							(1.05 / 0.7)) * PlayState.SONG.speed
 					n.prevNote.scale.y = n.prevNote.scale.y * 5
 					n.prevNote.scale.y = n.prevNote.scale.y * (6 / n.height)

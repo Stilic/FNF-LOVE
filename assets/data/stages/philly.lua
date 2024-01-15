@@ -53,7 +53,7 @@ end
 
 function update(dt)
 	phillyWindow.alpha = phillyWindow.alpha -
-		(PlayState.conductor.crochet / 1000) * dt * 1.5
+		(PlayState.conductor.crotchet / 1000) * dt * 1.5
 
 	if trainMoving then
 		trainFrameTiming = trainFrameTiming + dt

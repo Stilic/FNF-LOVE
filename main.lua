@@ -9,34 +9,42 @@ require "loxel"
 Timer = require "lib.timer"
 Https = require "lib.https"
 
+if love.system.getOS() == "Windows" then
+	WindowDialogue = require "lib.windows.dialogue"
+	WindowUtil = require "lib.windows.util"
+end
+
 paths = require "funkin.paths"
 util = require "funkin.util"
 
+ClientPrefs = require "funkin.backend.clientprefs"
+Conductor = require "funkin.backend.conductor"
 Discord = require "funkin.backend.discord"
 Highscore = require "funkin.backend.highscore"
-ClientPrefs = require "funkin.backend.clientprefs"
+Mods = require "funkin.backend.mods"
 Script = require "funkin.backend.script"
 ScriptsHandler = require "funkin.backend.scriptshandler"
-Conductor = require "funkin.backend.conductor"
+Throttle = require "funkin.backend.throttle"
+
+HealthIcon = require "funkin.gameplay.ui.healthicon"
 Note = require "funkin.gameplay.ui.note"
 NoteSplash = require "funkin.gameplay.ui.notesplash"
 Receptor = require "funkin.gameplay.ui.receptor"
-Stage = require "funkin.gameplay.stage"
-Character = require "funkin.gameplay.character"
-MenuCharacter = require "funkin.ui.menucharacter"
-MenuItem = require "funkin.ui.menuitem"
-Alphabet = require "funkin.ui.alphabet"
-HealthIcon = require "funkin.gameplay.ui.healthicon"
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
+Character = require "funkin.gameplay.character"
+Stage = require "funkin.gameplay.stage"
 TankmenBG = require "funkin.gameplay.tankmenbg"
-ParallaxImage = require "loxel.effects.parallax"
-Mods = require "funkin.backend.mods"
-ModCard = require "funkin.ui.modcard"
 
-ModsState = require "funkin.states.mods"
+Alphabet = require "funkin.ui.alphabet"
+MenuCharacter = require "funkin.ui.menucharacter"
+MenuItem = require "funkin.ui.menuitem"
+ModCard = require "funkin.ui.modcard"
+Options = require "funkin.ui.options"
+
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
+ModsState = require "funkin.states.mods"
 StoryMenuState = require "funkin.states.storymenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
@@ -44,31 +52,69 @@ PlayState = require "funkin.states.play"
 ChartErrorSubstate = require "funkin.substates.charterror"
 GameOverSubstate = require "funkin.substates.gameover"
 
-OptionsState = require "funkin.states.options.options"
-
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
-if love.system.getOS() == "Windows" then
-	WindowDialogue = require "lib.windows.dialogue"
-	WindowUtil = require "lib.windows.util"
-end
-
 local SplashScreen = require "funkin.states.splash"
+
+if WindowUtil then
+	-- since love 12.0, windows no longer recreates for updateMode
+	if love._version_major < 12 then
+		local _ogUpdateMode = love.window.updateMode
+		local includes = {"x", "y", "centered"}
+		function love.window.updateMode(width, height, settings)
+			local nuh, f = false, love.window.getFullscreen()
+			if settings then
+				for i, v in pairs(settings) do
+					if not table.find(includes, i) and (i ~= "fullscreen" or v ~= f) then
+						nuh = true
+						break
+					end
+				end
+			end
+
+			if nuh then
+				local s = _ogUpdateMode(width, height, settings)
+				WindowUtil.setDarkMode(true)
+				return s
+			end
+
+			if f then return false end
+
+			local x, y, flags = love.window.getMode()
+			local centered = true
+			if settings and settings.centered ~= nil then centered = settings.centered end
+			if centered then
+				local width2, height2 = love.window.getDesktopDimensions(flags.display)
+				x, y = (width2 - width) / 2, (height2 - height) / 2
+			else
+				x, y = settings and settings.x or x, settings and settings.y or y
+			end
+
+			WindowUtil.setWindowPosition(x, y, width, height)
+
+			return true
+		end
+	end
+
+	local _ogSetMode = love.window.setMode
+	function love.window.setMode(...)
+		_ogSetMode(...)
+		WindowUtil.setDarkMode(true)
+	end
+end
 
 function love.load()
 	if WindowUtil then
-		WindowUtil.setDarkMode(Project.title, true)
+		WindowUtil.setDarkMode(true)
 	end
 
 	if Project.bgColor then
 		love.graphics.setBackgroundColor(Project.bgColor)
 	end
 
-	game.save.init('funkin')
 	ClientPrefs.loadData()
 	Mods.loadMods()
-
 	Highscore.load()
 
 	game.init(Project, SplashScreen)
@@ -90,36 +136,46 @@ function love.keyreleased(...)
 	game.keyreleased(...)
 end
 
+function love.wheelmoved(...) game.wheelmoved(...) end
+
+function love.mousemoved(...) game.mousemoved(...) end
+
+function love.mousepressed(...) game.mousepressed(...) end
+
+function love.mousereleased(...) game.mousereleased(...) end
+
+function love.touchmoved(...) game.touchmoved(...) end
+
+function love.touchpressed(...) game.touchpressed(...) end
+
+function love.touchreleased(...) game.touchreleased(...) end
+
 function love.textinput(text) game.textinput(text) end
-
-function love.wheelmoved(x, y) game.wheelmoved(x, y) end
-
-function love.mousemoved(x, y) game.mousemoved(x, y) end
-
-function love.mousepressed(x, y, button) game.mousepressed(x, y, button) end
-
-function love.mousereleased(x, y, button) game.mousereleased(x, y, button) end
-
-function love.touchmoved(id, x, y) game.touchmoved(id, x, y) end
-
-function love.touchpressed(id, x, y) game.touchpressed(id, x, y) end
-
-function love.touchreleased(id, x, y) game.touchreleased(id, x, y) end
 
 function love.update(dt)
 	controls:update()
 
+	Throttle:update(dt)
 	Timer.update(dt)
 	game.update(dt)
 
 	if love.system.getDevice() == "Desktop" then Discord.update() end
+	if controls:pressed("fullscreen") then love.window.setFullscreen(not love.window.getFullscreen()) end
 end
 
-function love.draw() game.draw() end
+function love.draw()
+	game.draw()
+end
 
 function love.focus(f) game.focus(f) end
 
+function love.fullscreen(f, t)
+	ClientPrefs.data.fullscreen = f
+	game.fullscreen(f)
+end
+
 function love.quit()
+	ClientPrefs.saveData()
 	game.quit()
 	Discord.shutdown()
 end

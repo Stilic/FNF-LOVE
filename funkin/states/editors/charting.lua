@@ -849,7 +849,7 @@ function ChartingState:strumPosUpdate()
 end
 
 function ChartingState:loadSong(song)
-	game.sound.loadMusic(paths.getInst(song), nil, false)
+	game.sound.loadMusic(paths.getInst(song))
 	ChartingState.conductor = Conductor(game.sound.music, self.__song.bpm)
 	ChartingState.conductor:mapBPMChanges(self.__song)
 	ChartingState.conductor.sound:setLooping(true)

@@ -122,6 +122,8 @@ function table.keys(list, includeIndices, keys)
 	return keys
 end
 
+function string.capitalize(self) return self:sub(1, 1):upper() .. self:sub(2) end
+
 function string.ext(self) return self:sub(1 - (self:reverse():find('%.') or 1)) end
 
 function string.hasExt(self)
@@ -197,6 +199,8 @@ function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
 
 function math.even(x) return x % 2 < 1 end -- 2, 4, etc
 
+function math.wrap(x, a, b) return ((x - a) % (b - a)) + a end
+
 function math.lerp(a, b, t) return a + (b - a) * t end
 
 function math.remapToRange(x, start1, stop1, start2, stop2)
@@ -238,6 +242,20 @@ function love.system.getDevice()
 		return "Desktop"
 	end
 	return "Unknown"
+end
+
+if love.system.getDevice() == "Desktop" then
+	function love.window.getMaxDesktopDimensions()
+		local xmax, ymax = 0, 0
+		for i = 1, love.window.getDisplayCount() do
+			local x, y = love.window.getDesktopDimensions(i)
+			if x > xmax then xmax = x end
+			if y > ymax then ymax = y end
+		end
+		return xmax, ymax
+	end
+else
+	love.window.getMaxDesktopDimensions = love.window.getDesktopDimensions
 end
 
 if --[[not love.markDeprecated actually this is better and]] debug then

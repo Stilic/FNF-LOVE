@@ -341,7 +341,7 @@ function Player:_releaseControls(names, source, type, ...)
 		control.pressed = false
 		control.released = true
 		control.debounce = true
-		for _, bind in pairs(control.pressBinds) do
+		for _, bind in pairs(control.releaseBinds) do
 			bind(...)
 		end
 	end

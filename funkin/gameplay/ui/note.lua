@@ -91,7 +91,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 			prevNote.isSustainEnd = false
 
 			prevNote.scale.y = (prevNote.width / prevNote:getFrameWidth()) *
-				((PlayState.conductor.stepCrochet / 100) *
+				((PlayState.conductor.stepCrotchet / 100) *
 					(1.05 / 0.7)) * PlayState.SONG.speed
 
 			if PlayState.pixelStage then

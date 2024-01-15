@@ -128,7 +128,7 @@ end
 
 function Character:beat(b)
 	if self.lastHit > 0 then
-		if self.lastHit + PlayState.conductor.stepCrochet * self.holdTime <
+		if self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime <
 			PlayState.conductor.time then
 			self:dance()
 			self.lastHit = 0

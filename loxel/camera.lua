@@ -5,6 +5,7 @@
 local Camera = Object:extend("Camera")
 
 local canvas
+local stencilSupport = false
 local canvasTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
@@ -12,6 +13,16 @@ Camera.__defaultCameras = {}
 function Camera.__init(canv)
 	canvas = canv
 	canvasTable[1] = canv
+
+	if love.graphics.getTextureFormats then
+		stencilSupport = love.graphics.getTextureFormats({canvas = true})["stencil8"]
+	else
+		local cv = love.graphics.getCanvas()
+		stencilSupport = pcall(love.graphics.setCanvas, canvasTable)
+		pcall(love.graphics.setCanvas, cv)
+	end
+
+	if not stencilSupport then Camera.draw = Camera.drawSimple end
 end
 
 function Camera:new(x, y, width, height)

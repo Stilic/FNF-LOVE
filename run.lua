@@ -1,3 +1,6 @@
+-- messy messy fucking codes
+-- read with caution
+
 local modes = {
 	minwidth = 160,
 	minheight = 90,
@@ -61,40 +64,95 @@ love.window.setIcon(love.image.newImageData(Project.icon))
 local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14) or
 	love.graphics.setNewFont(14)
 
-local fpsFormat = "FPS: %d\nRAM: %s | VRAM: %s\nDRAWS: %d\n%s | %s"
-local fpsParallelFormat = "FPS: %d | UPDATE: %d \nRAM: %s | VRAM: %s\nDRAWS: %d\n%s | %s"
+local combineFormat = "%s | %s"
+local fpsFormat, tpsFormat, inputsFormat = "FPS: %d", "TPS: %d", "Inputs: %.2fms"
+local debugFormat = "%s\nRAM: %s | VRAM: %s\n%s | %s\nDRAWS: %d"
 
+-- NOTE, no matter how precision is, in windows 10 as of now (<=love 11)
+-- will be always 500ms, unless its using SDL3 or CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag
 local __step__, __quit__, __count__, __left__ = "step", "quit", "count", "left"
-local real_fps = 0
+local real_dt, real_fps = 0, 0
+local sleep = love.timer.sleep
+local channel_event = love.thread.getChannel("event")
+local channel_event_active = love.thread.getChannel("event_active")
+local channel_event_tick = love.thread.getChannel("event_tick")
+local thread_event_code, thread_event = [[
+require("love.event"); require("love.timer")
+
+local pump, poll = love.event.pump, love.event.poll
+local getTime, sleep = love.timer.getTime, love.timer.sleep
+local channel = love.thread.getChannel("event")
+local active = love.thread.getChannel("event_active")
+local tick = love.thread.getChannel("event_tick")
+
+local s, clock, prev, v = 0, os.clock()
+while s < 1 do
+	v = active:pop()
+	if v == 0 then break elseif v == 1 then s = 0 end
+
+	pcall(pump)
+	prev, clock = clock, getTime()
+	for name, a, b, c, d, e, f in poll() do
+		channel:push({clock, name, a, b, c, d, e, f})
+	end
+
+	v = clock - prev
+	tick:clear()
+	tick:push(v)
+
+	s = s + v
+	if v < 0.001 then sleep(0.001)
+	else sleep(0.001 - v) end
+end
+]]
+
+local eventhandlers = {
+	keypressed = function(t,b,s,r)return love.keypressed(b,s,r,t) end,
+	keyreleased = function(t,b,s)return love.keyreleased(b,s,t) end,
+	touchpressed = function(t,id,x,y,dx,dy,p) return love.touchpressed(id,x,y,dx,dy,p,t) end,
+	touchreleased = function(t,id,x,y,dx,dy,p) return love.touchreleased(id,x,y,dx,dy,p,t) end,
+	joystickpressed = function(t,j,b) if love.joystickpressed then return love.joystickpressed(j,b,t) end end,
+	joystickreleased = function(t,j,b) if love.joystickreleased then return love.joystickreleased(j,b,t) end end,
+	gamepadpressed = function(t,j,b) if love.gamepadpressed then return love.gamepadpressed(j,b,t) end end,
+	gamepadreleased = function(t,j,b) if love.gamepadreleased then return love.gamepadreleased(j,b,t) end end,
+}
 function love.run()
 	local _, _, modes = love.window.getMode()
 	love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 60), 8
 	love.showFPS = false
 	love.autoPause = flags.InitialAutoFocus
 	love.parallelUpdate = flags.InitialParallelUpdate
+	love.asyncInput = flags.InitialAsyncInput
+
+	thread_event = love.thread.newThread(thread_event_code)
 
 	if love.math then love.math.setRandomSeed(os.time()) end
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
 	love.timer.step()
-
-	collectgarbage()
 	collectgarbage()
 
-	local _stats, _update, _fps, _ram, _vram, _text
+	local _stats, _ram, _vram, _text
 	local rname, rversion, rvendor, rdevice = love.graphics.getRendererInfo()
+	local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
+
 	local function draw()
 		love.graphics.origin()
 		love.graphics.clear(love.graphics.getBackgroundColor())
-		love.draw()
+		love.draw(timeSinceLastFps)
 
 		if love.showFPS then
-			_stats, _update = love.graphics.getStats(), love.timer.getUpdateFPS()
-			_fps = math.min(love.parallelUpdate and real_fps or _update, love.FPScap)
+			_text = fpsFormat:format(math.min(love.timer.getFPS(), love.FPScap))
+			if love.parallelUpdate then
+				_text = combineFormat:format(_text, tpsFormat:format(love.timer.getTPS()))
+			end
+			if love.asyncInput then
+				_text = combineFormat:format(_text, inputsFormat:format(love.timer.getInput() * 1e4))
+			end
+
+			_stats = love.graphics.getStats()
 			_ram, _vram = math.countbytes(collectgarbage(__count__) * 0x400), math.countbytes(_stats.texturememory)
-			_text = love.parallelUpdate and
-				fpsParallelFormat:format(_fps, _update, _ram, _vram, _stats.drawcalls, rname, rdevice) or
-				fpsFormat:format(_fps, _ram, _vram, _stats.drawcalls, rname, rdevice)
+			_text = debugFormat:format(_text, _ram, _vram, rname, rdevice, _stats.drawcalls)
 
 			love.graphics.setColor(0, 0, 0, 0.5)
 			love.graphics.printf(_text, consolas, 8, 8, 300, __left__, 0)
@@ -106,30 +164,55 @@ function love.run()
 	end
 
 	local polledEvents, _defaultEvents = {}, {}
-	local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
-	local firstTime, fullGC, focused, dt, real_dt, lowfps = true, true, false, 0
+	local firstTime, fullGC, focused, dt, lowfps = true, true, false, 0
 	local nextclock, clock, cap = 0, 0, 0
 
-	return function ()
-		love.event.pump()
+	local function event(time, name, a, b, c, d, e, f)
+		if name == __quit__ and not love.quit() then
+			channel_event_active:push(0)
+			return a or 0, b
+		end
+		_defaultEvents[name], polledEvents[name] = false, true
+		if eventhandlers[name] then eventhandlers[name](time, a, b, c, d, e, f)
+		else love.handlers[name](a, b, c, d, e, f) end
+		--[[
+		if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
+			love.handlers["touch"..name:sub(6)](0, a, b, c)
+		end
+		]]
+	end
+
+	return function()
 		table.merge(polledEvents, _defaultEvents)
+		if thread_event:isRunning() then
+			channel_event_active:clear()
+			channel_event_active:push(1)
+
+			local a, b = channel_event:pop()
+			while a do
+				a, b = event(unpack(a))
+				if a then return a, b end
+				a = channel_event:pop()
+			end
+
+			if not love.asyncInput then channel_event_active:push(0) end
+		elseif love.asyncInput then
+			thread_event:start()
+			channel_event:clear()
+			channel_event_active:clear()
+		end
+
+		love.event.pump()
+		clock = love.timer.getTime()
 		for name, a, b, c, d, e, f in love.event.poll() do
-			if name == __quit__ and not love.quit() then
-				return a or 0
-			end
-			_defaultEvents[name], polledEvents[name] = false, true
-			love.handlers[name](a, b, c, d, e, f)
-			--[[
-			if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
-				love.handlers["touch"..name:sub(6)](0, a, b, c)
-			end
-			]]
+			a, b = event(clock, name, a, b, c, d, e, f)
+			if a then return a, b end
 		end
 
 		real_dt = love.timer.step()
 		lowfps = real_dt - dt > 0.04
 		if not polledEvents.lowmemory and ((fullGC and not focused) or lowfps) then
-			love.handlers.lowmemory()
+			collectgarbage()
 			dt, fullGC = lowfps and dt + 0.04 or real_dt, false
 		else
 			dt, fullGC = real_dt, true
@@ -142,7 +225,6 @@ function love.run()
 			love.update(dt)
 			if love.graphics.isActive() then
 				if love.parallelUpdate then
-					clock = love.timer.getTime()
 					if clock + real_dt > nextclock then
 						draw()
 						nextclock = cap + clock
@@ -153,6 +235,7 @@ function love.run()
 						end
 					end
 				else
+					timeSinceLastFps = real_dt
 					draw()
 				end
 			end
@@ -161,30 +244,38 @@ function love.run()
 		collectgarbage(__step__)
 
 		if not love.parallelUpdate or not focused then
-			love.timer.sleep(cap - real_dt)
-		else
-			if real_dt < 0.001 then
-				love.timer.sleep(0.001)
-			end
+			sleep(cap - real_dt)
+		elseif real_dt < 0.001 then
+			sleep(0.001)
 		end
 		firstTime = false
 	end
 end
 
-local _ogGetFPS = love.timer.getFPS
-
----@return number -- Returns the current draws FPS.
-function love.timer.getDrawFPS()
-	return game.parallelUpdate and real_fps or _ogGetFPS()
+function love.handlers.fullscreen(f, t)
+	love.fullscreen(f, t)
 end
 
----@return number -- Returns the current updates FPS.
-love.timer.getUpdateFPS = _ogGetFPS
+local _ogGetFPS = love.timer.getFPS
 
 ---@return number -- Returns the current frames per second.
-love.timer.getFPS = love.timer.getDrawFPS
+function love.timer.getFPS()
+	return love.parallelUpdate and real_fps or _ogGetFPS()
+end
+
+---@return number -- Returns the current ticks per second.
+love.timer.getTPS = _ogGetFPS
+
+---@return number -- Returns the current input in second.
+function love.timer.getInput()
+	if not love.asyncInput then return real_dt end
+	local ips = channel_event_tick:peek()
+	if not ips or ips > real_dt then return real_dt end
+	return ips
+end
 
 -- fix a bug where love.window.hasFocus doesnt return the actual focus in Mobiles
+local _ogSetFullscreen = love.window.setFullscreen
 if OS == "Android" or OS == "IOS" then
 	local _f = true
 	function love.window.hasFocus()
@@ -195,6 +286,18 @@ if OS == "Android" or OS == "IOS" then
 		_f = f
 		if love.focus then return love.focus(f) end
 	end
+
+	function love.window.setFullscreen()
+		return false
+	end
+else
+	function love.window.setFullscreen(f, t)
+		if _ogSetFullscreen(f, t) then
+			love.handlers.fullscreen(f, t)
+			return true
+		end
+		return false
+	end
 end
 
 local function error_printer(msg, layer)
@@ -204,6 +307,9 @@ end
 local og = love.errorhandler or love.errhand
 
 function love.errorhandler(msg)
+	if channel_event_active then channel_event_active:push(0) end
+	pcall(love.quit)
+
 	if paths == nil then
 		love.errorhandler = og
 		love.errhand = og
@@ -215,9 +321,7 @@ function love.errorhandler(msg)
 	msg = tostring(msg)
 	error_printer(msg, 2)
 
-	if not love.window or not love.graphics or not love.event then
-		return
-	end
+	if not love.window or not love.graphics or not love.event then return end
 
 	if not love.graphics.isCreated() or not love.window.isOpen() then
 		local success, status = pcall(love.window.setMode, 800, 600)
@@ -249,6 +353,11 @@ function love.errorhandler(msg)
 	local p = table.concat(err, "\n"):gsub("\t", ""):gsub("%[string \"(.-)\"%]", "%1")
 	local fullErrorText = p
 
+	love.graphics.reset()
+	love.graphics.setCanvas()
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.origin()
+
 	if love.mouse then
 		love.mouse.setVisible(true)
 		love.mouse.setGrabbed(false)
@@ -261,6 +370,7 @@ function love.errorhandler(msg)
 		end
 	end
 	if love.window then
+		_ogSetFullscreen(false)
 		love.window.setDisplaySleepEnabled(true)
 	end
 	if love.audio then love.audio.stop() end
@@ -268,10 +378,6 @@ function love.errorhandler(msg)
 
 	collectgarbage()
 	collectgarbage()
-
-	love.graphics.reset()
-	love.graphics.setColor(1, 1, 1)
-	love.graphics.origin()
 
 	if love.system then
 		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
@@ -336,11 +442,12 @@ function love.errorhandler(msg)
 		draw()
 	end
 
-	local eventhandlers = {
-		quit = function ()
+	eventhandlers = {
+		quit = function()
 			return 1
 		end,
 		keypressed = function (key)
+			if key == "escape" then return 1 end
 			if not love.keyboard.isDown("lctrl", "rctrl") then return end
 			if love.system and key == "c" then
 				copyToClipboard()
@@ -403,7 +510,7 @@ function love.errorhandler(msg)
 
 			done = true
 			collectgarbage(__step__)
-			love.timer.sleep(0.1)
+			sleep(0.1)
 		end
 	end
 

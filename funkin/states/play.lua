@@ -38,8 +38,6 @@ PlayState.prevCamFollow = nil
 PlayState.chartingMode = false
 PlayState.startPos = 0
 
-function PlayState.sortByShit(a, b) return a.time < b.time end
-
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
 
@@ -86,41 +84,21 @@ function PlayState:enter()
 	if PlayState.SONG == nil then PlayState.loadSong("test") end
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
+	PlayState.conductor = Conductor():setSong(PlayState.SONG)
+	PlayState.conductor.onStep = function(s) self:step(s) end
+	PlayState.conductor.onBeat = function(b) self:beat(b) end
+	PlayState.conductor.onSection = function(s) self:section(s) end
+
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts")
 	self.scripts:loadDirectory("data/scripts/" .. songName)
 	self.scripts:loadDirectory("songs/" .. songName)
 	self.scripts:call("create")
 
-	local curSection = 0
-	local stepsToDo = 0
-	game.sound.loadMusic(paths.getInst(songName), nil, false)
-	game.sound.music.onComplete = function () self:endSong() end
-	PlayState.conductor = Conductor(game.sound.music, PlayState.SONG.bpm)
-	PlayState.conductor:mapBPMChanges(PlayState.SONG)
-	PlayState.conductor.currentSection = 0
-	PlayState.conductor.onStep = function (s)
-		self:step(s)
+	game.sound.loadMusic(paths.getInst(songName))
+	game.sound.music:setLooping(false)
+	game.sound.music.onComplete = function() self:endSong() end
 
-		local section = PlayState.SONG.notes[curSection + 1]
-		local beats = 4
-		if section and section.sectionBeats then
-			beats = section.sectionBeats
-		end
-
-		if stepsToDo < 1 then stepsToDo = math.round(beats * 4) end
-		while s >= stepsToDo do
-			curSection = curSection + 1
-			PlayState.conductor.currentSection = curSection
-			section = PlayState.SONG.notes[curSection + 1]
-			if section and section.sectionBeats then
-				beats = section.sectionBeats
-			end
-			stepsToDo = stepsToDo + math.round(beats * 4)
-			self:section(curSection)
-		end
-	end
-	PlayState.conductor.onBeat = function (b) self:beat(b) end
 	if PlayState.SONG.needsVoices then
 		self.vocals = Sound():load(paths.getVoices(songName))
 		game.sound.list:add(self.vocals)
@@ -178,9 +156,6 @@ function PlayState:enter()
 
 	for _, s in ipairs(PlayState.SONG.notes) do
 		if s and s.sectionNotes then
-			if s.changeBPM and s.bpm ~= nil and s.bpm ~= PlayState.conductor.bpm then
-				PlayState.conductor:setBPM(s.bpm)
-			end
 			for _, n in ipairs(s.sectionNotes) do
 				local daStrumTime = tonumber(n[1])
 				local daNoteData = tonumber(n[2])
@@ -206,9 +181,7 @@ function PlayState:enter()
 					if n[3] ~= nil then
 						local susLength = tonumber(n[3])
 						if susLength ~= nil and susLength > 0 then
-							susLength = math.round(susLength /
-								PlayState.conductor
-								.stepCrochet)
+							susLength = math.round(susLength / PlayState.conductor.stepCrotchet)
 							if susLength > 0 then
 								for susNote = 0, math.max(susLength - 1, 1) do
 									oldNote =
@@ -216,7 +189,7 @@ function PlayState:enter()
 
 									local sustain = Note(daStrumTime +
 										PlayState.conductor
-										.stepCrochet *
+										.stepCrotchet *
 										(susNote + 1),
 										daNoteData, oldNote,
 										true, note)
@@ -235,13 +208,10 @@ function PlayState:enter()
 			end
 		end
 	end
-	if PlayState.conductor.bpm ~= PlayState.SONG.bpm then
-		PlayState.conductor:setBPM(PlayState.SONG.bpm)
-	end
 
-	table.sort(self.unspawnNotes, PlayState.sortByShit)
+	table.sort(self.unspawnNotes, Conductor.sortByTime)
 
-	PlayState.notePosition = self.startPos - (PlayState.conductor.crochet * 5)
+	PlayState.conductor.time = self.startPos - (PlayState.conductor.crotchet * 5)
 
 	self.score = 0
 	self.combo = 0
@@ -463,6 +433,8 @@ function PlayState:enter()
 		self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt, self.botplayTxt
 	}) do o.cameras = {self.camHUD} end
 
+	self.lastTick = love.timer.getTime()
+
 	self.bindedKeyPress = function (...) self:onKeyPress(...) end
 	controls:bindPress(self.bindedKeyPress)
 
@@ -474,7 +446,7 @@ function PlayState:enter()
 	self.countdownTimer = Timer.new()
 	self.startedCountdown = false
 
-	if self.storyMode and not self.seenCutscene then
+	if self.storyMode and not PlayState.seenCutscene then
 		PlayState.seenCutscene = true
 
 		local fileExist = paths.exists(paths.getMods('data/cutscenes/' .. songName .. '.lua'), 'file') or
@@ -507,8 +479,8 @@ function PlayState:enter()
 	end
 
 	self.scripts:set("bpm", PlayState.conductor.bpm)
-	self.scripts:set("crochet", PlayState.conductor.crochet)
-	self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
+	self.scripts:set("crotchet", PlayState.conductor.crotchet)
+	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
 
 	self.scripts:call("postCreate")
 end
@@ -532,9 +504,9 @@ function PlayState:startCountdown()
 			{sound = basePath .. "/introGo", image = basePath .. "/go"}
 		}
 
-		local crochet = PlayState.conductor.crochet / 1000
+		local crotchet = PlayState.conductor.crotchet / 1000
 		for swagCounter = 0, 4 do
-			self.countdownTimer:after(crochet * (swagCounter + 1), function ()
+			self.countdownTimer:after(crotchet * (swagCounter + 1), function ()
 				local data = countdownData[swagCounter + 1]
 				if data then
 					if data.sound then
@@ -551,7 +523,7 @@ function PlayState:startCountdown()
 						countdownSprite.antialiasing = not PlayState.pixelStage
 						countdownSprite:screenCenter()
 
-						Timer.tween(crochet, countdownSprite, {alpha = 0},
+						Timer.tween(crotchet, countdownSprite, {alpha = 0},
 							"in-out-cubic", function ()
 								self:remove(countdownSprite)
 								countdownSprite:destroy()
@@ -578,21 +550,22 @@ local function fadeGroupSprites(obj)
 end
 
 function PlayState:update(dt)
+	self.lastTick = love.timer.getTime()
+
 	self.scripts:call("update", dt)
 
 	self.countdownTimer:update(dt)
 
 	if self.startedCountdown then
-		PlayState.notePosition = PlayState.notePosition + 1000 * dt
-		if self.startingSong and PlayState.notePosition >= self.startPos then
+		PlayState.conductor.time = PlayState.conductor.time + dt * 1000 * game.sound.music:getActualPitch()
+		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
-			PlayState.conductor.sound:seek(self.startPos / 1000)
-			PlayState.conductor.sound:play()
+			game.sound.music:seek(self.startPos / 1000)
+			game.sound.music:play()
 			if self.vocals then
-				self.vocals.__source:seek(PlayState.conductor.sound:tell())
+				self.vocals:seek(game.sound.music:tell())
 				self.vocals:play()
 			end
-			PlayState.notePosition = PlayState.conductor.time
 			self.scripts:call("songStart")
 
 			if not self.startingSong and love.system.getDevice() == "Desktop" then
@@ -601,7 +574,7 @@ function PlayState:update(dt)
 
 				local startTimestamp = os.time(os.date("*t"))
 				local endTimestamp = startTimestamp +
-					PlayState.conductor.sound:getDuration()
+					game.sound.music:getDuration()
 
 				local diff = PlayState.defaultDifficulty
 				if PlayState.songDifficulty ~= "" then
@@ -618,9 +591,10 @@ function PlayState:update(dt)
 		end
 	end
 
-	PlayState.super.update(self, dt)
+	PlayState.notePosition = PlayState.conductor.time
 
 	PlayState.conductor:update()
+	PlayState.super.update(self, dt)
 
 	game.camera.target.x, game.camera.target.y =
 		util.coolLerp(game.camera.target.x, self.camFollow.x,
@@ -652,14 +626,14 @@ function PlayState:update(dt)
 	local songTime = PlayState.conductor.time / 1000
 
 	if ClientPrefs.data.timeType == "left" then
-		songTime = PlayState.conductor.sound:getDuration() - songTime
+		songTime = game.sound.music:getDuration() - songTime
 	end
 
 	self.timeTxt.content = util.getFormattedTime(songTime)
 
 	self.timeArc.x = self.timeArcBG.x
 	local timeAngle = ((PlayState.conductor.time / 1000) /
-			(PlayState.conductor.sound:getDuration() / 1000)) *
+			(game.sound.music:getDuration() / 1000)) *
 		0.36
 	self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
 
@@ -677,7 +651,7 @@ function PlayState:update(dt)
 		if PAUSE_PRESSED then
 			local event = self.scripts:call("paused")
 			if not event.cancelled then
-				PlayState.conductor.sound:pause()
+				game.sound.music:pause()
 				if self.vocals then self.vocals:pause() end
 
 				self.paused = true
@@ -708,12 +682,12 @@ function PlayState:update(dt)
 			end
 		end
 		if controls:pressed("debug_1") then
-			PlayState.conductor.sound:pause()
+			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 			game.switchState(ChartingState())
 		end
 		if controls:pressed("debug_2") then
-			PlayState.conductor.sound:pause()
+			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 			CharacterEditor.onPlayState = true
 			game.switchState(CharacterEditor())
@@ -724,7 +698,7 @@ function PlayState:update(dt)
 	if self.health <= 0 and not self.isDead then
 		self.paused = true
 
-		PlayState.conductor.sound:pause()
+		game.sound.music:pause()
 		if self.vocals then self.vocals:pause() end
 
 		if love.system.getDevice() == 'Desktop' then
@@ -774,9 +748,11 @@ function PlayState:update(dt)
 		end
 	end
 
-	local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
-	local ogStepCrochet = ogCrochet / 4
-	for _, n in ipairs(self.allNotes.members) do
+	local n
+	for i = 1, #self.allNotes.members do
+		n = self.allNotes.members[i]
+		if n == nil then break end
+
 		if not self.startingSong and not n.tooLate and
 			not n.ignoreNote and ((not n.mustPress or self.botPlay) and
 				(not n.isSustain or not n.parentNote or n.parentNote.wasGoodHit) and
@@ -786,60 +762,7 @@ function PlayState:update(dt)
 			self:goodNoteHit(n)
 		end
 
-		local time = n.time
-		if n.isSustain and PlayState.SONG.speed ~= 1 then
-			time = time - ogStepCrochet + ogStepCrochet / PlayState.SONG.speed
-		end
-
-		local r =
-			(n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data +
-			1]
-		local sy = r.y + n.scrollOffset.y
-
-		n.x = r.x + n.scrollOffset.x
-		n.y = sy - (PlayState.notePosition - time) *
-			(0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
-
-		if n.isSustain then
-			n.flipY = self.downScroll
-			if n.flipY then
-				if n.isSustainEnd then
-					n.y = n.y + (43.5 * 0.7) *
-						(PlayState.conductor.stepCrochet / 100 * 1.5 *
-							PlayState.SONG.speed) - n.height
-				end
-				n.y = n.y + Note.swagWidth / 2 - 60.5 *
-					(PlayState.SONG.speed - 1) + 27.5 *
-					(PlayState.SONG.bpm / 100 - 1) *
-					(PlayState.SONG.speed - 1)
-			else
-				n.y = n.y + Note.swagWidth / 12
-			end
-
-			if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-				(not n.mustPress or self.botPlay or self.keysPressed[n.data] or
-					n.isSustainEnd) then
-				local center = sy + Note.swagWidth / 2
-				local vert = center - n.y
-				if self.downScroll then
-					if n.y - n.offset.y + n:getFrameHeight() * n.scale.y >=
-						center then
-						if not n.clipRect then
-							n.clipRect = {}
-						end
-						n.clipRect.x, n.clipRect.y = 0, 0
-						n.clipRect.width, n.clipRect.height =
-							n:getFrameWidth() * n.scale.x, vert
-					end
-				elseif n.y + n.offset.y <= center then
-					if not n.clipRect then n.clipRect = {} end
-					n.clipRect.x, n.clipRect.y = 0, vert
-					n.clipRect.width, n.clipRect.height =
-						n:getFrameWidth() * n.scale.x,
-						n:getFrameHeight() * n.scale.y - vert
-				end
-			end
-		end
+		self:updateNote(n)
 
 		if PlayState.notePosition > 350 / PlayState.SONG.speed + n.time then
 			if not n.ignoreNote and n.mustPress and not n.wasGoodHit and
@@ -869,7 +792,7 @@ function PlayState:update(dt)
 
 				if self.gf.__animations['sad'] then
 					self.gf:playAnim('sad', true)
-					self.gf.lastHit = math.floor(PlayState.conductor.time)
+					self.gf.lastHit = PlayState.conductor.time
 				end
 				self:popUpScore()
 			end
@@ -884,6 +807,63 @@ function PlayState:update(dt)
 	end
 
 	self.scripts:call("postUpdate", dt)
+end
+
+-- Notes need a rework, which im doing but gets disturbed with everything else first instead
+--- ralty
+function PlayState:updateNote(n)
+	local ogCrotchet = (60 / PlayState.SONG.bpm) * 1000
+	local ogStepCrotchet, time = ogCrotchet / 4, n.time
+	if n.isSustain and PlayState.SONG.speed ~= 1 then
+		time = time - ogStepCrotchet + ogStepCrotchet / PlayState.SONG.speed
+	end
+
+	local r = (n.mustPress and self.playerReceptors or self.enemyReceptors).members[n.data + 1]
+	local sy = r.y + n.scrollOffset.y
+
+	n.x = r.x + n.scrollOffset.x
+	n.y = sy - (PlayState.notePosition - time) *
+		(0.45 * PlayState.SONG.speed) * (self.downScroll and -1 or 1)
+
+	if n.isSustain then
+		n.flipY = self.downScroll
+		if n.flipY then
+			if n.isSustainEnd then
+				n.y = n.y + (43.5 * 0.7) * (PlayState.conductor.stepCrotchet / 100 * 1.5 *
+					PlayState.SONG.speed) - n.height
+			end
+			n.y = n.y + Note.swagWidth / 2 - 60.5 * (PlayState.SONG.speed - 1) + 27.5 *
+				(PlayState.SONG.bpm / 100 - 1) * (PlayState.SONG.speed - 1)
+		else
+			n.y = n.y + Note.swagWidth / 12
+		end
+
+		if (n.wasGoodHit or n.prevNote.wasGoodHit) and
+			(not n.mustPress or self.botPlay or self.keysPressed[n.data] or n.isSustainEnd)
+		then
+			local center = sy + Note.swagWidth / 2
+			local vert = center - n.y
+			if self.downScroll then
+				if n.y - n.offset.y + n:getFrameHeight() * n.scale.y >= center then
+					if not n.clipRect then n.clipRect = {} end
+					n.clipRect.x, n.clipRect.y = 0, 0
+					n.clipRect.width, n.clipRect.height = n:getFrameWidth() * n.scale.x, vert
+				end
+			elseif n.y + n.offset.y <= center then
+				if not n.clipRect then n.clipRect = {} end
+				n.clipRect.x, n.clipRect.y = 0, vert
+				n.clipRect.width, n.clipRect.height =
+					n:getFrameWidth() * n.scale.x,
+					n:getFrameHeight() * n.scale.y - vert
+			end
+		end
+	end
+end
+
+function PlayState:updateNotes()
+	for i = 1, #self.allNotes.members do
+		self:updateNote(self.allNotes.members[i])
+	end
 end
 
 function PlayState:cameraMovement()
@@ -920,10 +900,10 @@ function PlayState:cameraMovement()
 
 	if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
 		if section.mustHitSection then
-			Timer.tween((self.conductor.stepCrochet * 4 / 1000),
+			Timer.tween((self.conductor.stepCrotchet * 4 / 1000),
 				game.camera, {zoom = 1}, 'in-out-elastic')
 		else
-			Timer.tween((self.conductor.stepCrochet * 4 / 1000),
+			Timer.tween((self.conductor.stepCrotchet * 4 / 1000),
 				game.camera, {zoom = 1.3}, 'in-out-elastic')
 		end
 	end
@@ -939,9 +919,9 @@ function PlayState:closeSubstate()
 	PlayState.super.closeSubstate(self)
 	if not self.startingSong then
 		if self.vocals and not self.startingSong then
-			self.vocals:seek(PlayState.conductor.sound:tell())
+			self.vocals:seek(game.sound.music:tell())
 		end
-		PlayState.conductor.sound:play()
+		game.sound.music:play()
 		if self.vocals then self.vocals:play() end
 
 		if love.system.getDevice() == 'Desktop' then
@@ -950,8 +930,8 @@ function PlayState:closeSubstate()
 
 			local startTimestamp = os.time(os.date("*t"))
 			local endTimestamp = startTimestamp +
-				PlayState.conductor.sound:getDuration()
-			endTimestamp = endTimestamp - PlayState.notePosition / 1000
+				game.sound.music:getDuration()
+			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
 
 			local diff = PlayState.defaultDifficulty
 			if PlayState.songDifficulty ~= "" then
@@ -981,12 +961,12 @@ function PlayState:onSettingChange(setting)
 
 		local songTime = PlayState.conductor.time / 1000
 		if ClientPrefs.data.timeType == "left" then
-			songTime = PlayState.conductor.sound:getDuration() - songTime
+			songTime = game.sound.music:getDuration() - songTime
 		end
 		self.timeTxt.content = util.getFormattedTime(songTime)
 
 		self.botplayTxt.visible = self.botPlay
-		self.botplayTxt.y = (self.downScroll and 8 or 688)
+		self.botplayTxt.y = self.downScroll and 8 or 688
 
 		local rx, ry = game.width / 2, 50
 		if self.downScroll then ry = game.height - 100 - ry end
@@ -1003,7 +983,7 @@ function PlayState:onSettingChange(setting)
 			end
 		end
 
-		self.healthBarBG.y = (self.downScroll and game.height * 0.08 or game.height * 0.9)
+		self.healthBarBG.y = self.downScroll and game.height * 0.08 or game.height * 0.9
 		self.healthBar.y = self.healthBarBG.y + 4
 
 		self.iconP1.y = self.healthBar.y - 75
@@ -1013,90 +993,33 @@ function PlayState:onSettingChange(setting)
 		if self.downScroll then textOffset = -textOffset end
 		self.scoreTxt.y = self.healthBarBG.y + textOffset
 
-		self.timeArcBG.y = (self.downScroll and 45 or game.height - 45)
+		self.timeArcBG.y = self.downScroll and 45 or game.height - 45
 		self.timeArc.y = self.timeArcBG.y
-		self.timeTxt.y = (self.downScroll and self.timeArcBG.y - 32 or
-			self.timeArcBG.y + 7)
+		self.timeTxt.y = self.downScroll and self.timeArcBG.y - 32 or self.timeArcBG.y + 7
 
+		local n
 		for i = 1, #self.unspawnNotes do
-			self.unspawnNotes[i].visible = true
-			if self.middleScroll and not self.unspawnNotes[i].mustPress then
-				self.unspawnNotes[i].visible = false
-			end
+			n =  self.unspawnNotes[i]
+			n.visible = not self.middleScroll or n.mustPress
 		end
 
-		local ogCrochet = (60 / PlayState.SONG.bpm) * 1000
-		local ogStepCrochet = ogCrochet / 4
-		for _, n in ipairs(self.allNotes.members) do
-			local time = n.time
-			if n.isSustain and PlayState.SONG.speed ~= 1 then
-				time = time - ogStepCrochet + ogStepCrochet / PlayState.SONG.speed
-			end
-
-			local r = (n.mustPress and self.playerReceptors or self.enemyReceptors)
-				.members[n.data + 1]
-			local sy = r.y + n.scrollOffset.y
-
-			n.x = r.x + n.scrollOffset.x
-			n.y = sy - (PlayState.notePosition - time) *
-				(0.45 * PlayState.SONG.speed) *
-				(self.downScroll and -1 or 1)
-			n.visible = true
-			if self.middleScroll and not n.mustPress then
-				n.visible = false
-			end
-
-			if n.isSustain then
-				n.flipY = self.downScroll
-				if n.flipY then
-					if n.isSustainEnd then
-						n.y = n.y + (43.5 * 0.7) *
-							(PlayState.conductor.stepCrochet / 100 * 1.5 *
-								PlayState.SONG.speed) - n.height
-					end
-					n.y = n.y + Note.swagWidth / 2 - 60.5 *
-						(PlayState.SONG.speed - 1) + 27.5 *
-						(PlayState.SONG.bpm / 100 - 1) *
-						(PlayState.SONG.speed - 1)
-				else
-					n.y = n.y + Note.swagWidth / 12
-				end
-
-				if (n.wasGoodHit or n.prevNote.wasGoodHit) and
-					(not n.mustPress or self.botPlay or self.keysPressed[n.data] or
-						n.isSustainEnd) then
-					local center = sy + Note.swagWidth / 2
-					local vert = center - n.y
-					if self.downScroll then
-						if n.y - n.offset.y + n:getFrameHeight() * n.scale.y >=
-							center then
-							if not n.clipRect then
-								n.clipRect = {}
-							end
-							n.clipRect.x, n.clipRect.y = 0, 0
-							n.clipRect.width, n.clipRect.height =
-								n:getFrameWidth() * n.scale.x, vert
-						end
-					elseif n.y + n.offset.y <= center then
-						if not n.clipRect then n.clipRect = {} end
-						n.clipRect.x, n.clipRect.y = 0, vert
-						n.clipRect.width, n.clipRect.height =
-							n:getFrameWidth() * n.scale.x,
-							n:getFrameHeight() * n.scale.y - vert
-					end
-				end
-			end
+		for i = 1, #self.allNotes.members do
+			n =  self.allNotes.members[i]
+			n.visible = not self.middleScroll or n.mustPress
 		end
+
+		self:updateNotes()
 	elseif setting == 'controls' then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
 
-		self.bindedKeyPress = function (...) self:onKeyPress(...) end
+		self.bindedKeyPress = function(...) self:onKeyPress(...) end
 		controls:bindPress(self.bindedKeyPress)
 
-		self.bindedKeyRelease = function (...) self:onKeyRelease(...) end
+		self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
 		controls:bindRelease(self.bindedKeyRelease)
 	end
+
 	self.scripts:call("onSettingChange", setting)
 end
 
@@ -1109,66 +1032,68 @@ function PlayState:getKeyFromEvent(controls)
 	return -1
 end
 
-function PlayState:onKeyPress(key, type)
-	if not self.botPlay and (not self.substate or self.persistentUpdate) then
-		local controls = controls:getControlsFromSource(type .. ":" .. key)
-		if not controls then return end
-		key = self:getKeyFromEvent(controls)
-		if key >= 0 then
-			self.keysPressed[key] = true
+function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
+	if self.botPlay or (self.substate and not self.persistentUpdate) then return end
+	local controls = controls:getControlsFromSource(type .. ":" .. key)
 
-			if not self.startingSong then
-				local noteList = {}
+	if not controls then return end
+	key = self:getKeyFromEvent(controls)
 
-				for _, n in ipairs(self.notesGroup.members) do
-					if n.mustPress and not n.isSustain and not n.tooLate and
-						not n.wasGoodHit then
-						if not n.canBeHit and
-							n:checkDiff(PlayState.conductor.time) then
-							n:update(0)
-						end
-						if n.canBeHit and n.data == key then
-							table.insert(noteList, n)
-						end
-					end
-				end
+	if key < 0 then return end
+	self.keysPressed[key] = true
 
-				if #noteList > 0 then
-					table.sort(noteList, PlayState.sortByShit)
-					local coolNote = table.remove(noteList, 1)
+	-- the most closest thing possible to sub-precision ms
+	local prev = PlayState.conductor.time
+	local time = prev + (time - self.lastTick) * game.sound.music:getActualPitch()
+	PlayState.conductor.time = time
 
-					for _, n in pairs(noteList) do
-						if n.time - coolNote.time < 2 then
-							self:removeNote(n)
-						end
-					end
-
-					self:goodNoteHit(coolNote)
-				end
+	local noteList = {}
+	for _, n in ipairs(self.notesGroup.members) do
+		if n.mustPress and not n.isSustain and not n.tooLate and not n.wasGoodHit then
+			if not n.canBeHit and n:checkDiff(PlayState.conductor.time) then
+				n:update(0)
 			end
-
-			local r = self.playerReceptors.members[key + 1]
-			if r and r.curAnim.name ~= "confirm" then
-				r:play("pressed")
+			if n.canBeHit and n.data == key then
+				table.insert(noteList, n)
 			end
 		end
+	end
+
+	if #noteList > 0 then
+		table.sort(noteList, Conductor.sortByTime)
+		local coolNote = table.remove(noteList, 1)
+
+		for _, n in pairs(noteList) do
+			if n.time - coolNote.time <= 1 then
+				self:goodNoteHit(n)
+			end
+		end
+
+		self:goodNoteHit(coolNote)
+	end
+
+	PlayState.conductor.time = prev
+
+	local r = self.playerReceptors.members[key + 1]
+	if r and r.curAnim.name ~= "confirm" then
+		r:play("pressed")
 	end
 end
 
 function PlayState:onKeyRelease(key, type)
-	if not self.botPlay and (not self.substate or self.persistentUpdate) then
-		local controls = controls:getControlsFromSource(type .. ":" .. key)
-		if not controls then return end
-		key = self:getKeyFromEvent(controls)
-		if key >= 0 then
-			self.keysPressed[key] = false
+	if self.botPlay or (self.substate and not self.persistentUpdate) then return end
+	local controls = controls:getControlsFromSource(type .. ":" .. key)
 
-			local r = self.playerReceptors.members[key + 1]
-			if r then
-				r:play("static")
-				r.confirmTimer = 0
-			end
-		end
+	if not controls then return end
+	key = self:getKeyFromEvent(controls)
+
+	if key < 0 then return end
+	self.keysPressed[key] = false
+
+	local r = self.playerReceptors.members[key + 1]
+	if r then
+		r:play("static")
+		r.confirmTimer = 0
 	end
 end
 
@@ -1204,9 +1129,7 @@ function PlayState:goodNoteHit(n)
 
 		if not n.isSustain then
 			if n.mustPress then
-				local diff, rating =
-					math.abs(n.time - PlayState.conductor.time),
-					PlayState.ratings[#PlayState.ratings - 1]
+				local diff, rating = math.abs(n.time - PlayState.conductor.time), PlayState.ratings[#PlayState.ratings - 1]
 				for _, r in pairs(PlayState.ratings) do
 					if diff <= r.time then
 						rating = r
@@ -1247,10 +1170,10 @@ end
 function PlayState:endSong(skip)
 	if skip == nil then skip = false end
 	PlayState.seenCutscene = false
+	self.startedCountdown = false
 
-	if self.storyMode and not self.seenCutscene and not skip then
+	if self.storyMode and not PlayState.seenCutscene and not skip then
 		PlayState.seenCutscene = true
-		self.startedCountdown = false
 
 		local songName = paths.formatToSongPath(PlayState.SONG.song)
 		local fileExist = (paths.exists(paths.getMods('data/cutscenes/' .. songName .. '-end.lua'), 'file') or
@@ -1288,7 +1211,7 @@ function PlayState:endSong(skip)
 					x = game.camera.target.x,
 					y = game.camera.target.y
 				}
-				PlayState.conductor.sound:stop()
+				game.sound.music:stop()
 				if self.vocals then self.vocals:stop() end
 
 				if love.system.getDevice() == 'Desktop' then
@@ -1305,12 +1228,12 @@ function PlayState:endSong(skip)
 				game.resetState(true)
 			else
 				Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
-				game.sound.playMusic(paths.getMusic("freakyMenu"))
 				game.switchState(StoryMenuState())
+				game.sound.playMusic(paths.getMusic("freakyMenu"))
 			end
 		else
-			game.sound.playMusic(paths.getMusic("freakyMenu"))
 			game.switchState(FreeplayState())
+			game.sound.playMusic(paths.getMusic("freakyMenu"))
 		end
 	end
 
@@ -1328,13 +1251,14 @@ function PlayState:removeNote(n)
 end
 
 function PlayState:step(s)
-	-- now it works -fellynn
-	local time = PlayState.conductor.sound:tell()
-	if self.vocals and math.abs(self.vocals:tell() * 1000 - time * 1000) > 20 then
-		self.vocals:seek(time)
-	end
-	if math.abs(time * 1000 - PlayState.notePosition) > 20 then
-		PlayState.notePosition = time * 1000
+	if self.startedCountdown and not self.startingSong and game.sound.music:isPlaying() then
+		local time = game.sound.music:tell() * 1000
+		if self.vocals and math.abs((self.vocals:tell() * 1000) - time) > 20 then
+			self.vocals:seek(time / 1000)
+		end
+		if math.abs(time - PlayState.conductor.time) > 20 then
+			PlayState.conductor.time = time
+		end
 	end
 	self.scripts:set("curStep", s)
 	self.scripts:call("step")
@@ -1361,12 +1285,9 @@ function PlayState:section(s)
 	self.scripts:call("section")
 
 	if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
-		print("bpm change! OLD BPM: " .. PlayState.conductor.bpm ..
-			", NEW BPM: " .. PlayState.SONG.notes[s].bpm)
-		PlayState.conductor:setBPM(PlayState.SONG.notes[s].bpm)
 		self.scripts:set("bpm", PlayState.conductor.bpm)
-		self.scripts:set("crochet", PlayState.conductor.crochet)
-		self.scripts:set("stepCrochet", PlayState.conductor.stepCrochet)
+		self.scripts:set("crotchet", PlayState.conductor.crotchet)
+		self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
 	end
 
 	if self.camZooming and game.camera.zoom < 1.35 then
@@ -1380,7 +1301,7 @@ function PlayState:section(s)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = PlayState.conductor.crochet * 0.001
+	local accel = PlayState.conductor.crotchet * 0.001
 
 	local judgeSpr = self.judgeSprites:recycle()
 
@@ -1464,8 +1385,8 @@ function PlayState:focus(f)
 
 			local startTimestamp = os.time(os.date("*t"))
 			local endTimestamp = startTimestamp +
-				PlayState.conductor.sound:getDuration()
-			endTimestamp = endTimestamp - PlayState.notePosition / 1000
+				game.sound.music:getDuration()
+			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
 
 			local diff = PlayState.defaultDifficulty
 			if PlayState.songDifficulty ~= "" then

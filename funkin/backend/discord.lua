@@ -7,7 +7,7 @@ Discord.isInitialized = false
 Discord.clientID = "1098761843956273304"
 
 local __options = {
-	details = "In the Menus",
+	details = "Starting",
 	state = nil,
 	largeImageKey = "icon",
 	largeImageText = "FNF LÖVE",

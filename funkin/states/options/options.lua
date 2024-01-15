@@ -163,7 +163,6 @@ function OptionsState:reset_Tabs()
 			end
 		end
 	end
-	self.allTabs:add(controlsTab)
 end
 
 function OptionsState:update(dt)
