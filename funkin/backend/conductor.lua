@@ -322,8 +322,8 @@ function Conductor:updateSection(dontHit)
 
 	self.currentSectionChange = sectionChange
 	self.currentSectionFloat = self.currentSection +
-		(self.currentStepFloat - (passedSections[self.currentSection - 1] or -self.stepsOnSection)) / self
-		.stepsOnSection
+		(self.currentStepFloat - (passedSections[self.currentSection - 1] or -self.stepsOnSection))
+		/ self.stepsOnSection
 end
 
 function Conductor:rollbackSection()
