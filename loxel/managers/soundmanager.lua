@@ -1,62 +1,84 @@
-local SoundManager = {list = Group(), music = nil}
+local SoundManager = {}
+SoundManager.list = Group()
+SoundManager.music = nil
 
-function SoundManager.load(asset, volume, looped, autoDestroy, onComplete)
-	local sound = SoundManager.list:recycle(Sound):load(asset)
-	if volume ~= nil then sound:setVolume(volume) end
-	if looped ~= nil then sound:setLooping(looped) end
-	sound.autoDestroy = autoDestroy ~= nil and autoDestroy or true
-	sound.onComplete = onComplete
-	return sound
+SoundManager.__mute = false
+SoundManager.__volume = 1
+SoundManager.__pitch = 1
+
+function SoundManager.load(asset, autoDestroy, ...)
+	if autoDestroy == nil then autoDestroy = true end
+	return SoundManager.list:recycle(Sound):load(asset, autoDestroy, ...)
 end
 
-function SoundManager.play(...)
-	return SoundManager.load(...):play()
+function SoundManager.play(asset, volume, looped, autoDestroy, onComplete, ...)
+	return SoundManager.load(asset, autoDestroy, onComplete):play(volume, looped, ...)
 end
 
-function SoundManager.loadMusic(asset, volume, looped)
-	if SoundManager.music then
-		SoundManager.music:stop()
-	else
-		SoundManager.music = Sound()
-		SoundManager.music.persist = true
+function SoundManager.loadMusic(asset)
+	local music = SoundManager.music
+	if not music then
+		music = Sound()
+		music.persist = true
+		SoundManager.music = music
+		SoundManager.list:add(music)
 	end
 
-	SoundManager.music:load(asset)
-	if volume ~= nil then SoundManager.music:setVolume(volume) end
-	if looped == nil then
-		SoundManager.music:setLooping(true)
-	else
-		SoundManager.music:setLooping(looped)
-	end
-	return SoundManager.music
+	return music:load(asset)
 end
 
-function SoundManager.playMusic(...) return SoundManager.loadMusic(...):play() end
+-- volume, looped, pitch, restart
+function SoundManager.playMusic(asset, volume, looped, ...)
+	if looped == nil then looped = true end
+	return SoundManager.loadMusic(asset):play(volume, looped, ...)
+end
 
 function SoundManager.update()
-	if SoundManager.music and SoundManager.music.exists and
-		SoundManager.music.active then
-		SoundManager.music:update()
-	end
 	SoundManager.list:update()
 end
 
 function SoundManager.onFocus(focus)
-	if SoundManager.music and SoundManager.music.exists and
-		SoundManager.music.active then
-		SoundManager.music:onFocus(focus)
-	end
-	for _, s in ipairs(SoundManager.list.members) do
-		if s.exists then s:onFocus(focus) end
+	for _, sound in ipairs(SoundManager.list.members) do
+		if sound.exists and sound.active then sound:onFocus(focus) end
 	end
 end
 
+function SoundManager.__adjust()
+	for _, sound in ipairs(SoundManager.list.members) do
+		if sound.exists and sound.active then sound:setVolume(); sound:setPitch() end
+	end
+end
+
+function SoundManager:adjust(mute, volume, pitch)
+	if SoundManager.__mute == mute and SoundManager.__volume == volume and
+		SoundManager.__pitch == pitch
+	then return end
+	SoundManager.__mute, SoundManager.__volume = mute, volume
+	SoundManager.__pitch = pitch; SoundManager.__adjust()
+end
+
+function SoundManager.setMute(mute)
+	if SoundManager.__mute == mute then return end
+	SoundManager.__mute = mute; SoundManager.__adjust()
+end
+
+function SoundManager.setVolume(volume)
+	if SoundManager.__volume == volume then return end
+	SoundManager.__volume = volume; SoundManager.__adjust()
+end
+
+function SoundManager.setPitch(pitch)
+	if SoundManager.__pitch == pitch then return end
+	SoundManager.__pitch = pitch; SoundManager.__adjust()
+end
+
 function SoundManager.destroy(force)
-	table.remove(SoundManager.list.members, function (t, i)
-		local s = t[i]
-		local remove = force or not s.persist
-		if remove then s:destroy() end
-		return remove
+	table.remove(SoundManager.list.members, function(t, i)
+		local sound = t[i]
+		if force or not sound.persist then
+			sound:destroy()
+			return true
+		end
 	end)
 end
 

@@ -40,7 +40,7 @@ function postCreate()
 		state.dad.alpha = 1
 		state.camHUD.visible = true
 
-		local times = PlayState.conductor.crochet / 1000 * 4.5
+		local times = PlayState.conductor.crotchet / 1000 * 4.5
 		Timer.tween(times, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad')
 		state:startCountdown()
 	end)

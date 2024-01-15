@@ -16,6 +16,7 @@ return {
 
 		InitialAutoFocus = true,
 		InitialParallelUpdate = true,
+		InitialAsyncInput = false,
 
 		LoxelForceRenderCameraComplex = false,
 		LoxelDisableRenderCameraComplex = false,

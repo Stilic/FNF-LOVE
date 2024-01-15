@@ -1,3 +1,4 @@
+-- this should get a rework, also it isnt supposed to be in this script
 local function checkCollision(x1, y1, w1, h1, a, x2, y2, w2, h2, zx, zy)
 	local rad = math.rad(a)
 	local cos, sin = math.cos(rad), math.sin(rad)
@@ -39,16 +40,17 @@ function Basic:destroy()
 	self.cameras = nil
 end
 
-local x, y, w, h, x2, y2
 function Basic:isOnScreen(cameras)
-	x, y = self.x or 0, self.y or 0
+	if not self.scale then return true end
+
+	local x, y = self.x or 0, self.y or 0
 	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
 	if self.getCurrentFrame then
 		local f = self:getCurrentFrame()
 		if f then x, y = x + f.offset.x, y + f.offset.y end
 	end
 
-	w, h = math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y)
+	local w, h = math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y)
 	if self.getWidth then
 		w, h = self:getWidth() * w, self:getHeight() * h
 	else
@@ -66,6 +68,7 @@ function Basic:isOnScreen(cameras)
 		return checkCollision(x, y, w, h, self.angle or 0, cameras.x, cameras.y,
 			cameras.width, cameras.height, cameras.__zoom.x, cameras.__zoom.y)
 	else
+		local x2, y2
 		for _, c in pairs(cameras) do
 			if self.scrollFactor ~= nil then
 				x2, y2 = x - c.scroll.x * self.scrollFactor.x,
@@ -113,5 +116,9 @@ function Basic:cancelDraw()
 		self.__cameraQueue[i] = nil
 	end
 end
+
+--function Basic:enter(group) end
+--function Basic:leave(group) end
+--function Basic:resume(group) end
 
 return Basic

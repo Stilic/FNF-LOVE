@@ -35,7 +35,12 @@ function ModsState:enter()
 	else
 		self.camFollow = {x = game.width / 2, y = game.height / 2}
 	end
-	if love.system.getDevice() == "Mobile" then
+
+	local device = love.system.getDevice()
+	-- Update Presence
+	if device == "Desktop" then
+		Discord.changePresence({details = "In the Menus", state = "Mods Menu"})
+	elseif device == "Mobile" then
 		self.buttons = ButtonGroup()
 		self.buttons.type = "roundrect"
 		self.buttons.lined = true

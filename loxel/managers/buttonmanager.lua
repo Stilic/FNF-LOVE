@@ -26,11 +26,11 @@ end
 function ButtonManager.press(id, x, y)
 	local X, Y = ButtonManager.remap(x, y)
 	for _, group in ipairs(ButtonManager.list) do
-		local pressed = group:checkPress(X, Y)
-		if pressed then
-			love.keypressed(pressed.key)
-			ButtonManager.active[id] = pressed
-			pressed.pressed = true
+		local button = group:checkPress(X, Y)
+		if button then
+			ButtonManager._press(button.key)
+			ButtonManager.active[id] = button
+			button.pressed = true
 		end
 	end
 end
@@ -44,27 +44,27 @@ function ButtonManager.move(id, x, y)
 	else
 		local found = false
 		for _, group in ipairs(ButtonManager.list) do
-			local pressed = group:checkPress(X, Y)
-			if pressed then
+			local button = group:checkPress(X, Y)
+			if button then
 				found = true
-				if active ~= pressed then
-					love.keyreleased(active.key)
+				if active ~= button then
+					ButtonManager._release(active.key)
 					active.pressed = false
 
-					love.keypressed(pressed.key)
-					ButtonManager.active[id] = pressed
-					pressed.pressed = true
+					ButtonManager._press(button.key)
+					ButtonManager.active[id] = button
+					button.pressed = true
 				end
-			elseif active == pressed then
-				pressed.pressed = false
+			elseif active == button then
+				button.pressed = false
 			end
 		end
 
 		if not found then
-			love.keyreleased(active.key)
+			ButtonManager._release(active.key)
 			for _, group in ipairs(ButtonManager.list) do
-				local pressed = group:checkPress(X, Y)
-				if active ~= pressed then
+				local button = group:checkPress(X, Y)
+				if active ~= button then
 					active.pressed = false
 				end
 			end
@@ -78,14 +78,35 @@ function ButtonManager.release(id, x, y)
 	local active = ButtonManager.active[id]
 	if active then
 		for _, group in ipairs(ButtonManager.list) do
-			local pressed = group:checkPress(X, Y)
-			if pressed then
-				love.keyreleased(active.key)
+			local button = group:checkPress(X, Y)
+			if button then
+				ButtonManager._release(active.key)
 				active.pressed = false
 			end
 		end
 		ButtonManager.active[id] = nil
 	end
+end
+
+local keys, sc = {}, {}
+function ButtonManager._press(key)
+	keys[key], sc[love.keyboard.getScancodeFromKey(key)] = true, true
+	love.keypressed(key)
+end
+
+function ButtonManager._release(key)
+	keys[key], sc[love.keyboard.getScancodeFromKey(key)] = false, false
+	love.keyreleased(key)
+end
+
+local _ogIsDown = love.keyboard.isDown
+function love.keyboard.isDown(key)
+	return keys[key] or _ogIsDown(key)
+end
+
+local _ogIsScancodeDown = love.keyboard.isScancodeDown
+function love.keyboard.isScancodeDown(key)
+	return sc[key] or _ogIsScancodeDown(key)
 end
 
 return ButtonManager

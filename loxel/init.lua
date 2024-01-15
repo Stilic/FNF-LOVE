@@ -20,6 +20,7 @@ SpriteGroup = require "loxel.group.spritegroup"
 State = require "loxel.state"
 Substate = require "loxel.substate"
 Flicker = require "loxel.effects.flicker"
+ParallaxImage = require "loxel.effects.parallax"
 Color = require "loxel.util.color"
 
 Keyboard = require "loxel.input.keyboard"
@@ -121,7 +122,10 @@ end
 function game.init(app, state)
 	game.width = app.width
 	game.height = app.height
-	Camera.__init(love.graphics.newCanvas(app.width, app.height))
+	Camera.__init(love.graphics.newCanvas(app.width, app.height, {
+		format = "normal",
+		dpiscale = 1
+	}))
 
 	love.mouse.setVisible(false)
 
@@ -131,14 +135,14 @@ function game.init(app, state)
 	game.cameras.reset()
 
 	Gamestate.switch(state())
-	if ScreenPrint then ScreenPrint.init(app.width, app.height) end
+	if ScreenPrint then ScreenPrint.init(love.graphics.getPixelDimensions()) end
 end
 
 local function callUIInput(func, ...)
-	for _, o in ipairs(ui.UIInputTextBox.instances) do
+	for _, o in pairs(ui.UIInputTextBox.instances) do
 		if o[func] then o[func](o, ...) end
 	end
-	for _, o in ipairs(ui.UINumericStepper.instances) do
+	for _, o in pairs(ui.UINumericStepper.instances) do
 		if o[func] then o[func](o, ...) end
 	end
 end
@@ -175,8 +179,8 @@ local function switch(state)
 	game.sound.destroy()
 	game.buttons.reset()
 
-	for _, s in ipairs(Gamestate.stack) do
-		for _, o in ipairs(s.members) do
+	for _, s in pairs(Gamestate.stack) do
+		for _, o in pairs(s.members) do
 			if type(o) == "table" and o.destroy then o:destroy() end
 		end
 		if s.substate then
@@ -185,6 +189,7 @@ local function switch(state)
 		end
 	end
 
+	-- i feel like this shouldnt be here
 	if paths and getmetatable(state) ~= getmetatable(Gamestate.current()) then
 		paths.clearCache()
 	end
@@ -209,7 +214,7 @@ function game.update(dt)
 		requestedState = nil
 	end
 
-	for _, o in ipairs(Flicker.instances) do o:update(dt) end
+	for _, o in pairs(Flicker.instances) do o:update(dt) end
 	game.cameras.update(dt)
 	game.sound.update()
 
@@ -227,7 +232,7 @@ function game.draw()
 		table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
 			fade.draw)
 	end
-	for _, c in ipairs(game.cameras.list) do c:draw() end
+	for _, c in pairs(game.cameras.list) do c:draw() end
 	if ScreenPrint then ScreenPrint.draw() end
 end
 
@@ -238,13 +243,14 @@ function game.focus(f)
 	Gamestate.focus(f)
 end
 
-function game.quit() ClientPrefs.saveData() end
+function game.fullscreen(f) Gamestate.fullscreen(f) end
 
-local ogprint = print
-function print(...)
-	if ScreenPrint then
-		local text = table.concat({...}, "\n")
-		ScreenPrint.new(text, love.graphics.newFont(18))
+function game.quit() end
+
+if ScreenPrint then
+	local ogprint = print
+	function print(...)
+		ScreenPrint.new(table.concat({...}, "\n"), love.graphics.newFont(18))
+		ogprint(...)
 	end
-	ogprint(...)
 end

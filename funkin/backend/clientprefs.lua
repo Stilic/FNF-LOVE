@@ -1,6 +1,9 @@
 local ClientPrefs = {}
 
 ClientPrefs.data = {
+	-- controls
+	asyncInput = false,
+
 	-- gameplay
 	downScroll = false,
 	middleScroll = false,
@@ -16,6 +19,8 @@ ClientPrefs.data = {
 	antialiasing = true,
 	lowQuality = false,
 	shader = true,
+	fullscreen = false,
+	resolution = 1,
 }
 
 ClientPrefs.controls = {
@@ -34,6 +39,7 @@ ClientPrefs.controls = {
 	pause = {"key:return", "key:escape"},
 	reset = {"key:r"},
 
+	fullscreen = {"key:f11"},
 	pick_mods = {"key:6"},
 
 	debug_1 = {"key:7"},
@@ -41,6 +47,8 @@ ClientPrefs.controls = {
 }
 
 function ClientPrefs.saveData()
+	ClientPrefs.data.fullscreen = love.window.getFullscreen()
+
 	game.save.data.prefs = ClientPrefs.data
 	game.save.data.controls = ClientPrefs.controls
 
@@ -54,9 +62,19 @@ function ClientPrefs.loadData()
 
 	if game.save.data.prefs then
 		love.FPScap = ClientPrefs.data.fps
+		love.parallelUpdate = ClientPrefs.data.parallelUpdate
+		love.asyncInput = ClientPrefs.data.asyncInput
+
+		local res = ClientPrefs.data.resolution
+		love.window.updateMode(Project.width * res, Project.height * res, {
+			fullscreen = ClientPrefs.data.fullscreen
+		})
 	else
 		ClientPrefs.data.fps = love.FPScap
+		ClientPrefs.data.parallelUpdate = love.parallelUpdate
+		ClientPrefs.data.resolution = (love.window.getNativeDPIScale or love.window.getDPIScale)()
 	end
+
 	love.showFPS = ClientPrefs.data.showFps
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 

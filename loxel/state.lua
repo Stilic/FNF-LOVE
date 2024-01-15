@@ -10,10 +10,6 @@ function State:new()
 	self.persistentDraw = true
 end
 
-function State:enter()
-
-end
-
 function State:update(dt) State.super.update(self, dt) end
 
 function State:openSubstate(substate)

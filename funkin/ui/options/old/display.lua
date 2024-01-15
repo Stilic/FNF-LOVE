@@ -1,4 +1,4 @@
-local Graphic = {}
+local Display = {}
 
 local optionsVar = {
 	{'lowQuality', 'Low Quality', false, 'boolean'},
@@ -17,9 +17,9 @@ local optionsVar = {
 local curSelected = 1
 local stringSelected = 1
 
-function Graphic.add(options)
-	local graphicTab = Group()
-	graphicTab.name = 'Graphic'
+function Display.add(options)
+	local displayTab = Group()
+	displayTab.name = 'Display'
 
 	for i, daOption in ipairs(optionsVar) do
 		local daGroup = Group()
@@ -44,12 +44,12 @@ function Graphic.add(options)
 			'center', (game.width * 0.8) / 2 - 20)
 		daGroup:add(valueTxt)
 
-		graphicTab:add(daGroup)
+		displayTab:add(daGroup)
 	end
 
 	local linesGroup = Group()
 	linesGroup.isLines = true
-	linesGroup.name = graphicTab.name
+	linesGroup.name = displayTab.name
 
 	local lines = Sprite(0, 117):make(2, game.height * 0.72,
 		{255, 255, 255})
@@ -58,10 +58,10 @@ function Graphic.add(options)
 	linesGroup:add(lines)
 	options.spriteGroup:add(linesGroup)
 
-	options.allTabs:add(graphicTab)
+	options.allTabs:add(displayTab)
 end
 
-function Graphic.selectOption(id, selected)
+function Display.selectOption(id, selected)
 	game.sound.play(paths.getSound('scrollMenu'))
 	for i, daOption in ipairs(optionsVar) do
 		if i == id then
@@ -75,7 +75,7 @@ function Graphic.selectOption(id, selected)
 	end
 end
 
-function Graphic.changeSelection(huh)
+function Display.changeSelection(huh)
 	if huh == nil then huh = 0 end
 	game.sound.play(paths.getSound('scrollMenu'))
 
@@ -113,4 +113,4 @@ function Graphic.changeSelection(huh)
 	end
 end
 
-return Graphic
+return Display

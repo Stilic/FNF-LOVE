@@ -3,7 +3,7 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
-	Discord.changePresence({details = "In the Menus"})
+	Discord.changePresence({details = "In the Menus", state = "Title Screen"})
 
 	self.curWacky = self:getIntroTextShit()
 
@@ -52,12 +52,12 @@ function TitleState:enter()
 		TitleState.initialized = true
 	end
 
-	self.music = Conductor((not game.sound.music or
-			not game.sound.music:isPlaying()) and
-		game.sound
-		.playMusic(paths.getMusic("freakyMenu")) or
-		game.sound.music, 102)
-	self.music.onBeat = function (b) self:beat(b) end
+	self.conductor = Conductor(102)
+	self.conductor.onBeat = function(b) self:beat(b) end
+
+	if not game.sound.music or not game.sound.music:isPlaying() then
+		game.sound.playMusic(paths.getMusic("freakyMenu"))
+	end
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
@@ -79,7 +79,8 @@ function TitleState:getIntroTextShit()
 end
 
 function TitleState:update(dt)
-	self.music:update(dt)
+	self.conductor.time = game.sound.music:tell() * 1000
+	self.conductor:update(dt)
 
 	local pressedEnter = controls:pressed("accept")
 
@@ -186,7 +187,5 @@ function TitleState:skipIntro()
 		self.skippedIntro = true
 	end
 end
-
-function TitleState:leave() self.music = nil end
 
 return TitleState

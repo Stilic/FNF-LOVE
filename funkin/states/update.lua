@@ -29,6 +29,11 @@ function UpdateState:new(version)
 end
 
 function UpdateState:enter()
+	-- Update Presence
+	if love.system.getDevice() == "Desktop" then
+		Discord.changePresence({details = "In the Menus", state = "Update Screen"})
+	end
+
 	local bg = Sprite():loadTexture(paths.getImage('menus/menuDesat'))
 	bg.color = {0.1, 0.1, 0.1}
 	self:add(bg)

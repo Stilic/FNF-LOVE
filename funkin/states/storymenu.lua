@@ -6,7 +6,7 @@ StoryMenuState.curDifficulty = 2
 function StoryMenuState:enter()
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({details = "In the Menus"})
+		Discord.changePresence({details = "In the Menus", state = "Story Menu"})
 	end
 
 	self.diffs = {'Easy', PlayState.defaultDifficulty, 'Hard'}
@@ -124,6 +124,12 @@ function StoryMenuState:enter()
 	self:add(self.scoreText)
 	self:add(self.txtWeekTitle)
 
+	self.throttles = {}
+	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
+	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
+	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
+	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
+
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
 		self.buttons.type = "roundrect"
@@ -167,9 +173,9 @@ function StoryMenuState:update(dt)
 	self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
 	if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and
-		not self.inSubstate then
-		if controls:pressed("ui_up") then self:changeWeek(-1) end
-		if controls:pressed("ui_down") then self:changeWeek(1) end
+		not self.inSubstate and self.throttles then
+		if self.throttles.up:check() then self:changeWeek(-1) end
+		if self.throttles.down:check() then self:changeWeek(1) end
 
 		if controls:down("ui_left") then
 			self.leftArrow:play('press')
@@ -182,8 +188,8 @@ function StoryMenuState:update(dt)
 			self.rightArrow:play('idle')
 		end
 
-		if controls:pressed("ui_left") then self:changeDifficulty(-1) end
-		if controls:pressed("ui_right") then self:changeDifficulty(1) end
+		if self.throttles.left:check() then self:changeDifficulty(-1) end
+		if self.throttles.right:check() then self:changeDifficulty(1) end
 
 		if controls:pressed("accept") then self:selectWeek() end
 	end
@@ -271,11 +277,9 @@ function StoryMenuState:changeDifficulty(change)
 
 	if self.sprDifficulty.texture ~= newImage then
 		self.sprDifficulty:loadTexture(newImage)
-		self.sprDifficulty.x = self.leftArrow.x + 60
-		self.sprDifficulty.x = self.sprDifficulty.x +
-			((308 - self.sprDifficulty.width) / 3)
-		self.sprDifficulty.alpha = 0
+		self.sprDifficulty.x = self.leftArrow.x + 60 + ((308 - self.sprDifficulty.width) / 3)
 		self.sprDifficulty.y = self.leftArrow.y - 15
+		self.sprDifficulty.alpha = 0
 
 		Timer:cancelTweensOf(tweenDifficulty)
 		tweenDifficulty:tween(0.07, self.sprDifficulty,
@@ -418,6 +422,11 @@ function StoryMenuState:loadWeeks()
 			end
 		end
 	end
+end
+
+function StoryMenuState:leave()
+	for _, v in ipairs(self.throttles) do v:destroy() end
+	self.throttles = nil
 end
 
 return StoryMenuState

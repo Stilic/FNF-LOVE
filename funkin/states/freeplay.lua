@@ -7,7 +7,7 @@ FreeplayState.curDifficulty = 2
 function FreeplayState:enter()
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
-		Discord.changePresence({details = "In the Menus"})
+		Discord.changePresence({details = "In the Menus", state = "Freeplay Menu"})
 	end
 
 	self.lerpScore = 0
@@ -82,7 +82,7 @@ function FreeplayState:enter()
 	self:add(self.diffText)
 	self:add(self.scoreText)
 
-	if #self.songsData > 0 then self:changeSelection() end
+
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
@@ -114,6 +114,14 @@ function FreeplayState:enter()
 		self:add(self.buttons)
 		game.buttons.add(self.buttons)
 	end
+
+	self.throttles = {}
+	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
+	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
+	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
+	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
+
+	if #self.songsData > 0 then self:changeSelection() end
 end
 
 function FreeplayState:update(dt)
@@ -123,15 +131,11 @@ function FreeplayState:update(dt)
 	self:positionHighscore()
 
 	if not self.inSubstate then
-		if #self.songsData > 0 then
-			if controls:pressed('ui_up') then
-				self:changeSelection(-1)
-			end
-			if controls:pressed('ui_down') then
-				self:changeSelection(1)
-			end
-			if controls:pressed('ui_left') then self:changeDiff(-1) end
-			if controls:pressed('ui_right') then self:changeDiff(1) end
+		if #self.songsData > 0 and self.throttles then
+			if self.throttles.up:check() then self:changeSelection(-1) end
+			if self.throttles.down:check() then self:changeSelection(1) end
+			if self.throttles.left:check() then self:changeDiff(-1) end
+			if self.throttles.right:check() then self:changeDiff(1) end
 
 			if controls:pressed('accept') then
 				PlayState.storyMode = false
@@ -329,6 +333,11 @@ function FreeplayState:loadSongs()
 			end
 		end
 	end
+end
+
+function FreeplayState:leave()
+	for _, v in ipairs(self.throttles) do v:destroy() end
+	self.throttles = nil
 end
 
 return FreeplayState

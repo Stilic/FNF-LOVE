@@ -1,104 +1,54 @@
-local pcall = _G.pcall
-
 ---@class Sound:Basic
 local Sound = Basic:extend("Sound")
 
-function Sound:new()
+function Sound:new(x, y)
 	Sound.super.new(self)
+	self.visible, self.cameras = nil, nil
 
-	self.__indexFuncs = {}
-	self.visible = false
+	self:reset(true, x, y)
 
-	self:reset()
+	self.__volume = 1
+	self.__pitch = 1
+	self.__duration = 0
+	self.__wasPlaying = nil
 end
 
-function Sound:reset(destroySound)
-	if self.__source and (destroySound ~= nil and destroySound or true) then
-		self:stop()
-		self.__source = nil
-		self.__indexFuncs = {}
-	end
+function Sound:reset(cleanup, x, y)
+	if cleanup then self:cleanup()
+	elseif self.__source ~= nil then self:stop() end
+	self:setPosition(x, y)
 
-	self.__paused = true
-	self.__wasPlaying = false
-
-	self.persist = false
+	self.looped = false
 	self.autoDestroy = false
+	self.radius = 0
+	self.__paused = true
+	self.__isFinished = false
 
+	--[[
+	self.__amplitudeLeft = 0.0
+	self.__amplitudeRight = 0.0
+	self.__amplitudeUpdate = true
+	]]
+end
+
+function Sound:cleanup()
 	self.active = false
-
+	self.target = nil
 	self.onComplete = nil
-end
 
-function Sound:load(asset)
-	self:reset()
-
-	self.__source = asset:typeOf("SoundData") and love.audio.newSource(asset) or
-		asset
-	self.active = true
-
-	return self
-end
-
-function Sound:play(volume, looped, pitch)
-	if volume ~= nil then self:setVolume(volume) end
-	if looped ~= nil then self:setLooping(looped) end
-	if pitch ~= nil then self:setPitch(pitch) end
-
-	self.__paused = false
-	pcall(self.__source.play, self.__source)
-	return self
-end
-
-function Sound:pause()
-	self.__paused = true
-	pcall(self.__source.pause, self.__source)
-	return self
-end
-
-function Sound:stop()
-	self.__paused = true
-	pcall(self.__source.stop, self.__source)
-	return self
-end
-
-function Sound:isPlaying()
-	local success, isPlaying = pcall(self.__source.isPlaying, self.__source)
-	if success then return isPlaying end
-	return nil
-end
-
-function Sound:isFinished()
-	return not self.__paused and not self.__source:isLooping() and
-		not self:isPlaying()
-end
-
-function Sound:update()
-	if self:isFinished() then
-		if self.onComplete then self.onComplete() end
-		if not self.__source:isLooping() then
-			if self.autoDestroy then
-				self:kill()
-			else
-				self:stop()
-			end
+	if self.__source ~= nil then
+		self:stop()
+		if self.__isSource and self.__source.release then
+			self.__source:release()
 		end
 	end
+	self.__isSource = false
+	self.__source = nil
 end
 
-function Sound:onFocus(focus)
-	if love.autoPause and not self:isFinished() then
-		if focus then
-			if self.__wasPlaying ~= nil and self.__wasPlaying then
-				self:play()
-			end
-		else
-			self.__wasPlaying = self:isPlaying()
-			if self.__wasPlaying ~= nil and self.__wasPlaying then
-				self:pause()
-			end
-		end
-	end
+function Sound:destroy()
+	Sound.super.destroy(self)
+	self:cleanup()
 end
 
 function Sound:kill()
@@ -106,47 +56,161 @@ function Sound:kill()
 	self:reset(self.autoDestroy)
 end
 
-function Sound:destroy()
-	if self.__source then
-		self:stop()
-		self.__source = nil
-		self.__indexFuncs = {}
-	end
-	self.onComplete = nil
-
-	Sound.super.destroy(self)
+function Sound:setPosition(x, y)
+	self.x, self.y = x or 0, y or 0
 end
 
-function Sound:__index(key)
-	if key == "release" then
-		return nil
-	else
-		local prop = rawget(self, key)
-		if not prop then
-			prop = getmetatable(self)
-			if prop[key] then
-				prop = prop[key]
-			else
-				local source = rawget(self, "__source")
-				if source then
-					prop = source[key]
-					if prop and type(prop) == "function" then
-						local indexProps = rawget(self, "__indexFuncs")
-						prop = indexProps[key]
-						if not prop then
-							prop = function (_, ...)
-								return source[key](source, ...)
-							end
-							indexProps[key] = prop
-						end
-					end
-				else
-					prop = nil
-				end
+function Sound:load(asset, autoDestroy, onComplete)
+	if asset == nil then return end
+	self:cleanup()
+	
+	self.__isSource = asset:typeOf("SoundData")
+	self.__source = self.__isSource and love.audio.newSource(asset) or asset
+	return self:init(autoDestroy, onComplete)
+end
+
+function Sound:init(autoDestroy, onComplete)
+	if autoDestroy ~= nil then self.autoDestroy = autoDestroy end
+	if onComplete ~= nil then self.onComplete = onComplete end
+
+	self.active = true
+	self.__isFinished = false
+
+	if self.__source then
+		self.__duration = self.__source:getDuration()
+	end
+
+	return self
+end
+
+function Sound:play(volume, looped, pitch, restart)
+	if not self.exists or not self.active or not self.__source then return self end
+
+	if restart then pcall(self.__source.stop, self.__source)
+	elseif self:isPlaying() then return self end
+
+	self.__paused = false
+	self.__isFinished = false
+	self:setVolume(volume)
+	self:setLooping(looped)
+	self:setPitch(pitch)
+	pcall(self.__source.play, self.__source)
+	return self
+end
+
+function Sound:pause()
+	self.__paused = true
+	if self.__source then pcall(self.__source.pause, self.__source) end
+	return self
+end
+
+function Sound:stop()
+	self.__paused = true
+	if self.__source then pcall(self.__source.stop, self.__source) end
+	return self
+end
+
+function Sound:proximity(x, y, target, radius)
+	self:setPosition(x, y)
+	self.target = target
+	self.radius = radius
+
+	return self
+end
+
+function Sound:update()
+	local isFinshed = self:isFinished()
+	if isFinshed and not self.__isFinished then
+		local onComplete = self.onComplete
+		if self.autoDestroy then self:kill()
+		else self:stop() end
+
+		if onComplete then onComplete() end
+	end
+
+	self.__isFinished = isFinshed
+end
+
+function Sound:onFocus(focus)
+	if love.autoPause and self.active and not self:isFinished() then
+		if focus then
+			if self.__wasPlaying ~= nil and self.__wasPlaying then
+				self.__wasPlaying = nil
+				self:play()
+			end
+		else
+			self.__wasPlaying = self:isPlaying()
+			if self.__wasPlaying then
+				self:pause()
 			end
 		end
-		return prop
 	end
+end
+
+function Sound:isPlaying()
+	if not self.__source then return false end
+
+	local success, playing = pcall(self.__source.isPlaying, self.__source)
+	return success and playing
+end
+
+function Sound:isFinished()
+	return not self.__paused and not self:isPlaying() and not self.__source:isLooping()
+end
+
+function Sound:tell()
+	if not self.__source then return 0 end
+
+	local success, position = pcall(self.__source.tell, self.__source)
+	return success and position or 0
+end
+
+function Sound:seek(position)
+	if not self.__source then return false end
+
+	return pcall(self.__source.seek, self.__source, position)
+end
+
+function Sound:getDuration()
+	if not self.__source then return -1 end
+	local success, duration = pcall(self.__source.getDuration, self.__source)
+	return success and duration or -1
+end
+
+function Sound:setVolume(volume)
+	self.__volume = volume or self.__volume
+	if not self.__source then return false end
+	return pcall(self.__source.setVolume, self.__source, self:getActualVolume())
+end
+
+function Sound:getActualVolume()
+	return self.__volume * (game.sound.__mute and 0 or 1) * (game.sound.__volume or 1)
+end
+
+function Sound:getVolume() return self.__volume end
+
+function Sound:setPitch(pitch)
+	self.__pitch = pitch or self.__pitch
+	if not self.__source then return false end
+	return pcall(self.__source.setPitch, self.__source, self:getActualPitch())
+end
+
+function Sound:getActualPitch()
+	return self.__pitch * (game.sound.__pitch or 1)
+end
+
+function Sound:getPitch() return self.__pitch end
+
+function Sound:setLooping(loop)
+	if not self.__source then return false end
+	return pcall(self.__source.setLooping, self.__source, loop)
+end
+
+function Sound:isLooping()
+	if not self.__source then return end
+
+	local success, loop = pcall(self.__source.isLooping, self.__source)
+	if success then return loop end
 end
 
 return Sound

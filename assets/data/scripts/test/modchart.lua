@@ -56,14 +56,14 @@ function step()
 		end
 		if curStep == 192 then
 			noteModchart.sin_speed = 3
-			Timer.tween(stepCrochet * 0.002, noteModchart, {sin = 6}, 'in-out-sine')
+			Timer.tween(stepCrotchet * 0.002, noteModchart, {sin = 6}, 'in-out-sine')
 		end
 		if curStep == 504 then
-			Timer.tween(stepCrochet * 0.002, noteModchart, {amount = 0}, 'in-out-sine')
+			Timer.tween(stepCrotchet * 0.002, noteModchart, {amount = 0}, 'in-out-sine')
 		end
 		if curStep == 896 then
-			Timer.tween(stepCrochet * 0.002, noteModchart, {sin = 6}, 'in-out-sine')
-			Timer.tween(stepCrochet * 0.002, noteModchart, {noteY = 15}, 'in-out-sine')
+			Timer.tween(stepCrotchet * 0.002, noteModchart, {sin = 6}, 'in-out-sine')
+			Timer.tween(stepCrotchet * 0.002, noteModchart, {noteY = 15}, 'in-out-sine')
 		end
 		if curStep % 4 == 0 then
 			if curStep >= 256 then
@@ -72,8 +72,8 @@ function step()
 				end)
 			end
 			if curStep >= 384 and curStep < 512 or curStep >= 768 and curStep < 896 then
-				Timer.tween(stepCrochet * 0.002, noteModchart, {bounce = 10}, 'out-circ', function ()
-					Timer.tween(stepCrochet * 0.002, noteModchart, {bounce = 0}, 'in-sine')
+				Timer.tween(stepCrotchet * 0.002, noteModchart, {bounce = 10}, 'out-circ', function ()
+					Timer.tween(stepCrotchet * 0.002, noteModchart, {bounce = 0}, 'in-sine')
 				end)
 			end
 		end

@@ -3,7 +3,7 @@ local UpdateState = require "funkin.states.update"
 
 function Splash:enter()
 	if Project.splashScreen then
-		Timer.after(1, function () self:startSplash() end)
+		Timer.after(1, function() self:startSplash() end)
 	else
 		self:finishSplash()
 	end
