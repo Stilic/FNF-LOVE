@@ -2,7 +2,7 @@ local parseXml = require "loxel.lib.xml"
 
 local function sortFramesByIndices(prefix, postfix)
 	local s, e = #prefix + 1, - #postfix - 1
-	return function (a, b)
+	return function(a, b)
 		return string.sub(a.name, s, e) < string.sub(b.name, s, e)
 	end
 end

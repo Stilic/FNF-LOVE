@@ -118,6 +118,12 @@ function love.load()
 	Highscore.load()
 
 	game.init(Project, SplashScreen)
+	game.onPreStateSwitch = function(state)
+		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
+			paths.clearCache()
+		end
+	end
+
 	Discord.init()
 end
 

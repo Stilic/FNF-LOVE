@@ -2,7 +2,7 @@ local ffi = require "ffi"
 local dwmapi = ffi.load("dwmapi")
 
 local Util = {}
-ffi.cdef[[
+ffi.cdef [[
 	typedef int BOOL;
 	typedef long LONG;
 	typedef uint32_t UINT;
@@ -54,7 +54,9 @@ ffi.cdef[[
 local Rect = ffi.metatype("RECT", {})
 
 local function toInt(v) return v and 1 or 0 end
-local function ffiNew(type, v) v = ffi.new(type, v); return v, ffi.sizeof(v) end
+local function ffiNew(type, v)
+	v = ffi.new(type, v); return v, ffi.sizeof(v)
+end
 
 local function getWindowHandle(title)
 	local window = ffi.C.FindWindowA(nil, title)

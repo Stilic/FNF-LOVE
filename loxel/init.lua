@@ -63,12 +63,12 @@ local function fadeOut(time, callback)
 			{0, 0, 0, 0})
 	}
 	fade.y = -fade.height
-	fade.timer = Timer.tween(time, fade, {y = 0}, "linear", function ()
+	fade.timer = Timer.tween(time, fade, {y = 0}, "linear", function()
 		fade.texture:release()
 		fade = nil
 		if callback then callback() end
 	end)
-	fade.draw = function ()
+	fade.draw = function()
 		love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
 	end
 end
@@ -86,12 +86,12 @@ local function fadeIn(time, callback)
 	}
 	fade.y = -fade.height / 2
 	fade.timer = Timer.tween(time * 2, fade, {y = fade.height}, "linear",
-		function ()
+		function()
 			fade.texture:release()
 			fade = nil
 			if callback then callback() end
 		end)
-	fade.draw = function ()
+	fade.draw = function()
 		love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
 	end
 end
@@ -189,12 +189,14 @@ local function switch(state)
 		end
 	end
 
-	-- i feel like this shouldnt be here
-	if paths and getmetatable(state) ~= getmetatable(Gamestate.current()) then
-		paths.clearCache()
+	if game.onPreStateSwitch then
+		game.onPreStateSwitch(state)
+	end
+	Gamestate.switch(state)
+	if game.onPostStateSwitch then
+		game.onPostStateSwitch(state)
 	end
 
-	Gamestate.switch(state)
 	game.isSwitchingState = false
 
 	collectgarbage()
@@ -204,7 +206,7 @@ function game.update(dt)
 		game.isSwitchingState = true
 		if not skipTransition then
 			local state = requestedState
-			fadeOut(0.7, function ()
+			fadeOut(0.7, function()
 				switch(state)
 				fadeIn(0.6)
 			end)

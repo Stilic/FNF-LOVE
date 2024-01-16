@@ -59,7 +59,7 @@ function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
 	-- button stepper
 	self.onChanged = nil
 	self.increaseButton = ui.UIButton(0, 0, self.height, self.height, "+",
-		function ()
+		function()
 			local num = tonumber(self.value)
 			local result = num + self.stepSize
 			if result > self.max then result = self.max end
@@ -67,7 +67,7 @@ function NumericStepper:new(x, y, stepSize, defaultValue, min, max)
 			if self.onChanged then self.onChanged(result) end
 		end)
 	self.decreaseButton = ui.UIButton(0, 0, self.height, self.height, "-",
-		function ()
+		function()
 			local num = tonumber(self.value)
 			local result = num - self.stepSize
 			if result < self.min then result = self.min end

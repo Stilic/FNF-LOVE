@@ -66,6 +66,7 @@ end
 function Group:_canDraw()
 	return self.visible and self.exists and next(self.members)
 end
+
 Group.canDraw = Group._canDraw
 
 function Group:draw()

@@ -23,7 +23,7 @@ function Dropdown:new(x, y, options)
 	self.onChanged = nil
 
 	self.__openButton = ui.UIButton(0, 0, self.height, self.height, "",
-		function () self.isOpen = not self.isOpen end)
+		function() self.isOpen = not self.isOpen end)
 	self.__slider = ui.UISlider(0, 0, self.height, self.height * 10, 0,
 		"vertical", 0, #self.options - self.__maxShow)
 

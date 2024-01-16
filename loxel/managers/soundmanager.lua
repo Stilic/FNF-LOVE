@@ -45,14 +45,18 @@ end
 
 function SoundManager.__adjust()
 	for _, sound in ipairs(SoundManager.list.members) do
-		if sound.exists and sound.active then sound:setVolume(); sound:setPitch() end
+		if sound.exists and sound.active then
+			sound:setVolume(); sound:setPitch()
+		end
 	end
 end
 
 function SoundManager:adjust(mute, volume, pitch)
 	if SoundManager.__mute == mute and SoundManager.__volume == volume and
 		SoundManager.__pitch == pitch
-	then return end
+	then
+		return
+	end
 	SoundManager.__mute, SoundManager.__volume = mute, volume
 	SoundManager.__pitch = pitch; SoundManager.__adjust()
 end

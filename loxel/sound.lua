@@ -14,8 +14,11 @@ function Sound:new(x, y)
 end
 
 function Sound:reset(cleanup, x, y)
-	if cleanup then self:cleanup()
-	elseif self.__source ~= nil then self:stop() end
+	if cleanup then
+		self:cleanup()
+	elseif self.__source ~= nil then
+		self:stop()
+	end
 	self:setPosition(x, y)
 
 	self.looped = false
@@ -63,7 +66,7 @@ end
 function Sound:load(asset, autoDestroy, onComplete)
 	if asset == nil then return end
 	self:cleanup()
-	
+
 	self.__isSource = asset:typeOf("SoundData")
 	self.__source = self.__isSource and love.audio.newSource(asset) or asset
 	return self:init(autoDestroy, onComplete)
@@ -86,8 +89,11 @@ end
 function Sound:play(volume, looped, pitch, restart)
 	if not self.exists or not self.active or not self.__source then return self end
 
-	if restart then pcall(self.__source.stop, self.__source)
-	elseif self:isPlaying() then return self end
+	if restart then
+		pcall(self.__source.stop, self.__source)
+	elseif self:isPlaying() then
+		return self
+	end
 
 	self.__paused = false
 	self.__isFinished = false
@@ -122,8 +128,11 @@ function Sound:update()
 	local isFinshed = self:isFinished()
 	if isFinshed and not self.__isFinished then
 		local onComplete = self.onComplete
-		if self.autoDestroy then self:kill()
-		else self:stop() end
+		if self.autoDestroy then
+			self:kill()
+		else
+			self:stop()
+		end
 
 		if onComplete then onComplete() end
 	end

@@ -38,7 +38,7 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		})
 
 		local function replace(func)
-			return function (a, ...)
+			return function(a, ...)
 				return func(type(a) == "string" and love.filesystem.newFileData(a) or a,
 					...)
 			end
@@ -105,14 +105,14 @@ end
 ]]
 
 local eventhandlers = {
-	keypressed = function(t,b,s,r)return love.keypressed(b,s,r,t) end,
-	keyreleased = function(t,b,s)return love.keyreleased(b,s,t) end,
-	touchpressed = function(t,id,x,y,dx,dy,p) return love.touchpressed(id,x,y,dx,dy,p,t) end,
-	touchreleased = function(t,id,x,y,dx,dy,p) return love.touchreleased(id,x,y,dx,dy,p,t) end,
-	joystickpressed = function(t,j,b) if love.joystickpressed then return love.joystickpressed(j,b,t) end end,
-	joystickreleased = function(t,j,b) if love.joystickreleased then return love.joystickreleased(j,b,t) end end,
-	gamepadpressed = function(t,j,b) if love.gamepadpressed then return love.gamepadpressed(j,b,t) end end,
-	gamepadreleased = function(t,j,b) if love.gamepadreleased then return love.gamepadreleased(j,b,t) end end,
+	keypressed = function(t, b, s, r) return love.keypressed(b, s, r, t) end,
+	keyreleased = function(t, b, s) return love.keyreleased(b, s, t) end,
+	touchpressed = function(t, id, x, y, dx, dy, p) return love.touchpressed(id, x, y, dx, dy, p, t) end,
+	touchreleased = function(t, id, x, y, dx, dy, p) return love.touchreleased(id, x, y, dx, dy, p, t) end,
+	joystickpressed = function(t, j, b) if love.joystickpressed then return love.joystickpressed(j, b, t) end end,
+	joystickreleased = function(t, j, b) if love.joystickreleased then return love.joystickreleased(j, b, t) end end,
+	gamepadpressed = function(t, j, b) if love.gamepadpressed then return love.gamepadpressed(j, b, t) end end,
+	gamepadreleased = function(t, j, b) if love.gamepadreleased then return love.gamepadreleased(j, b, t) end end,
 }
 function love.run()
 	local _, _, modes = love.window.getMode()
@@ -173,8 +173,11 @@ function love.run()
 			return a or 0, ...
 		end
 		_defaultEvents[name], polledEvents[name] = false, true
-		if eventhandlers[name] then eventhandlers[name](clock, a, ...)
-		else love.handlers[name](a, ...) end
+		if eventhandlers[name] then
+			eventhandlers[name](clock, a, ...)
+		else
+			love.handlers[name](a, ...)
+		end
 		--[[
 		if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
 			love.handlers["touch"..name:sub(6)](0, a, ...)
@@ -458,7 +461,7 @@ function love.errorhandler(msg)
 		quit = function()
 			return 1
 		end,
-		keypressed = function (key)
+		keypressed = function(key)
 			if key == "escape" then return 1 end
 			if not love.keyboard.isDown("lctrl", "rctrl") then return end
 			if love.system and key == "c" then
@@ -467,7 +470,7 @@ function love.errorhandler(msg)
 				return "restart"
 			end
 		end,
-		touchpressed = function ()
+		touchpressed = function()
 			local name = love.window.getTitle()
 			if #name == 0 or name == "Untitled" then name = "Game" end
 
@@ -483,14 +486,14 @@ function love.errorhandler(msg)
 				copyToClipboard()
 			end
 		end,
-		focus = function (f)
+		focus = function(f)
 			bgMusic:setVolume(f and 0.7 or 0.3)
 		end,
-		resize = function (w, h)
+		resize = function(w, h)
 			gameW, gameH = w, h
 			draw()
 		end,
-		displayrotated = function (force)
+		displayrotated = function(force)
 			gameW, gameH = love.graphics.getDimensions()
 			draw(force)
 		end
@@ -501,7 +504,7 @@ function love.errorhandler(msg)
 		dontDraw = true
 
 		local first, done = true, false
-		return function ()
+		return function()
 			if first then
 				first = false
 				return
@@ -529,7 +532,7 @@ function love.errorhandler(msg)
 	firstPass()
 	eventhandlers.displayrotated(true)
 
-	return function ()
+	return function()
 		name, a, b = love.event.wait()
 		if eventhandlers[name] ~= nil then
 			collectgarbage(__step__)

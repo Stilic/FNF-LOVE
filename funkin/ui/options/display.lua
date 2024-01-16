@@ -28,10 +28,12 @@ local data = {
 		local value = ClientPrefs.data.resolution
 		if value <= resolutions[#resolutions] then
 			local i = #resolutions
-			for i2 = i, 1, -1 do if value >= resolutions[i2] then
+			for i2 = i, 1, -1 do
+				if value >= resolutions[i2] then
 					i = i2
 					break
-				end end
+				end
+			end
 			value = resolutions[math.max(i + add, 1)] or value + add / 8
 		else
 			value = value + add / 8
