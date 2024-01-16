@@ -162,8 +162,7 @@ function Conductor.getBPMChangeFromStep(bpmChanges, step, from)
 		return bpmChanges[size]
 	end
 
-	local lastChange = Conductor.getBPMChangeFromIndex(bpmChanges, from), lastChange.step > step
-	local reverse = lastChange.step > step
+	local lastChange, reverse = Conductor.getBPMChangeFromIndex(bpmChanges, from), lastChange.step > step
 	from = lastChange.id
 
 	local i, v = from < 1 and (reverse and size or 1) or from + (reverse and -1 or 1)
@@ -187,8 +186,7 @@ function Conductor.getSectionChange(sectionChanges, section, from)
 		return sectionChanges[size]
 	end
 
-	local lastChange = Conductor.getSectionChangeFromIndex(sectionChanges, from), lastChange.section > section
-	local reverse = lastChange.section > section
+	local lastChange, reverse = Conductor.getSectionChangeFromIndex(sectionChanges, from), lastChange.section > section
 	from = lastChange.id
 
 	local i, v = from < 1 and (reverse and size or 1) or from + (reverse and -1 or 1)
