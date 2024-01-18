@@ -4,20 +4,19 @@ bit32, iter, utf8 = bit, ipairs(math), require "utf8"
 local __string__, __number__, __table__ = "string", "number", "table"
 local __integer__, __float__ = "integer", "float"
 
-function string.split(self, sep, t)
-	t = t or {}
-	for s in self:gmatch((not sep or sep == '') and '(.)' or '([^' .. sep .. ']+)') do
-		table.insert(t, s)
-	end
-	return t
+local split_t
+local function gsplit(s) table.insert(split_t, s) end
+function string:split(sep, t)
+	split_t = t or {}
+	self:gsub((sep and sep ~= "") and "([^" .. sep .. "]+)" or ".", gsplit)
+	return split_t
 end
 
-function string.replace(self, pattern, rep) -- note: you could just do gsub instead of replace
-	return self:gsub('%' .. pattern, rep)
+function string:replace(pattern, rep) -- note: you could just do gsub instead of replace
+	return self:gsub("%" .. pattern, rep)
 end
 
 local s -- see https://luajit.org/extensions.html
-
 s, table.new = pcall(require, "table.new")
 if not s then
 	function table.new( --[[narr, nrec]]) return {} end
@@ -30,8 +29,7 @@ end
 
 if not table.move then
 	function table.move(a1, f, e, t, a2)
-		a2 = a2 or a1
-		for i = f, e do a2[i + t - 1] = a1[i] end
+		a2 = a2 or a1; for i = f, e do a2[i + t - 1] = a1[i] end
 		return a2
 	end
 end
@@ -41,17 +39,15 @@ function table.find(list, value)
 end
 
 function table.remove(list, idx)
-	local v
-	if idx == nil then idx = #list end
+	local n, v = #list
+	if idx == nil then idx = n end
 	if type(idx) == __number__ then
-		v = list[idx]
-		table.move(list, idx + 1, #list, idx)
-		list[#list] = nil
+		v = list[idx]; table.move(list, idx + 1, n, idx)
+		list[n] = nil
 	else
 		local j = 1
-		for i = j, #list do
-			if i > #list then break end
-			if idx(list, i, j) then
+		for i = j, n do
+			if list[i] and idx(list, i, j) then
 				v, list[i] = list[i]
 			else
 				if i ~= j then list[j], list[i] = list[i] end
@@ -63,7 +59,8 @@ function table.remove(list, idx)
 end
 
 function table.reverse(list)
-	for i = 1, #list / 2, 1 do list[i], list[#list - i + 1] = list[#list - 1 + 1], list[i] end
+	local n = #list + 1
+	for i = 1, (n - 1) / 2 do list[i], list[n - i] = list[n - i], list[i] end
 end
 
 function table.delete(list, object)
@@ -82,7 +79,7 @@ end
 
 function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
 
-math.bound = function (...)
+math.bound = function(...)
 	love.markDeprecated(2, "math.bound", "function", "renamed", "math.clamp")
 	return math.clamp(...)
 end
@@ -90,9 +87,7 @@ end
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
 -- EXTRA FUNCTIONS
-math.positive_infinity = math.huge
-math.negative_infinity = -math.huge
-
+math.positive_infinity, math.negative_infinity = math.huge, -math.huge
 math.noise = love.math.perlinNoise or love.math.noise
 math.simplex = love.math.simplexNoise or math.noise
 math.perlin = math.noise
@@ -111,9 +106,44 @@ function checktype(level, value, arg, functionName, expectedType)
 	end
 end
 
-function table.merge(a, b)
-	for i, v in pairs(b) do a[i] = v end
+function string:capitalize() return self:sub(1, 1):upper() .. self:sub(2) end
+
+function string:ext() return self:sub(1 - (self:reverse():find('%.') or 1)) end
+
+function string:hasExt() return self:match("%.([^%.]+)$") ~= nil end
+
+function string:withoutExt() return self:sub(0, -1 - (self:reverse():find('%.') or 1)) end
+
+function string:fileName(parts)
+	parts = self:split(package.config:sub(1, 1), parts)
+	return parts[#parts]
 end
+
+function string:startsWith(prefix) return self:find(prefix, 1, true) == 1 end
+
+function string:endsWith(suffix) return self:find(suffix, 1, true) == #self - #suffix + 1 end
+
+function string:contains(s) return self:find(s) and true or false end
+
+function string:isSpace(pos)
+	pos = self:byte(pos); return pos and (pos > 8 and pos < 14 or pos == 32)
+end
+
+function string:ltrim()
+	local i, r = #self, 1
+	while r <= i and self:isSpace(r) do r = r + 1 end
+	return self:sub(r)
+end
+
+function string:rtrim()
+	local r = #self - 1
+	while r > 0 and self:isSpace(r) do r = r - 1 end
+	return self:sub(1, r)
+end
+
+function string:trim() return self:ltrim():rtrim() end
+
+function table.merge(a, b) for i, v in pairs(b) do a[i] = v end end
 
 function table.keys(list, includeIndices, keys)
 	keys = keys or {}
@@ -122,55 +152,6 @@ function table.keys(list, includeIndices, keys)
 	end
 	return keys
 end
-
-function string.capitalize(self) return self:sub(1, 1):upper() .. self:sub(2) end
-
-function string.ext(self) return self:sub(1 - (self:reverse():find('%.') or 1)) end
-
-function string.hasExt(self)
-	return self:match("%.([^%.]+)$") ~= nil
-end
-
-function string.withoutExt(self)
-	return self:sub(0, -1 - (self:reverse():find('%.') or 1))
-end
-
-function string.fileName(self, parts)
-	parts = parts or {}
-	for part in self:split(package.config:sub(1, 1)) do
-		table.insert(parts, part)
-	end
-	return parts[#parts]
-end
-
-function string.startsWith(self, prefix) return self:find(prefix, 1, true) == 1 end
-
-function string.endsWith(self, suffix)
-	return self:find(suffix, 1, true) == #self - (#suffix - 1)
-end
-
-function string.contains(self, s) return self:find(s) and true or false end
-
-function string.isSpace(self, pos)
-	if (#self < 1 or pos < 1 or pos > #self) then return false end
-	local c = self:byte(pos)
-	return (c > 8 and c < 14) or c == 32
-end
-
-function string.ltrim(self)
-	local i, r = #self, 1
-	while (r <= i and self:isSpace(r)) do r = r + 1 end
-	return self:sub(r)
-end
-
-function string.rtrim(self)
-	local i = #self
-	local r = i - 1
-	while (r > 0 and self:isSpace(r)) do r = r - 1 end
-	return self:sub(1, r)
-end
-
-function string.trim(self) return self:ltrim():rtrim() end
 
 function table.splice(list, start, count, ...)
 	local removed, args = {}, {...}
@@ -211,10 +192,10 @@ end
 -- please use math.floor/round instead if you want the precision to be 0
 function math.truncate(x, precision, round)
 	precision = 10 ^ (precision or 2)
-	return (round and math.round or math.floor)(precision * x) / precision
+	; return (round and math.round or math.floor)(precision * x) / precision
 end
 
-math.roundDecimal = function (...)
+math.roundDecimal = function(...)
 	love.markDeprecated(2, "math.roundDecimal", "function", "renamed", "math.truncate")
 	return math.clamp(...)
 end

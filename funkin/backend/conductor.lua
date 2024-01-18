@@ -202,22 +202,32 @@ function Conductor.getSectionChange(sectionChanges, section, from)
 	return lastChange
 end
 
-function Conductor.getCrotchetAtTime(bpmChanges, time, from)
-	return Conductor.getBPMChangeFromTime(bpmChanges, time, from).stepCrotchet * 4
+function Conductor.stepToTimeFromBPMChange(bpmChange, step, offset)
+	return bpmChange.time + (step - bpmChange.step - offset) * bpmChange.stepCrotchet
 end
 
 function Conductor.stepToTime(bpmChanges, step, offset, from)
-	local lastChange = Conductor.getBPMChangeFromStep(bpmChanges, step, from)
-	return lastChange.time + (step - lastChange.step - offset) * lastChange.stepCrotchet
+	return Conductor.stepToTimeFromBPMChange(Conductor.getBPMChangeFromStep(bpmChanges, step, from), step, offset)
+end
+
+function Conductor.beatToTimeFromBPMChange(bpmChange, beat, offset)
+	return Conductor.stepToTimeFromBPMChange(bpmChange, beat * 4, offset * 4)
 end
 
 function Conductor.beatToTime(bpmChanges, beat, offset, from)
 	return Conductor.stepToTime(bpmChanges, beat * 4, offset * 4, from)
 end
 
+function Conductor.getStepFromBPMChange(bpmChange, time, offset)
+	return bpmChange.step + (time - bpmChange.time - offset) / bpmChange.stepCrotchet
+end
+
 function Conductor.getStep(bpmChanges, time, offset, from)
-	local lastChange = Conductor.getBPMChangeFromTime(bpmChanges, time, from)
-	return lastChange.step + (time - lastChange.time - offset) / lastChange.stepCrotchet
+	return Conductor.getStepFromBPMChange(Conductor.getBPMChangeFromTime(bpmChanges, time, from), time, offset)
+end
+
+function Conductor.getBeatFromBPMChange(bpmChange, time, offset)
+	return Conductor.getStepFromBPMChange(bpmChange, time, offset, from) / 4
 end
 
 function Conductor.getBeat(bpmChanges, time, offset, from)
@@ -277,7 +287,7 @@ function Conductor:update()
 		bpmChange == nil and 0 or bpmChange.id) or self.dummyBPMChange
 
 	self.currentBPMChange = bpmChange
-	self.currentStepFloat = bpmChange.step + (time - bpmChange.time) / bpmChange.stepCrotchet
+	self.currentStepFloat = Conductor.getStepFromBPMChange(bpmChange, time, 0)
 	self.currentStep = math.floor(self.currentStepFloat)
 
 	self.currentBeatFloat = self.currentStepFloat / 4

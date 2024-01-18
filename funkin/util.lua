@@ -1,5 +1,7 @@
 local util = {}
 
+-- errors are there so you can found out which one thats using these
+-- fuckass functions that are deprecated or incorrectly
 function util.coolLerp(x, y, i, delta)
 	if i < 1 then error("BAD, ALSO USE DELTA AS THE 4RD ARG IDIOT") end
 	--if delta == nil then error("USE DELTA IDIOT") end

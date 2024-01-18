@@ -101,6 +101,6 @@ if love.system.getDevice() == "Mobile" then
 		end
 	end
 end
-local Display = Settings:base("Display", data)
 
+local Display = Settings:base("Display", data)
 return Display

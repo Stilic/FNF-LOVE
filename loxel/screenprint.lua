@@ -60,11 +60,11 @@ function ScreenPrint.update(dt)
 		print.timer = print.timer - dt
 
 		if print.timer > 0 then
-			print.bg.y = math.lerp(print.bg.y,
-				ScreenPrint.game.height - 15 - print.bg.height, 0.2)
+			print.bg.y = math.lerp(ScreenPrint.game.height - 15 - print.bg.height,
+				print.bg.y, math.exp(-dt * 12))
 		else
-			print.bg.y = math.lerp(print.bg.y,
-				ScreenPrint.game.height + print.bg.height + 5, 0.1)
+			print.bg.y = math.lerp(ScreenPrint.game.height + print.bg.height + 5,
+				print.bg.y, math.exp(-dt * 6))
 		end
 
 		if print.bg.y >= ScreenPrint.game.height + print.bg.height and print.timer < 0 then

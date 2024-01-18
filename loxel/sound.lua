@@ -3,9 +3,13 @@ local Sound = Basic:extend("Sound")
 
 function Sound:new(x, y)
 	Sound.super.new(self)
+	self:revive()
 	self.visible, self.cameras = nil, nil
+end
 
-	self:reset(true, x, y)
+function Sound:revive()
+	Sound.super.revive(self)
+	self:reset(true)
 
 	self.__volume = 1
 	self.__pitch = 1
@@ -19,13 +23,11 @@ function Sound:reset(cleanup, x, y)
 	elseif self.__source ~= nil then
 		self:stop()
 	end
-	self:setPosition(x, y)
+	self:setPosition(x or self.x, y or self.y)
 
 	self.looped = false
 	self.autoDestroy = false
 	self.radius = 0
-	self.__paused = true
-	self.__isFinished = false
 
 	--[[
 	self.__amplitudeLeft = 0.0
@@ -45,6 +47,8 @@ function Sound:cleanup()
 			self.__source:release()
 		end
 	end
+	self.__paused = true
+	self.__isFinished = false
 	self.__isSource = false
 	self.__source = nil
 end
@@ -64,7 +68,7 @@ function Sound:setPosition(x, y)
 end
 
 function Sound:load(asset, autoDestroy, onComplete)
-	if asset == nil then return end
+	if not self.exists or asset == nil then return end
 	self:cleanup()
 
 	self.__isSource = asset:typeOf("SoundData")
@@ -87,7 +91,7 @@ function Sound:init(autoDestroy, onComplete)
 end
 
 function Sound:play(volume, looped, pitch, restart)
-	if not self.exists or not self.active or not self.__source then return self end
+	if not self.active or not self.__source then return self end
 
 	if restart then
 		pcall(self.__source.stop, self.__source)
@@ -164,7 +168,8 @@ function Sound:isPlaying()
 end
 
 function Sound:isFinished()
-	return not self.__paused and not self:isPlaying() and not self.__source:isLooping()
+	return self.active and not self.__paused and not self:isPlaying() and
+		not self.__source:isLooping()
 end
 
 function Sound:tell()
