@@ -69,7 +69,7 @@ local fpsFormat, tpsFormat, inputsFormat = "FPS: %d", "TPS: %d", "Inputs: %.2fms
 local debugFormat = "%s\nRAM: %s | VRAM: %s\n%s | %s\nDRAWS: %d"
 
 -- NOTE, no matter how precision is, in windows 10 as of now (<=love 11)
--- will be always 500ms, unless its using SDL3 or CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag
+-- will be always 12ms, unless its using SDL3 or CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag
 local __step__, __quit__, __count__, __left__ = "step", "quit", "count", "left"
 local real_dt, real_fps = 0, 0
 local sleep = love.timer.sleep
@@ -82,27 +82,23 @@ local channel, active, tick = getChannel"event", getChannel"event_active", getCh
 local getTime, sleep, step = love.timer.getTime, love.timer.sleep, "step"
 
 local t, s, clock, prev, v, push = {}, 0, os.clock()
-function push(i, a, ...) if a then t[i] = a; return push(i + 1, ...) end return i end
+function push(i, a, ...) if a then t[i] = a; return push(i + 1, ...) end return i - 1 end
 while s < 1 do
 	v = active:pop(); if v == 0 then break elseif v == 1 then s = 0 end
 
 	pcall(pump); prev, clock = clock, getTime()
 	for name, a, b, c, d, e, f in poll do
-		--for i = push(1, clock, name, a, b, c, d, e, f), #t do t[i] = nil end
-		--channel:push(t)
-		v = push(1, a, b, c, d, e, f) - 1
+		v = push(1, a, b, c, d, e, f)
 		channel:push(name); channel:push(clock); channel:push(v)
 		for i = 1, v do channel:push(t[i]) end
 	end
 
-	v = clock - prev
-	tick:clear(); tick:push(v)
+	v = clock - prev; tick:clear(); tick:push(v)
 	collectgarbage(step)
 
 	s = s + v
 	if v < 0.001 then sleep(0.001) else sleep(0.001 - v) end
-end
-]]
+end]]
 
 local eventhandlers = {
 	keypressed = function(t, b, s, r) return love.keypressed(b, s, r, t) end,
@@ -128,8 +124,7 @@ function love.run()
 	if love.math then love.math.setRandomSeed(os.time()) end
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end
 
-	love.timer.step()
-	collectgarbage()
+	love.timer.step(); collectgarbage()
 
 	local origin, clear, printf = love.graphics.origin, love.graphics.clear, love.graphics.printf
 	local present, setColor = love.graphics.present, love.graphics.setColor
@@ -206,12 +201,6 @@ function love.run()
 				end
 				a = channel_event:pop()
 			end
-			--[[a, b = channel_event:pop()
-			while a do
-				a, b = event(unpack(a))
-				if a then return a, b end
-				a = channel_event:pop()
-			end]]
 		elseif a then
 			thread_event:start()
 			channel_event:clear()

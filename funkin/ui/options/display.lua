@@ -18,11 +18,7 @@ local data = {
 	{"fullscreen", "Fullscreen", "boolean", function()
 		local value = not ClientPrefs.data.fullscreen
 		ClientPrefs.data.fullscreen = value
-
-		local res = ClientPrefs.data.resolution
-		love.window.updateMode(Project.width * res, Project.height * res, {
-			fullscreen = value
-		})
+		love.window.setFullscreen(value)
 	end},
 	{"resolution", "Resolution", "number", function(add)
 		local value = ClientPrefs.data.resolution
