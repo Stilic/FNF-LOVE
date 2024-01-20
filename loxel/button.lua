@@ -29,8 +29,7 @@ end
 function Button:update(dt)
 	if not self.pressed then
 		self.alpha = math.lerp(self.releasedAlpha, self.alpha, math.exp(-dt * 14.4))
-		self.line.width = math.lerp(self.releasedLineWidth,
-			self.alpha, math.exp(-dt * 14.4))
+		self.line.width = math.lerp(self.releasedLineWidth, self.line.width, math.exp(-dt * 12))
 	else
 		self.alpha = self.pressedAlpha
 		self.line.width = self.pressedLineWidth
