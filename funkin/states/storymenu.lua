@@ -132,8 +132,6 @@ function StoryMenuState:enter()
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
-		self.buttons.type = "roundrect"
-		self.buttons.lined = true
 		self.buttons.width = 134
 		self.buttons.height = 134
 

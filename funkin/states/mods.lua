@@ -42,8 +42,6 @@ function ModsState:enter()
 		Discord.changePresence({details = "In the Menus", state = "Mods Menu"})
 	elseif device == "Mobile" then
 		self.buttons = ButtonGroup()
-		self.buttons.type = "roundrect"
-		self.buttons.lined = true
 		self.buttons.width = 134
 		self.buttons.height = 134
 

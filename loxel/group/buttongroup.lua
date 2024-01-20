@@ -19,6 +19,7 @@ local function typeTransform(button, type) button.type = type end
 local function lineWidthTransform(button, lineWidth) button.line.width = lineWidth end
 local function linedTransform(button, lined) button.lined = lined end
 local function stunnedTransform(button, stunned) button.stunned = stunned end
+local function roundTransform(button, round) button.config.round = round end
 
 --------------
 
@@ -42,6 +43,7 @@ function ButtonGroup:new()
 
 	self.__lined = self.lined
 	self.line.__width = self.line.width
+	self.config.__round = self.config.round
 
 	self.group = Group()
 	self.__graphics = self.group.members
@@ -99,6 +101,10 @@ function ButtonGroup:update(dt)
 	if self.line.__width ~= self.line.width then
 		tranformChildren(self, lineWidthTransform, self.line.width)
 		self.line.__width = self.line.width
+	end
+	if self.config.__round ~= self.config.round then
+		tranformChildren(self, roundTransform, self.config.round)
+		self.config.__round = self.config.round
 	end
 	self.group:update(dt)
 end

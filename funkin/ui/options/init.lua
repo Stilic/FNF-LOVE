@@ -10,9 +10,6 @@ function Options:new(showBG, completionCallback)
 	Options.super.new(self)
 
 	self.settingsNames = {"Gameplay", "Display", "Controls"}
-	if love.system.getDevice() == "Mobile" then
-		table.delete(self.settingsNames, "Controls")
-	end
 
 	self.showBG = showBG
 	self.completionCallback = completionCallback
@@ -71,8 +68,6 @@ function Options:enter(parent)
 		game.cameras.add(camButtons, false)
 
 		self.buttons = ButtonGroup()
-		self.buttons.type = "roundrect"
-		self.buttons.lined = true
 		self.buttons.width = 134
 		self.buttons.height = 134
 		self.buttons.cameras = {camButtons}

@@ -16,7 +16,7 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 		type = "open",
 		radius = 100,
 		angle = {0, 180},
-		round = {15, 15},
+		round = {0, 0},
 		segments = 36,
 		vertices = nil
 	}
@@ -88,8 +88,6 @@ function Graphic:__render(camera)
 	love.graphics.rotate(math.rad(self.angle))
 
 	if self.type == "rectangle" then
-		love.graphics.rectangle(self.fill, x, y, w, h)
-	elseif self.type == "roundrect" then
 		love.graphics.rectangle(self.fill, x, y, w, h, rnd[1], rnd[2], seg)
 	elseif self.type == "polygon" and self.config.vertices then
 		love.graphics.translate(x, y)
@@ -104,8 +102,6 @@ function Graphic:__render(camera)
 		love.graphics.setColor(self.line.color[1], self.line.color[2],
 			self.line.color[3], self.alpha)
 		if self.type == "rectangle" then
-			love.graphics.rectangle("line", x, y, w, h)
-		elseif self.type == "roundrect" then
 			love.graphics.rectangle("line", x, y, w, h, rnd[1], rnd[2], seg)
 		elseif self.type == "polygon" and self.config.vertices then
 			love.graphics.polygon("line", self.config.vertices)
