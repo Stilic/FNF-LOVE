@@ -13,17 +13,15 @@ function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)
 function ScriptsHandler:loadDirectory(...)
 	for _, dir in ipairs({...}) do
 		if Mods.currentMod then
-			for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getMods(
-				dir))) do
+			for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getMods(dir))) do
 				if file:endsWith('.lua') then
-					self:loadScript(util.removeExtension(dir .. "/" .. file))
+					self:loadScript(string.withoutExt(dir .. "/" .. file))
 				end
 			end
 		end
-		for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(
-			dir))) do
+		for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(dir))) do
 			if file:endsWith('.lua') then
-				self:loadScript(util.removeExtension(dir .. "/" .. file))
+				self:loadScript(string.withoutExt(dir .. "/" .. file))
 			end
 		end
 	end
@@ -33,11 +31,11 @@ end
 ---@param func string
 ---@param ... any
 function ScriptsHandler:call(func, ...)
-	local retValue = {cancelled = false}
+	local retValue = Script.Event_Continue
 	for _, script in ipairs(self.scripts) do
 		local retScript = script:call(func, ...)
-		if (retScript == Script.Event_Cancel) then
-			retValue.cancelled = true
+		if retScript == Script.Event_Cancel then
+			retValue = Script.Event_Cancel
 		end
 	end
 	return retValue

@@ -39,9 +39,9 @@ function GameOverSubstate:new(x, y)
 		local w = self.buttons.width
 
 		local enter = Button(game.width - w, game.height - w, 0, 0, "return")
-		enter:setColor(Color.GREEN)
+		enter.color = Color.GREEN
 		local back = Button(enter.x - w, enter.y, 0, 0, "escape")
-		back:setColor(Color.RED)
+		back.color = Color.RED
 
 		self.buttons:add(enter)
 		self.buttons:add(back)

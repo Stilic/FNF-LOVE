@@ -17,8 +17,6 @@ function Button:new(x, y, width, height, key, color)
 	self.stunned = false
 end
 
-function Button:setColor(color) self.color = color end
-
 function Button:update(dt)
 	if not self.pressed then
 		self.alpha = math.lerp(self.releasedAlpha, self.alpha, math.exp(-dt * 14.4))

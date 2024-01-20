@@ -10,6 +10,7 @@ function Object:new(x, y)
 	self.width, self.height = 0, 0
 
 	self.offset = {x = 0, y = 0}
+	self.origin = {x = 0, y = 0}
 	self.scale = {x = 1, y = 1}
 	self.zoom = {x = 1, y = 1} -- same as scale
 	self.scrollFactor = {x = 1, y = 1}
@@ -55,6 +56,23 @@ function Object:screenCenter(axes)
 	if axes:find("x") then self.x = (game.width - self.width) / 2 end
 	if axes:find("y") then self.y = (game.height - self.height) / 2 end
 	return self
+end
+
+function Object:updateHitbox()
+	local width, height
+	if self.getWidth then width, height = self:getWidth(), self:getHeight() end
+	self:centerOffsets(width, height)
+	self:centerOrigin(width, height)
+end
+
+function Object:centerOffsets(__width, __height)
+	self.offset.x = ((__width or 0) - self.width) / 2
+	self.offset.y = ((__height or 0) - self.height) / 2
+end
+
+function Object:centerOrigin(__width, __height)
+	self.origin.x = (__width or self.width) / 2
+	self.origin.y = (__height or self.height) / 2
 end
 
 function Object:getMultColor(r, g, b, a)

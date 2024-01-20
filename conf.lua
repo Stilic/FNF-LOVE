@@ -14,8 +14,7 @@ function love.conf(t)
 		4. Stencil on Canvas Broke
 	]]
 	t.renderers = {"metal", "opengl"}
-	t.excluderenderers = {"vulkan"}
-	--t.renderers = {"vulkan"}
+	--t.excluderenderers = {"vulkan"}
 
 	-- we'll initialize it in run.lua
 	-- reason why is, we need it for mobile window to not be bugging

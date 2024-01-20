@@ -148,21 +148,19 @@ local defaultTexture = love.graphics.newImage('art/default.png')
 function Sprite:new(x, y, texture)
 	Sprite.super.new(self, x, y)
 
-	self.origin = {x = 0, y = 0}
-	self.__width, self.__height = self.width, self.height
-
 	self.texture = defaultTexture
 
 	self.clipRect = nil
-
-	self.__frames = nil
-	self.__animations = nil
 
 	self.curAnim = nil
 	self.curFrame = nil
 	self.animFinished = nil
 	self.animPaused = false
 
+	self.__frames = nil
+	self.__animations = nil
+
+	self.__width, self.__height = self.width, self.height
 	self.__rectangleMode = false
 
 	if texture then self:loadTexture(texture) end
@@ -471,8 +469,7 @@ function Sprite:__render(camera)
 	local f = self:getCurrentFrame()
 
 	local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
-		self.scale.x * self.zoom.x,
-		self.scale.y * self.zoom.y,
+		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
 		self.origin.x, self.origin.y
 
 	if self.flipX then sx = -sx end
@@ -483,10 +480,8 @@ function Sprite:__render(camera)
 
 	if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
 
-	love.graphics.setShader(self.shader)
-	love.graphics.setBlendMode(self.blend)
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-		self.alpha)
+	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
+	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
 
 	if self.clipRect then
 		stencilSprite, stencilX, stencilY = self, x, y

@@ -18,41 +18,37 @@ end
 
 local s -- see https://luajit.org/extensions.html
 s, table.new = pcall(require, "table.new")
-if not s then
-	function table.new( --[[narr, nrec]]) return {} end
-end
+if not s then function table.new( --[[narray, nhash]]) return {} end end
 
 s, table.clear = pcall(require, "table.clear")
-if not s then
-	function table.clear(list) for i in pairs(list) do list[i] = nil end end
-end
+if not s then function table.clear(t) for i in pairs(t) do t[i] = nil end end end
 
 if not table.move then
-	function table.move(a1, f, e, t, a2)
-		a2 = a2 or a1; for i = f, e do a2[i + t - 1] = a1[i] end
-		return a2
+	function table.move(a, f, e, t, b)
+		b = b or a; for i = f, e do b[i + t - 1] = a[i] end
+		return b
 	end
 end
 
-function table.find(list, value)
-	for i = 1, #list do if list[i] == value then return i end end
+function table.find(t, value)
+	for i = 1, #t do if t[i] == value then return i end end
 end
 
+local ogremove = table.remove or function(t, pos)
+	local n = #t; if pos == nil then pos = n end;
+	local v = t[pos]; if pos < n then table.move(t, pos + 1, n, pos) end;
+	t[n] = nil; return v
+end
 function table.remove(list, idx)
-	local n, v = #list
-	if idx == nil then idx = n end
-	if type(idx) == __number__ then
-		v = list[idx]; table.move(list, idx + 1, n, idx)
-		list[n] = nil
-	else
-		local j = 1
-		for i = j, n do
-			if list[i] and idx(list, i, j) then
-				v, list[i] = list[i]
-			else
-				if i ~= j then list[j], list[i] = list[i] end
-				j = j + 1
-			end
+	if idx == nil or type(idx) == __number__ then return ogremove(list, idx) end
+
+	local j, v = 1
+	for i = j, #list do
+		if list[i] and idx(list, i, j) then
+			v, list[i] = list[i]
+		else
+			if i ~= j then list[j], list[i] = list[i] end
+			j = j + 1
 		end
 	end
 	return v
@@ -79,11 +75,6 @@ end
 
 function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
 
-math.bound = function(...)
-	love.markDeprecated(2, "math.bound", "function", "renamed", "math.clamp")
-	return math.clamp(...)
-end
-
 function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
 -- EXTRA FUNCTIONS
@@ -95,24 +86,28 @@ math.perlin = math.noise
 function __NULL__() end
 
 -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
-function switch(param, case_table)
-	return (case_table[param] or case_table.default or __NULL__)()
-end
+function switch(param, case_table) return (case_table[param] or case_table.default or __NULL__)() end
+
+function bind(self, callback) return function(...) callback(self, ...) end end
 
 local checktype_str = "bad argument #%d to '%s' (%s expected, got %s)"
+
 function checktype(level, value, arg, functionName, expectedType)
 	if type(value) ~= expectedType then
 		error(checktype_str:format(arg, functionName, expectedType, type(value)), level + 1)
 	end
 end
 
+local regex_ext = "%.([^%.]+)$"
+local regex_withoutExt = "(.+)%..+$"
+
+function string:ext() return self:match(regex_ext) or self end
+
+function string:hasExt() return self:match(regex_ext) ~= nil end
+
+function string:withoutExt() return self:match(regex_withoutExt) or self end
+
 function string:capitalize() return self:sub(1, 1):upper() .. self:sub(2) end
-
-function string:ext() return self:sub(1 - (self:reverse():find('%.') or 1)) end
-
-function string:hasExt() return self:match("%.([^%.]+)$") ~= nil end
-
-function string:withoutExt() return self:sub(0, -1 - (self:reverse():find('%.') or 1)) end
 
 function string:fileName(parts)
 	parts = self:split(package.config:sub(1, 1), parts)
@@ -146,35 +141,25 @@ function string:trim() return self:ltrim():rtrim() end
 function table.merge(a, b) for i, v in pairs(b) do a[i] = v end end
 
 function table.keys(list, includeIndices, keys)
-	keys = keys or {}
-	for i in includeIndices and iter or next, list, includeIndices and 0 or nil do
-		table.insert(keys, i)
-	end
+	keys = keys or table.new(#list, 0)
+	for i in (includeIndices and pairs or ipairs)(list) do table.insert(keys, i) end
 	return keys
 end
 
+function table.clone(list, clone)
+	clone = clone or table.new(#list, 0)
+	for i, v in pairs(list) do clone[i] = type(v) == __table__ and table.clone(v) or v end
+	return clone
+end
+
 function table.splice(list, start, count, ...)
-	local removed, args = {}, {...}
-	if start < 0 then start = #list + start + 1 end
-	for i = 1, count or 0 do
-		if list[start] then
-			table.insert(removed, list[start])
-			table.remove(list, start)
-		else
-			break
-		end
+	local removed, args, n = {}, {...}, #list
+	if start < 0 then start = n + start + 1 end
+	for i = 0, math.min(count or 0, n - start) do
+		table.insert(removed, table.remove(list, start))
 	end
 	for i = #args, 1, -1 do table.insert(list, start, args[i]) end
 	return removed
-end
-
--- this is bad
-function table.clone(list, includeIndices, clone)
-	clone = clone or {}
-	for i, v in includeIndices and iter or next, list, includeIndices and 0 or nil do
-		clone[i] = type(v) == __table__ and table.clone(v) or v
-	end
-	return clone
 end
 
 function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
@@ -195,14 +180,9 @@ function math.truncate(x, precision, round)
 	; return (round and math.round or math.floor)(precision * x) / precision
 end
 
-math.roundDecimal = function(...)
-	love.markDeprecated(2, "math.roundDecimal", "function", "renamed", "math.truncate")
-	return math.clamp(...)
-end
-
-local intervals, countbytesf, i = {"B", "KB", "MB", "GB" --[[, "TB"]]}, "%.2f %s"
-function math.countbytes(x)
-	i = 1
+local intervals, countbytesf = {"B", "KB", "MB", "GB" --[[, "TB"]]}, "%.2f %s"
+function math.countbytes(x, i)
+	i = i or 1
 	while x >= 0x400 and i < 4 do
 		x, i = x / 0x400, i + 1
 	end

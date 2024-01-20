@@ -85,9 +85,9 @@ function PlayState:enter()
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
 	PlayState.conductor = Conductor():setSong(PlayState.SONG)
-	PlayState.conductor.onStep = function(s) self:step(s) end
-	PlayState.conductor.onBeat = function(b) self:beat(b) end
-	PlayState.conductor.onSection = function(s) self:section(s) end
+	PlayState.conductor.onStep = bind(self, self.step)
+	PlayState.conductor.onBeat = bind(self, self.beat)
+	PlayState.conductor.onSection = bind(self, self.section)
 
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts")
@@ -345,8 +345,8 @@ function PlayState:enter()
 	if self.downScroll then textOffset = -textOffset end
 
 	local fontScore = paths.getFont("vcr.ttf", 17)
-	self.scoreTxt = Text(0, self.healthBarBG.y + textOffset, "", fontScore,
-		{1, 1, 1}, "center")
+	self.scoreTxt = Text(game.width / 2, self.healthBarBG.y + textOffset + 8, "", fontScore, {1, 1, 1},
+		"center")
 	self.scoreTxt.outline.width = 1
 	self.scoreTxt.antialiasing = false
 
@@ -490,51 +490,46 @@ function PlayState:startCountdown()
 		self.buttons.visible = true
 		game.buttons.add(self.buttons)
 	end
-	self:section(0)
 
 	local event = self.scripts:call("startCountdown")
-	if not event.cancelled then
-		self.startedCountdown = true
+	if event == Script.Event_Cancel then return end
 
-		local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
-		local countdownData = {
-			{sound = basePath .. "/intro3",  image = nil},
-			{sound = basePath .. "/intro2",  image = basePath .. "/ready"},
-			{sound = basePath .. "/intro1",  image = basePath .. "/set"},
-			{sound = basePath .. "/introGo", image = basePath .. "/go"}
-		}
+	self.startedCountdown = true
 
-		local crotchet = PlayState.conductor.crotchet / 1000
-		for swagCounter = 0, 4 do
-			self.countdownTimer:after(crotchet * (swagCounter + 1), function()
-				local data = countdownData[swagCounter + 1]
-				if data then
-					if data.sound then
-						game.sound.play(paths.getSound(data.sound))
-					end
-					if data.image then
-						local countdownSprite = Sprite()
-						countdownSprite:loadTexture(paths.getImage(data.image))
-						countdownSprite.cameras = {self.camHUD}
-						if PlayState.pixelStage then
-							countdownSprite.scale = {x = 6, y = 6}
-						end
-						countdownSprite:updateHitbox()
-						countdownSprite.antialiasing = not PlayState.pixelStage
-						countdownSprite:screenCenter()
+	local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
+	local countdownData = {
+		{sound = basePath .. "/intro3",  image = nil},
+		{sound = basePath .. "/intro2",  image = basePath .. "/ready"},
+		{sound = basePath .. "/intro1",  image = basePath .. "/set"},
+		{sound = basePath .. "/introGo", image = basePath .. "/go"}
+	}
 
-						Timer.tween(crotchet, countdownSprite, {alpha = 0},
-							"in-out-cubic", function()
-								self:remove(countdownSprite)
-								countdownSprite:destroy()
-							end)
-						self:add(countdownSprite)
-					end
+	local crotchet = PlayState.conductor.crotchet / 1000
+	for swagCounter = 0, 4 do
+		self.countdownTimer:after(crotchet * (swagCounter + 1), function()
+			local data = countdownData[swagCounter + 1]
+			if not data then return end
+
+			if data.sound then game.sound.play(paths.getSound(data.sound)) end
+			if data.image then
+				local countdownSprite = Sprite()
+				countdownSprite:loadTexture(paths.getImage(data.image))
+				countdownSprite.cameras = {self.camHUD}
+				if PlayState.pixelStage then
+					countdownSprite.scale = {x = 6, y = 6}
 				end
+				countdownSprite:updateHitbox()
+				countdownSprite.antialiasing = not PlayState.pixelStage
+				countdownSprite:screenCenter()
 
-				self:beat(swagCounter - 4)
-			end)
-		end
+				Timer.tween(crotchet, countdownSprite, {alpha = 0},
+					"in-out-cubic", function()
+						self:remove(countdownSprite)
+						countdownSprite:destroy()
+					end)
+				self:add(countdownSprite)
+			end
+		end)
 	end
 end
 
@@ -627,7 +622,7 @@ function PlayState:update(dt)
 		songTime = game.sound.music:getDuration() - songTime
 	end
 
-	self.timeTxt.content = util.getFormattedTime(songTime)
+	self.timeTxt.content = util.formatTime(songTime)
 
 	self.timeArc.x = self.timeArcBG.x
 	local timeAngle = ((PlayState.conductor.time / 1000) /
@@ -647,7 +642,7 @@ function PlayState:update(dt)
 		end
 		if PAUSE_PRESSED then
 			local event = self.scripts:call("paused")
-			if not event.cancelled then
+			if event ~= Script.Event_Cancel then
 				game.sound.music:pause()
 				if self.vocals then self.vocals:pause() end
 
@@ -960,7 +955,7 @@ function PlayState:onSettingChange(setting)
 		if ClientPrefs.data.timeType == "left" then
 			songTime = game.sound.music:getDuration() - songTime
 		end
-		self.timeTxt.content = util.getFormattedTime(songTime)
+		self.timeTxt.content = util.formatTime(songTime)
 
 		self.botplayTxt.visible = self.botPlay
 		self.botplayTxt.y = self.downScroll and 8 or 688
@@ -988,7 +983,7 @@ function PlayState:onSettingChange(setting)
 
 		local textOffset = 36
 		if self.downScroll then textOffset = -textOffset end
-		self.scoreTxt.y = self.healthBarBG.y + textOffset
+		self.scoreTxt.y = self.healthBarBG.y + textOffset + 8
 
 		self.timeArcBG.y = self.downScroll and 45 or game.height - 45
 		self.timeArc.y = self.timeArcBG.y
@@ -1189,50 +1184,49 @@ function PlayState:endSong(skip)
 	end
 
 	local event = self.scripts:call("endSong")
+	if event == Script.Event_Cancel then return end
 
-	if not event.cancelled then
-		local formatSong = paths.formatToSongPath(self.SONG.song)
-		Highscore.saveScore(formatSong, self.score, self.songDifficulty)
+	local formatSong = paths.formatToSongPath(self.SONG.song)
+	Highscore.saveScore(formatSong, self.score, self.songDifficulty)
 
-		if self.chartingMode then
-			game.switchState(ChartingState())
-			return
-		end
+	if self.chartingMode then
+		game.switchState(ChartingState())
+		return
+	end
 
-		if self.storyMode then
-			PlayState.storyScore = PlayState.storyScore + self.score
+	if self.storyMode then
+		PlayState.storyScore = PlayState.storyScore + self.score
 
-			table.remove(PlayState.storyPlaylist, 1)
+		table.remove(PlayState.storyPlaylist, 1)
 
-			if #PlayState.storyPlaylist > 0 then
-				PlayState.prevCamFollow = {
-					x = game.camera.target.x,
-					y = game.camera.target.y
-				}
-				game.sound.music:stop()
-				if self.vocals then self.vocals:stop() end
+		if #PlayState.storyPlaylist > 0 then
+			PlayState.prevCamFollow = {
+				x = game.camera.target.x,
+				y = game.camera.target.y
+			}
+			game.sound.music:stop()
+			if self.vocals then self.vocals:stop() end
 
-				if love.system.getDevice() == 'Desktop' then
-					local detailsText = "Freeplay"
-					if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+			if love.system.getDevice() == 'Desktop' then
+				local detailsText = "Freeplay"
+				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
-					Discord.changePresence({
-						details = detailsText,
-						state = 'Loading next song..'
-					})
-				end
-
-				PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
-				game.resetState(true)
-			else
-				Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
-				game.switchState(StoryMenuState())
-				game.sound.playMusic(paths.getMusic("freakyMenu"))
+				Discord.changePresence({
+					details = detailsText,
+					state = 'Loading next song..'
+				})
 			end
+
+			PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
+			game.resetState(true)
 		else
-			game.switchState(FreeplayState())
+			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
+			game.switchState(StoryMenuState())
 			game.sound.playMusic(paths.getMusic("freakyMenu"))
 		end
+	else
+		game.switchState(FreeplayState())
+		game.sound.playMusic(paths.getMusic("freakyMenu"))
 	end
 
 	self.scripts:call("postEndSong")
@@ -1418,60 +1412,52 @@ function PlayState:focus(f)
 	end
 end
 
+local ratingFormat, noRating = "(%s) %s", "?"
+PlayState.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
+
 function PlayState:recalculateRating(rating)
-	if self.totalPlayed > 0 then
-		self.accuracy = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
-	end
-
-	local ratingStr = (self.totalPlayed > 0 and "({fc}) {r}" or "?")
-
 	if rating then
-		local category = rating .. "s"
-		if self[category] then
-			self[category] = self[category] + 1
-		end
+		rating = rating .. "s"
+		if self[rating] then self[rating] = self[rating] + 1 end
 	end
 
-	local class = ""
-	if self.accuracy >= 0.995 then
-		class = "S+"
-	elseif self.accuracy >= 0.960 then
-		class = "S"
-	elseif self.accuracy >= 0.905 then
-		class = "A"
-	elseif self.accuracy >= 0.850 then
-		class = "B"
-	elseif self.accuracy >= 0.795 then
-		class = "C"
-	elseif self.accuracy >= 0.745 then
-		class = "D"
-	elseif self.accuracy < 0.750 then
-		class = "E"
+	local ratingStr = noRating
+	if self.totalPlayed > 0 then
+		local accuracy, class = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
+		if accuracy >= 1 then class = "X"
+		elseif accuracy >= 0.99 then class = "S+"
+		elseif accuracy >= 0.95 then class = "S"
+		elseif accuracy >= 0.90 then class = "A"
+		elseif accuracy >= 0.80 then class = "B"
+		elseif accuracy >= 0.70 then class = "C"
+		elseif accuracy >= 0.60 then class = "D"
+		elseif accuracy >= 0.50 then class = "E"
+		else
+			class = "F"
+		end
+		self.accuracy = accuracy
+
+		local fc
+		if self.misses < 1 then
+			if self.bads > 0 or self.shits > 0 then fc = "FC"
+			elseif self.goods > 0 then fc = "GFC"
+			elseif self.sicks > 0 then fc = "SFC"
+			else
+				fc = "FC"
+			end
+		else
+			fc = self.misses >= 10 and "Clear" or "SDCB"
+		end
+
+		ratingStr = ratingFormat:format(fc, class)
 	end
 
-	local FC = ""
-	if self.misses < 1 then
-		if self.sicks > 0 and self.goods < 1 and self.bads < 1 and self.shits < 1 then
-			FC = "SFC"
-		elseif self.goods > 0 and self.bads < 1 and self.shits < 1 then
-			FC = "GFC"
-		elseif self.bads > 0 or self.shits > 0 then
-			FC = "FC"
-		end
-	else
-		FC = "SDCB"
-		if self.misses >= 10 then
-			FC = "Clear"
-		end
-	end
-	self.rating = ratingStr:gsub("{fc}", FC):gsub("{r}", class)
+	self.rating = ratingStr
+	self.scoreTxt.content = PlayState.scoreFormat
+		:gsub("%%score", math.floor(self.score)):gsub("%%misses", math.floor(self.misses))
+		:gsub("%%accuracy", math.truncate(self.accuracy * 100, 2)):gsub("%%rating", ratingStr)
 
-	self.scoreTxt.content = "Score: " .. self.score ..
-		" // Combo Breaks: " .. self.misses ..
-		" // " .. math.truncate(self.accuracy * 100, 2) ..
-		"% - " .. self.rating
-
-	self.scoreTxt:screenCenter("x")
+	self.scoreTxt:updateHitbox()
 end
 
 function PlayState:leave()

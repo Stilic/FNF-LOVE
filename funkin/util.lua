@@ -5,52 +5,31 @@ function util.coolLerp(x, y, i, delta)
 end
 
 function util.newGradient(dir, ...)
-	local isHorizontal = true
-	if dir == "vertical" then isHorizontal = false end
+	local colorSize, meshData = select("#", ...) - 1, {}
+	local off = dir:sub(1, 1):lower() == "v" and 1 or 2
 
-	local colorLen, meshData = select("#", ...), {}
-	if isHorizontal then
-		for i = 1, colorLen do
-			local color = select(i, ...)
-			local x = (i - 1) / (colorLen - 1)
+	for i = 0, colorSize do
+		local idx, color, x = i * 2 + 1, select(i + 1, ...), i / colorSize
+		local r, g, b, a = color[1], color[2], color[3], color[4] or 1
 
-			meshData[#meshData + 1] = {
-				x, 1, x, 1, color[1], color[2], color[3], color[4] or 1
-			}
-			meshData[#meshData + 1] = {
-				x, 0, x, 0, color[1], color[2], color[3], color[4] or 1
-			}
-		end
-	else
-		for i = 1, colorLen do
-			local color = select(i, ...)
-			local y = (i - 1) / (colorLen - 1)
+		meshData[idx] = {x, x, x, x, r, g, b, a}
+		meshData[idx + 1] = {x, x, x, x, r, g, b, a}
 
-			meshData[#meshData + 1] = {
-				1, y, 1, y, color[1], color[2], color[3], color[4] or 1
-			}
-			meshData[#meshData + 1] = {
-				0, y, 0, y, color[1], color[2], color[3], color[4] or 1
-			}
+		for o = off, off + 2, 2 do
+			meshData[idx][o], meshData[idx + 1][o] = 1, 0
 		end
 	end
 
 	return love.graphics.newMesh(meshData, "strip", "static")
 end
 
-function util.removeExtension(filename)
-	local nameWithoutExt = filename:match("(.+)%..+$")
-	if nameWithoutExt then
-		return nameWithoutExt
-	else
-		return filename
-	end
-end
-
-function util.getFormattedTime(ms)
-	local total = math.floor(ms)
-	return string.format("%.f", math.floor(total / 60)) .. ":" ..
-		string.format("%02.f", total % 60)
+local time, clock, ms = "%d:%02d", "%d:%02d:%02d", "%.3f"
+function util.formatTime(seconds, includeMS)
+	local minutes = seconds / 60
+	local str = minutes < 60 and time:format(minutes, seconds % 60) or
+		clock:format(minutes / 60, minutes % 60, seconds % 60)
+	if not includeMS then return str end
+	return str .. ms:format(seconds - math.floor(seconds)):sub(2)
 end
 
 return util

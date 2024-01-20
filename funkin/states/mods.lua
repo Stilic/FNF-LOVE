@@ -53,9 +53,9 @@ function ModsState:enter()
 		local right = Button(left.x + w, left.y, 0, 0, "right")
 
 		local enter = Button(game.width - w, left.y, 0, 0, "return")
-		enter:setColor(Color.GREEN)
+		enter.color = Color.GREEN
 		local back = Button(enter.x - w, left.y, 0, 0, "escape")
-		back:setColor(Color.RED)
+		back.color = Color.RED
 
 		self.buttons:add(left)
 		self.buttons:add(right)

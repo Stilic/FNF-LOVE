@@ -64,7 +64,7 @@ love.window.setIcon(love.image.newImageData(Project.icon))
 local consolas = love.graphics.newFont('assets/fonts/consolas.ttf', 14) or
 	love.graphics.setNewFont(14)
 
-local combineFormat = "%s | %s"
+local combine = " | "
 local fpsFormat, tpsFormat, inputsFormat = "FPS: %d", "TPS: %d", "Inputs: %.2fms"
 local debugFormat = "%s\nRAM: %s | VRAM: %s\n%s | %s\nDRAWS: %d"
 
@@ -81,24 +81,19 @@ local pump, poll, getChannel = love.event.pump, love.event.poll(), love.thread.g
 local channel, active, tick = getChannel"event", getChannel"event_active", getChannel"event_tick"
 local getTime, sleep, step = love.timer.getTime, love.timer.sleep, "step"
 
-local t, s, clock, prev, v, push = {}, 0, os.clock()
+local t, s, clock, prev, v, push = {}, 0, getTime()
 function push(i, a, ...) if a then t[i] = a; return push(i + 1, ...) end return i - 1 end
-while s < 1 do
-	v = active:pop(); if v == 0 then break elseif v == 1 then s = 0 end
-
+repeat v = active:pop(); if v == 0 then break elseif v == 1 then s = 0 end
 	pcall(pump); prev, clock = clock, getTime()
 	for name, a, b, c, d, e, f in poll do
-		v = push(1, a, b, c, d, e, f)
-		channel:push(name); channel:push(clock); channel:push(v)
+		v = push(1, a, b, c, d, e, f); channel:push(name); channel:push(clock); channel:push(v);
 		for i = 1, v do channel:push(t[i]) end
 	end
 
-	v = clock - prev; tick:clear(); tick:push(v)
-	collectgarbage(step)
-
-	s = s + v
+	v = clock - prev; s = s + v; tick:clear(); tick:push(v)
 	if v < 0.001 then sleep(0.001) else sleep(0.001 - v) end
-end]]
+	collectgarbage(step)
+until s > 1]]
 
 local eventhandlers = {
 	keypressed = function(t, b, s, r) return love.keypressed(b, s, r, t) end,
@@ -130,60 +125,45 @@ function love.run()
 	local present, setColor = love.graphics.present, love.graphics.setColor
 	local getStats, _stats, _ram, _vram, _text = love.graphics.getStats, {}
 	local rname, rversion, rvendor, rdevice = love.graphics.getRendererInfo()
-	local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
 
 	local function draw()
 		origin(); clear(love.graphics.getBackgroundColor())
-		love.draw(timeSinceLastFps)
+		love.draw()
 
 		if love.showFPS then
 			_text = fpsFormat:format(math.min(love.timer.getFPS(), love.FPScap))
-			if love.parallelUpdate then
-				_text = combineFormat:format(_text, tpsFormat:format(love.timer.getTPS()))
-			end
-			if love.asyncInput then
-				_text = combineFormat:format(_text, inputsFormat:format(love.timer.getInput() * 1e4))
-			end
+			if love.parallelUpdate then _text = _text .. combine .. tpsFormat:format(love.timer.getTPS()) end
+			if love.asyncInput then _text = _text .. combine .. inputsFormat:format(love.timer.getInput() * 1e4) end
 
 			_stats = getStats(_stats)
-			_ram, _vram = math.countbytes(collectgarbage(__count__) * 0x400), math.countbytes(_stats.texturememory)
+			_ram, _vram = math.countbytes(collectgarbage(__count__), 2), math.countbytes(_stats.texturememory)
 			_text = debugFormat:format(_text, _ram, _vram, rname, rdevice, _stats.drawcalls)
 
-			setColor(0, 0, 0, 0.5)
-			printf(_text, consolas, 8, 8, 300, __left__, 0)
-			setColor(1, 1, 1, 1)
-			printf(_text, consolas, 6, 6, 300, __left__, 0)
+			setColor(0, 0, 0, 0.5); printf(_text, consolas, 8, 8, 300, __left__, 0)
+			setColor(1, 1, 1, 1); printf(_text, consolas, 6, 6, 300, __left__, 0)
 		end
 
 		present()
 	end
 
 	local pump, poll, t, a, b = love.event.pump, love.event.poll(), {}
-	local polledEvents, _defaultEvents = {}, {}
 	local firstTime, fullGC, focused, dt, lowfps = true, true, false, 0
-	local nextclock, clock, cap = 0, 0, 0
+	local fpsUpdateFrequency, prevFpsUpdate, timeSinceLastFps, frames = 1, 0, 0, 0
+	local nextdraw, clock, cap = 0, 0, 0
 
 	local function event(name, a, ...)
 		if name == __quit__ and not love.quit() then
-			channel_event_active:push(0)
+			channel_event:clear(); channel_event_active:push(0)
 			return a or 0, ...
 		end
-		_defaultEvents[name], polledEvents[name] = false, true
-		if eventhandlers[name] then
-			eventhandlers[name](clock, a, ...)
-		else
-			love.handlers[name](a, ...)
-		end
-		--[[
-		if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
+		if eventhandlers[name] then eventhandlers[name](clock, a, ...)
+		else love.handlers[name](a, ...) end
+		--[[if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
 			love.handlers["touch"..name:sub(6)](0, a, ...)
-		end
-		]]
+		end]]
 	end
 
 	return function()
-		table.merge(polledEvents, _defaultEvents)
-
 		a = love.asyncInput and focused
 		if thread_event:isRunning() then
 			channel_event_active:clear()
@@ -194,11 +174,8 @@ function love.run()
 				clock, b = channel_event:demand(), channel_event:demand()
 				for i = 1, b do t[i] = channel_event:demand() end
 				for i = b + 1, #t do t[i] = nil end
-				b, a = event(a, unpack(t))
-				if b then
-					channel_event:clear()
-					return b, a
-				end
+				a, b = event(a, unpack(t))
+				if a then return a, b end
 				a = channel_event:pop()
 			end
 		elseif a then
@@ -207,32 +184,32 @@ function love.run()
 			channel_event_active:clear()
 		end
 
-		pump(); clock = love.timer.getTime()
-		real_dt, a = love.timer.step(), math.min(math.log(1.101 + dt), 0.1)
+		pump(); clock, real_dt = love.timer.getTime(), love.timer.step()
 		for name, a, b, c, d, e, f in poll do
 			a, b = event(name, a, b, c, d, e, f)
 			if a then return a, b end
 		end
 
+		focused = firstTime or love.window.hasFocus()
+		cap = 1 / (focused and love.FPScap or love.unfocusedFPScap)
+
+		a = math.min(math.log(1.101 + dt), 0.1)
 		lowfps = real_dt - dt > a
-		if not polledEvents.lowmemory and ((fullGC and not focused) or lowfps) then
+		if (fullGC and not focused) or lowfps then
 			collectgarbage()
 			dt, fullGC = lowfps and dt + a or real_dt, false
 		else
 			dt, fullGC = real_dt, true
 		end
 
-		focused = firstTime or love.window.hasFocus()
-		cap = 1 / (focused and love.FPScap or love.unfocusedFPScap)
-
 		if focused or not love.autoPause then
 			love.update(dt)
 			if love.graphics.isActive() then
 				if love.parallelUpdate then
-					if clock + real_dt > nextclock then
-						timeSinceLastFps, frames = clock - prevFpsUpdate, frames + 1
-						nextclock = cap + clock
+					if clock > nextdraw - real_dt then
 						draw()
+						nextdraw = cap + clock
+						timeSinceLastFps, frames = clock - prevFpsUpdate, frames + 1
 						if timeSinceLastFps > fpsUpdateFrequency then
 							real_fps, frames = math.round(frames / timeSinceLastFps), 0
 							prevFpsUpdate = clock

@@ -53,7 +53,7 @@ function TitleState:enter()
 	end
 
 	self.conductor = Conductor(102)
-	self.conductor.onBeat = function(b) self:beat(b) end
+	self.conductor.onBeat = bind(self, self.beat)
 
 	if not game.sound.music or not game.sound.music:isPlaying() then
 		game.sound.playMusic(paths.getMusic("freakyMenu"))

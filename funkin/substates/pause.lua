@@ -48,7 +48,7 @@ function PauseSubstate:enter()
 		local up = Button(down.x, down.y - w, 0, 0, "up")
 
 		local enter = Button(game.width - w, down.y, 0, 0, "return")
-		enter:setColor(Color.GREEN)
+		enter.color = Color.GREEN
 
 		self.buttons:add(up)
 		self.buttons:add(down)

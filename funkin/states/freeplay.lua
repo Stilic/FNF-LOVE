@@ -99,9 +99,9 @@ function FreeplayState:enter()
 		local right = Button(down.x + w, left.y, 0, 0, "right")
 
 		local enter = Button(game.width - w, left.y, 0, 0, "return")
-		enter:setColor(Color.GREEN)
+		enter.color = Color.GREEN
 		local back = Button(enter.x - w, left.y, 0, 0, "escape")
-		back:setColor(Color.RED)
+		back.color = Color.RED
 
 		self.buttons:add(left)
 		self.buttons:add(up)
@@ -242,9 +242,8 @@ end
 function FreeplayState:positionHighscore()
 	self.scoreText.x = game.width - self.scoreText:getWidth() - 6
 	self.scoreBG.width = self.scoreText:getWidth() + 12
-	self.scoreBG.x = self.scoreText.x + (self.scoreBG.width / 2) - 6
-	self.diffText.x = math.floor(self.scoreBG.x)
-	self.diffText.x = self.diffText.x - self.diffText:getWidth() / 2
+	self.scoreBG.x = self.scoreText.x + math.floor(self.scoreBG.width / 2) - 6
+	self.diffText.x = math.floor(self.scoreBG.x - self.diffText:getWidth() / 2)
 end
 
 function FreeplayState:checkSongDifficulty()
