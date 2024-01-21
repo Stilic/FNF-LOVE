@@ -55,7 +55,7 @@ function ScreenPrint:draw()
 	local r, g, b, a = love.graphics.getColor()
 	local font = love.graphics.getFont()
 
-	local scale, width, height = self.scale, self.game.width, self.game.height
+	local width, height = self.game.width, self.game.height
 	love.graphics.push()
 	love.graphics.translate(width / 2, height)
 	love.graphics.scale(self.scale)
