@@ -1,10 +1,7 @@
 require "loxel.lib.override"
 
-game = {}
-if flags == nil then flags = {} end
-
-Classic = require "loxel.lib.classic"
 local Gamestate = require "loxel.lib.gamestate"
+Classic = require "loxel.lib.classic"
 
 Basic = require "loxel.basic"
 Object = require "loxel.object"
@@ -29,9 +26,9 @@ Mouse = require "loxel.input.mouse"
 Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
-if love.system.getDevice() == "Mobile" then
-	ScreenPrint = require "loxel.screenprint"
-end
+--if love.system.getDevice() == "Mobile" then
+	ScreenPrint = require "loxel.system.screenprint"
+--end
 
 ui = {
 	UIButton = require "loxel.ui.button",
@@ -43,6 +40,25 @@ ui = {
 	UITabMenu = require "loxel.ui.tabmenu",
 	UISlider = require "loxel.ui.slider"
 }
+
+local function temp() return true end
+game = {
+	members = {},
+	active = true,
+	alive = true,
+	exists = true,
+	visible = true,
+	canDraw = temp,
+	_canDraw = temp,
+	scroll = {x = 0, y = 0},
+	super = setmetatable(table, {__index = function()return temp end}),
+
+	width = -1,
+	height = -1,
+	isSwitchingState = false
+}
+Classic.implement(game, Group)
+if flags == nil then flags = {} end
 
 game.cameras = require "loxel.managers.cameramanager"
 game.buttons = require "loxel.managers.buttonmanager"
@@ -97,7 +113,6 @@ local function fadeIn(time, callback)
 end
 
 local requestedState, skipTransition = nil, false
-game.isSwitchingState = false
 function game.switchState(state, skipTrans)
 	requestedState = state
 
@@ -135,7 +150,10 @@ function game.init(app, state)
 	game.cameras.reset()
 
 	Gamestate.switch(state())
-	if ScreenPrint then ScreenPrint.init(love.graphics.getPixelDimensions()) end
+	if ScreenPrint then
+		ScreenPrint.init(love.graphics.getPixelDimensions())
+		game:add(ScreenPrint)
+	end
 end
 
 local function callUIInput(func, ...)
@@ -219,13 +237,13 @@ function game.update(dt)
 	for _, o in pairs(Flicker.instances) do o:update(dt) end
 	game.cameras.update(dt)
 	game.sound.update()
-
-	if not game.isSwitchingState then Gamestate.update(dt) end
-
-	if ScreenPrint then ScreenPrint.update(dt) end
-
 	Keyboard.update()
 	Mouse.update()
+
+	if not game.isSwitchingState then Gamestate.update(dt) end
+	for _, o in pairs(game.members) do
+		if o.update then o:update(dt) end
+	end
 end
 
 function game.draw()
@@ -235,24 +253,46 @@ function game.draw()
 			fade.draw)
 	end
 	for _, c in pairs(game.cameras.list) do c:draw() end
-	if ScreenPrint then ScreenPrint.draw() end
+	for _, o in pairs(game.members) do
+		if o.draw and (not o._canDraw or o:_canDraw()) then
+			o:draw(game)
+		end
+	end
 end
 
-function game.resize(w, h) Gamestate.resize(w, h) end
+function game.resize(w, h)
+	Gamestate.resize(w, h)
+	for _, o in pairs(game.members) do
+		if o.resize then o:resize(w, h) end
+	end
+end
 
 function game.focus(f)
 	game.sound.onFocus(f)
 	Gamestate.focus(f)
+	for _, o in pairs(game.members) do
+		if o.focus then o:focus(f) end
+	end
 end
 
-function game.fullscreen(f) Gamestate.fullscreen(f) end
+function game.fullscreen(f)
+	Gamestate.fullscreen(f)
+	for _, o in pairs(game.members) do
+		if o.fullscreen then o:fullscreen(f) end
+	end
+end
 
-function game.quit() end
+function game.quit()
+	Gamestate.quit()
+	for _, o in pairs(game.members) do
+		if o.quit then o:quit() end
+	end
+end
 
 if ScreenPrint then
 	local ogprint = print
 	function print(...)
-		ScreenPrint.new(table.concat({...}, "\n"), love.graphics.newFont(18))
+		ScreenPrint.new(table.concat({...}, ", "))
 		ogprint(...)
 	end
 end

@@ -364,6 +364,7 @@ function Conductor:__step()
 	)]]
 	if self.onStep then self.onStep(self.currentStep) end
 	if self.onBeat and self.currentStep % 4 == 0 then
+		--print("BEAT HIT!!!", self.currentBeat)
 		self.onBeat(self.currentBeat)
 	end
 end

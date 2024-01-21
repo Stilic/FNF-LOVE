@@ -21,7 +21,7 @@ function Classic:extend(type)
 	local cls = {}
 
 	for k, v in pairs(self) do
-		if k:find("__") == 1 then cls[k] = v end
+		if k:sub(1, 2) == "__" then cls[k] = v end
 	end
 
 	cls.__class = type or "Unknown"
@@ -32,26 +32,33 @@ function Classic:extend(type)
 	return cls
 end
 
----implements functions to the class???
----@param ... unknown
+---implements functions to the class
+---@param ... Classic
 function Classic:implement(...)
 	for _, cls in pairs({...}) do
 		for k, v in pairs(cls) do
-			if self[k] == nil and type(v) == "function" then
+			if self[k] == nil and type(v) == "function" and k ~= "new" and k:sub(1, 2) ~= "__" then
 				self[k] = v
 			end
 		end
 	end
 end
 
----no clue
----@param T any
-function Classic:is(T)
-	local mt = getmetatable(self)
-	while mt do
-		if mt == T then return true end
-		mt = getmetatable(mt)
+---excludes functions from the class
+---@param ... string
+function Classic:exclude(...)
+	for i = 1, select("#", ...) do
+		self[select(i, ...)] = nil
 	end
+end
+
+---check if its the same type or the parent types
+---@param T Classic
+function Classic:is(T)
+	local mt = self
+	repeat mt = getmetatable(mt)
+		if mt == T then return true end
+	until mt == nil
 	return false
 end
 
