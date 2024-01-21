@@ -3,6 +3,7 @@ local ScreenPrint = {prints = {}, game = {width = 0, height = 0}}
 function ScreenPrint.init(width, height)
 	ScreenPrint.game.width = width
 	ScreenPrint.game.height = height
+	ScreenPrint.scale = (love.window.getNativeDPIScale or love.window.getDPIScale)()
 	ScreenPrint.font = love.graphics.newFont(20)
 	ScreenPrint.bigfont = love.graphics.newFont(24)
 end
@@ -54,7 +55,12 @@ function ScreenPrint:draw()
 	local r, g, b, a = love.graphics.getColor()
 	local font = love.graphics.getFont()
 
-	local width = self.game.width
+	local scale, width, height = self.scale, self.game.width, self.game.height
+	love.graphics.push()
+	love.graphics.translate(width / 2, height)
+	love.graphics.scale(self.scale)
+	love.graphics.translate(-width / 2, -height)
+
 	for _, t in ipairs(self.prints) do
 		local y, w, h, a = t.y, t.width, t.height, math.min((t.timer + .3) / .3, 1)
 		local x = (width - w) / 2
@@ -69,6 +75,8 @@ function ScreenPrint:draw()
 		love.graphics.setFont(t.font)
 		love.graphics.printf(t.text, x, y, w)
 	end
+
+	love.graphics.pop()
 
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setFont(font)
