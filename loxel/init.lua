@@ -26,9 +26,9 @@ Mouse = require "loxel.input.mouse"
 Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
---if love.system.getDevice() == "Mobile" then
+if love.system.getDevice() == "Mobile" then
 	ScreenPrint = require "loxel.system.screenprint"
---end
+end
 
 ui = {
 	UIButton = require "loxel.ui.button",
