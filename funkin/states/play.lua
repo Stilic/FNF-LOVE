@@ -246,7 +246,7 @@ function PlayState:enter()
 			rep:groupInit()
 			self.receptors:add(rep)
 			if i == 1 then
-				if self.middleScroll then rep.x = rep.x - 318 end
+				if self.middleScroll then rep.x = rep.x - (game.width / 4) end
 				self.playerReceptors:add(rep)
 			else
 				if self.middleScroll then rep.visible = false end
@@ -970,7 +970,7 @@ function PlayState:onSettingChange(setting)
 			rep.visible = true
 			if self.middleScroll then
 				if rep.player == 1 then
-					rep.x = rep.x - 318
+					rep.x = rep.x - (game.width / 4)
 				else
 					rep.visible = false
 				end
