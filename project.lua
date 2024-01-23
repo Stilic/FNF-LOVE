@@ -19,6 +19,7 @@ return {
 		InitialParallelUpdate = true,
 		InitialAsyncInput = false,
 
+		LoxelShowPrintsInScreen = true,
 		LoxelForceRenderCameraComplex = false,
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,

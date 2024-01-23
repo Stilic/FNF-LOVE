@@ -1,4 +1,5 @@
 require "loxel.lib.override"
+if flags == nil then flags = {} end
 
 local Gamestate = require "loxel.lib.gamestate"
 Classic = require "loxel.lib.classic"
@@ -26,7 +27,7 @@ Mouse = require "loxel.input.mouse"
 Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
-if love.system.getDevice() == "Mobile" then
+if love.system.getDevice() == "Mobile" or flags.LoxelShowPrintsInScreen then
 	ScreenPrint = require "loxel.system.screenprint"
 end
 
@@ -58,7 +59,6 @@ game = {
 	isSwitchingState = false
 }
 Classic.implement(game, Group)
-if flags == nil then flags = {} end
 
 game.cameras = require "loxel.managers.cameramanager"
 game.buttons = require "loxel.managers.buttonmanager"
@@ -151,8 +151,14 @@ function game.init(app, state)
 
 	Gamestate.switch(state())
 	if ScreenPrint then
-		ScreenPrint.init(love.graphics.getPixelDimensions())
+		ScreenPrint.init(love.graphics.getDimensions())
 		game:add(ScreenPrint)
+		
+		local ogprint = print
+		function print(...)
+			ScreenPrint.new(table.concat({...}, ", "))
+			ogprint(...)
+		end
 	end
 end
 
@@ -286,13 +292,5 @@ function game.quit()
 	Gamestate.quit()
 	for _, o in pairs(game.members) do
 		if o.quit then o:quit() end
-	end
-end
-
-if ScreenPrint then
-	local ogprint = print
-	function print(...)
-		ScreenPrint.new(table.concat({...}, ", "))
-		ogprint(...)
 	end
 end
