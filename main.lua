@@ -1,4 +1,8 @@
-io.stdout:setvbuf("no")
+-- apparently this is needed because errors fucks up if no std printed and instead just prints
+-- 'Error: [love "boot.lua"]:48: Failed to initialize filesystem: already initialized' everytime
+-- if you dont do this
+io.stdout:setvbuf("no"); print ""
+require "loxel.lib.override"
 
 Project = require "project"
 flags = Project.flags

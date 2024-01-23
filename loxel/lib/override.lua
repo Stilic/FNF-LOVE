@@ -3,9 +3,10 @@
 bit32, iter, utf8 = bit, ipairs(math), require "utf8"
 local __string__, __number__, __table__ = "string", "number", "table"
 local __integer__, __float__ = "integer", "float"
+local table_insert = table.insert
 
 local split_t
-local function gsplit(s) table.insert(split_t, s) end
+local function gsplit(s) table_insert(split_t, s) end
 function string:split(sep, t)
 	split_t = t or {}
 	self:gsub((sep and sep ~= "") and "([^" .. sep .. "]+)" or ".", gsplit)
@@ -16,32 +17,36 @@ function string:replace(pattern, rep) -- note: you could just do gsub instead of
 	return self:gsub("%" .. pattern, rep)
 end
 
-local s -- see https://luajit.org/extensions.html
-s, table.new = pcall(require, "table.new")
-if not s then function table.new( --[[narray, nhash]]) return {} end end
+-- see https://luajit.org/extensions.html
+local s, table_new = pcall(require, "table.new")
+if not s then function table_new( --[[narray, nhash]]) return {} end end
+table.new = table_new
 
-s, table.clear = pcall(require, "table.clear")
-if not s then function table.clear(t) for i in pairs(t) do t[i] = nil end end end
+local s, table_clear = pcall(require, "table.clear")
+if not s then function table_clear(t) for i in pairs(t) do t[i] = nil end end end
+table.clear = table_clear
 
-if not table.move then
-	function table.move(a, f, e, t, b)
+local table_move = table.move
+if not table_move then
+	function table_move(a, f, e, t, b)
 		b = b or a; for i = f, e do b[i + t - 1] = a[i] end
 		return b
 	end
+	table.move = table_move
 end
 
-function table.find(t, value)
+local function table_find(t, value)
 	for i = 1, #t do if t[i] == value then return i end end
 end
+table.find = table_find
 
-local ogremove = table.remove or function(t, pos)
+local table_remove = table.remove or function(t, pos)
 	local n = #t; if pos == nil then pos = n end;
-	local v = t[pos]; if pos < n then table.move(t, pos + 1, n, pos) end;
+	local v = t[pos]; if pos < n then table_move(t, pos + 1, n, pos) end;
 	t[n] = nil; return v
 end
 function table.remove(list, idx)
-	if idx == nil or type(idx) == __number__ then return ogremove(list, idx) end
-
+	if idx == nil or type(idx) == __number__ then return table_remove(list, idx) end
 	local j, v = 1
 	for i = j, #list do
 		if list[i] and idx(list, i, j) then
@@ -60,22 +65,24 @@ function table.reverse(list)
 end
 
 function table.delete(list, object)
-	local index = table.find(list, object)
+	local index = table_find(list, object)
 	if index then
-		table.remove(list, index)
+		table_remove(list, index)
 		return true
 	end
 	return false
 end
 
+local math_min, math_max, math_floor, math_ceil = math.min, math.max, math.floor, math.ceil
+local function math_round(x) return x >= 0 and math_floor(x + .5) or math_ceil(x - .5) end
+math.round = math_round
+
+function math.clamp(x, min, max) return math_min(math_max(x, min or 0), max or 1) end
+
 function math.type(v)
-	return (v >= -2147483648 and v <= 2147483647 and math.floor(v) == v) and
+	return (v >= -2147483648 and v <= 2147483647 and math_floor(v) == v) and
 		__integer__ or __float__
 end
-
-function math.clamp(x, min, max) return math.min(math.max(x, min or 0), max or 1) end
-
-function math.round(x) return x >= 0 and math.floor(x + .5) or math.ceil(x - .5) end
 
 -- EXTRA FUNCTIONS
 math.positive_infinity, math.negative_infinity = math.huge, -math.huge
@@ -141,24 +148,26 @@ function string:trim() return self:ltrim():rtrim() end
 function table.merge(a, b) for i, v in pairs(b) do a[i] = v end end
 
 function table.keys(list, includeIndices, keys)
-	keys = keys or table.new(#list, 0)
-	for i in (includeIndices and pairs or ipairs)(list) do table.insert(keys, i) end
+	keys = keys or table_new(#list, 0)
+	for i in (includeIndices and pairs or ipairs)(list) do table_insert(keys, i) end
 	return keys
 end
 
-function table.clone(list, clone)
-	clone = clone or table.new(#list, 0)
-	for i, v in pairs(list) do clone[i] = type(v) == __table__ and table.clone(v) or v end
+local table_clone
+function table_clone(list, clone)
+	clone = clone or table_new(#list, 0)
+	for i, v in pairs(list) do clone[i] = type(v) == __table__ and table_clone(v) or v end
 	return clone
 end
+table.clone = table_clone
 
 function table.splice(list, start, count, ...)
-	local removed, args, n = {}, {...}, #list
-	if start < 0 then start = n + start + 1 end
-	for i = 0, math.min(count or 0, n - start) do
-		table.insert(removed, table.remove(list, start))
+	local n, removed = #list + 1, {...};
+	local c = #removed; start = (start < 1 and n + start or start) + c;
+	for i = c, 1, -1 do table_insert(list, start, table_remove(removed, i)) end
+	for i = 1, math_min(count or 0, n - start) do
+		table_insert(removed, table_remove(list, start))
 	end
-	for i = #args, 1, -1 do table.insert(list, start, args[i]) end
 	return removed
 end
 
@@ -170,6 +179,8 @@ function math.wrap(x, a, b) return ((x - a) % (b - a)) + a end
 
 function math.lerp(a, b, t) return a + (b - a) * t end
 
+function math.invlerp(a, b, t) return (t - a) / (b - a) end
+
 function math.remapToRange(x, start1, stop1, start2, stop2)
 	return start2 + (x - start1) * ((stop2 - start2) / (stop1 - start1))
 end
@@ -177,15 +188,13 @@ end
 -- please use math.floor/round instead if you want the precision to be 0
 function math.truncate(x, precision, round)
 	precision = 10 ^ (precision or 2)
-	; return (round and math.round or math.floor)(precision * x) / precision
+	; return (round and math_round or math_floor)(precision * x) / precision
 end
 
 local intervals, countbytesf = {"B", "KB", "MB", "GB" --[[, "TB"]]}, "%.2f %s"
 function math.countbytes(x, i)
 	i = i or 1
-	while x >= 0x400 and i < 4 do
-		x, i = x / 0x400, i + 1
-	end
+	while x >= 1024 and i < 4 do x, i = x / 1024, i + 1 end
 	return countbytesf:format(x, intervals[i])
 end
 
@@ -204,6 +213,11 @@ function love.system.getDevice()
 		return "Desktop"
 	end
 	return "Unknown"
+end
+
+function love.graphics.getFixedScale()
+	local winW, winH = love.graphics.getPixelDimensions()
+	return math_min(winW / (game.width or 800), winH / (game.height or 600))
 end
 
 if love.system.getDevice() == "Desktop" then

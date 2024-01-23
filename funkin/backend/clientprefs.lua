@@ -72,7 +72,7 @@ function ClientPrefs.loadData()
 	else
 		ClientPrefs.data.fps = love.FPScap
 		ClientPrefs.data.parallelUpdate = love.parallelUpdate
-		ClientPrefs.data.resolution = (love.window.getNativeDPIScale or love.window.getDPIScale)()
+		ClientPrefs.data.resolution = love.graphics.getFixedScale()
 	end
 
 	love.showFPS = ClientPrefs.data.showFps
