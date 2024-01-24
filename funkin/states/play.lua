@@ -65,6 +65,9 @@ end
 function PlayState:new(storyMode, song, diff)
 	PlayState.super.new(self)
 
+	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
+	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
+
 	if storyMode ~= nil then
 		PlayState.songDifficulty = diff
 		PlayState.storyMode = storyMode
@@ -350,28 +353,30 @@ function PlayState:enter()
 	self.scoreTxt.outline.width = 1
 	self.scoreTxt.antialiasing = false
 
-	self.timeArcBG = Graphic(45, game.height - 45, 100, 100, {0, 0, 0}, "arc",
-		"line")
-	if self.downScroll then self.timeArcBG.y = 45 end
+	self.timeArcBG = Graphic(72, game.height - 52, 0, 0, {0, 0, 0}, "arc", "line")
+	if self.downScroll then self.timeArcBG.y = 52 end
 	self.timeArcBG.line.width = 18
 	self.timeArcBG.config = {
 		radius = 24,
 		type = "closed",
 		angle = {0, 360},
-		segments = 40
+		segments = 32
 	}
 	self.timeArcBG:updateDimensions()
+	self.timeArcBG:centerOrigin()
+	self.timeArcBG.offset.x, self.timeArcBG.offset.y = self.timeArcBG.origin.x, self.timeArcBG.origin.y
 
-	self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 100, 100,
-		{1, 1, 1}, "arc", "line")
+	self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 0, 0, {1, 1, 1}, "arc", "line")
 	self.timeArc.line.width = 10
 	self.timeArc.config = {
 		radius = 24,
 		type = "open",
 		angle = {-90, 0},
-		segments = 40
+		segments = 32
 	}
 	self.timeArc:updateDimensions()
+	self.timeArc:centerOrigin()
+	self.timeArc.offset.x, self.timeArc.offset.y = self.timeArc.origin.x, self.timeArc.origin.y
 
 	local fontTime = paths.getFont("vcr.ttf", 24)
 	self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "",
@@ -987,7 +992,7 @@ function PlayState:onSettingChange(setting)
 		if self.downScroll then textOffset = -textOffset end
 		self.scoreTxt.y = self.healthBarBG.y + textOffset + 8
 
-		self.timeArcBG.y = self.downScroll and 45 or game.height - 45
+		self.timeArcBG.y = self.downScroll and 52 or game.height - 52
 		self.timeArc.y = self.timeArcBG.y
 		self.timeTxt.y = self.downScroll and self.timeArcBG.y - 32 or self.timeArcBG.y + 7
 
@@ -1415,8 +1420,6 @@ function PlayState:focus(f)
 end
 
 local ratingFormat, noRating = "(%s) %s", "?"
-PlayState.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
-
 function PlayState:recalculateRating(rating)
 	if rating then
 		rating = rating .. "s"
@@ -1455,10 +1458,18 @@ function PlayState:recalculateRating(rating)
 	end
 
 	self.rating = ratingStr
-	self.scoreTxt.content = PlayState.scoreFormat
-		:gsub("%%score", math.floor(self.score)):gsub("%%misses", math.floor(self.misses))
-		:gsub("%%accuracy", math.truncate(self.accuracy * 100, 2)):gsub("%%rating", ratingStr)
 
+	local vars = self.scoreFormatVariables
+	if not vars then
+		vars = table.new(0, 4)
+		self.scoreFormatVariables = vars
+	end
+	vars.score = math.floor(self.score)
+	vars.misses = math.floor(self.misses)
+	vars.accuracy = math.truncate(self.accuracy * 100, 2)
+	vars.rating = ratingStr
+
+	self.scoreTxt.content = self.scoreFormat:gsub("%%(%w+)", vars)
 	self.scoreTxt:updateHitbox()
 end
 

@@ -66,8 +66,8 @@ function Object:updateHitbox()
 end
 
 function Object:centerOffsets(__width, __height)
-	self.offset.x = ((__width or 0) - self.width) / 2
-	self.offset.y = ((__height or 0) - self.height) / 2
+	self.offset.x = ((__width or self.width) - self.width) / 2
+	self.offset.y = ((__height or self.height) - self.height) / 2
 end
 
 function Object:centerOrigin(__width, __height)
