@@ -76,7 +76,6 @@ function Graphic:__render(camera)
 
 	x, y = x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
 		y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
-	local vert = {}
 
 	local ang1, ang2 = self.config.angle[1] * (math.pi / 180),
 		self.config.angle[2] * (math.pi / 180)
