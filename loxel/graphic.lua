@@ -23,12 +23,13 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 
 	self.line = {
 		width = 6,
-		color = {1, 1, 1}, -- this only applies for lined graphics
+		color = {1, 1, 1, 1}, -- this only applies for lined graphics
 		join = "miter"
 	}
 end
 
-function Graphic:getGraphicMidpoint()
+function Graphic:getMidpoint()
+	self:updateDimensions()
 	return self.x + self.width / 2,
 		self.y + self.height / 2
 end
@@ -38,8 +39,9 @@ function Graphic:setSize(width, height)
 	self.height = height or 0
 
 	if self.type == "arc" or self.type == "circle" then
-		self.config.radius = self.width
+		self.config.radius = width / 2
 	end
+	self:updateDimensions()
 end
 
 function Graphic:updateDimensions()
@@ -67,11 +69,14 @@ function Graphic:__render(camera)
 	love.graphics.setLineWidth(self.line.width)
 	love.graphics.setLineJoin(self.line.join)
 
-	local x, y, w, h = self.x, self.y, self.width, self.height
-	local vert = {}
+	local x, y, w, h, sx, sy = self.x, self.y, self.width, self.height,
+		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y
+	if self.flipX then sx = -sx end
+	if self.flipY then sy = -sy end
 
-	x, y = x - (camera.scroll.x * self.scrollFactor.x),
-		y - (camera.scroll.y * self.scrollFactor.y)
+	x, y = x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+		y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
+	local vert = {}
 
 	local ang1, ang2 = self.config.angle[1] * (math.pi / 180),
 		self.config.angle[2] * (math.pi / 180)
@@ -86,6 +91,7 @@ function Graphic:__render(camera)
 
 	love.graphics.push()
 	love.graphics.rotate(math.rad(self.angle))
+	love.graphics.scale(sx, sy)
 
 	if self.type == "rectangle" then
 		love.graphics.rectangle(self.fill, x, y, w, h, rnd[1], rnd[2], seg)
@@ -93,21 +99,26 @@ function Graphic:__render(camera)
 		love.graphics.translate(x, y)
 		love.graphics.polygon(self.fill, self.config.vertices)
 	elseif self.type == "circle" then
+		-- position is broky using these, so this little fix is needed
+		x, y = x + (2 * rad) / 2, y + (2 * rad) / 2
 		love.graphics.circle(self.fill, x, y, rad, seg)
 	elseif self.type == "arc" then
+		x, y = x + (2 * rad) / 2, y + (2 * rad) / 2
 		love.graphics.arc(self.fill, type, x, y, rad, ang1, ang2, seg)
 	end
 
 	if self.lined then
 		love.graphics.setColor(self.line.color[1], self.line.color[2],
-			self.line.color[3], self.alpha)
+			self.line.color[3], (self.line.color[4] or 1) * self.alpha)
 		if self.type == "rectangle" then
 			love.graphics.rectangle("line", x, y, w, h, rnd[1], rnd[2], seg)
 		elseif self.type == "polygon" and self.config.vertices then
 			love.graphics.polygon("line", self.config.vertices)
 		elseif self.type == "circle" then
+			x, y = x + (2 * rad) / 2, y + (2 * rad) / 2
 			love.graphics.circle("line", x, y, rad, seg)
 		elseif self.type == "arc" then
+			x, y = x + (2 * rad) / 2, y + (2 * rad) / 2
 			love.graphics.arc("line", type, x, y, rad, ang1, ang2, seg)
 		end
 	end
