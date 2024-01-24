@@ -12,10 +12,14 @@ function Group:add(obj)
 	return obj
 end
 
-function Group:insert(obj, idx)
-	table.insert(self.members, obj, idx)
+function Group:insert(idx, obj)
+	table.insert(self.members, idx, obj)
 	if obj.enter then obj:enter(self) end
 	return obj
+end
+
+function Group:indexOf(obj)
+	return table.find(self.members, obj)
 end
 
 function Group:remove(obj)
