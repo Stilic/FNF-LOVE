@@ -133,9 +133,11 @@ end
 
 function love.resize(w, h) game.resize(w, h) end
 
+local debugMode = Project.DEBUG_MODE
 function love.keypressed(key, ...)
-	if love.keyboard.isDown("lctrl", "rctrl") then
+	if debugMode and love.keyboard.isDown("lctrl", "rctrl") then
 		if key == "f4" then error("force crash") end
+		if key == "`" then return "restart" end
 	end
 	controls:onKeyPress(key, ...)
 	game.keypressed(key, ...)

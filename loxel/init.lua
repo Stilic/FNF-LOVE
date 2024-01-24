@@ -134,7 +134,7 @@ function game.discardTransition()
 	cancelFade = true
 end
 
-function game.init(app, state)
+function game.init(app, state, ...)
 	game.width = app.width
 	game.height = app.height
 	Camera.__init(love.graphics.newCanvas(app.width, app.height, {
@@ -149,7 +149,7 @@ function game.init(app, state)
 
 	game.cameras.reset()
 
-	Gamestate.switch(state())
+	Gamestate.switch(state(...))
 	if ScreenPrint then
 		ScreenPrint.init(love.graphics.getDimensions())
 		game:add(ScreenPrint)

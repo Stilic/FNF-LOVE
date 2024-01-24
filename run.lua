@@ -156,11 +156,11 @@ function love.run()
 			channel_event:clear(); channel_event_active:push(0)
 			return a or 0, ...
 		end
-		if eventhandlers[name] then eventhandlers[name](clock, a, ...)
-		else love.handlers[name](a, ...) end
 		--[[if name:sub(1,5) == "mouse" and name ~= "mousefocus" and (name ~= "mousemoved" or love.mouse.isDown(1, 2)) then
 			love.handlers["touch"..name:sub(6)](0, a, ...)
 		end]]
+		if eventhandlers[name] then return eventhandlers[name](clock, a, ...) end
+		return love.handlers[name](a, ...)
 	end
 
 	return function()
