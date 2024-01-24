@@ -87,9 +87,10 @@ function Graphic:__render(camera)
 	local ang1, ang2 = config.angle[1] * pi180, config.angle[2] * pi180
 	if fill == "line" then x, y = x + linesize / 2, y + linesize / 2 end
 
+	local color = self.color
 	love.graphics.setShader(self.shader)
 	love.graphics.setBlendMode(self.blend)
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
 
 	love.graphics.push()
 	love.graphics.rotate(math.rad(self.angle))
@@ -107,8 +108,8 @@ function Graphic:__render(camera)
 	end
 
 	if self.lined then
-		local linecolor = line.color
-		love.graphics.setColor(linecolor[1], linecolor[2], linecolor[3], (linecolor[4] or 1) * self.alpha)
+		color = line.color
+		love.graphics.setColor(color[1], color[2], color[3], (color[4] or 1) * self.alpha)
 		if type == "rectangle" then
 			love.graphics.rectangle("line", x, y, w, h, rnd[1], rnd[2], seg)
 		elseif type == "circle" then
