@@ -1,4 +1,5 @@
 io.stdout:setvbuf("no")
+love.filesystem.mountFullPath("./", "")
 require "loxel.lib.override"
 
 Project = require "project"
@@ -7,6 +8,7 @@ flags = Project.flags
 require "run"
 require "loxel"
 
+StatsCounter = require "loxel.system.statscounter"
 if flags.ShowPrintsInScreen or love.system.getDevice() == "Mobile" then
 	ScreenPrint = require "loxel.system.screenprint"
 end
@@ -118,16 +120,21 @@ function love.load()
 		love.graphics.setBackgroundColor(Project.bgColor)
 	end
 
+	game.statsCounter = StatsCounter(6, 6,
+		love.graphics.newFont('assets/fonts/consolas.ttf', 14), love.graphics.newFont('assets/fonts/consolas.ttf', 18))
+
 	ClientPrefs.loadData()
 	Mods.loadMods()
 	Highscore.load()
 
-	game.init(Project, SplashScreen)
+	game.init(Project, PlayState, true, "befriended", "normal")
 	game.onPreStateSwitch = function(state)
 		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
 		end
 	end
+
+	game:add(game.statsCounter)
 
 	if ScreenPrint then
 		ScreenPrint.init(love.graphics.getDimensions())
