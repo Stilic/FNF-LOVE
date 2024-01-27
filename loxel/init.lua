@@ -52,7 +52,8 @@ game = {
 
 	width = -1,
 	height = -1,
-	isSwitchingState = false
+	isSwitchingState = false,
+	dt = 0
 }
 Classic.implement(game, Group)
 
@@ -211,7 +212,13 @@ local function switch(state)
 
 	collectgarbage()
 end
-function game.update(dt)
+function game.update(real_dt)
+	local dt = game.dt
+	local low = math.min(math.log(1.101 + dt), 0.1)
+	local lowfps = real_dt - dt > low
+	dt = lowfps and dt + low or real_dt
+	game.dt = dt
+
 	if requestedState ~= nil then
 		game.isSwitchingState = true
 		if not skipTransition then
