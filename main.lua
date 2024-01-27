@@ -126,7 +126,7 @@ function love.load()
 	Mods.loadMods()
 	Highscore.load()
 
-	game.init(Project, PlayState, true, "befriended", "normal")
+	game.init(Project, SplashScreen)
 	game.onPreStateSwitch = function(state)
 		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
