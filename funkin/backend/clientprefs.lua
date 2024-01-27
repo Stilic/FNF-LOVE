@@ -75,7 +75,7 @@ function ClientPrefs.loadData()
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()
 	end
 
-	love.showFPS = ClientPrefs.data.showFps
+	game.statsCounter.visible = ClientPrefs.data.showFps
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 
 	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)

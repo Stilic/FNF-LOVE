@@ -1,7 +1,4 @@
--- apparently this is needed because errors fucks up if no std printed and instead just prints
--- 'Error: [love "boot.lua"]:48: Failed to initialize filesystem: already initialized' everytime
--- if you dont do this
-io.stdout:setvbuf("no"); print ""
+io.stdout:setvbuf("no")
 require "loxel.lib.override"
 
 Project = require "project"
@@ -9,6 +6,10 @@ flags = Project.flags
 
 require "run"
 require "loxel"
+
+if flags.ShowPrintsInScreen or love.system.getDevice() == "Mobile" then
+	ScreenPrint = require "loxel.system.screenprint"
+end
 
 Timer = require "lib.timer"
 Https = require "lib.https"
@@ -128,14 +129,26 @@ function love.load()
 		end
 	end
 
+	if ScreenPrint then
+		ScreenPrint.init(love.graphics.getDimensions())
+		game:add(ScreenPrint)
+		
+		local ogprint = print
+		function print(...)
+			local v = {...}
+			for i = 1, #v do v[i] = tostring(v[i]) end
+			ScreenPrint.new(table.concat(v, ", "))
+			ogprint(...)
+		end
+	end
+
 	Discord.init()
 end
 
 function love.resize(w, h) game.resize(w, h) end
 
-local debugMode = Project.DEBUG_MODE
 function love.keypressed(key, ...)
-	if debugMode and love.keyboard.isDown("lctrl", "rctrl") then
+	if Project.DEBUG_MODE and love.keyboard.isDown("lctrl", "rctrl") then
 		if key == "f4" then error("force crash") end
 		if key == "`" then return "restart" end
 	end

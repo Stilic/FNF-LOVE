@@ -99,25 +99,27 @@ function Graphic:__render(camera)
 	if type == "rectangle" then
 		love.graphics.rectangle(fill, x, y, w, h, rnd[1], rnd[2], seg)
 	elseif type == "circle" then
-		love.graphics.circle(fill, x + rad, y + rad, rad, seg)
+		x, y = x + rad, y + rad
+		love.graphics.circle(fill, x, y, rad, seg)
 	elseif type == "arc" then
-		love.graphics.arc(fill, contype, x + rad, y + rad, rad, ang1, ang2, seg)
+		x, y, seg = x + rad, y + rad, math.ceil(seg * math.min((ang2 - ang1) / math.pi / 2, 1))
+		love.graphics.arc(fill, contype, x, y, rad, ang1, ang2, seg)
 	elseif type == "polygon" and verts then
 		love.graphics.translate(x, y)
 		love.graphics.polygon(fill, verts)
 	end
 
 	if self.lined then
-		color = line.color
+		color, fill = line.color, "line"
 		love.graphics.setColor(color[1], color[2], color[3], (color[4] or 1) * self.alpha)
 		if type == "rectangle" then
-			love.graphics.rectangle("line", x, y, w, h, rnd[1], rnd[2], seg)
+			love.graphics.rectangle(fill, x, y, w, h, rnd[1], rnd[2], seg)
 		elseif type == "circle" then
-			love.graphics.circle("line", x + rad, y + rad, rad, seg)
+			love.graphics.circle(fill, x + rad, y + rad, rad, seg)
 		elseif type == "arc" then
-			love.graphics.arc("line", contype, x + rad, y + rad, rad, ang1, ang2, seg)
+			love.graphics.arc(fill, contype, x + rad, y + rad, rad, ang1, ang2, seg)
 		elseif type == "polygon" and verts then
-			love.graphics.polygon("line", verts)
+			love.graphics.polygon(fill, verts)
 		end
 	end
 

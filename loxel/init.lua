@@ -27,10 +27,6 @@ Mouse = require "loxel.input.mouse"
 Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
-if love.system.getDevice() == "Mobile" or flags.LoxelShowPrintsInScreen then
-	ScreenPrint = require "loxel.system.screenprint"
-end
-
 ui = {
 	UIButton = require "loxel.ui.button",
 	UICheckbox = require "loxel.ui.checkbox",
@@ -150,16 +146,6 @@ function game.init(app, state, ...)
 	game.cameras.reset()
 
 	Gamestate.switch(state(...))
-	if ScreenPrint then
-		ScreenPrint.init(love.graphics.getDimensions())
-		game:add(ScreenPrint)
-		
-		local ogprint = print
-		function print(...)
-			ScreenPrint.new(table.concat({...}, ", "))
-			ogprint(...)
-		end
-	end
 end
 
 local function callUIInput(func, ...)
@@ -260,8 +246,8 @@ function game.draw()
 	end
 	for _, c in pairs(game.cameras.list) do c:draw() end
 	for _, o in pairs(game.members) do
-		if o.draw and (not o._canDraw or o:_canDraw()) then
-			o:draw(game)
+		if o.__render and (not o._canDraw or o:_canDraw()) then
+			o:__render(game)
 		end
 	end
 end

@@ -48,6 +48,7 @@ function PlayState.loadSong(song, diff)
 		PlayState.SONG = data.song
 	else
 		local metadata = paths.getJSON('songs/' .. song .. '/meta')
+		if metadata == nil then return false end
 		PlayState.SONG = {
 			song = song,
 			bpm = metadata.bpm or 150,
@@ -60,13 +61,11 @@ function PlayState.loadSong(song, diff)
 			notes = {}
 		}
 	end
+	return true
 end
 
 function PlayState:new(storyMode, song, diff)
 	PlayState.super.new(self)
-
-	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
-	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 
 	if storyMode ~= nil then
 		PlayState.songDifficulty = diff
@@ -79,8 +78,15 @@ function PlayState:new(storyMode, song, diff)
 			PlayState.storyPlaylist = song
 			song = song[1]
 		end
-		PlayState.loadSong(song, diff)
+		if not PlayState.loadSong(song, diff) then
+			setmetatable(self, TitleState)
+			TitleState.new(self)
+			return
+		end
 	end
+
+	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
+	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 end
 
 function PlayState:enter()
@@ -540,7 +546,8 @@ function PlayState:startCountdown()
 	end
 end
 
-local function fadeGroupSprites(obj)
+local fadeGroupSprites
+function fadeGroupSprites(obj)
 	if obj then
 		if obj:is(Group) then
 			for _, o in ipairs(obj.members) do fadeGroupSprites(o) end

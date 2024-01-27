@@ -85,7 +85,7 @@ local data = {
 	{"showFps", "Show FPS", "boolean", function()
 		local value = not ClientPrefs.data.showFps
 		ClientPrefs.data.showFps = value
-		love.showFPS = value
+		game.statsCounter.visible = value
 	end},
 }
 

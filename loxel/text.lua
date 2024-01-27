@@ -6,7 +6,7 @@ function Text:new(x, y, content, font, color, align, limit)
 
 	self.content = content
 	self.font = font or love.graphics.getFont()
-	self.color = color or {1, 1, 1}
+	self.color = color or self.color
 	self.alignment = align or "left"
 	self.limit = limit
 
