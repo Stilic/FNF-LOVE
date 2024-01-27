@@ -1,5 +1,4 @@
 io.stdout:setvbuf("no")
-love.filesystem.mountFullPath("./", "")
 require "loxel.lib.override"
 
 Project = require "project"
