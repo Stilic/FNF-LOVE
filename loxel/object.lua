@@ -76,8 +76,9 @@ function Object:centerOrigin(__width, __height)
 end
 
 function Object:getMultColor(r, g, b, a)
-	return self.color[1] * math.min(r, 1), self.color[2] * math.min(g, 1),
-		self.color[3] * math.min(b, 1), self.alpha * (math.min(a or 1, 1))
+	local c = self.color
+	return c[1] * math.min(r, 1), c[2] * math.min(g, 1), c[3] * math.min(b, 1),
+		self.alpha * (math.min(a or 1, 1))
 end
 
 function Object:update(dt)

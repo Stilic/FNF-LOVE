@@ -7,11 +7,6 @@ flags = Project.flags
 require "run"
 require "loxel"
 
-StatsCounter = require "loxel.system.statscounter"
-if flags.ShowPrintsInScreen or love.system.getDevice() == "Mobile" then
-	ScreenPrint = require "loxel.system.screenprint"
-end
-
 Timer = require "lib.timer"
 Https = require "lib.https"
 
@@ -47,6 +42,7 @@ MenuCharacter = require "funkin.ui.menucharacter"
 MenuItem = require "funkin.ui.menuitem"
 ModCard = require "funkin.ui.modcard"
 Options = require "funkin.ui.options"
+StatsCounter = require "funkin.ui.statscounter"
 
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
@@ -134,19 +130,6 @@ function love.load()
 	end
 
 	game:add(game.statsCounter)
-
-	if ScreenPrint then
-		ScreenPrint.init(love.graphics.getDimensions())
-		game:add(ScreenPrint)
-		
-		local ogprint = print
-		function print(...)
-			local v = {...}
-			for i = 1, #v do v[i] = tostring(v[i]) end
-			ScreenPrint.new(table.concat(v, ", "))
-			ogprint(...)
-		end
-	end
 
 	Discord.init()
 end

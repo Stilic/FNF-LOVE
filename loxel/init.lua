@@ -38,9 +38,15 @@ ui = {
 	UISlider = require "loxel.ui.slider"
 }
 
+if flags.LoxelShowPrintsInScreen or love.system.getDevice() == "Mobile" then
+	ScreenPrint = require "loxel.system.screenprint"
+end
+
 local function temp() return true end
+local metatemp = setmetatable(table, {__index = function()return temp end})
 game = {
 	members = {},
+	bound = {members = {}, super = metatemp},
 	active = true,
 	alive = true,
 	exists = true,
@@ -48,19 +54,20 @@ game = {
 	canDraw = temp,
 	_canDraw = temp,
 	scroll = {x = 0, y = 0},
-	super = setmetatable(table, {__index = function()return temp end}),
+	super = metatemp,
 
 	width = -1,
 	height = -1,
 	isSwitchingState = false,
-	dt = 0
+	dt = 0,
+
+	cameras = require "loxel.managers.cameramanager",
+	buttons = require "loxel.managers.buttonmanager",
+	sound = require "loxel.managers.soundmanager",
+	save = require "loxel.util.save"
 }
 Classic.implement(game, Group)
-
-game.cameras = require "loxel.managers.cameramanager"
-game.buttons = require "loxel.managers.buttonmanager"
-game.sound = require "loxel.managers.soundmanager"
-game.save = require "loxel.util.save"
+Classic.implement(game.bound, Group)
 
 local fade, cancelFade
 local function fadeOut(time, callback)
@@ -141,8 +148,18 @@ function game.init(app, state, ...)
 
 	love.mouse.setVisible(false)
 
-	local os = love.system.getOS()
-	if os == "Android" or os == "iOS" then love.window.setFullscreen(true) end
+	if ScreenPrint then
+		ScreenPrint.init(love.graphics.getDimensions())
+		game:add(ScreenPrint)
+		
+		local ogprint = print
+		function print(...)
+			local v = {...}
+			for i = 1, #v do v[i] = tostring(v[i]) end
+			ScreenPrint.new(table.concat(v, ", "))
+			ogprint(...)
+		end
+	end
 
 	game.cameras.reset()
 
@@ -150,24 +167,24 @@ function game.init(app, state, ...)
 end
 
 local function callUIInput(func, ...)
-	for _, o in pairs(ui.UIInputTextBox.instances) do
+	for _, o in ipairs(ui.UIInputTextBox.instances) do
 		if o[func] then o[func](o, ...) end
 	end
-	for _, o in pairs(ui.UINumericStepper.instances) do
+	for _, o in ipairs(ui.UINumericStepper.instances) do
 		if o[func] then o[func](o, ...) end
 	end
 end
 function game.keypressed(...)
 	Keyboard.onPressed(...)
-	callUIInput('keypressed', ...)
+	callUIInput("keypressed", ...)
 end
 
 function game.keyreleased(...)
 	Keyboard.onReleased(...)
-	callUIInput('keyreleased', ...)
+	callUIInput("keyreleased", ...)
 end
 
-function game.textinput(text) callUIInput('textinput', text) end
+function game.textinput(text) callUIInput("textinput", text) end
 
 function game.wheelmoved(x, y) Mouse.wheel = y end
 
@@ -190,8 +207,8 @@ local function switch(state)
 	game.sound.destroy()
 	game.buttons.reset()
 
-	for _, s in pairs(Gamestate.stack) do
-		for _, o in pairs(s.members) do
+	for _, s in ipairs(Gamestate.stack) do
+		for _, o in ipairs(s.members) do
 			if type(o) == "table" and o.destroy then o:destroy() end
 		end
 		if s.substate then
@@ -215,8 +232,7 @@ end
 function game.update(real_dt)
 	local dt = game.dt
 	local low = math.min(math.log(1.101 + dt), 0.1)
-	local lowfps = real_dt - dt > low
-	dt = lowfps and dt + low or real_dt
+	dt = real_dt - dt > low and dt + low or real_dt
 	game.dt = dt
 
 	if requestedState ~= nil then
@@ -233,16 +249,108 @@ function game.update(real_dt)
 		requestedState = nil
 	end
 
-	for _, o in pairs(Flicker.instances) do o:update(dt) end
+	for _, o in ipairs(Flicker.instances) do o:update(dt) end
 	game.cameras.update(dt)
 	game.sound.update()
 	Keyboard.update()
 	Mouse.update()
 
 	if not game.isSwitchingState then Gamestate.update(dt) end
-	for _, o in pairs(game.members) do
-		if o.update then o:update(dt) end
+	for _, o in ipairs(game.bound.members) do if o.update then o:update(dt) end end
+	for _, o in ipairs(game.members) do if o.update then o:update(dt) end end
+end
+
+function game.resize(w, h)
+	Gamestate.resize(w, h)
+	for _, o in ipairs(game.bound.members) do
+		if o.resize then o:resize(w, h) end
 	end
+	for _, o in ipairs(game.members) do
+		if o.resize then o:resize(w, h) end
+	end
+end
+
+function game.focus(f)
+	game.sound.onFocus(f)
+	Gamestate.focus(f)
+	for _, o in ipairs(game.bound.members) do
+		if o.focus then o:focus(f) end
+	end
+	for _, o in ipairs(game.members) do
+		if o.focus then o:focus(f) end
+	end
+end
+
+function game.fullscreen(f)
+	Gamestate.fullscreen(f)
+	for _, o in ipairs(game.bound.members) do
+		if o.fullscreen then o:fullscreen(f) end
+	end
+	for _, o in ipairs(game.members) do
+		if o.fullscreen then o:fullscreen(f) end
+	end
+end
+
+function game.quit()
+	Gamestate.quit()
+	for _, o in ipairs(game.bound.members) do
+		if o.quit then o:quit() end
+	end
+	for _, o in ipairs(game.members) do
+		if o.quit then o:quit() end
+	end
+end
+
+local _ogGetScissor, _ogSetScissor, _ogIntersectScissor
+local _scX, _scY, _scW, _scH, _scSX, _scSY, _scvX, _scvY, _scvW, _scvH
+local function getScissor() return _scvX, _scvY, _scvW, _scvH end
+local function getRealScissor()
+	return _scvX * _scSX + _scX, _scvY * _scSY + _scY, _scvW * _scSX, _scvH * _scSY
+end
+
+local function setScissor(x, y, w, h)
+	_scvX, _scvY, _scvW, _scvH = x, y, w, h
+	if not x then return _ogSetScissor() end
+	_ogSetScissor(getRealScissor())
+end
+
+local function intersectScissor(x, y, w, h)
+	if not _scvX then
+		_scvX, _scvY, _scvW, _scvH = x, y, w, h
+		_ogSetScissor(getRealScissor())
+	end
+	_scvX, _scvY = math.max(_scvX, x), math.max(_scvY, y)
+	_scvW, _scvH = math.max(math.min(_scvX + _scvW, x + w) - _scvX, 0),
+		math.max(math.min(_scvY + _scvH, y + h) - _scvY, 0)
+	_ogSetScissor(getRealScissor())
+end
+
+local _scissors, _scissorn = {}, 0
+function game.__pushBoundScissor(w, h, sx, sy)
+	local idx = _scissorn * 6; _scissorn = _scissorn + 1
+	_scissors[idx + 6], _scissors[idx + 5] = _scH, _scW
+	_scissors[idx + 4], _scissors[idx + 3] = _scSY, _scSX
+	_scissors[idx + 2], _scissors[idx + 1] = _scY, _scX
+	_scSX, _scSY = math.abs(_scSX * sx), math.abs(_scSY * sy)
+	_scX, _scW = (_scW - _scSX * math.abs(w)) / 2, math.abs(w)
+	_scY, _scH = (_scH - _scSY * math.abs(h)) / 2, math.abs(h)
+end
+
+function game.__literalBoundScissor(w, h, sx, sy)
+	local idx = _scissorn * 6; _scissorn = _scissorn + 1
+	_scissors[idx + 6], _scissors[idx + 5] = _scH, _scW
+	_scissors[idx + 4], _scissors[idx + 3] = _scSY, _scSX
+	_scissors[idx + 2], _scissors[idx + 1] = _scY, _scX
+	_scSX, _scSY = math.abs(sx), math.abs(sy)
+	_scX, _scW = 0, math.abs(w)
+	_scY, _scH = 0, math.abs(h)
+end
+
+function game.__popBoundScissor()
+	_scissorn = _scissorn - 1; local idx = _scissorn * 4
+	_scX, _scY = _scissors[idx + 1], _scissors[idx + 2]
+	_scSX, _scSY = _scissors[idx + 3], _scissors[idx + 4]
+	_scW, _scH = _scissors[idx + 5], _scissors[idx + 6]
 end
 
 function game.draw()
@@ -251,39 +359,39 @@ function game.draw()
 		table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
 			fade.draw)
 	end
-	for _, c in pairs(game.cameras.list) do c:draw() end
-	for _, o in pairs(game.members) do
+
+	local grap, w, h = love.graphics, game.width, game.height
+	local winW, winH = grap.getDimensions()
+	local scale, xc, yc, wc, hc = math.min(winW / w, winH / h), grap.getScissor()
+
+	_scW, _scH, _scSX, _scSY = winW, winH, scale, scale
+	_scX, _scY = math.floor((winW - _scSX * w) / 2), math.floor((winH - _scSY * h) / 2)
+	_scvX, _scvY, _scvW, _scvH = nil, nil, nil, nil
+
+	_ogIntersectScissor, grap.intersectScissor = grap.intersectScissor, intersectScissor
+	_ogGetScissor, grap.getScissor = grap.getScissor, getScissor
+	_ogSetScissor, grap.setScissor = grap.setScissor, setScissor
+
+	grap.push()
+	grap.translate(_scX, _scY)
+	grap.scale(scale)
+
+	for _, c in ipairs(game.cameras.list) do c:draw() end
+	for _, o in ipairs(game.bound.members) do
 		if o.__render and (not o._canDraw or o:_canDraw()) then
 			o:__render(game)
 		end
 	end
-end
 
-function game.resize(w, h)
-	Gamestate.resize(w, h)
-	for _, o in pairs(game.members) do
-		if o.resize then o:resize(w, h) end
-	end
-end
+	grap.pop()
 
-function game.focus(f)
-	game.sound.onFocus(f)
-	Gamestate.focus(f)
-	for _, o in pairs(game.members) do
-		if o.focus then o:focus(f) end
-	end
-end
+	_ogSetScissor(xc, yc, wc, hc)
+	grap.getScissor, grap.setScissor = _ogGetScissor, _ogSetScissor
+	grap.intersectScissor = _ogIntersectScissor
 
-function game.fullscreen(f)
-	Gamestate.fullscreen(f)
-	for _, o in pairs(game.members) do
-		if o.fullscreen then o:fullscreen(f) end
-	end
-end
-
-function game.quit()
-	Gamestate.quit()
-	for _, o in pairs(game.members) do
-		if o.quit then o:quit() end
+	for _, o in ipairs(game.members) do
+		if o.__render and (not o._canDraw or o:_canDraw()) then
+			o:__render(game)
+		end
 	end
 end

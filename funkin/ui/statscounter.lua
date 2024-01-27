@@ -1,5 +1,7 @@
+-- this code fucking sucks
 local StatsCounter = Object:extend("StatsCounter")
 
+local rname, rversion, rvendor, rdevice
 function StatsCounter:new(x, y, font, bigfont, color, align)
 	StatsCounter.super.new(self, x, y)
 
@@ -8,11 +10,13 @@ function StatsCounter:new(x, y, font, bigfont, color, align)
 	self.color = color or self.color
 	self.alignment = align or "left"
 	self.width = 512
+
+	rname, rversion, rvendor, rdevice = love.graphics.getRendererInfo()
 end
 
-local content, bigcontent
-local fpsFormat = "%d FPS"
-local format = "%s RAM | %s VRAM\n%d DRAWS"
+local combine, content, bigcontent = " | "
+local fpsFormat, tpsFormat, inputsFormat = "%d FPS", "%d TPS", "Inputs: %dms"
+local format = "%s RAM | %s VRAM\n%s | %s\n%d DRAWS"
 function StatsCounter:___render(x, y, r, g, b, a, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
 	love.graphics.setFont(bigfont)
 	love.graphics.setColor(r, g, b, a)
@@ -23,7 +27,7 @@ function StatsCounter:___render(x, y, r, g, b, a, font, bigfont, bigheight, widt
 	love.graphics.printf(content, x, y + bigheight, width, align, rad, sx, sy, ox, oy)
 end
 
-local count, stats = "count"
+local count, stats, ram, vram = "count"
 function StatsCounter:__render(camera)
 	local r, g, b, a = love.graphics.getColor()
 	local shader = self.shader and love.graphics.getShader()
@@ -43,10 +47,13 @@ function StatsCounter:__render(camera)
 	local font, bigfont = self.font, self.bigfont
 	local align, color, width, bigheight = self.alignment, self.color, self.width, bigfont:getHeight()
 
-	bigcontent = fpsFormat:format(love.timer.getFPS())
+	bigcontent = fpsFormat:format(math.min(love.timer.getFPS(), love.FPScap))
+	if love.parallelUpdate then bigcontent = bigcontent .. combine .. tpsFormat:format(love.timer.getTPS()) end
+	if love.asyncInput then bigcontent = bigcontent .. combine .. inputsFormat:format(love.timer.getInputs() * 1e4) end
 
 	stats = love.graphics.getStats(stats)
-	content = format:format(math.countbytes(collectgarbage(count), 2), math.countbytes(stats.texturememory), stats.drawcalls)
+	ram, vram = math.countbytes(collectgarbage(count), 2), math.countbytes(stats.texturememory)
+	content = format:format(ram, vram, rname, rdevice, stats.drawcalls)
 
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 

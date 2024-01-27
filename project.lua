@@ -13,7 +13,6 @@ return {
 
 	flags = {
 		CheckForUpdates = false,
-		ShowPrintsInScreen = true,
 
 		InitialAutoFocus = true,
 		InitialParallelUpdate = true,
@@ -23,5 +22,6 @@ return {
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,
 		LoxelDefaultClipCamera = true,
+		LoxelShowPrintsInScreen = true
 	}
 }

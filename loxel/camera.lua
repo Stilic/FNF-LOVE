@@ -148,9 +148,7 @@ function Camera:draw()
 end
 
 -- Simple Render
-local _simpleCamera
-
-local _ogSetColor
+local _simpleCamera, _ogSetColor
 local function setSimpleColor(r, g, b, a)
 	if type(r) == "table" then
 		_ogSetColor(_simpleCamera:getMultColor(r[1], r[2], r[3], r[4]))
@@ -159,84 +157,43 @@ local function setSimpleColor(r, g, b, a)
 	end
 end
 
-local _ogGetScissor, _ogSetScissor, _ogIntersectScissor
-local _scX, _scY, _scW, _scH, _scSX, _scSY, _scvX, _scvY, _scvW, _scvH
-local function getSimpleScissor()
-	return scvX, _scvY, _scvW, _scvH
-end
-
-local function setSimpleScissor(x, y, w, h)
-	_scvX, _scvY, _scvW, _scvH = x, y, w, h
-	if not x then return _ogSetScissor() end
-	_ogSetScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
-end
-
-local function intersectSimpleScissor(x, y, w, h)
-	if not _scvX then
-		_scvX, _scvY, _scvW, _scvH = x, y, w, h
-		_ogSetScissor(x * _scSX + _scX, y * _scSY + _scY, w * _scSX, h * _scSY)
-	end
-	_scvX, _scvY = math.max(_scvX, x), math.max(_scvY, y)
-	_scvW, _scvH = math.max(math.min(_scvX + _scvW, x + w) - _scvX, 0),
-		math.max(math.min(_scvY + _scvH, y + h) - _scvY, 0)
-	_ogSetScissor(_scvX * _scSX + _scX, _scvY * _scSY + _scY, _scvW * _scSX, _scvH * _scSY)
-end
-
 function Camera:drawSimple(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
 	self.isSimple = true
 
-	local r, g, b, a = love.graphics.getColor()
-	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local xc, yc, wc, hc = love.graphics.getScissor()
+	local grap = love.graphics
+	local r, g, b, a = grap.getColor()
+	local blendMode, alphaMode = grap.getBlendMode()
+	local xc, yc, wc, hc = grap.getScissor()
 
-	love.graphics.push()
-
-	local w2, h2 = self.width / 2, self.height / 2
-	local winW, winH = love.graphics.getDimensions()
-	local scale = math.min(winW / game.width, winH / game.height)
-
-	love.graphics.translate(math.floor((winW - scale * game.width) / 2),
-		math.floor((winH - scale * game.height) / 2))
-	love.graphics.scale(scale)
-
-	_scSX, _scSY = scale * self.scale.x, scale * self.scale.y
-	_scX, _scY = (winW - _scSX * game.width) / 2,
-		(winH - _scSY * game.height) / 2
-
-	_scW, _scH = math.floor(self.width * _scSX),
-		math.floor(self.height * _scSY)
-
-	local _x, _y = math.floor(self.x * scale + _scX), math.floor(self.y * scale + _scY)
-	if not flags.LoxelDisableScissorOnRenderCameraSimple then
-		if self.clipCam then
-			love.graphics.setScissor(_x, _y, _scW, _scH)
-		else
-			love.graphics.setScissor(math.floor(_scX), math.floor(_scY), _scW, _scH)
-		end
-	end
-	_scX, _scY = _x, _y
-	_scvX, _scvY, _scvW, _scvH = nil, nil, nil, nil
+	local x, y, w, h = self.x, self.y, self.width, self.height
+	local sx, sy = self.scale.x, self.scale.y
+	local w2, h2 = w / 2, h / 2
 
 	_simpleCamera = self
-	_ogSetColor, love.graphics.setColor = love.graphics.setColor, setSimpleColor
-	_ogGetScissor, love.graphics.getScissor = love.graphics.getScissor, getSimpleScissor
-	_ogSetScissor, love.graphics.setScissor = love.graphics.setScissor, setSimpleScissor
-	_ogIntersectScissor, love.graphics.intersectScissor = love.graphics.intersectScissor,
-		intersectSimpleScissor
+	_ogSetColor, grap.setColor = grap.setColor, setSimpleColor
 
-	if self.bgColor ~= nil and (not self.bgColor[4] or self.bgColor[4] > 0) then
-		setSimpleColor(self.bgColor)
-		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+	game.__pushBoundScissor(w, h, sx, sy)
+	if not flags.LoxelDisableScissorOnRenderCameraSimple then
+		if self.clipCam then grap.setScissor(x, y, w, h)
+		else grap.setScissor(0, 0, w, h) end
+	end
+
+	grap.push()
+
+	local color = self.bgColor
+	if color ~= nil and (not color[4] or color[4] > 0) then
+		setSimpleColor(color)
+		grap.rectangle("fill", 0, 0, w, h)
 		setSimpleColor(r, g, b, a)
 	end
 
-	love.graphics.translate(w2 + self.x + self.__shakeX, h2 + self.y + self.__shakeY)
-	love.graphics.scale(self.__zoom.x * self.scale.x, self.__zoom.y * self.scale.y)
-	love.graphics.rotate(math.rad(self.angle + self.rotation))
-	love.graphics.translate(-w2, -h2)
+	grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+	grap.scale(self.__zoom.x * sx, self.__zoom.y * sy)
+	grap.rotate(math.rad(self.angle + self.rotation))
+	grap.translate(-w2, -h2)
 
-	love.graphics.setBlendMode("alpha", "alphamultiply")
+	grap.setBlendMode("alpha", "alphamultiply")
 
 	local o
 	for i = 1, #self.__renderQueue do
@@ -250,53 +207,50 @@ function Camera:drawSimple(_skipCheck)
 		self.__renderQueue[i] = nil
 	end
 
+	color = self.__flashColor
 	if self.__flashAlpha > 0 then
-		setSimpleColor(self.__flashColor[1], self.__flashColor[2],
-			self.__flashColor[3], self.__flashAlpha)
-		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+		setSimpleColor(color[1], color[2], color[3], self.__flashAlpha)
+		grap.rectangle("fill", 0, 0, w, h)
 	end
 
-	love.graphics.pop()
+	game.__popBoundScissor()
+	grap.pop()
 
-	love.graphics.setColor = _ogSetColor
-	love.graphics.getScissor = _ogGetScissor
-	love.graphics.setScissor = _ogSetScissor
-	love.graphics.intersectScissor = _ogIntersectScissor
-
-	love.graphics.setScissor(xc, yc, wc, hc)
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.setBlendMode(blendMode, alphaMode)
+	grap.setColor = _ogSetColor
+	grap.setScissor(xc, yc, wc, hc)
+	grap.setColor(r, g, b, a)
+	grap.setBlendMode(blendMode, alphaMode)
 end
 
 function Camera:drawComplex(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
 	self.isSimple = false
 
-	local r, g, b, a = love.graphics.getColor()
-	local shader = self.shader and love.graphics.getShader()
-	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local lineStyle = love.graphics.getLineStyle()
-	local lineWidth = love.graphics.getLineWidth()
+	local grap = love.graphics
+	local r, g, b, a = grap.getColor()
+	local shader = grap.getShader()
+	local blendMode, alphaMode = grap.getBlendMode()
+	local cv = grap.getCanvas()
 	local min, mag, anisotropy = canvas:getFilter()
+	local mode = self.antialiasing and "linear" or "nearest"
+	canvas:setFilter(mode, mode, anisotropy)
 
-	local cv = love.graphics.getCanvas()
+	local x, y, w, h = self.x, self.y, self.width, self.height
+	local sx, sy = self.scale.x, self.scale.y
+	local w2, h2 = w / 2, h / 2
+	local color = self.bgColor
 
-	love.graphics.setCanvas(canvasTable)
-	love.graphics.clear(self.bgColor[1], self.bgColor[2],
-		self.bgColor[3], self.bgColor[4])
-	love.graphics.push()
+	grap.setCanvas(canvasTable)
+	grap.clear(color[1], color[2], color[3], color[4])
+	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, sx, sy)
 
-	local w2, h2 = self.width / 2, self.height / 2
-	if not self.clipCam then
-		love.graphics.translate(w2 + self.x, h2 + self.y)
-	else
-		love.graphics.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-	end
-	love.graphics.rotate(math.rad(self.angle))
-	love.graphics.scale(self.__zoom.x, self.__zoom.y)
-	love.graphics.translate(-w2, -h2)
+	if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+	else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+	grap.rotate(math.rad(self.angle))
+	grap.scale(self.__zoom.x, self.__zoom.y)
+	grap.translate(-w2, -h2)
 
-	love.graphics.setBlendMode("alpha", "alphamultiply")
+	grap.setBlendMode("alpha", "alphamultiply")
 
 	local o
 	for i = 1, #self.__renderQueue do
@@ -310,49 +264,32 @@ function Camera:drawComplex(_skipCheck)
 		self.__renderQueue[i] = nil
 	end
 
-	love.graphics.pop()
-
+	color = self.__flashColor
 	if self.__flashAlpha > 0 then
-		love.graphics.setColor(self.__flashColor[1], self.__flashColor[2],
-			self.__flashColor[3], self.__flashAlpha)
-		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
+		grap.rectangle("fill", 0, 0, w, h)
 	end
 
-	love.graphics.setCanvas(cv)
+	game.__popBoundScissor()
+	grap.pop()
 
-	love.graphics.setShader(self.shader)
-	love.graphics.setColor(self.color[1] * self.alpha,
-		self.color[2] * self.alpha,
-		self.color[3] * self.alpha,
-		self.alpha)
-	love.graphics.setBlendMode("alpha", "premultiplied")
+	grap.setCanvas(cv)
 
-	mode = self.antialiasing and "linear" or "nearest"
-	canvas:setFilter(mode, mode, anisotropy)
-
-	local winW, winH = love.graphics.getDimensions()
-	local scale = math.min(winW / game.width, winH / game.height)
+	local alpha = self.alpha; color = self.color
+	grap.setShader(self.shader)
+	grap.setBlendMode("alpha", "premultiplied")
+	grap.setColor(color[1] * alpha, color[2] * alpha, color[3] * alpha, alpha)
 
 	if self.clipCam then
-		love.graphics.draw(canvas,
-			(winW / 2) + (self.x * scale),
-			(winH / 2) + (self.y * scale),
-			math.rad(self.rotation),
-			scale * self.scale.x, scale * self.scale.y,
-			game.width / 2, game.height / 2)
+		grap.draw(canvas, w2 + x, h2 + y, math.rad(self.rotation), sx, sy, w2, h2)
 	else
-		love.graphics.draw(canvas, winW / 2, winH / 2,
-			math.rad(self.rotation),
-			scale * self.scale.x, scale * self.scale.y,
-			game.width / 2, game.height / 2)
+		grap.draw(canvas, w2, h2, math.rad(self.rotation), sx, sy, w2, h2)
 	end
 
 	canvas:setFilter(min, mag, anisotropy)
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.setBlendMode(blendMode, alphaMode)
-	love.graphics.setLineStyle(lineStyle)
-	love.graphics.setLineWidth(lineWidth)
-	if self.shader then love.graphics.setShader(shader) end
+	grap.setColor(r, g, b, a)
+	grap.setBlendMode(blendMode, alphaMode)
+	if self.shader then grap.setShader(shader) end
 end
 
 if flags.LoxelForceRenderCameraComplex then
