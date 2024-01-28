@@ -102,6 +102,12 @@ function PlayState:enter()
 	self.scripts:loadDirectory("data/scripts")
 	self.scripts:loadDirectory("data/scripts/" .. songName)
 	self.scripts:loadDirectory("songs/" .. songName)
+
+	self.scripts:set("curSection", PlayState.conductor.currentSection)
+	self.scripts:set("bpm", PlayState.conductor.bpm)
+	self.scripts:set("crotchet", PlayState.conductor.crotchet)
+	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
+
 	self.scripts:call("create")
 
 	game.sound.loadMusic(paths.getInst(songName))
@@ -1436,14 +1442,22 @@ function PlayState:recalculateRating(rating)
 	local ratingStr = noRating
 	if self.totalPlayed > 0 then
 		local accuracy, class = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
-		if accuracy >= 1 then class = "X"
-		elseif accuracy >= 0.99 then class = "S+"
-		elseif accuracy >= 0.95 then class = "S"
-		elseif accuracy >= 0.90 then class = "A"
-		elseif accuracy >= 0.80 then class = "B"
-		elseif accuracy >= 0.70 then class = "C"
-		elseif accuracy >= 0.60 then class = "D"
-		elseif accuracy >= 0.50 then class = "E"
+		if accuracy >= 1 then
+			class = "X"
+		elseif accuracy >= 0.99 then
+			class = "S+"
+		elseif accuracy >= 0.95 then
+			class = "S"
+		elseif accuracy >= 0.90 then
+			class = "A"
+		elseif accuracy >= 0.80 then
+			class = "B"
+		elseif accuracy >= 0.70 then
+			class = "C"
+		elseif accuracy >= 0.60 then
+			class = "D"
+		elseif accuracy >= 0.50 then
+			class = "E"
 		else
 			class = "F"
 		end
@@ -1451,9 +1465,12 @@ function PlayState:recalculateRating(rating)
 
 		local fc
 		if self.misses < 1 then
-			if self.bads > 0 or self.shits > 0 then fc = "FC"
-			elseif self.goods > 0 then fc = "GFC"
-			elseif self.sicks > 0 then fc = "SFC"
+			if self.bads > 0 or self.shits > 0 then
+				fc = "FC"
+			elseif self.goods > 0 then
+				fc = "GFC"
+			elseif self.sicks > 0 then
+				fc = "SFC"
 			else
 				fc = "FC"
 			end
