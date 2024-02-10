@@ -29,8 +29,8 @@ function CharacterEditor:enter()
 	game.cameras.add(self.camMenu, false)
 
 	local bg = Sprite()
-	bg:loadTexture(paths.getImage('editor/josh_hutcherson'))
-	bg.color = {0.4, 0.4, 0.4}
+	bg:loadTexture(paths.getImage('menus/menuDesat'))
+	bg.color = {0.15, 0.15, 0.15}
 	bg:setScrollFactor()
 	self:add(bg)
 
@@ -39,6 +39,16 @@ function CharacterEditor:enter()
 	self.floor:setScrollFactor(0, 1)
 	self.floor.cameras = {self.camChar}
 	self:add(self.floor)
+
+	self.bfPos = Sprite(777, 449):loadTexture(paths.getImage('editor/character/bf-white'))
+	self.bfPos.cameras = {self.camChar}
+	self.bfPos.alpha = 0.4
+	self:add(self.bfPos)
+
+	self.dadPos = Sprite(105, 100):loadTexture(paths.getImage('editor/character/dad-white'))
+	self.dadPos.cameras = {self.camChar}
+	self.dadPos.alpha = 0.4
+	self:add(self.dadPos)
 
 	self.charLayer = Group()
 	self:add(self.charLayer)
@@ -56,15 +66,16 @@ function CharacterEditor:enter()
 
 	self:changeAnim()
 
-	self.camPoint1 = Sprite():make(5, 30, {1, 1, 1})
+	self.camPoint1 = Sprite():make(3, 30, {1, 1, 1})
 	self.camPoint1.cameras = {self.camChar}
 	self:add(self.camPoint1)
 
-	self.camPoint2 = Sprite():make(30, 5, {1, 1, 1})
+	self.camPoint2 = Sprite():make(30, 3, {1, 1, 1})
 	self.camPoint2.cameras = {self.camChar}
 	self:add(self.camPoint2)
 
 	self.blockInput = {}
+	self.hoveredUI = {}
 
 	self.animationTab = ui.UITabMenu(0, game.height * 0.8, {'Animation'})
 	self.animationTab.width = game.width * 0.7
@@ -114,7 +125,7 @@ function CharacterEditor:add_UI_Character()
 
 		if self.char.curAnim.name:find('LEFT') or
 			self.char.curAnim.name:find('RIGHT') then
-			self.char:playAnim(self.curAnim.anim, true)
+			self.char:playAnim(self.curAnim[1], true)
 		end
 	end
 
@@ -244,16 +255,18 @@ function CharacterEditor:add_UI_Character()
 	table.insert(self.blockInput, posX_stepper)
 	table.insert(self.blockInput, posY_stepper)
 
+	table.insert(self.hoveredUI, save_char)
+
 	self.charTab:addGroup(tab_char)
 end
 
-function updateCamPoint(self)
+local function updateCamPoint(self)
 	local midPointX, midPointY = self.char:getMidpoint()
 	midPointX = midPointX + (self.isPlayer and -100 or 150)
 	midPointY = midPointY + -100
 
-	self.camPoint1.x, self.camPoint1.y = midPointX - 2.5, midPointY - 15
-	self.camPoint2.x, self.camPoint2.y = midPointX - 15, midPointY - 2.5
+	self.camPoint1.x, self.camPoint1.y = midPointX - 1.5, midPointY - 15
+	self.camPoint2.x, self.camPoint2.y = midPointX - 15, midPointY - 1.5
 
 	local camPosX, camPosY = self.char.cameraPosition.x,
 		self.char.cameraPosition.y
@@ -274,7 +287,18 @@ function CharacterEditor:update(dt)
 			isTyping = true
 			break
 		end
-		isTyping = false
+	end
+
+	local mouseHovered = false
+	for _, hoveredObj in ipairs(self.hoveredUI) do
+		if hoveredObj.active and hoveredObj.hovered then
+			mouseHovered = true
+			break
+		end
+	end
+
+	if WindowUtil then
+		WindowUtil.setCursor(mouseHovered and "hand" or "arrow")
 	end
 
 	if not isTyping then
@@ -293,6 +317,10 @@ function CharacterEditor:update(dt)
 			self.camFollow.y = self.camFollow.y - (2 + shiftMult)
 		elseif Keyboard.pressed.S then
 			self.camFollow.y = self.camFollow.y + (2 + shiftMult)
+		end
+		if Mouse.pressedLeft then
+			self.camFollow.x = self.camFollow.x - (Mouse.deltaScreenX * 1.05)
+			self.camFollow.y = self.camFollow.y - (Mouse.deltaScreenY * 1.05)
 		end
 		if Keyboard.pressed.CONTROL then
 			if Keyboard.justPressed.PLUS then
@@ -336,7 +364,7 @@ function CharacterEditor:update(dt)
 		end
 	end
 
-	self.camChar.zoom = math.lerp(self.camChar.zoom, self.curZoom, 0.05)
+	self.camChar.zoom = math.lerp(self.camChar.zoom, self.curZoom, 0.08)
 	self.floor.scale.x = game.width / self.camChar.zoom
 
 	self.camChar.scroll.x, self.camChar.scroll.y =

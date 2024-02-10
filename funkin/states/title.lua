@@ -56,7 +56,8 @@ function TitleState:enter()
 	self.conductor.onBeat = bind(self, self.beat)
 
 	if not game.sound.music or not game.sound.music:isPlaying() then
-		game.sound.playMusic(paths.getMusic("freakyMenu"))
+		game.sound.playMusic(paths.getMusic("freakyMenu"), 0)
+		game.sound.music:fade(4, 0, 1)
 	end
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
@@ -83,17 +84,6 @@ function TitleState:update(dt)
 	self.conductor:update(dt)
 
 	local pressedEnter = controls:pressed("accept")
-
-	if self.skippedIntro then
-		if controls:pressed("debug_1") then
-			game.sound.music:stop()
-			game.switchState(ChartingState())
-		end
-		if controls:pressed("debug_2") then
-			game.sound.music:stop()
-			game.switchState(CharacterEditor())
-		end
-	end
 
 	if pressedEnter and not self.confirmed and self.skippedIntro then
 		self.confirmed = true

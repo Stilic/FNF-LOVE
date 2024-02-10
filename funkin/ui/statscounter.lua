@@ -11,20 +11,29 @@ function StatsCounter:new(x, y, font, bigfont, color, align)
 	self.alignment = align or "left"
 	self.width = 512
 
+	self.showFps = true
+	self.showRender = true
+	self.showMemory = true
+	self.showDraws = true
+
 	rname, rversion, rvendor, rdevice = love.graphics.getRendererInfo()
 end
 
 local combine, content, bigcontent = " | "
 local fpsFormat, tpsFormat, inputsFormat = "%d FPS", "%d TPS", "Inputs: %dms"
-local format = "%s RAM | %s VRAM\n%s | %s\n%d DRAWS"
+local ramFormat, renderFormat, drawsFormat = "%s RAM | %s VRAM", "%s | %s", "%d DRAWS"
 function StatsCounter:___render(x, y, r, g, b, a, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
-	love.graphics.setFont(bigfont)
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.printf(bigcontent, x, y, width, align, rad, sx, sy, ox, oy)
+	if self.showFps then
+		love.graphics.setFont(bigfont)
+		love.graphics.setColor(r, g, b, a)
+		love.graphics.printf(bigcontent, x, y, width, align, rad, sx, sy, ox, oy)
+	end
 
-	love.graphics.setFont(font)
-	love.graphics.setColor(r, g, b, a * 0.75)
-	love.graphics.printf(content, x, y + bigheight, width, align, rad, sx, sy, ox, oy)
+	if self.showRender or self.showMemory or self.showDraws then
+		love.graphics.setFont(font)
+		love.graphics.setColor(r, g, b, a * 0.75)
+		love.graphics.printf(content, x, y + (self.showFps and bigheight or 0), width, align, rad, sx, sy, ox, oy)
+	end
 end
 
 local count, stats, ram, vram = "count"
@@ -53,7 +62,12 @@ function StatsCounter:__render(camera)
 
 	stats = love.graphics.getStats(stats)
 	ram, vram = math.countbytes(collectgarbage(count), 2), math.countbytes(stats.texturememory)
-	content = format:format(ram, vram, rname, rdevice, stats.drawcalls)
+
+	local contentSort = {}
+	if self.showMemory then table.insert(contentSort, ramFormat:format(ram, vram)) end
+	if self.showRender then table.insert(contentSort, renderFormat:format(rname, rdevice)) end
+	if self.showDraws then table.insert(contentSort, drawsFormat:format(stats.drawcalls)) end
+	content = #contentSort > 0 and table.concat(contentSort, "\n") or ""
 
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 

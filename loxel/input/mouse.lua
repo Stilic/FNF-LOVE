@@ -8,6 +8,14 @@ local Mouse = {
 	y = 0,
 	screenX = 0,
 	screenY = 0,
+	deltaX = 0,
+	deltaY = 0,
+	deltaScreenX = 0,
+	deltaScreenY = 0,
+	__prevX = 0,
+	__prevY = 0,
+	__prevScreenX = 0,
+	__prevScreenY = 0,
 
 	isMoved = false,
 
@@ -47,6 +55,10 @@ function Mouse.update()
 		Mouse.justReleaseddRight = false
 		Mouse.justReleasedMiddle = false
 	end
+	Mouse.deltaX = 0
+	Mouse.deltaY = 0
+	Mouse.deltaScreenX = 0
+	Mouse.deltaScreenY = 0
 end
 
 function Mouse.overlaps(obj, cam)
@@ -115,11 +127,22 @@ end
 function Mouse.onMoved(x, y)
 	local winWidth, winHeight = love.graphics.getDimensions()
 	local scale = math.min(winWidth / game.width, winHeight / game.height)
+
+	Mouse.__prevX = Mouse.x
+	Mouse.__prevY = Mouse.y
+	Mouse.__prevScreenX = Mouse.screenX
+	Mouse.__prevScreenY = Mouse.screenY
+
 	Mouse.x, Mouse.y = (x - (winWidth - scale * game.width) / 2) / scale,
 		(y - (winHeight - scale * game.height) / 2) / scale
 
 	Mouse.screenX, Mouse.screenY = x, y
 	Mouse.isMoved = true
+
+	Mouse.deltaX = Mouse.x - Mouse.__prevX
+	Mouse.deltaY = Mouse.y - Mouse.__prevY
+	Mouse.deltaScreenX = Mouse.screenX - Mouse.__prevScreenX
+	Mouse.deltaScreenY = Mouse.screenY - Mouse.__prevScreenY
 end
 
 return Mouse

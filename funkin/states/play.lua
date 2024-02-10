@@ -110,12 +110,16 @@ function PlayState:enter()
 
 	self.scripts:call("create")
 
+	self.playback = ClientPrefs.data.playback
+
 	game.sound.loadMusic(paths.getInst(songName))
+	game.sound.music:setPitch(self.playback)
 	game.sound.music:setLooping(false)
 	game.sound.music.onComplete = function() self:endSong() end
 
 	if PlayState.SONG.needsVoices then
 		self.vocals = Sound():load(paths.getVoices(songName))
+		self.vocals:setPitch(self.playback)
 		game.sound.list:add(self.vocals)
 	end
 
@@ -529,7 +533,9 @@ function PlayState:startCountdown()
 			local data = countdownData[swagCounter + 1]
 			if not data then return end
 
-			if data.sound then game.sound.play(paths.getSound(data.sound)) end
+			if data.sound then
+				game.sound.play(paths.getSound(data.sound)):setPitch(self.playback)
+			end
 			if data.image then
 				local countdownSprite = Sprite()
 				countdownSprite:loadTexture(paths.getImage(data.image))
@@ -541,7 +547,7 @@ function PlayState:startCountdown()
 				countdownSprite.antialiasing = not PlayState.pixelStage
 				countdownSprite:screenCenter()
 
-				Timer.tween(crotchet, countdownSprite, {alpha = 0},
+				Timer.tween(crotchet / self.playback, countdownSprite, {alpha = 0},
 					"in-out-cubic", function()
 						self:remove(countdownSprite)
 						countdownSprite:destroy()
@@ -565,6 +571,8 @@ function fadeGroupSprites(obj)
 end
 
 function PlayState:update(dt)
+	dt = dt * self.playback
+
 	self.lastTick = love.timer.getTime()
 
 	self.scripts:call("update", dt)
@@ -572,7 +580,7 @@ function PlayState:update(dt)
 	self.countdownTimer:update(dt)
 
 	if self.startedCountdown then
-		PlayState.conductor.time = PlayState.conductor.time + dt * 1000 * game.sound.music:getActualPitch()
+		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
 			game.sound.music:seek(self.startPos / 1000)
@@ -967,6 +975,12 @@ end
 
 function PlayState:onSettingChange(setting)
 	if setting == 'gameplay' then
+		self.playback = ClientPrefs.data.playback
+		game.sound.music:setPitch(self.playback)
+		if self.vocals then
+			self.vocals:setPitch(self.playback)
+		end
+
 		self.botPlay = ClientPrefs.data.botplayMode
 		self.downScroll = ClientPrefs.data.downScroll
 		self.middleScroll = ClientPrefs.data.middleScroll
@@ -1242,10 +1256,12 @@ function PlayState:endSong(skip)
 		else
 			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
 			game.switchState(StoryMenuState())
+			game.sound.music:setPitch(1)
 			game.sound.playMusic(paths.getMusic("freakyMenu"))
 		end
 	else
 		game.switchState(FreeplayState())
+		game.sound.music:setPitch(1)
 		game.sound.playMusic(paths.getMusic("freakyMenu"))
 	end
 
@@ -1317,7 +1333,7 @@ function PlayState:section(s)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = PlayState.conductor.crotchet * 0.001
+	local accel = PlayState.conductor.crotchet * 0.001 / self.playback
 
 	local judgeSpr = self.judgeSprites:recycle()
 
@@ -1347,7 +1363,7 @@ function PlayState:popUpScore(rating)
 	judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
 
 	Timer.after(accel, function()
-		Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
+		Timer.tween(0.2 / self.playback, judgeSpr, {alpha = 0}, "linear", function()
 			Timer.cancelTweensOf(judgeSpr)
 			judgeSpr:kill()
 		end)
@@ -1382,7 +1398,7 @@ function PlayState:popUpScore(rating)
 			numScore.velocity.x = math.random(-5.0, 5.0)
 
 			Timer.after(accel * 2, function()
-				Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
+				Timer.tween(0.2 / self.playback, numScore, {alpha = 0}, "linear", function()
 					Timer.cancelTweensOf(numScore)
 					numScore:kill()
 				end)

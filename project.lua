@@ -5,7 +5,7 @@ return {
 	title = "Friday Night Funkin' LOVE",
 	file = "FNF-LOVE",
 	icon = "art/icon.png",
-	version = "0.6.4",
+	version = "0.6.7",
 	package = "com.stilic.fnflove",
 	width = 1280,
 	height = 720,

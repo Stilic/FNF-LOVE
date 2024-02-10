@@ -252,12 +252,14 @@ function game.update(real_dt)
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
 	game.cameras.update(dt)
 	game.sound.update()
-	Keyboard.update()
-	Mouse.update()
 
 	if not game.isSwitchingState then Gamestate.update(dt) end
 	for _, o in ipairs(game.bound.members) do if o.update then o:update(dt) end end
 	for _, o in ipairs(game.members) do if o.update then o:update(dt) end end
+
+	-- input must be here
+	Keyboard.update()
+	Mouse.update()
 end
 
 function game.resize(w, h)

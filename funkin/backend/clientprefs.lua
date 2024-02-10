@@ -12,15 +12,21 @@ ClientPrefs.data = {
 	botplayMode = false,
 	timeType = 'left',
 	songOffset = 0,
+	playback = 1,
 
 	-- display
 	fps = 0,
-	showFps = false,
 	antialiasing = true,
 	lowQuality = false,
 	shader = true,
 	fullscreen = false,
 	resolution = 1,
+
+	-- stats
+	showFps = false,
+	showRender = false,
+	showMemory = false,
+	showDraws = false,
 }
 
 ClientPrefs.controls = {
@@ -75,7 +81,11 @@ function ClientPrefs.loadData()
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()
 	end
 
-	game.statsCounter.visible = ClientPrefs.data.showFps
+	game.statsCounter.showFps = ClientPrefs.data.showFps
+	game.statsCounter.showRender = ClientPrefs.data.showRender
+	game.statsCounter.showMemory = ClientPrefs.data.showMemory
+	game.statsCounter.showDraws = ClientPrefs.data.showDraws
+
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 
 	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)

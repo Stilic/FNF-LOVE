@@ -13,6 +13,8 @@ ffi.cdef [[
 	typedef const char* LPCSTR;
 	typedef DWORD HMENU;
 	typedef struct HWND HWND;
+	typedef void* HANDLE;
+    typedef HANDLE HCURSOR;
 
 	typedef struct tagRECT {
 		union{
@@ -49,6 +51,9 @@ ffi.cdef [[
 	HRESULT DwmGetWindowAttribute(HWND hwnd, DWORD dwAttribute, PVOID pvAttribute, DWORD cbAttribute);
 	HRESULT DwmSetWindowAttribute(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
 	HRESULT DwmFlush();
+
+	HCURSOR LoadCursorA(HANDLE hInstance, const char* lpCursorName);
+    HCURSOR SetCursor(HCURSOR hCursor);
 ]]
 
 local Rect = ffi.metatype("RECT", {})
@@ -105,6 +110,35 @@ function Util.setWindowPosition(x, y, w, h, ...)
 	)
 	rect = nil
 	love.window.getMode()
+end
+
+local currentCursor = "ARROW"
+local CursorType = {
+	ARROW = 32512,
+	IBEAM = 32513,
+	WAIT = 32514,
+	CROSS = 32515,
+	UPARROW = 32516,
+	SIZENWSE = 32642,
+	SIZENESW = 32643,
+	SIZEWE = 32644,
+	SIZENS = 32645,
+	SIZEALL = 32646,
+	NO = 32648,
+	HAND = 32649,
+	APPSTARTING = 32650,
+	HELP = 32651,
+	PIN = 32671,
+	PERSON = 32672
+}
+
+---@param type string
+function Util.setCursor(type)
+	local selectedType = CursorType[type:upper()]
+	if selectedType then
+		local systemCursor = ffi.C.LoadCursorA(nil, ffi.cast("const char*", selectedType))
+    	ffi.C.SetCursor(systemCursor)
+	end
 end
 
 return Util

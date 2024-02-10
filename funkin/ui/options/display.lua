@@ -82,10 +82,26 @@ local data = {
 		return math.truncate(modes.refreshrate, 3) == value and
 			fpsf:format(tostring(value)) or tostring(value)
 	end},
+	{"STATS"},
 	{"showFps", "Show FPS", "boolean", function()
 		local value = not ClientPrefs.data.showFps
 		ClientPrefs.data.showFps = value
-		game.statsCounter.visible = value
+		game.statsCounter.showFps = value
+	end},
+	{"showMemory", "Show Memory", "boolean", function()
+		local value = not ClientPrefs.data.showMemory
+		ClientPrefs.data.showMemory = value
+		game.statsCounter.showMemory = value
+	end},
+	{"showRender", "Show Render", "boolean", function()
+		local value = not ClientPrefs.data.showRender
+		ClientPrefs.data.showRender = value
+		game.statsCounter.showRender = value
+	end},
+	{"showDraws", "Show Draws", "boolean", function()
+		local value = not ClientPrefs.data.showDraws
+		ClientPrefs.data.showDraws = value
+		game.statsCounter.showDraws = value
 	end},
 }
 

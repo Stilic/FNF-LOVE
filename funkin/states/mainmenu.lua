@@ -123,6 +123,10 @@ function MainMenuState:update(dt)
 		if controls:pressed("accept") then
 			self:enterSelection(self.optionShit[MainMenuState.curSelected])
 		end
+
+		if controls:pressed("debug_1") then
+			self:openEditorMenu()
+		end
 	end
 
 	game.camera.target.x, game.camera.target.y =
@@ -168,6 +172,16 @@ local triggerChoices = {
 		return true
 	end}
 }
+
+function MainMenuState:openEditorMenu()
+	self.selectedSomethin = true
+	self.editorUI = self.editorUI or EditorMenu(function()
+		self.selectedSomethin = false
+	end)
+	self.editorUI:setScrollFactor()
+	self.editorUI:screenCenter()
+	self:add(self.editorUI)
+end
 
 function MainMenuState:enterSelection(choice)
 	local switch = triggerChoices[choice]
@@ -219,6 +233,9 @@ end
 function MainMenuState:leave()
 	if self.optionsUI then self.optionsUI:destroy() end
 	self.optionsUI = nil
+
+	if self.editorUI then self.editorUI:destroy() end
+	self.editorUI = nil
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil

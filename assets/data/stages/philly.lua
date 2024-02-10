@@ -63,6 +63,8 @@ function update(dt)
 				startedMoving = true
 				state.gf:playAnim('hairBlow')
 				state.gf.lastHit = math.floor(PlayState.conductor.time)
+				game.camera:shake(0.001, 1)
+				state.camHUD:shake(0.001, 1)
 			end
 
 			if startedMoving then

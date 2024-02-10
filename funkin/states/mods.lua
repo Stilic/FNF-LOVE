@@ -3,6 +3,7 @@ local ModsState = State:extend("ModsState")
 function ModsState:enter()
 	Mods.loadMods()
 	self.curSelected = table.find(Mods.mods, Mods.currentMod) or 1
+	self.switchingMods = false
 
 	self.bg = Sprite()
 	self.bg:loadTexture(paths.getImage('menus/menuDesat'))
@@ -25,8 +26,8 @@ function ModsState:enter()
 
 	if #Mods.mods > 0 then
 		for i = 1, #Mods.mods do
-			local card = ModCard(-50 + (i * 580), 120, Mods.mods[i])
-			card:screenCenter('y')
+			local card = ModCard(-50 + (i * 580), 50, Mods.mods[i])
+			card.ID = i
 			self.cardGroup:add(card)
 		end
 
@@ -72,15 +73,22 @@ function ModsState:update(dt)
 		util.coolLerp(game.camera.target.x, self.camFollow.x, 12, dt),
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 12, dt)
 
-	if #Mods.mods > 0 then
-		if controls:pressed('ui_left') then self:changeSelection(-1) end
-		if controls:pressed('ui_right') then self:changeSelection(1) end
-
-		if controls:pressed('accept') then self:selectMods() end
+	for _, mod in pairs(self.cardGroup.members) do
+		local yPos = self.curSelected == mod.ID and 50 or 502
+		mod.y = util.coolLerp(mod.y, yPos, 12, dt)
 	end
 
-	if controls:pressed('back') then
-		game.switchState(MainMenuState())
+	if not self.switchingMods then
+		if #Mods.mods > 0 then
+			if controls:pressed('ui_left') then self:changeSelection(-1) end
+			if controls:pressed('ui_right') then self:changeSelection(1) end
+
+			if controls:pressed('accept') then self:selectMods() end
+		end
+
+		if controls:pressed('back') then
+			game.switchState(MainMenuState())
+		end
 	end
 
 	if #Mods.mods > 0 then
@@ -94,18 +102,23 @@ end
 
 function ModsState:selectMods()
 	local selectedMods = Mods.mods[self.curSelected]
-
 	if selectedMods == Mods.currentMod then
 		Mods.currentMod = nil
 	else
 		Mods.currentMod = selectedMods
 	end
 
-	game.save.data.currentMod = Mods.currentMod
+	game.sound.play(paths.getSound('confirmMenu'))
 
-	game.sound.music:stop()
+	game.save.data.currentMod = Mods.currentMod
+	self.switchingMods = true
+
 	TitleState.initialized = false
-	game.switchState(TitleState())
+	game.sound.music:fade(1, 1, 0)
+	Timer.tween(1, game.camera, {zoom = 1.1, alpha = 0}, "in-sine", function()
+		game.sound.music:stop()
+		Timer.after(1, function() game.switchState(TitleState(), true) end)
+	end)
 end
 
 function ModsState:changeSelection(change)

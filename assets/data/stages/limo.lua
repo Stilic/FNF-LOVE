@@ -1,3 +1,4 @@
+local bgLimo
 local grpLimoDancers
 local limo
 local fastCar
@@ -13,7 +14,7 @@ function create()
 	skyBG:setScrollFactor(0.1, 0.1)
 	self:add(skyBG)
 
-	local bgLimo = Sprite(-200, 480)
+	bgLimo = Sprite(-200, 480)
 	bgLimo:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'bgLimo'))
 	bgLimo:addAnimByPrefix('drive', "background limo pink", 24)
 	bgLimo:play('drive')
@@ -24,7 +25,7 @@ function create()
 	self:add(grpLimoDancers)
 
 	for i = 0, 4 do
-		local dancer = BackgroundDancer((370 * i) + 130, bgLimo.y - 400)
+		local dancer = BackgroundDancer((370 * i) + 230, bgLimo.y - 380)
 		dancer:setScrollFactor(0.4, 0.4)
 		grpLimoDancers:add(dancer)
 	end
@@ -46,7 +47,26 @@ function postCreate()
 end
 
 local updateElapsed = 0
-function update(dt) updateElapsed = dt end
+local bgLimoTime = 0
+local cameraOffset = {0, 0}
+local offsetTime = 0
+function update(dt)
+	updateElapsed = dt
+
+	bgLimoTime = bgLimoTime + dt
+	bgLimo.x = -200 + 60 * math.sin(bgLimoTime)
+	for i = 0, 4 do
+		grpLimoDancers.members[i+1].x = ((370 * i) + 230) + 60 * math.sin(bgLimoTime)
+	end
+
+	offsetTime = offsetTime + dt
+	cameraOffset[1] = 14 * math.sin(offsetTime * 1.5)
+	cameraOffset[2] = 14 * math.cos(offsetTime * 2.5)
+
+	state:cameraMovement()
+	state.camFollow.x = state.camFollow.x + cameraOffset[1]
+	state.camFollow.y = state.camFollow.y + cameraOffset[2]
+end
 
 local fastCarCanDrive = true
 local fastCarSpeed = 170

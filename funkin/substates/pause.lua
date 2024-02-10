@@ -113,6 +113,7 @@ function PauseSubstate:update(dt)
 				end
 			end,
 			["Exit to menu"] = function()
+				game.sound.music:setPitch(1)
 				game.sound.playMusic(paths.getMusic("freakyMenu"))
 				PlayState.chartingMode = false
 				PlayState.startPos = 0
