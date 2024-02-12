@@ -1366,7 +1366,7 @@ function PlayState:popUpScore(rating)
 		comboSpr.velocity.x = 0
 		comboSpr.velocity.y = 0
 		comboSpr.alpha = 1
-		if self.combo <= 10 then comboSpr.alpha = 0 end
+		if self.combo <= 9 then comboSpr.alpha = 0 end
 		comboSpr.antialiasing = antialias
 
 		comboSpr.acceleration.y = 600
