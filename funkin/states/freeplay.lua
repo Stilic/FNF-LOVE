@@ -141,7 +141,7 @@ function FreeplayState:update(dt)
 					.name)
 				local diff =
 					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]:lower()
-				if self:checkSongDifficulty() then
+				if self:checkSongAssets(daSong, diff) then
 					if Keyboard.pressed.SHIFT then
 						PlayState.loadSong(daSong, diff)
 						PlayState.storyDifficulty = diff
@@ -149,11 +149,6 @@ function FreeplayState:update(dt)
 					else
 						game.switchState(PlayState(false, daSong, diff))
 					end
-				else
-					self.inSubstate = true
-					self:openSubstate(ChartErrorSubstate(
-						'songs/' .. daSong .. '/charts/' ..
-						diff .. '.json'))
 				end
 			end
 		end
@@ -242,12 +237,28 @@ function FreeplayState:positionHighscore()
 	self.diffText.x = math.floor(self.scoreBG.x - self.diffText:getWidth() / 2)
 end
 
-function FreeplayState:checkSongDifficulty()
-	local song = paths.formatToSongPath(self.songsData[self.curSelected].name)
-	if paths.getJSON('songs/' .. song .. '/charts/' ..
-			self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]:lower()) then
-		return true
+function FreeplayState:checkSongAssets(song, diff)
+	local title = "Assets"
+	local errorList = {}
+
+	local jsonFile = paths.getJSON('songs/' .. song .. '/charts/' .. diff)
+	local hasVocals = false
+	if jsonFile then
+		title = "Audio(s)"
+		hasVocals = (jsonFile.song.needsVoices == true)
+	else
+		table.insert(errorList, 'songs/' .. song .. '/charts/' .. diff .. '.json')
 	end
+	if paths.getInst(song) == nil then
+		table.insert(errorList, 'songs/' .. song .. '/Inst.ogg')
+	end
+	if hasVocals and paths.getVoices(song) == nil then
+		table.insert(errorList, 'songs/' .. song .. '/Voices.ogg')
+	end
+	if #errorList <= 0 then return true end
+
+	self.inSubstate = true
+	self:openSubstate(AssetsErrorSubstate(title, errorList))
 	return false
 end
 

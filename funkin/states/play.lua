@@ -1,4 +1,8 @@
 local PauseSubstate = require "funkin.substates.pause"
+local Events = {
+	NoteHit = require "funkin.backend.events.notehit",
+	PopUpScore = require "funkin.backend.events.popupscore"
+}
 
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
@@ -137,34 +141,7 @@ function PlayState:enter()
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 
-	local curStage = PlayState.SONG.stage
-	if PlayState.SONG.stage == nil then
-		if songName == 'test' then
-			curStage = 'test'
-		elseif songName == 'spookeez' or songName == 'south' or songName ==
-			'monster' then
-			curStage = 'spooky'
-		elseif songName == 'pico' or songName == 'philly-nice' or songName ==
-			'blammed' then
-			curStage = 'philly'
-		elseif songName == 'satin-panties' or songName == 'high' or songName ==
-			'milf' then
-			curStage = 'limo'
-		elseif songName == 'cocoa' or songName == 'eggnog' then
-			curStage = 'mall'
-		elseif songName == 'winter-horrorland' then
-			curStage = 'mall-evil'
-		elseif songName == "senpai" or songName == "roses" then
-			curStage = "school"
-		elseif songName == "thorns" then
-			curStage = "school-evil"
-		elseif songName == "ugh" or songName == "guns" or songName == "stress" then
-			curStage = "tank"
-		else
-			curStage = "stage"
-		end
-	end
-	PlayState.SONG.stage = curStage
+	self:loadStageWithSongName(songName)
 
 	-- reset ui stage
 	PlayState.pixelStage = false
@@ -280,27 +257,9 @@ function PlayState:enter()
 	splash.alpha = 0
 	self.splashes:add(splash)
 
-	self.judgeSprites = Group()
+	self.judgeSprites = SpriteGroup()
 
-	local gfVersion = PlayState.SONG.gfVersion
-	if gfVersion == nil then
-		switch(curStage, {
-			["limo"] = function() gfVersion = "gf-car" end,
-			["mall"] = function() gfVersion = "gf-christmas" end,
-			["mall-evil"] = function() gfVersion = "gf-christmas" end,
-			["school"] = function() gfVersion = "gf-pixel" end,
-			["school-evil"] = function() gfVersion = "gf-pixel" end,
-			["tank"] = function()
-				if songName == 'stress' then
-					gfVersion = "pico-speaker"
-				else
-					gfVersion = "gf-tankmen"
-				end
-			end,
-			default = function() gfVersion = "gf" end
-		})
-		PlayState.SONG.gfVersion = gfVersion
-	end
+	self:loadGfWithStage(PlayState.SONG.stage)
 
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
 		self.SONG.gfVersion, false)
@@ -353,6 +312,8 @@ function PlayState:enter()
 		math.floor(self.healthBarBG.width - 8),
 		math.floor(self.healthBarBG.height - 8), 0, 2, true)
 	self.healthBar:setValue(self.health)
+	self.healthBar.color = self.boyfriend.iconColor ~= nil and Color.fromString(self.boyfriend.iconColor) or Color.GREEN
+	self.healthBar.color.bg = self.dad.iconColor ~= nil and Color.fromString(self.dad.iconColor) or Color.RED
 
 	self.iconP1 = HealthIcon(self.boyfriend.icon, true)
 	self.iconP1.y = self.healthBar.y - 75
@@ -387,15 +348,20 @@ function PlayState:enter()
 	self.timeArc.config = {
 		radius = 24,
 		type = "open",
-		angle = {-90, 0},
+		angle = {-90, -90},
 		segments = 32
 	}
 	self.timeArc:updateDimensions()
 	self.timeArc:centerOrigin()
 	self.timeArc.offset.x, self.timeArc.offset.y = self.timeArc.origin.x, self.timeArc.origin.y
 
+	local songTime = 0
+	if ClientPrefs.data.timeType == "left" then
+		songTime = game.sound.music:getDuration() - songTime
+	end
+
 	local fontTime = paths.getFont("vcr.ttf", 24)
-	self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, "",
+	self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, util.formatTime(songTime),
 		fontTime, {1, 1, 1}, "left")
 	self.timeTxt.outline.width = 2
 	self.timeTxt.antialiasing = false
@@ -590,27 +556,6 @@ function PlayState:update(dt)
 				self.vocals:play()
 			end
 			self.scripts:call("songStart")
-
-			if not self.startingSong and love.system.getDevice() == "Desktop" then
-				local detailsText = "Freeplay"
-				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-				local startTimestamp = os.time(os.date("*t"))
-				local endTimestamp = startTimestamp +
-					game.sound.music:getDuration()
-
-				local diff = PlayState.defaultDifficulty
-				if PlayState.songDifficulty ~= "" then
-					diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-				end
-
-				Discord.changePresence({
-					details = detailsText,
-					state = self.SONG.song .. ' - [' .. diff .. ']',
-					startTimestamp = math.floor(startTimestamp),
-					endTimestamp = math.floor(endTimestamp)
-				})
-			end
 		end
 	end
 
@@ -650,13 +595,16 @@ function PlayState:update(dt)
 		songTime = game.sound.music:getDuration() - songTime
 	end
 
-	self.timeTxt.content = util.formatTime(songTime)
-
 	self.timeArc.x = self.timeArcBG.x
-	local timeAngle = ((PlayState.conductor.time / 1000) /
-			(game.sound.music:getDuration() / 1000)) *
-		0.36
-	self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
+	if PlayState.conductor.time > 0 and
+			PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+		self.timeTxt.content = util.formatTime(songTime)
+
+		local timeAngle = ((PlayState.conductor.time / 1000) /
+				(game.sound.music:getDuration() / 1000)) *
+			0.36
+		self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
+	end
 
 	if self.camZooming then
 		game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom, 3, dt)
@@ -1128,66 +1076,76 @@ function PlayState:goodNoteHit(n)
 		n.wasGoodHit = true
 		self.scripts:call("goodNoteHit", n)
 
-		if self.vocals then self.vocals:setVolume(1) end
+		local event
+		event = self.scripts:event("onNoteHit", Events.NoteHit(n, (n.mustPress and self.boyfriend or self.dad)))
 
-		local animType = ''
-		if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
-			animType = 'alt'
-		end
+		if not event.cancelled then
+			if self.vocals then self.vocals:setVolume(1) end
 
-		local char = (n.mustPress and self.boyfriend or self.dad)
-		char:sing(n.data, animType)
-
-		if paths.formatToSongPath(self.SONG.song) ~= 'tutorial' then
-			if not n.mustPress then self.camZooming = true end
-		end
-
-		local time = 0
-		if not n.mustPress or self.botPlay then
-			time = 0.15
-			if n.isSustain and not n.isSustainEnd then
-				time = time * 2
+			local animType = ''
+			if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
+				animType = 'alt'
 			end
-		end
-		local receptor = (n.mustPress and self.playerReceptors or
-			self.enemyReceptors).members[n.data + 1]
-		receptor:confirm(time)
 
-		if not n.isSustain then
-			if n.mustPress then
-				local diff, rating = math.abs(n.time - PlayState.conductor.time),
-					PlayState.ratings[#PlayState.ratings - 1]
-				for _, r in pairs(PlayState.ratings) do
-					if diff <= r.time then
-						rating = r
-						break
+			if not event.cancelledAnim then
+				local char = (n.mustPress and self.boyfriend or self.dad)
+				char:sing(n.data, animType)
+			end
+
+			if paths.formatToSongPath(self.SONG.song) ~= 'tutorial' then
+				if not n.mustPress then self.camZooming = true end
+			end
+
+			local time = 0
+			if not n.mustPress or self.botPlay then
+				time = 0.15
+				if n.isSustain and not n.isSustainEnd then
+					time = time * 2
+				end
+			end
+			local receptor = (n.mustPress and self.playerReceptors or
+				self.enemyReceptors).members[n.data + 1]
+
+			if not event.strumGlowCancelled then
+				receptor:confirm(time)
+			end
+
+			if not n.isSustain then
+				if n.mustPress then
+					local diff, rating = math.abs(n.time - PlayState.conductor.time),
+						PlayState.ratings[#PlayState.ratings - 1]
+					for _, r in pairs(PlayState.ratings) do
+						if diff <= r.time then
+							rating = r
+							break
+						end
 					end
+
+					if not n.ignoreNote then
+						if self.combo < 0 then self.combo = 0 end
+						self.combo = self.combo + 1
+						self.score = self.score + rating.score
+
+						if self.health > 2 then self.health = 2 end
+
+						self.health = self.health + 0.023
+						self.healthBar:setValue(self.health)
+					end
+
+					if ClientPrefs.data.noteSplash and rating.splash then
+						local splash = self.splashes:recycle(NoteSplash)
+						splash.x, splash.y = receptor.x, receptor.y
+						splash:setup(n.data)
+					end
+					self:popUpScore(rating.name)
+
+					self.totalHit = self.totalHit + rating.mod
+					self.totalPlayed = self.totalPlayed + 1
+					self:recalculateRating(rating.name)
 				end
 
-				if not n.ignoreNote then
-					if self.combo < 0 then self.combo = 0 end
-					self.combo = self.combo + 1
-					self.score = self.score + rating.score
-
-					if self.health > 2 then self.health = 2 end
-
-					self.health = self.health + 0.023
-					self.healthBar:setValue(self.health)
-				end
-
-				if ClientPrefs.data.noteSplash and rating.splash then
-					local splash = self.splashes:recycle(NoteSplash)
-					splash.x, splash.y = receptor.x, receptor.y
-					splash:setup(n.data)
-				end
-				self:popUpScore(rating.name)
-
-				self.totalHit = self.totalHit + rating.mod
-				self.totalPlayed = self.totalPlayed + 1
-				self:recalculateRating(rating.name)
+				self:removeNote(n)
 			end
-
-			self:removeNote(n)
 		end
 
 		self.scripts:call("postGoodNoteHit", n)
@@ -1287,6 +1245,28 @@ function PlayState:step(s)
 		if math.abs(time - PlayState.conductor.time) > 20 then
 			PlayState.conductor.time = time
 		end
+
+		if love.system.getDevice() == "Desktop" then
+			local detailsText = "Freeplay"
+			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+			local startTimestamp = os.time(os.date("*t"))
+			local endTimestamp = startTimestamp +
+				game.sound.music:getDuration()
+			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
+
+			local diff = PlayState.defaultDifficulty
+			if PlayState.songDifficulty ~= "" then
+				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+			end
+
+			Discord.changePresence({
+				details = detailsText,
+				state = self.SONG.song .. ' - [' .. diff .. ']',
+				startTimestamp = math.floor(startTimestamp),
+				endTimestamp = math.floor(endTimestamp)
+			})
+		end
 	end
 	self.scripts:set("curStep", s)
 	self.scripts:call("step")
@@ -1335,76 +1315,110 @@ end
 function PlayState:popUpScore(rating)
 	local accel = PlayState.conductor.crotchet * 0.001 / self.playback
 
-	local judgeSpr = self.judgeSprites:recycle()
-
 	local antialias = not PlayState.pixelStage
 	local uiStage = PlayState.pixelStage and "pixel" or "normal"
 
-	if rating == nil then rating = "shit" end
-	judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
-		rating))
-	judgeSpr.alpha = 1
-	judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
-		(PlayState.pixelStage and 4.7 or 0.7)))
-	judgeSpr:updateHitbox()
-	judgeSpr:screenCenter()
-	judgeSpr.moves = true
-	-- use fixed values to display at the same position on a different resolution
-	judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
-	judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
-	judgeSpr.velocity.x = 0
-	judgeSpr.velocity.y = 0
-	judgeSpr.alpha = 1
-	if self.combo <= 0 then judgeSpr.alpha = 0 end
-	judgeSpr.antialiasing = antialias
+	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
+	if not event.cancelled then
+		local judgeSpr = self.judgeSprites:recycle()
 
-	judgeSpr.acceleration.y = 550
-	judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
-	judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
+		if rating == nil then rating = "shit" end
+		judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
+			rating))
+		judgeSpr.alpha = 1
+		judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
+			(PlayState.pixelStage and 4.7 or 0.7)))
+		judgeSpr:updateHitbox()
+		judgeSpr:screenCenter()
+		judgeSpr.moves = true
+		-- use fixed values to display at the same position on a different resolution
+		judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
+		judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
+		judgeSpr.velocity.x = 0
+		judgeSpr.velocity.y = 0
+		judgeSpr.alpha = 1
+		if self.combo <= 0 then judgeSpr.alpha = 0 end
+		judgeSpr.antialiasing = antialias
 
-	Timer.after(accel, function()
-		Timer.tween(0.2 / self.playback, judgeSpr, {alpha = 0}, "linear", function()
-			Timer.cancelTweensOf(judgeSpr)
-			judgeSpr:kill()
-		end)
-	end)
+		judgeSpr.acceleration.y = 550
+		judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
+		judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
+		judgeSpr.visible = not event.hideRating
 
-	local lastSpr
-	local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
-	if self.combo < 0 then comboStr = string.format("-%03d", math.abs(self.combo)) end
-	for i = 1, #comboStr do
-		if self.combo >= 10 or self.combo <= 0 then
-			local digit = tostring(comboStr:sub(i, i)) or ""
-
-			if digit == "-" then digit = "negative" end
-
-			local numScore = self.judgeSprites:recycle()
-			numScore:loadTexture(paths.getImage(
-				"skins/" .. uiStage .. "/num" .. digit))
-			numScore:setGraphicSize(math.floor(numScore.width *
-				(PlayState.pixelStage and 4.5 or
-					0.5)))
-			numScore:updateHitbox()
-			numScore.moves = true
-			numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
-			numScore.y = judgeSpr.y + 115
-			numScore.velocity.y = 0
-			numScore.velocity.x = 0
-			numScore.alpha = 1
-			numScore.antialiasing = antialias
-
-			numScore.acceleration.y = math.random(200, 300)
-			numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
-			numScore.velocity.x = math.random(-5.0, 5.0)
-
-			Timer.after(accel * 2, function()
-				Timer.tween(0.2 / self.playback, numScore, {alpha = 0}, "linear", function()
-					Timer.cancelTweensOf(numScore)
-					numScore:kill()
-				end)
+		Timer.after(accel, function()
+			Timer.tween(0.2 / self.playback, judgeSpr, {alpha = 0}, "linear", function()
+				Timer.cancelTweensOf(judgeSpr)
+				judgeSpr:kill()
 			end)
+		end)
 
-			lastSpr = numScore
+		local comboSpr = self.judgeSprites:recycle()
+		comboSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/combo"))
+		comboSpr.alpha = 1
+		comboSpr:setGraphicSize(math.floor(comboSpr.width *
+			(PlayState.pixelStage and 4.5 or 0.6)))
+		comboSpr:updateHitbox()
+		comboSpr:screenCenter()
+		comboSpr.moves = true
+		-- use fixed values to display at the same position on a different resolution
+		comboSpr.x = (1280 - comboSpr.width) * 0.5 + 250
+		comboSpr.y = (720 - comboSpr.height) * 0.5
+		comboSpr.velocity.x = 0
+		comboSpr.velocity.y = 0
+		comboSpr.alpha = 1
+		if self.combo <= 10 then comboSpr.alpha = 0 end
+		comboSpr.antialiasing = antialias
+
+		comboSpr.acceleration.y = 600
+		comboSpr.velocity.y = comboSpr.velocity.y - 150
+		comboSpr.velocity.x = comboSpr.velocity.x + math.random(1, 10)
+		comboSpr.visible = not event.hideCombo
+
+		Timer.after(accel, function()
+			Timer.tween(0.2 / self.playback, comboSpr, {alpha = 0}, "linear", function()
+				Timer.cancelTweensOf(comboSpr)
+				comboSpr:kill()
+			end)
+		end)
+
+		local lastSpr
+		local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
+		if self.combo < 0 then comboStr = string.format("-%03d", math.abs(self.combo)) end
+		for i = 1, #comboStr do
+			if self.combo >= 10 or self.combo <= 0 then
+				local digit = tostring(comboStr:sub(i, i)) or ""
+
+				if digit == "-" then digit = "negative" end
+
+				local numScore = self.judgeSprites:recycle()
+				numScore:loadTexture(paths.getImage(
+					"skins/" .. uiStage .. "/num" .. digit))
+				numScore:setGraphicSize(math.floor(numScore.width *
+					(PlayState.pixelStage and 4.5 or
+						0.5)))
+				numScore:updateHitbox()
+				numScore.moves = true
+				numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
+				numScore.y = judgeSpr.y + 115
+				numScore.velocity.y = 0
+				numScore.velocity.x = 0
+				numScore.alpha = 1
+				numScore.antialiasing = antialias
+
+				numScore.acceleration.y = math.random(200, 300)
+				numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
+				numScore.velocity.x = math.random(-5.0, 5.0)
+				numScore.visible = not event.hideScore
+
+				Timer.after(accel * 2, function()
+					Timer.tween(0.2 / self.playback, numScore, {alpha = 0}, "linear", function()
+						Timer.cancelTweensOf(numScore)
+						numScore:kill()
+					end)
+				end)
+
+				lastSpr = numScore
+			end
 		end
 	end
 end
@@ -1511,6 +1525,59 @@ function PlayState:recalculateRating(rating)
 
 	self.scoreTxt.content = self.scoreFormat:gsub("%%(%w+)", vars)
 	self.scoreTxt:updateHitbox()
+end
+
+function PlayState:loadStageWithSongName(songName)
+	local curStage = PlayState.SONG.stage
+	if PlayState.SONG.stage == nil then
+		if songName == 'test' then
+			curStage = 'test'
+		elseif songName == 'spookeez' or songName == 'south' or songName ==
+			'monster' then
+			curStage = 'spooky'
+		elseif songName == 'pico' or songName == 'philly-nice' or songName ==
+			'blammed' then
+			curStage = 'philly'
+		elseif songName == 'satin-panties' or songName == 'high' or songName ==
+			'milf' then
+			curStage = 'limo'
+		elseif songName == 'cocoa' or songName == 'eggnog' then
+			curStage = 'mall'
+		elseif songName == 'winter-horrorland' then
+			curStage = 'mall-evil'
+		elseif songName == "senpai" or songName == "roses" then
+			curStage = "school"
+		elseif songName == "thorns" then
+			curStage = "school-evil"
+		elseif songName == "ugh" or songName == "guns" or songName == "stress" then
+			curStage = "tank"
+		else
+			curStage = "stage"
+		end
+	end
+	PlayState.SONG.stage = curStage
+end
+
+function PlayState:loadGfWithStage(stage)
+	local gfVersion = PlayState.SONG.gfVersion
+	if gfVersion == nil then
+		switch(stage, {
+			["limo"] = function() gfVersion = "gf-car" end,
+			["mall"] = function() gfVersion = "gf-christmas" end,
+			["mall-evil"] = function() gfVersion = "gf-christmas" end,
+			["school"] = function() gfVersion = "gf-pixel" end,
+			["school-evil"] = function() gfVersion = "gf-pixel" end,
+			["tank"] = function()
+				if songName == 'stress' then
+					gfVersion = "pico-speaker"
+				else
+					gfVersion = "gf-tankmen"
+				end
+			end,
+			default = function() gfVersion = "gf" end
+		})
+		PlayState.SONG.gfVersion = gfVersion
+	end
 end
 
 function PlayState:leave()

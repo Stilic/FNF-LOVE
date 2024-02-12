@@ -53,7 +53,7 @@ PlayState = require "funkin.states.play"
 
 EditorMenu = require "funkin.ui.editor.editormenu"
 
-ChartErrorSubstate = require "funkin.substates.charterror"
+AssetsErrorSubstate = require "funkin.substates.assetserror"
 GameOverSubstate = require "funkin.substates.gameover"
 
 CharacterEditor = require "funkin.states.editors.character"

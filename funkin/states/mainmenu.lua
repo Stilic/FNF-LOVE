@@ -65,12 +65,12 @@ function MainMenuState:enter()
 	self.engineVersion:setScrollFactor()
 	self:add(self.engineVersion)
 
-	self.engineCreated = Text(12, game.height - 24, "Created By Stilic",
+	self.funkinVersion = Text(12, game.height - 24, "Friday Night Funkin' v0.2.8",
 		paths.getFont("vcr.ttf", 16), {255, 255, 255})
-	self.engineCreated.antialiasing = false
-	self.engineCreated.outline.width = 1
-	self.engineCreated:setScrollFactor()
-	self:add(self.engineCreated)
+	self.funkinVersion.antialiasing = false
+	self.funkinVersion.outline.width = 1
+	self.funkinVersion:setScrollFactor()
+	self:add(self.funkinVersion)
 
 	self.throttles = {}
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})

@@ -62,6 +62,9 @@ function JSONBuilder.buildChar(value)
 		if value.icon ~= nil then
 			result = result .. "\t\"icon\": \"" .. tostring(value.icon) .. "\",\n"
 		end
+		if value.color ~= nil then
+			result = result .. "\t\"color\": \"" .. tostring(value.color) .. "\",\n"
+		end
 		if value.sprite ~= nil then
 			result = result .. "\t\"sprite\": \"" .. tostring(value.sprite) .. "\",\n"
 		end

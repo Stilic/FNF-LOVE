@@ -41,6 +41,14 @@ function ScriptsHandler:call(func, ...)
 	return retValue
 end
 
+function ScriptsHandler:event(func, event)
+	for _, script in ipairs(self.scripts) do
+		script:call(func, event)
+		if event.cancelled and not event.__continueCalls then break end
+	end
+	return event
+end
+
 ---sets a variable across all scripts
 ---@param variable string
 ---@param value any

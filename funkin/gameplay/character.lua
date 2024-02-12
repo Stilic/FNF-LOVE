@@ -47,6 +47,7 @@ function Character:new(x, y, char, isPlayer)
 	}
 
 	self.icon = jsonData.icon
+	self.iconColor = jsonData.color == nil and nil or jsonData.color
 
 	self.flipX = (jsonData.flip_x == true)
 	self.jsonFlipX = self.flipX

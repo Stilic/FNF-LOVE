@@ -440,6 +440,7 @@ function CharacterEditor:saveCharacter()
 			sprite = self.char.imageFile,
 			position = self.char.positionTable,
 			icon = self.char.icon,
+			color = self.char.iconColor,
 			flip_x = self.char.jsonFlipX,
 			antialiasing = self.char.anti,
 			camera_points = self.char.cameraPosition,

@@ -1,14 +1,14 @@
-local ChartErrorSubstate = Substate:extend("ChartErrorSubstate")
+local AssetsErrorSubstate = Substate:extend("AssetsErrorSubstate")
 
-function ChartErrorSubstate:new(songpath)
-	ChartErrorSubstate.super.new(self)
+function AssetsErrorSubstate:new(filetype, filepath)
+	AssetsErrorSubstate.super.new(self)
 
 	self.exit = false
 
 	local listPaths = {}
-	switch(type(songpath), {
-		['string'] = function() table.insert(listPaths, songpath) end,
-		['table'] = function() listPaths = songpath end
+	switch(type(filepath), {
+		['string'] = function() table.insert(listPaths, filepath) end,
+		['table'] = function() listPaths = filepath end
 	})
 
 	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
@@ -16,7 +16,8 @@ function ChartErrorSubstate:new(songpath)
 	self.bg:setScrollFactor()
 	self:add(self.bg)
 
-	self.titleTxt = Alphabet(0, -80, #listPaths .. ' Chart(s) Not Found', true, false)
+	local titleFormat = ('%d %s Not Found'):format(#listPaths, filetype)
+	self.titleTxt = Alphabet(0, -80, titleFormat, true, false)
 	self.titleTxt:screenCenter('x')
 	self:add(self.titleTxt)
 
@@ -33,7 +34,7 @@ function ChartErrorSubstate:new(songpath)
 	self:add(self.continueTxt)
 end
 
-function ChartErrorSubstate:enter()
+function AssetsErrorSubstate:enter()
 	game.sound.play(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)))
 	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 	Timer.tween(0.4, self.titleTxt, {y = 40}, 'out-quart')
@@ -41,8 +42,8 @@ function ChartErrorSubstate:enter()
 	Timer.tween(0.4, self.continueTxt, {alpha = 1}, 'out-quart')
 end
 
-function ChartErrorSubstate:update(dt)
-	ChartErrorSubstate.super.update(self, dt)
+function AssetsErrorSubstate:update(dt)
+	AssetsErrorSubstate.super.update(self, dt)
 
 	if not self.exit then
 		if controls:pressed('accept') or controls:pressed('back') then
@@ -63,4 +64,4 @@ function ChartErrorSubstate:update(dt)
 	end
 end
 
-return ChartErrorSubstate
+return AssetsErrorSubstate
