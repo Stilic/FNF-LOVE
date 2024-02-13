@@ -1,8 +1,10 @@
+-- TODO: rewrite all this code
+
 -- Children Function
 local function tranformChildren(self, func, value)
 	if self.group == nil then return end
 
-	for _, button in pairs(self.__graphics) do
+	for _, button in pairs(self.group.members) do
 		if button ~= nil then func(button, value) end
 	end
 end
@@ -46,7 +48,6 @@ function ButtonGroup:new()
 	self.config.__round = self.config.round
 
 	self.group = Group()
-	self.__graphics = self.group.members
 end
 
 function ButtonGroup:add(button)
@@ -115,7 +116,7 @@ end
 
 function ButtonGroup:checkPress(x, y)
 	if not self.stunned then
-		for _, button in pairs(self.__graphics) do
+		for _, button in pairs(self.group.members) do
 			if not button.stunned and x >= button.x and
 				x <= button.x + button.width and y >= button.y and
 				y <= button.y + button.height then

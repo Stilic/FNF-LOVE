@@ -34,6 +34,11 @@ function Button:update(dt)
 		self.alpha = self.pressedAlpha
 		self.line.width = self.pressedLineWidth
 	end
+
+	if self.fill == "line" then
+		self.offset.x = self.line.width / 2
+		self.offset.y = self.line.width / 2
+	end
 end
 
 return Button
