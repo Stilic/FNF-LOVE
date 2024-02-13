@@ -3,7 +3,10 @@ local Color = {
 	BLACK = {0, 0, 0},
 	RED = {1, 0, 0},
 	GREEN = {0, 1, 0},
-	BLUE = {0, 0, 1}
+	BLUE = {0, 0, 1},
+	PURPLE = {1, 0, 1},
+	CYAN = {0, 1, 1},
+	YELLOW = {1, 1, 0}
 }
 
 function Color.HSL(h, s, l)
