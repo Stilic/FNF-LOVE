@@ -6,6 +6,8 @@ function create()
 
 	self.boyfriendCam = {x = -100, y = -100}
 
+	self.ratingPos = {x = -180, y = 260}
+
 	PlayState.pixelStage = true
 
 	GameOverSubstate.characterName = 'bf-pixel-dead'

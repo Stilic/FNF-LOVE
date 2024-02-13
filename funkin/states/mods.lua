@@ -37,6 +37,13 @@ function ModsState:enter()
 		self.camFollow = {x = game.width / 2, y = game.height / 2}
 	end
 
+	self.infoTxt = Text(6, game.height * 0.96, 'Select the current Mod to disable',
+		paths.getFont('phantommuff.ttf', 24))
+	self.infoTxt:screenCenter('x')
+	self.infoTxt:setScrollFactor()
+	self.infoTxt.visible = (Mods.currentMod ~= nil)
+	self:add(self.infoTxt)
+
 	local device = love.system.getDevice()
 	-- Update Presence
 	if device == "Desktop" then

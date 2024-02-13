@@ -1,6 +1,8 @@
 function create()
 	self.camZoom = 0.9
 
+	self.ratingPos = {x = -130, y = 240}
+
 	local bg = Sprite(-600, -200):loadTexture(
 		paths.getImage(SCRIPT_PATH .. "stageback"))
 	bg.antialiasing = true

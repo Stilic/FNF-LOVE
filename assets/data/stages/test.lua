@@ -5,6 +5,8 @@ function create()
 	self.gfPos = {x = 480, y = 130}
 	self.dadPos = {x = 300, y = 100}
 
+	self.ratingPos = {x = 100, y = 240}
+
 	if PlayState.SONG.player2 == 'bf-pixel' then
 		self.dadPos = {x = 300, y = 240}
 		self.dadCam = {x = -200, y = -90}

@@ -56,6 +56,7 @@ function GameOverSubstate:enter(x, y)
 
 	self.boyfriend:playAnim('firstDeath')
 
+	game.sound.music:setPitch(1)
 	paths.getMusic(GameOverSubstate.loopSoundName)
 	game.sound.play(paths.getSound(GameOverSubstate.deathSoundName))
 end

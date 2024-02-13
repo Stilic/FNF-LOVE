@@ -8,6 +8,8 @@ function create()
 	self.boyfriendPos = {x = 970, y = 100}
 	self.boyfriendCam = {x = 0, y = -100}
 
+	self.ratingPos = {x = 0, y = 260}
+
 	local bg = Sprite(-1000, -500)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'bgWalls'))
 	bg:setGraphicSize(math.floor(bg.width * 0.8))

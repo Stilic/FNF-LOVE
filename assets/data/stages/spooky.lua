@@ -1,6 +1,8 @@
 local hallowBG
 
 function create()
+	self.ratingPos = {x = -160, y = 240}
+
 	hallowBG = Sprite(-200, -100)
 	hallowBG:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'halloween_bg'))
 	hallowBG:addAnimByPrefix('idle', 'halloweem bg0')

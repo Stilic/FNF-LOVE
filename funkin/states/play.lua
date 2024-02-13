@@ -141,7 +141,7 @@ function PlayState:enter()
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 
-	self:loadStageWithSongName(songName)
+	PlayState.SONG.stage = self:loadStageWithSongName(songName)
 
 	-- reset ui stage
 	PlayState.pixelStage = false
@@ -224,6 +224,7 @@ function PlayState:enter()
 	self.totalPlayed = 0
 	self.totalHit = 0.0
 
+	game.camera.alpha = (100 - ClientPrefs.data.backgroundDim) / 100
 	self.camHUD = Camera()
 	self.camOther = Camera()
 	game.cameras.add(self.camHUD, false)
@@ -258,8 +259,9 @@ function PlayState:enter()
 	self.splashes:add(splash)
 
 	self.judgeSprites = SpriteGroup()
+	self.judgeSprites:setPosition(self.stage.ratingPos.x, self.stage.ratingPos.y)
 
-	self:loadGfWithStage(PlayState.SONG.stage)
+	PlayState.SONG.gfVersion = self:loadGfWithStage(songName, PlayState.SONG.stage)
 
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
 		self.SONG.gfVersion, false)
@@ -367,7 +369,7 @@ function PlayState:enter()
 	self.timeTxt.antialiasing = false
 	if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
 
-	self.botplayTxt = Text(620, (self.downScroll and 8 or 688), 'BOTPLAY MODE',
+	self.botplayTxt = Text(604, self.timeTxt.y, 'BOTPLAY MODE',
 		fontTime, {1, 1, 1}, "right", game.width / 2)
 	self.botplayTxt.outline.width = 2
 	self.botplayTxt.antialiasing = false
@@ -983,6 +985,8 @@ function PlayState:onSettingChange(setting)
 		end
 
 		self:updateNotes()
+
+		game.camera.alpha = (100 - ClientPrefs.data.backgroundDim) / 100
 	elseif setting == 'controls' then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
@@ -1356,7 +1360,7 @@ function PlayState:popUpScore(rating)
 		comboSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/combo"))
 		comboSpr.alpha = 1
 		comboSpr:setGraphicSize(math.floor(comboSpr.width *
-			(PlayState.pixelStage and 4.5 or 0.6)))
+			(PlayState.pixelStage and 4.2 or 0.6)))
 		comboSpr:updateHitbox()
 		comboSpr:screenCenter()
 		comboSpr.moves = true
@@ -1555,10 +1559,10 @@ function PlayState:loadStageWithSongName(songName)
 			curStage = "stage"
 		end
 	end
-	PlayState.SONG.stage = curStage
+	return curStage
 end
 
-function PlayState:loadGfWithStage(stage)
+function PlayState:loadGfWithStage(song, stage)
 	local gfVersion = PlayState.SONG.gfVersion
 	if gfVersion == nil then
 		switch(stage, {
@@ -1568,7 +1572,7 @@ function PlayState:loadGfWithStage(stage)
 			["school"] = function() gfVersion = "gf-pixel" end,
 			["school-evil"] = function() gfVersion = "gf-pixel" end,
 			["tank"] = function()
-				if songName == 'stress' then
+				if song == 'stress' then
 					gfVersion = "pico-speaker"
 				else
 					gfVersion = "gf-tankmen"
@@ -1576,8 +1580,8 @@ function PlayState:loadGfWithStage(stage)
 			end,
 			default = function() gfVersion = "gf" end
 		})
-		PlayState.SONG.gfVersion = gfVersion
 	end
+	return gfVersion
 end
 
 function PlayState:leave()
