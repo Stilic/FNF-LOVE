@@ -941,9 +941,6 @@ function PlayState:onSettingChange(setting)
 		end
 		self.timeTxt.content = util.formatTime(songTime)
 
-		self.botplayTxt.visible = self.botPlay
-		self.botplayTxt.y = self.downScroll and 8 or 688
-
 		local rx, ry = game.width / 2, 50
 		if self.downScroll then ry = game.height - 100 - ry end
 		for _, rep in ipairs(self.receptors.members) do
@@ -972,6 +969,9 @@ function PlayState:onSettingChange(setting)
 		self.timeArcBG.y = self.downScroll and 52 or game.height - 52
 		self.timeArc.y = self.timeArcBG.y
 		self.timeTxt.y = self.downScroll and self.timeArcBG.y - 32 or self.timeArcBG.y + 7
+
+		self.botplayTxt.visible = self.botPlay
+		self.botplayTxt.y = self.timeTxt.y
 
 		local n
 		for i = 1, #self.unspawnNotes do
