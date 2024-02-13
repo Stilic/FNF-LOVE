@@ -56,8 +56,8 @@ function Receptor:update(dt)
 	Receptor.super.update(self, dt)
 end
 
-function Receptor:play(anim, force)
-	Receptor.super.play(self, anim, force)
+function Receptor:play(anim, force, frame)
+	Receptor.super.play(self, anim, force, frame)
 
 	self:centerOffsets()
 	self:centerOrigin()

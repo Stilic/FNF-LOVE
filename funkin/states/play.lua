@@ -1,7 +1,8 @@
 local PauseSubstate = require "funkin.substates.pause"
 local Events = {
 	NoteHit = require "funkin.backend.events.notehit",
-	PopUpScore = require "funkin.backend.events.popupscore"
+	PopUpScore = require "funkin.backend.events.popupscore",
+	CameraMove = require "funkin.backend.events.cameramove"
 }
 
 ---@class PlayState:State
@@ -290,7 +291,6 @@ function PlayState:enter()
 	self:add(self.judgeSprites)
 
 	self.camFollow = {x = 0, y = 0}
-	self:cameraMovement()
 
 	if PlayState.prevCamFollow ~= nil then
 		game.camera.target = PlayState.prevCamFollow
@@ -539,8 +539,7 @@ function fadeGroupSprites(obj)
 end
 
 function PlayState:update(dt)
-	dt = dt * self.playback
-
+	if self.startedCountdown then dt = dt * self.playback end
 	self.lastTick = love.timer.getTime()
 
 	self.scripts:call("update", dt)
@@ -569,6 +568,8 @@ function PlayState:update(dt)
 	game.camera.target.x, game.camera.target.y =
 		util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4 * self.stage.camSpeed, dt),
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4 * self.stage.camSpeed, dt)
+
+	self:cameraMovement()
 
 	local mult = util.coolLerp(self.iconP1.scale.x, 1, 15, dt)
 	self.iconP1.scale = {x = mult, y = mult}
@@ -837,34 +838,39 @@ function PlayState:updateNotes()
 end
 
 function PlayState:cameraMovement()
+	if not self.startedCountdown then return end
+
 	local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
+	local target
 	if section ~= nil then
+		local camX, camY
 		if section.gfSection then
+			target = "gf"
+
 			local x, y = self.gf:getMidpoint()
-			self.camFollow.x = x -
-				(self.gf.cameraPosition.x -
-					self.stage.gfCam.x)
-			self.camFollow.y = y -
-				(self.gf.cameraPosition.y -
-					self.stage.gfCam.y)
+			camX = x - (self.gf.cameraPosition.x - self.stage.gfCam.x)
+			camY = y - (self.gf.cameraPosition.y - self.stage.gfCam.y)
+		elseif section.mustHitSection then
+			target = "bf"
+
+			local x, y = self.boyfriend:getMidpoint()
+			camX = x - 100 - (self.boyfriend.cameraPosition.x -
+				self.stage.boyfriendCam.x)
+			camY = y - 100 + (self.boyfriend.cameraPosition.y +
+				self.stage.boyfriendCam.y)
 		else
-			if section.mustHitSection then
-				local x, y = self.boyfriend:getMidpoint()
-				self.camFollow.x = x - 100 -
-					(self.boyfriend.cameraPosition.x -
-						self.stage.boyfriendCam.x)
-				self.camFollow.y = y - 100 +
-					(self.boyfriend.cameraPosition.y +
-						self.stage.boyfriendCam.y)
-			else
-				local x, y = self.dad:getMidpoint()
-				self.camFollow.x = x + 150 +
-					(self.dad.cameraPosition.x +
-						self.stage.dadCam.x)
-				self.camFollow.y = y - 100 +
-					(self.dad.cameraPosition.y +
-						self.stage.dadCam.y)
-			end
+			target = "dad"
+
+			local x, y = self.dad:getMidpoint()
+			camX = x + 150 + (self.dad.cameraPosition.x +
+				self.stage.dadCam.x)
+			camY = y - 100 + (self.dad.cameraPosition.y +
+				self.stage.dadCam.y)
+		end
+
+		local event = self.scripts:event("onCameraMove", Events.CameraMove(target))
+		if not event.cancelled then
+			self.camFollow = {x = camX, y = camY}
 		end
 	end
 
@@ -945,7 +951,9 @@ function PlayState:onSettingChange(setting)
 		if self.downScroll then ry = game.height - 100 - ry end
 		for _, rep in ipairs(self.receptors.members) do
 			rep:setPosition(rx + (game.width / 4) * (rep.player == 1 and 1 or -1), ry)
+			local oldAnim = {name = rep.curAnim.name, frame = rep.curFrame}
 			rep:groupInit()
+			rep:play(oldAnim.name, true, oldAnim.frame)
 			rep.visible = true
 			if self.middleScroll then
 				if rep.player == 1 then
@@ -1310,8 +1318,6 @@ function PlayState:section(s)
 		game.camera.zoom = game.camera.zoom + 0.015
 		self.camHUD.zoom = self.camHUD.zoom + 0.03
 	end
-
-	self:cameraMovement()
 
 	self.scripts:call("postSection")
 end
