@@ -382,16 +382,19 @@ function PlayState:enter()
 		self.buttons.width = width
 		self.buttons.height = game.height
 		self.buttons.cameras = {self.camOther}
-		self.buttons.fill = "line"
 		self.buttons.visible = false
-		self.buttons.lined = false
+		self.buttons.alpha = 0
 
 		self.buttons.config.round = {0, 0}
 
-		local left = Button(0, 0, 0, 0, "left", {1, 0, 1})
-		local down = Button(width, 0, 0, 0, "down", Color.BLUE)
-		local up = Button(width * 2, 0, 0, 0, "up", Color.GREEN)
-		local right = Button(width * 3, 0, 0, 0, "right", Color.RED)
+		local left = Button(0, 0, 0, 0, "left")
+		left.line.color = {1, 0, 1, 2}
+		local down = Button(width, 0, 0, 0, "down")
+		down.line.color = {0, 0, 1, 2}
+		local up = Button(width * 2, 0, 0, 0, "up")
+		up.line.color = {0, 1, 0, 2}
+		local right = Button(width * 3, 0, 0, 0, "right")
+		right.line.color = {1, 0, 0, 2}
 
 		self.buttons:add(left)
 		self.buttons:add(down)

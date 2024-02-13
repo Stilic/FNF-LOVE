@@ -30,8 +30,6 @@ function GameOverSubstate:new(x, y)
 		game.cameras.add(camButtons, false)
 
 		self.buttons = ButtonGroup()
-		self.buttons.type = "roundrect"
-		self.buttons.lined = true
 		self.buttons.width = 134
 		self.buttons.height = 134
 		self.buttons.cameras = {camButtons}
