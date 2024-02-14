@@ -1,4 +1,4 @@
-local CancellableEvent = require "funkin.backend.events.cancellable"
+local CancellableEvent = require "funkin.backend.scripting.events.cancellable"
 
 local CameraMoveEvent = CancellableEvent:extend("NoteHitEvent")
 

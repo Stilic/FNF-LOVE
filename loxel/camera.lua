@@ -207,14 +207,14 @@ function Camera:drawSimple(_skipCheck)
 		self.__renderQueue[i] = nil
 	end
 
+	game.__popBoundScissor()
+	grap.pop()
+
 	color = self.__flashColor
 	if self.__flashAlpha > 0 then
 		setSimpleColor(color[1], color[2], color[3], self.__flashAlpha)
 		grap.rectangle("fill", 0, 0, w, h)
 	end
-
-	game.__popBoundScissor()
-	grap.pop()
 
 	grap.setColor = _ogSetColor
 	grap.setScissor(xc, yc, wc, hc)
@@ -266,6 +266,10 @@ function Camera:drawComplex(_skipCheck)
 
 	color = self.__flashColor
 	if self.__flashAlpha > 0 then
+		if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+		else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+		grap.translate(-w2, -h2)
 		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
 		grap.rectangle("fill", 0, 0, w, h)
 	end

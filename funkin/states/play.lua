@@ -1,8 +1,8 @@
 local PauseSubstate = require "funkin.substates.pause"
 local Events = {
-	NoteHit = require "funkin.backend.events.notehit",
-	PopUpScore = require "funkin.backend.events.popupscore",
-	CameraMove = require "funkin.backend.events.cameramove"
+	NoteHit = require "funkin.backend.scripting.events.notehit",
+	PopUpScore = require "funkin.backend.scripting.events.popupscore",
+	CameraMove = require "funkin.backend.scripting.events.cameramove"
 }
 
 ---@class PlayState:State
@@ -115,16 +115,14 @@ function PlayState:enter()
 
 	self.scripts:call("create")
 
-	self.playback = ClientPrefs.data.playback
+	self.playback = 1
 
 	game.sound.loadMusic(paths.getInst(songName))
-	game.sound.music:setPitch(self.playback)
 	game.sound.music:setLooping(false)
 	game.sound.music.onComplete = function() self:endSong() end
 
 	if PlayState.SONG.needsVoices then
 		self.vocals = Sound():load(paths.getVoices(songName))
-		self.vocals:setPitch(self.playback)
 		game.sound.list:add(self.vocals)
 	end
 
@@ -486,6 +484,12 @@ function PlayState:startCountdown()
 	local event = self.scripts:call("startCountdown")
 	if event == Script.Event_Cancel then return end
 
+	self.playback = ClientPrefs.data.playback
+	game.sound.music:setPitch(self.playback)
+	if self.vocals then
+		self.vocals:setPitch(self.playback)
+	end
+
 	self.startedCountdown = true
 
 	local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
@@ -540,7 +544,7 @@ function fadeGroupSprites(obj)
 end
 
 function PlayState:update(dt)
-	if self.startedCountdown then dt = dt * self.playback end
+	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
 
 	self.scripts:call("update", dt)
@@ -551,12 +555,18 @@ function PlayState:update(dt)
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
+			self.playback = ClientPrefs.data.playback -- reload playback for skip countdown
+
+			game.sound.music:setPitch(self.playback)
 			game.sound.music:seek(self.startPos / 1000)
 			game.sound.music:play()
+
 			if self.vocals then
+				self.vocals:setPitch(self.playback)
 				self.vocals:seek(game.sound.music:tell())
 				self.vocals:play()
 			end
+
 			self.scripts:call("songStart")
 		end
 	end
@@ -872,16 +882,6 @@ function PlayState:cameraMovement()
 		local event = self.scripts:event("onCameraMove", Events.CameraMove(target))
 		if not event.cancelled then
 			self.camFollow = {x = camX - event.offset.x, y = camY - event.offset.y}
-		end
-	end
-
-	if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
-		if section.mustHitSection then
-			Timer.tween((self.conductor.stepCrotchet * 4 / 1000),
-				game.camera, {zoom = 1}, 'in-out-elastic')
-		else
-			Timer.tween((self.conductor.stepCrotchet * 4 / 1000),
-				game.camera, {zoom = 1.3}, 'in-out-elastic')
 		end
 	end
 end

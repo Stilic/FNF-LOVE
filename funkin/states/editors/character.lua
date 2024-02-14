@@ -28,7 +28,7 @@ function CharacterEditor:enter()
 	game.cameras.add(self.camChar, false)
 	game.cameras.add(self.camMenu, false)
 
-	local bg = Sprite()
+	local bg = Sprite(-game.width * 0.2)
 	bg:loadTexture(paths.getImage('menus/menuDesat'))
 	bg.color = {0.15, 0.15, 0.15}
 	bg:setScrollFactor()
@@ -77,16 +77,16 @@ function CharacterEditor:enter()
 	self.blockInput = {}
 	self.hoveredUI = {}
 
-	self.animationTab = ui.UITabMenu(0, game.height * 0.8, {'Animation'})
-	self.animationTab.width = game.width * 0.7
-	self.animationTab.height = game.height * 0.2
-	self:add(self.animationTab)
-
-	self.charTab = ui.UITabMenu(game.width * 0.7, game.height * 0.6,
-		{'Character'})
+	self.charTab = ui.UITabMenu(game.width * 0.7, 0, {'Character'})
 	self.charTab.width = game.width * 0.3
-	self.charTab.height = game.height * 0.4
+	self.charTab.height = game.height * 0.5
 	self:add(self.charTab)
+
+	self.animationTab = ui.UITabMenu(game.width * 0.7, self.charTab.height,
+		{'Animation'})
+	self.animationTab.width = game.width * 0.3
+	self.animationTab.height = game.height * 0.5
+	self:add(self.animationTab)
 
 	self.animInfoTxt = Text(20, 260, '', paths.getFont('phantommuff.ttf', 20))
 	self:add(self.animInfoTxt)
@@ -97,7 +97,7 @@ function CharacterEditor:enter()
 	self:add_UI_Character()
 
 	for _, o in ipairs({
-		self.animationTab, self.charTab, self.animInfoTxt, self.charInfoTxt
+		self.charTab, self.animationTab, self.animInfoTxt, self.charInfoTxt
 	}) do o.cameras = {self.camMenu} end
 end
 
@@ -297,7 +297,9 @@ function CharacterEditor:update(dt)
 		end
 	end
 
-	if WindowUtil then
+	local mouseOnScreen = Mouse.x >= 0 and Mouse.x < game.width * 0.7
+		and Mouse.y >= 0 and Mouse.y < game.height
+	if mouseOnScreen and WindowUtil then
 		WindowUtil.setCursor(mouseHovered and "hand" or "arrow")
 	end
 
@@ -318,9 +320,9 @@ function CharacterEditor:update(dt)
 		elseif Keyboard.pressed.S then
 			self.camFollow.y = self.camFollow.y + (2 + shiftMult)
 		end
-		if Mouse.pressedLeft then
-			self.camFollow.x = self.camFollow.x - (Mouse.deltaScreenX * 1.05)
-			self.camFollow.y = self.camFollow.y - (Mouse.deltaScreenY * 1.05)
+		if mouseOnScreen and Mouse.pressedLeft then
+			self.camFollow.x = self.camFollow.x - (Mouse.deltaScreenX * 1.05 / self.curZoom)
+			self.camFollow.y = self.camFollow.y - (Mouse.deltaScreenY * 1.05 / self.curZoom)
 		end
 		if Keyboard.pressed.CONTROL then
 			if Keyboard.justPressed.PLUS then
@@ -395,6 +397,16 @@ function CharacterEditor:loadCharacter()
 		self.char:playAnim(self.char.animationsTable[1][1], true)
 	end
 
+	if self.char.iconColor then
+		self.iconColor = Graphic(125, 177, 40, 40, Color.fromString(self.char.iconColor))
+		self.iconColor.lined = true
+		self.iconColor.line.width = 3
+		self.iconColor.line.color = Color.BLACK
+		self.iconColor.config.round = {8, 8}
+		self.iconColor.cameras = {self.camMenu}
+		self.charLayer:add(self.iconColor)
+	end
+
 	self.healthIcon = HealthIcon(self.char.icon, false)
 	self.healthIcon.cameras = {self.camMenu}
 	self.healthIcon:setPosition(20, 157)
@@ -408,7 +420,7 @@ function CharacterEditor:loadCharacter()
 	self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
 	self.char.y = 100 + self.char.positionTable.y
 
-	self.camFollow = {x = (self.isPlayer and 350 or -310), y = 294}
+	self.camFollow = {x = (self.isPlayer and 530 or -130), y = 294}
 end
 
 function CharacterEditor:changeOffsets(x, y)
