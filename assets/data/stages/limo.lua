@@ -64,10 +64,11 @@ function update(dt)
 	offsetTime = offsetTime + dt
 	cameraOffset[1] = 14 * math.sin(offsetTime * 1.5)
 	cameraOffset[2] = 14 * math.cos(offsetTime * 2.5)
+end
 
-	state:cameraMovement()
-	state.camFollow.x = state.camFollow.x + cameraOffset[1]
-	state.camFollow.y = state.camFollow.y + cameraOffset[2]
+function onCameraMove(event)
+	event.offset.x = cameraOffset[1]
+	event.offset.y = cameraOffset[2]
 end
 
 local fastCarCanDrive = true

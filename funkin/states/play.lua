@@ -291,6 +291,7 @@ function PlayState:enter()
 	self:add(self.judgeSprites)
 
 	self.camFollow = {x = 0, y = 0}
+	self:cameraMovement()
 
 	if PlayState.prevCamFollow ~= nil then
 		game.camera.target = PlayState.prevCamFollow
@@ -572,7 +573,9 @@ function PlayState:update(dt)
 		util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4 * self.stage.camSpeed, dt),
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4 * self.stage.camSpeed, dt)
 
-	self:cameraMovement()
+	if self.startedCountdown then
+		self:cameraMovement()
+	end
 
 	local mult = util.coolLerp(self.iconP1.scale.x, 1, 15, dt)
 	self.iconP1.scale = {x = mult, y = mult}
@@ -841,8 +844,6 @@ function PlayState:updateNotes()
 end
 
 function PlayState:cameraMovement()
-	if not self.startedCountdown then return end
-
 	local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
 	local target
 	if section ~= nil then
@@ -873,7 +874,7 @@ function PlayState:cameraMovement()
 
 		local event = self.scripts:event("onCameraMove", Events.CameraMove(target))
 		if not event.cancelled then
-			self.camFollow = {x = camX, y = camY}
+			self.camFollow = {x = camX - event.offset.x, y = camY - event.offset.y}
 		end
 	end
 
