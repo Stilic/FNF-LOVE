@@ -13,10 +13,18 @@ local SoundTray = {
 local clock = 0
 local DEFAULT_VOLUME = 10
 local prev = DEFAULT_VOLUME
+local n = DEFAULT_VOLUME
 
 function SoundTray.init(width, height)
 	SoundTray.game.width = width
 	SoundTray.game.height = height
+
+	if game.save.data.gameVolume ~= nil then
+		game.sound.setVolume(game.save.data.gameVolume / 10)
+		DEFAULT_VOLUME = game.save.data.gameVolume
+		prev = DEFAULT_VOLUME
+		n = DEFAULT_VOLUME
+	end
 end
 
 function SoundTray.new(font)
@@ -84,8 +92,6 @@ function SoundTray:update(dt)
 	self.adjust()
 end
 
-local n = DEFAULT_VOLUME
-
 function SoundTray:adjustVolume(amount)
 	self.visible = true
 	clock = 0
@@ -105,6 +111,8 @@ function SoundTray:adjustVolume(amount)
 
 	prev = n
 	n = newVolume
+
+	game.save.data.gameVolume = newVolume
 end
 
 function SoundTray:toggleMute()
