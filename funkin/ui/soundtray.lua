@@ -21,9 +21,8 @@ function SoundTray.init(width, height)
 
 	if game.save.data.gameVolume ~= nil then
 		game.sound.setVolume(game.save.data.gameVolume / 10)
-		DEFAULT_VOLUME = game.save.data.gameVolume
-		prev = DEFAULT_VOLUME
-		n = DEFAULT_VOLUME
+		prev = game.save.data.gameVolume
+		n = game.save.data.gameVolume
 	end
 end
 
