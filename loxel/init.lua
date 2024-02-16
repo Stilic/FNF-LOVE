@@ -18,6 +18,7 @@ SpriteGroup = require "loxel.group.spritegroup"
 State = require "loxel.state"
 Substate = require "loxel.substate"
 Flicker = require "loxel.effects.flicker"
+Trail = require "loxel.effects.trail"
 ParallaxImage = require "loxel.effects.parallax"
 Color = require "loxel.util.color"
 

@@ -37,6 +37,10 @@ function SoundTray.new(font)
 		table.insert(SoundTray.bars, bar)
 	end
 
+	SoundTray.throttles = {}
+	SoundTray.throttles.up = Throttle:make({controls.down, controls, "volume_up"})
+	SoundTray.throttles.down = Throttle:make({controls.down, controls, "volume_down"})
+
 	SoundTray.adjust()
 end
 
@@ -64,9 +68,9 @@ function SoundTray:update(dt)
 		end
 	end
 
-	if controls:pressed("volume_up") then
+	if self.throttles.up:check() then
 		self:adjustVolume(1)
-	elseif controls:pressed("volume_down") then
+	elseif self.throttles.down:check() then
 		self:adjustVolume(-1)
 	elseif controls:pressed("volume_mute") then
 		self:toggleMute()
@@ -122,6 +126,13 @@ function SoundTray:__render()
 		love.graphics.rectangle("fill", self.box.x, self.box.y, self.box.width, self.box.height, 10, 10, 20)
 		love.graphics.setColor(Color.fromRGB(130, 135, 174))
 		love.graphics.rectangle("line", self.box.x, self.box.y, self.box.width, self.box.height, 10, 10, 20)
+
+		love.graphics.setColor(1, 1, 1, 0.2)
+
+		for _, bar in ipairs(SoundTray.bars) do
+			love.graphics.rectangle("fill", self.bar.x + (bar.x * bar.space), self.bar.y,
+				bar.width, bar.height)
+		end
 
 		love.graphics.setColor(1, 1, 1)
 		love.graphics.setFont(self.text.font)

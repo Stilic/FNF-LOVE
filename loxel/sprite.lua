@@ -228,6 +228,26 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 	return self
 end
 
+function Sprite:loadTextureFromSprite(sprite)
+	self.texture = sprite.texture
+	self.__rectangleMode = false
+
+	self.antialiasing = sprite.antialiasing
+
+	self.curAnim = nil
+	self.curFrame = nil
+	self.animFinished = nil
+
+	self.width, self.height = sprite.width, sprite.height
+	self.__width, self.__height = self.width, self.height
+
+	if sprite.__frames ~= nil then
+		self.__frames = table.clone(sprite.__frames)
+	end
+
+	return self
+end
+
 function Sprite:addAnim(name, frames, framerate, looped)
 	if framerate == nil then framerate = 30 end
 	if looped == nil then looped = true end

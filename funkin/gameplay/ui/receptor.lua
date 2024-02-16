@@ -40,7 +40,7 @@ function Receptor:new(x, y, data, player)
 end
 
 function Receptor:groupInit()
-	self.x = self.x - Note.swagWidth * 2 + Note.swagWidth * self.data
+	self.x = self.x - Note.swagWidth * 2 + Note.swagWidth * self.data + 3
 	self:setScrollFactor()
 	self:play("static")
 end
