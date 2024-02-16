@@ -6,7 +6,7 @@ function Button:new(x, y, width, height, key, color)
 	self.width = width
 	self.height = height
 	self.key = key
-	self.color = color or {0.18, 0.18, 0.25}
+	self.color = color or Color.fromRGB(28, 26, 40)
 
 	self.scrollFactor = {x = 0, y = 0}
 

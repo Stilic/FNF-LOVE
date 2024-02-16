@@ -78,9 +78,11 @@ function ScreenPrint:__render()
 
 			local bx, by, bw, bh = tx - bs1, ty - bs1, tw + bs2, th + bs2
 			local c1, c2 = 15 * scale, 36 * scale
-			love.graphics.setColor(0.2, 0.2, 0.25, ta * 0.7)
+			local color = Color.fromRGB(28, 26, 40)
+			love.graphics.setColor(color[1], color[2], color[3], ta * 0.7)
 			love.graphics.rectangle(fill, bx, by, bw, bh, c1, c1, c2)
-			love.graphics.setColor(0.4, 0.4, 0.45, ta)
+			color = Color.fromRGB(130, 135, 174)
+			love.graphics.setColor(color[1], color[2], color[3], ta)
 			love.graphics.rectangle(line, bx, by, bw, bh, c1, c1, c2)
 
 			love.graphics.setColor(1, 1, 1, ta)
