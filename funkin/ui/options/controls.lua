@@ -17,6 +17,10 @@ local data = {
 	{"back",         "Back"},
 	{"pause",        "Pause"},
 
+	{"volume_down",  "Volume -"},
+	{"volume_up",    "Volume +"},
+	{"volume_mute",    "Mute"},
+
 	{"MISCELLANEOUS"},
 	{"fullscreen",   "Fullscreen"},
 	{"pick_mods",    "Mods"},

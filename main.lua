@@ -42,7 +42,9 @@ MenuCharacter = require "funkin.ui.menucharacter"
 MenuItem = require "funkin.ui.menuitem"
 ModCard = require "funkin.ui.modcard"
 Options = require "funkin.ui.options"
+
 StatsCounter = require "funkin.ui.statscounter"
+SoundTray = require "funkin.ui.soundtray"
 
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
@@ -129,6 +131,12 @@ function love.load()
 		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
 		end
+	end
+
+	if SoundTray then
+		SoundTray.init(love.graphics.getDimensions())
+		game:add(SoundTray)
+		SoundTray.new()
 	end
 
 	game:add(game.statsCounter)

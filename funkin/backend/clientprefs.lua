@@ -41,6 +41,10 @@ ClientPrefs.controls = {
 	note_up = {"key:j", "key:up"},
 	note_right = {"key:k", "key:right"},
 
+	volume_down = {"key:-", "key:kp-"},
+	volume_up = {"key:+", "key:kp+"},
+	volume_mute = {"key:0", "key:kp0"},
+
 	accept = {"key:space", "key:return"},
 	back = {"key:backspace", "key:escape"},
 	pause = {"key:return", "key:escape"},

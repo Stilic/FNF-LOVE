@@ -266,8 +266,12 @@ local function getSongMetadata(song)
 	local song_metadata = paths.getJSON(
 		'songs/' .. paths.formatToSongPath(song) ..
 		'/meta')
+	if song_metadata == nil then
+		song_metadata = {}
+		print("meta.json not found for " .. song)
+	end
 	return {
-		name = song_metadata.name or 'Name',
+		name = song_metadata.name or song,
 		icon = song_metadata.icon or 'face',
 		color = song_metadata.color or '#0F0F0F',
 		difficulties = song_metadata.difficulties or
