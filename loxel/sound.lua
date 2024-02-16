@@ -136,8 +136,14 @@ function Sound:proximity(x, y, target, radius)
 end
 
 function Sound:update()
-	local isFinshed = self:isFinished()
-	if isFinshed and not self.__isFinished then
+	local isFinished = self:isFinished()
+	local isPlaying = self:isPlaying()
+
+	if isPlaying and self.__wasPlaying then
+		self.__wasPlaying = false
+	end
+
+	if isFinished and not self.__isFinished then
 		local onComplete = self.onComplete
 		if self.autoDestroy then
 			self:kill()
@@ -148,7 +154,8 @@ function Sound:update()
 		if onComplete then onComplete() end
 	end
 
-	self.__isFinished = isFinshed
+	self.__isFinished = isFinished
+	self.__wasPlaying = isPlaying
 
 	if self.__fadeStartTime then
         local currentTime = love.timer.getTime()

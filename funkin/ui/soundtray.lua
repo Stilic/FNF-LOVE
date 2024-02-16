@@ -1,7 +1,7 @@
 local SoundTray = {
 	bars = {},
 	game = {width = 0, height = 0},
-	box = {x = 0, y = -75, width = 254, height = 72},
+	box = {x = 0, y = -75, width = 194, height = 72},
 	text = {x = 0, y = 0, text = "Volume: 100%"},
 	bar = {x = 0, y = 30, width = 8 * 10 + 20}
 }
@@ -23,7 +23,7 @@ function SoundTray.new(font)
 	SoundTray.visible = false
 	SoundTray.silent = false
 
-	SoundTray.text.font = font or love.graphics.newFont(32)
+	SoundTray.text.font = font or love.graphics.newFont(22)
 
 	for i = 1, 10 do
 		local bar = {
@@ -45,7 +45,7 @@ function SoundTray.adjust()
 	SoundTray.box.x = (SoundTray.game.width - SoundTray.box.width) / 2
 	SoundTray.bar.x = (SoundTray.game.width - SoundTray.bar.width) / 2
 	SoundTray.text.x = (SoundTray.game.width - SoundTray.text.width) / 2
-	SoundTray.text.y = SoundTray.box.y + SoundTray.box.height - SoundTray.text.font:getHeight()
+	SoundTray.text.y = SoundTray.box.y + SoundTray.box.height - SoundTray.text.font:getHeight() - 5
 	SoundTray.bar.y = SoundTray.box.y + 34
 end
 
