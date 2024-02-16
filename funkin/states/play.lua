@@ -140,10 +140,8 @@ function PlayState:enter()
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 
-	PlayState.SONG.stage = self:loadStageWithSongName(songName)
-
-	-- reset ui stage
 	PlayState.pixelStage = false
+	PlayState.SONG.stage = self:loadStageWithSongName(songName)
 
 	self.stage = Stage(PlayState.SONG.stage)
 	self:add(self.stage)
@@ -1565,6 +1563,9 @@ function PlayState:loadStageWithSongName(songName)
 		else
 			curStage = "stage"
 		end
+	end
+	if songName == "senpai" or songName == "roses" or songName == "thorns" then
+		PlayState.pixelStage = true
 	end
 	return curStage
 end

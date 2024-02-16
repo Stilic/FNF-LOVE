@@ -8,8 +8,6 @@ function create()
 
 	self.ratingPos = {x = -180, y = 260}
 
-	PlayState.pixelStage = true
-
 	GameOverSubstate.characterName = 'bf-pixel-dead'
 	GameOverSubstate.deathSoundName = 'gameplay/fnf_loss_sfx-pixel'
 	GameOverSubstate.loopSoundName = 'gameOver-pixel'
