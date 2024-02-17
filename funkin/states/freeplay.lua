@@ -5,6 +5,10 @@ FreeplayState.curSelected = 1
 FreeplayState.curDifficulty = 2
 
 function FreeplayState:enter()
+	self.script = Script("data/scripts/states/freeplay", false)
+	local event = self.script:call("create")
+	if event == Script.Event_Cancel then return end
+
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Freeplay Menu"})
@@ -118,9 +122,14 @@ function FreeplayState:enter()
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
 	if #self.songsData > 0 then self:changeSelection() end
+
+	self.script:call("postCreate")
 end
 
 function FreeplayState:update(dt)
+	FreeplayState.super.update(self, dt)
+	local event = self.script:call("update", dt)
+	if event == Script.Event_Cancel then return end
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 24, dt)
 	self.scoreText.content = "PERSONAL BEST: " .. math.floor(self.lerpScore)
 
@@ -166,7 +175,7 @@ function FreeplayState:update(dt)
 			util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
 	end
 
-	FreeplayState.super.update(self, dt)
+	self.script:call("postUpdate", dt)
 end
 
 function FreeplayState:closeSubstate()
@@ -347,8 +356,13 @@ function FreeplayState:loadSongs()
 end
 
 function FreeplayState:leave()
+	local event = self.script:call("leave")
+	if event == Script.Event_Cancel then return end
+
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil
+
+	self.script:call("postLeave")
 end
 
 return FreeplayState

@@ -4,7 +4,7 @@ StoryMenuState.curWeek = 1
 StoryMenuState.curDifficulty = 2
 
 function StoryMenuState:enter()
-	self.script = Script("data/scripts/states/mainmenu", false)
+	self.script = Script("data/scripts/states/storymenu", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then return end
 	-- Update Presence
@@ -169,7 +169,7 @@ end
 local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
 	StoryMenuState.super.update(self, dt)
-	local event = self.script:call("update")
+	local event = self.script:call("update", dt)
 	if event == Script.Event_Cancel then return end
 
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 30, dt)
@@ -213,7 +213,7 @@ function StoryMenuState:update(dt)
 		end
 	end
 
-	self.script:call("postUpdate")
+	self.script:call("postUpdate", dt)
 end
 
 function StoryMenuState:selectWeek()
