@@ -75,6 +75,8 @@ function TitleState:enter()
 	end
 
 	self.script:call("postCreate")
+	self.skipTransIn = true
+	TitleState.super.enter(self)
 end
 
 function TitleState:getIntroTextShit()

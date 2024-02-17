@@ -18,7 +18,14 @@ function love.conf(t)
 
 	-- we'll initialize it in run.lua
 	-- reason why is, we need it for mobile window to not be bugging
-	t.window = nil
+	t.window.title = Project.title
+	t.window.icon = Project.icon
+	t.window.width = 1280
+	t.window.height = 720
+	t.window.vsync = false
+	t.window.minwidth = 160
+	t.window.minheight = 90
+	t.window.fullscreen = false
 
 	t.modules.physics = false
 	t.modules.touch = false

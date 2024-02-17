@@ -471,6 +471,7 @@ function PlayState:enter()
 	self.scripts:set("crotchet", PlayState.conductor.crotchet)
 	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
 
+	PlayState.super.enter(self)
 	self.scripts:call("postCreate")
 end
 

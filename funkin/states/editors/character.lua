@@ -99,6 +99,7 @@ function CharacterEditor:enter()
 	for _, o in ipairs({
 		self.charTab, self.animationTab, self.animInfoTxt, self.charInfoTxt
 	}) do o.cameras = {self.camMenu} end
+	CharacterEditor.super.enter(self)
 end
 
 function CharacterEditor:add_UI_Character()

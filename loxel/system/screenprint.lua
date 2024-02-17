@@ -1,8 +1,8 @@
-local ScreenPrint = {prints = {}, game = {width = 0, height = 0}}
+local ScreenPrint = {prints = {}, width = 0, height = 0}
 
 function ScreenPrint.init(width, height)
-	ScreenPrint.game.width = width
-	ScreenPrint.game.height = height
+	ScreenPrint.width = width
+	ScreenPrint.height = height
 	ScreenPrint.scale = love.graphics.getFixedScale()
 	ScreenPrint.font = love.graphics.newFont(16 * ScreenPrint.scale)
 	ScreenPrint.bigfont = love.graphics.newFont(20 * ScreenPrint.scale)
@@ -14,7 +14,7 @@ function ScreenPrint.new(text, font)
 	local n = #text
 	font = font or (n < 14 and ScreenPrint.bigfont or ScreenPrint.font)
 
-	local width = math.min(ScreenPrint.game.width - 24 * ScreenPrint.scale, font:getWidth(text))
+	local width = math.min(ScreenPrint.width - 24 * ScreenPrint.scale, font:getWidth(text))
 	local _, lines = font:getWrap(text, width)
 	local t = {
 		text = text,
@@ -22,7 +22,7 @@ function ScreenPrint.new(text, font)
 		timer = math.min(n * 0.11, 4),
 		width = width,
 		height = font:getHeight() * #lines,
-		y = ScreenPrint.game.height + 8,
+		y = ScreenPrint.height + 8,
 		lastclock = clock
 	}
 
@@ -33,8 +33,8 @@ end
 
 -- Though it isn't possible to resize in mobile but it's here for convenience
 function ScreenPrint:resize(width, height)
-	self.game.width = width
-	self.game.height = height
+	self.width = width
+	self.height = height
 
 	for _, t in ipairs(self.prints) do
 		local twidth = math.min(width - 24 * self.scale, t.font:getWidth(t.text))
@@ -52,7 +52,7 @@ function ScreenPrint:__render()
 	local r, g, b, a = love.graphics.getColor()
 	local font = love.graphics.getFont()
 
-	local prints, width, height, scale = self.prints, self.game.width, self.game.height, self.scale
+	local prints, width, height, scale = self.prints, self.width, self.height, self.scale
 	local bs1, bs2, offset = 8 * scale, 16 * scale, 24 * scale
 	local y = height + bs1
 

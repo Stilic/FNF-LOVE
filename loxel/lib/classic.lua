@@ -53,7 +53,7 @@ function Classic:exclude(...)
 end
 
 ---check if its the same type or the parent types
----@param T Classic
+---@param T any
 function Classic:is(T)
 	local mt = self
 	repeat mt = getmetatable(mt)

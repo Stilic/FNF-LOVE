@@ -38,8 +38,12 @@ function CameraManager.setDefaultDrawTarget(camera, value)
 	end
 end
 
-function CameraManager.update(dt)
-	for _, cam in ipairs(CameraManager.list) do cam:update(dt) end
+function CameraManager:update(dt)
+	for _, cam in ipairs(self.list) do cam:update(dt) end
+end
+
+function CameraManager:__render()
+	for _, cam in ipairs(self.list) do cam:draw() end
 end
 
 Camera.__defaultCameras = defaults

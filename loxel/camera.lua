@@ -157,6 +157,17 @@ local function setSimpleColor(r, g, b, a)
 	end
 end
 
+function Camera:renderObjects()
+	for i, o in ipairs(self.__renderQueue) do
+		if type(o) == "function" then o(self)
+		else
+			o:__render(self)
+			table.clear(o.__cameraQueue)
+		end
+		self.__renderQueue[i] = nil
+	end
+end
+
 function Camera:drawSimple(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
 	self.isSimple = true
@@ -194,18 +205,7 @@ function Camera:drawSimple(_skipCheck)
 	grap.translate(-w2, -h2)
 
 	grap.setBlendMode("alpha", "alphamultiply")
-
-	local o
-	for i = 1, #self.__renderQueue do
-		o = self.__renderQueue[i]
-		if type(o) == "function" then
-			o(self)
-		else
-			o:__render(self)
-			table.clear(self.__cameraQueue)
-		end
-		self.__renderQueue[i] = nil
-	end
+	self:renderObjects()
 
 	game.__popBoundScissor()
 	grap.pop()
@@ -242,7 +242,7 @@ function Camera:drawComplex(_skipCheck)
 
 	grap.setCanvas(canvasTable)
 	grap.clear(color[1], color[2], color[3], color[4])
-	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, sx, sy)
+	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
 
 	if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
 	else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
@@ -251,18 +251,7 @@ function Camera:drawComplex(_skipCheck)
 	grap.translate(-w2, -h2)
 
 	grap.setBlendMode("alpha", "alphamultiply")
-
-	local o
-	for i = 1, #self.__renderQueue do
-		o = self.__renderQueue[i]
-		if type(o) == "function" then
-			o(self)
-		else
-			o:__render(self)
-			table.clear(self.__cameraQueue)
-		end
-		self.__renderQueue[i] = nil
-	end
+	self:renderObjects()
 
 	color = self.__flashColor
 	if self.__flashAlpha > 0 then

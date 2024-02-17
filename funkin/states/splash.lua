@@ -2,6 +2,9 @@ local Splash = State:extend("Splash")
 local UpdateState = require "funkin.states.update"
 
 function Splash:enter()
+	self.skipTransIn = true
+	Splash.super.enter(self)
+
 	if Project.splashScreen then
 		Timer.after(1, function() self:startSplash() end)
 	else

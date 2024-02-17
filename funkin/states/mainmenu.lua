@@ -106,12 +106,11 @@ function MainMenuState:enter()
 	end
 
 	self:changeSelection()
-
 	self.script:call("postCreate")
+	MainMenuState.super.enter(self)
 end
 
 function MainMenuState:update(dt)
-	MainMenuState.super.update(self, dt)
 	local event = self.script:call("update", dt)
 	if event == Script.Event_Cancel then return end
 
@@ -142,6 +141,7 @@ function MainMenuState:update(dt)
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 10, dt)
 
 	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
+	MainMenuState.super.update(self, dt)
 
 	self.script:call("postUpdate", dt)
 end

@@ -71,6 +71,8 @@ function ModsState:enter()
 		self:add(self.buttons)
 		game.buttons.add(self.buttons)
 	end
+
+	ModsState.super.enter(self)
 end
 
 function ModsState:update(dt)

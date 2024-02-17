@@ -52,6 +52,8 @@ function UpdateState:enter()
 	self.blackScreen = Sprite():make(game.width, game.height, {0, 0, 0})
 	self.blackScreen.visible = false
 	self:add(self.blackScreen)
+
+	UpdateState.super.enter(self)
 end
 
 function UpdateState:update(dt)

@@ -61,6 +61,7 @@ GameOverSubstate = require "funkin.substates.gameover"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
+local TransitionFade = require "loxel.transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
 
 if WindowUtil then
@@ -119,15 +120,18 @@ function love.load()
 		love.graphics.setBackgroundColor(Project.bgColor)
 	end
 
-	game.statsCounter = StatsCounter(6, 6,
-		love.graphics.newFont('assets/fonts/consolas.ttf', 14), love.graphics.newFont('assets/fonts/consolas.ttf', 18))
+	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
+		love.graphics.newFont('assets/fonts/consolas.ttf', 18))
 
 	ClientPrefs.loadData()
 	Mods.loadMods()
 	Highscore.load()
 
-	game.init(Project, SplashScreen)
-	game.onPreStateSwitch = function(state)
+	local color = {0, 0, 0}
+	State.defaultTransIn = TransitionFade(0.6, color, "vertical")
+	State.defaultTransOut = TransitionFade(0.7, color, "vertical")
+
+	game.onPreStateEnter = function(state)
 		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
 		end
@@ -139,6 +143,7 @@ function love.load()
 		SoundTray.new()
 	end
 
+	game.init(Project, SplashScreen)
 	game:add(game.statsCounter)
 
 	Discord.init()

@@ -122,8 +122,8 @@ function FreeplayState:enter()
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
 	if #self.songsData > 0 then self:changeSelection() end
-
 	self.script:call("postCreate")
+	FreeplayState.super.enter(self)
 end
 
 function FreeplayState:update(dt)

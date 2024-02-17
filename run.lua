@@ -1,25 +1,6 @@
 -- messy messy fucking codes
 -- read with caution
 
-local modes = {
-	minwidth = 160,
-	minheight = 90,
-	fullscreen = false,
-	fullscreentype = "desktop",
-	vsync = false,
-	msaa = 0,
-	resizable = true,
-	centered = true,
-	usedpiscale = false,
-}
-
--- make screen orientation locked for mobiles
-local OS = love.system.getOS()
-if OS == "Android" or OS == "iOS" then
-	modes.resizable = false
-	modes.fullscreen = true
-end
-
 local restrictedfs = false
 function love.filesystem.isRestricted()
 	return restrictedfs
@@ -56,10 +37,6 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		restrictedfs = true
 	end
 end
-
-love.window.setTitle(Project.title)
-love.window.setMode(Project.width, Project.height, modes)
-love.window.setIcon(love.image.newImageData(Project.icon))
 
 -- NOTE, no matter how precision is, in windows 10 as of now (<=love 11)
 -- will be always 12ms, unless its using SDL3 or CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag

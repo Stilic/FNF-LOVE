@@ -15,6 +15,8 @@ TypeText = require "loxel.typetext"
 Bar = require "loxel.ui.bar"
 Group = require "loxel.group.group"
 SpriteGroup = require "loxel.group.spritegroup"
+TransitionData = require "loxel.transition.transitiondata"
+Transition = require "loxel.transition.transition"
 State = require "loxel.state"
 Substate = require "loxel.substate"
 Flicker = require "loxel.effects.flicker"
@@ -46,14 +48,8 @@ end
 local function temp() return true end
 local metatemp = setmetatable(table, {__index = function()return temp end})
 game = {
+	bound = {members = {}, scroll = {x = 0, y = 0}, super = metatemp},
 	members = {},
-	bound = {members = {}, super = metatemp},
-	active = true,
-	alive = true,
-	exists = true,
-	visible = true,
-	canDraw = temp,
-	_canDraw = temp,
 	scroll = {x = 0, y = 0},
 	super = metatemp,
 
@@ -70,89 +66,40 @@ game = {
 Classic.implement(game, Group)
 Classic.implement(game.bound, Group)
 
-local fade, cancelFade
-local function fadeOut(time, callback)
-	if fade and fade.timer then Timer.cancel(fade.timer) end
-	if cancelFade then
-		cancelFade = nil
+local function triggerCallback(callback, ...) if callback then callback(...) end end
+
+function game.getState(front) return front and Gamestate.current() or Gamestate.stack[1] end
+
+function game.resetState(force, ...) game.switchState(getmetatable(game.getState())(...), force) end
+
+function game.discardTransition() (game.getState() or metatemp):discardTransition() end
+
+local requestedState = nil
+function game.switchState(state, force)
+	local stateOnCall = game.getState()
+	if force or not stateOnCall then
+		requestedState = state
+		state.skipTransIn = true
 		return
 	end
 
-	fade = {
-		height = game.height * 2,
-		texture = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0},
-			{0, 0, 0, 0})
-	}
-	fade.y = -fade.height
-	fade.timer = Timer.tween(time, fade, {y = 0}, "linear", function()
-		fade.texture:release()
-		fade = nil
-		if callback then callback() end
+	stateOnCall:startOutro(function()
+		if game.getState() == stateOnCall then
+			requestedState = state
+		else
+			print("startOutro callback was called after the state was switched. This will be ignored")
+		end
 	end)
-	fade.draw = function()
-		love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
-	end
-end
-local function fadeIn(time, callback)
-	if fade and fade.timer then Timer.cancel(fade.timer) end
-	if cancelFade then
-		cancelFade = nil
-		return
-	end
-
-	fade = {
-		height = game.height * 2,
-		texture = util.newGradient("vertical", {0, 0, 0, 0}, {0, 0, 0},
-			{0, 0, 0})
-	}
-	fade.y = -fade.height / 2
-	fade.timer = Timer.tween(time * 2, fade, {y = fade.height}, "linear",
-		function()
-			fade.texture:release()
-			fade = nil
-			if callback then callback() end
-		end)
-	fade.draw = function()
-		love.graphics.draw(fade.texture, 0, fade.y, 0, game.width, fade.height)
-	end
-end
-
-local requestedState, skipTransition = nil, false
-function game.switchState(state, skipTrans)
-	requestedState = state
-
-	if skipTrans == nil then
-		skipTransition = false
-	else
-		skipTransition = skipTrans
-	end
-end
-
-function game.resetState(skipTrans, ...)
-	game.switchState(getmetatable(Gamestate.stack[1])(...), skipTrans)
-end
-
-function game.getState() return Gamestate.current() end
-
-function game.discardTransition()
-	if fade and fade.timer then Timer.cancel(fade.timer) end
-	cancelFade = true
 end
 
 function game.init(app, state, ...)
-	game.width = app.width
-	game.height = app.height
-	Camera.__init(love.graphics.newCanvas(app.width, app.height, {
-		format = "normal",
-		dpiscale = 1
-	}))
-
-	love.mouse.setVisible(false)
+	local width, height = app.width, app.height
+	game.width, game.height = width, height
 
 	if ScreenPrint then
 		ScreenPrint.init(love.graphics.getDimensions())
 		game:add(ScreenPrint)
-		
+
 		local ogprint = print
 		function print(...)
 			local v = {...}
@@ -162,7 +109,18 @@ function game.init(app, state, ...)
 		end
 	end
 
+	Camera.__init(love.graphics.newCanvas(width, height, {
+		format = "normal",
+		dpiscale = 1
+	}))
+	Transition.__init(width, height, game.bound)
+
+	love.mouse.setVisible(false)
+
 	game.cameras.reset()
+	game.bound:add(game.cameras)
+
+	triggerCallback(game.onPreStateEnter, state)
 
 	Gamestate.switch(state(...))
 end
@@ -208,6 +166,8 @@ local function switch(state)
 	game.sound.destroy()
 	game.buttons.reset()
 
+	triggerCallback(game.onPreStateSwitch, state)
+
 	for _, s in ipairs(Gamestate.stack) do
 		for _, o in ipairs(s.members) do
 			if type(o) == "table" and o.destroy then o:destroy() end
@@ -218,15 +178,12 @@ local function switch(state)
 		end
 	end
 
-	if game.onPreStateSwitch then
-		game.onPreStateSwitch(state)
-	end
-	Gamestate.switch(state)
-	if game.onPostStateSwitch then
-		game.onPostStateSwitch(state)
-	end
+	triggerCallback(game.onPreStateEnter, state)
 
+	Gamestate.switch(state)
 	game.isSwitchingState = false
+
+	triggerCallback(game.onPostStateSwitch, state)
 
 	collectgarbage()
 end
@@ -234,33 +191,24 @@ function game.update(real_dt)
 	local dt = game.dt
 	local low = math.min(math.log(1.101 + dt), 0.1)
 	dt = real_dt - dt > low and dt + low or real_dt
-	game.dt = dt
 
 	if requestedState ~= nil then
-		game.isSwitchingState = true
-		if not skipTransition then
-			local state = requestedState
-			fadeOut(0.7, function()
-				switch(state)
-				fadeIn(0.6)
-			end)
-		else
-			switch(requestedState)
-		end
-		requestedState = nil
+		dt, game.isSwitchingState = 0, true
+		requestedState = switch(requestedState)
 	end
+	game.dt = dt
 
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
-	game.cameras.update(dt)
 	game.sound.update()
 
-	if not game.isSwitchingState then Gamestate.update(dt) end
 	for _, o in ipairs(game.bound.members) do if o.update then o:update(dt) end end
 	for _, o in ipairs(game.members) do if o.update then o:update(dt) end end
 
 	-- input must be here
 	Keyboard.update()
 	Mouse.update()
+
+	if not game.isSwitchingState then Gamestate.update(dt) end
 end
 
 function game.resize(w, h)
@@ -379,7 +327,6 @@ function game.draw()
 	grap.translate(_scX, _scY)
 	grap.scale(scale)
 
-	for _, c in ipairs(game.cameras.list) do c:draw() end
 	for _, o in ipairs(game.bound.members) do
 		if o.__render and (not o._canDraw or o:_canDraw()) then
 			o:__render(game)

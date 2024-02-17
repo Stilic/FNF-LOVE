@@ -163,7 +163,9 @@ function StoryMenuState:enter()
 		self:changeWeek()
 		self:changeDifficulty()
 	end
+
 	self.script:call("postCreate")
+	StoryMenuState.super.enter(self)
 end
 
 local tweenDifficulty = Timer.new()
