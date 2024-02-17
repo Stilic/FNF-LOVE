@@ -5,9 +5,14 @@ FreeplayState.curSelected = 1
 FreeplayState.curDifficulty = 2
 
 function FreeplayState:enter()
+	self.notCreated = false
+
 	self.script = Script("data/scripts/states/freeplay", false)
 	local event = self.script:call("create")
-	if event == Script.Event_Cancel then return end
+	if event == Script.Event_Cancel then
+		self.notCreated = true
+		return
+	end
 
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
@@ -122,15 +127,20 @@ function FreeplayState:enter()
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
 	if #self.songsData > 0 then self:changeSelection() end
+
 	self.script:call("postCreate")
+
 	FreeplayState.super.enter(self)
 end
 
 function FreeplayState:update(dt)
-	FreeplayState.super.update(self, dt)
-	local event = self.script:call("update", dt)
-	if event == Script.Event_Cancel then return end
+	self.script:call("update", dt)
+	if self.notCreated then return end
+
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 24, dt)
+	if math.abs(self.lerpScore - self.intendedScore) <= 10 then
+		self.lerpScore = self.intendedScore
+	end
 	self.scoreText.content = "PERSONAL BEST: " .. math.floor(self.lerpScore)
 
 	self:positionHighscore()
@@ -174,6 +184,7 @@ function FreeplayState:update(dt)
 			util.coolLerp(self.bg.color[2], colorBG[2], 3, dt),
 			util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
 	end
+	FreeplayState.super.update(self, dt)
 
 	self.script:call("postUpdate", dt)
 end
@@ -356,8 +367,8 @@ function FreeplayState:loadSongs()
 end
 
 function FreeplayState:leave()
-	local event = self.script:call("leave")
-	if event == Script.Event_Cancel then return end
+	self.script:call("leave")
+	if self.notCreated then return end
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil

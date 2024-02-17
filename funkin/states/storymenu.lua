@@ -4,9 +4,15 @@ StoryMenuState.curWeek = 1
 StoryMenuState.curDifficulty = 2
 
 function StoryMenuState:enter()
+	self.notCreated = false
+
 	self.script = Script("data/scripts/states/storymenu", false)
 	local event = self.script:call("create")
-	if event == Script.Event_Cancel then return end
+	if event == Script.Event_Cancel then
+		self.notCreated = true
+		return
+	end
+
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Story Menu"})
@@ -165,14 +171,14 @@ function StoryMenuState:enter()
 	end
 
 	self.script:call("postCreate")
+
 	StoryMenuState.super.enter(self)
 end
 
 local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
-	StoryMenuState.super.update(self, dt)
-	local event = self.script:call("update", dt)
-	if event == Script.Event_Cancel then return end
+	self.script:call("update", dt)
+	if self.notCreated then return end
 
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 30, dt)
 	self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
@@ -205,6 +211,8 @@ function StoryMenuState:update(dt)
 		self.movedBack = true
 		game.switchState(MainMenuState())
 	end
+
+	StoryMenuState.super.update(self, dt)
 
 	tweenDifficulty:update(dt)
 
@@ -443,8 +451,8 @@ function StoryMenuState:loadWeeks()
 end
 
 function StoryMenuState:leave()
-	local event = self.script:call("leave")
-	if event == Script.Event_Cancel then return end
+	self.script:call("leave")
+	if self.notCreated then return end
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil

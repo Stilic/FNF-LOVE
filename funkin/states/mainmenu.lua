@@ -3,9 +3,14 @@ local MainMenuState = State:extend("MainMenuState")
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
+	self.notCreated = false
+
 	self.script = Script("data/scripts/states/mainmenu", false)
 	local event = self.script:call("create")
-	if event == Script.Event_Cancel then return end
+	if event == Script.Event_Cancel then
+		self.notCreated = true
+		return
+	end
 
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
@@ -106,13 +111,15 @@ function MainMenuState:enter()
 	end
 
 	self:changeSelection()
+
 	self.script:call("postCreate")
+
 	MainMenuState.super.enter(self)
 end
 
 function MainMenuState:update(dt)
-	local event = self.script:call("update", dt)
-	if event == Script.Event_Cancel then return end
+	self.script:call("update", dt)
+	if self.notCreated then return end
 
 	if not self.selectedSomethin and self.throttles then
 		if self.throttles.up:check() then self:changeSelection(-1) end
@@ -141,6 +148,7 @@ function MainMenuState:update(dt)
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 10, dt)
 
 	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
+
 	MainMenuState.super.update(self, dt)
 
 	self.script:call("postUpdate", dt)
@@ -156,7 +164,7 @@ local triggerChoices = {
 	options = {false, function(self)
 		local device = love.system.getDevice()
 		if device == "Mobile" then
-			
+			self.buttons:set({visible = false})
 			game.buttons.remove(self.buttons)
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
@@ -239,8 +247,8 @@ function MainMenuState:changeSelection(huh)
 end
 
 function MainMenuState:leave()
-	local event = self.script:call("leave")
-	if event == Script.Event_Cancel then return end
+	self.script:call("leave")
+	if self.notCreated then return end
 
 	if self.optionsUI then self.optionsUI:destroy() end
 	self.optionsUI = nil

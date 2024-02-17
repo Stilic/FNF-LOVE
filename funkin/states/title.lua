@@ -3,10 +3,14 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
-	self.script = Script("data/scripts/states/title", false)
+	self.notCreated = false
 
+	self.script = Script("data/scripts/states/title", false)
 	local event = self.script:call("create")
-	if event == Script.Event_Cancel then return end
+	if event == Script.Event_Cancel then
+		self.notCreated = true
+		return
+	end
 
 	Discord.changePresence({details = "In the Menus", state = "Title Screen"})
 
@@ -75,6 +79,7 @@ function TitleState:enter()
 	end
 
 	self.script:call("postCreate")
+
 	self.skipTransIn = true
 	TitleState.super.enter(self)
 end
@@ -88,9 +93,8 @@ function TitleState:getIntroTextShit()
 end
 
 function TitleState:update(dt)
-	TitleState.super.update(self, dt)
-	local event = self.script:call("update", dt)
-	if event == Script.Event_Cancel then return end
+	self.script:call("update", dt)
+	if self.notCreated then return end
 
 	self.conductor.time = game.sound.music:tell() * 1000
 	self.conductor:update(dt)
@@ -109,6 +113,8 @@ function TitleState:update(dt)
 	if pressedEnter and not self.skippedIntro and TitleState.initialized then
 		self:skipIntro()
 	end
+	TitleState.super.update(self, dt)
+
 	self.script:call("postUpdate", dt)
 end
 
@@ -210,8 +216,8 @@ function TitleState:skipIntro()
 end
 
 function TitleState:leave()
-	local event = self.script:call("leave")
-	if event == Script.Event_Cancel then return end
+	self.script:call("leave")
+	if self.notCreated then return end
 	self.script:call("postLeave")
 end
 
