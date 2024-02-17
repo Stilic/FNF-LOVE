@@ -80,7 +80,6 @@ function TitleState:enter()
 
 	self.script:call("postCreate")
 
-	self.skipTransIn = true
 	TitleState.super.enter(self)
 end
 
