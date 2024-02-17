@@ -14,9 +14,7 @@ function ButtonManager.add(o)
 end
 
 function ButtonManager.reset()
-	for i = #ButtonManager.list, 1, -1 do
-		ButtonManager.list[i] = nil
-	end
+	ButtonManager.list = {}
 end
 
 function ButtonManager.remove(o)
@@ -26,7 +24,7 @@ end
 function ButtonManager.press(id, x, y, p, time)
 	local X, Y = ButtonManager.remap(x, y)
 	for _, group in ipairs(ButtonManager.list) do
-		local button = group:checkPress(X, Y)
+		local button = group:check(X, Y)
 		if button then
 			ButtonManager._press(button.key, time)
 			ButtonManager.active[id] = button
@@ -44,7 +42,7 @@ function ButtonManager.move(id, x, y, p, time)
 	else
 		local found = false
 		for _, group in ipairs(ButtonManager.list) do
-			local button = group:checkPress(X, Y)
+			local button = group:check(X, Y)
 			if button then
 				found = true
 				if active ~= button then
@@ -63,7 +61,7 @@ function ButtonManager.move(id, x, y, p, time)
 		if not found then
 			ButtonManager._release(active.key, time)
 			for _, group in ipairs(ButtonManager.list) do
-				local button = group:checkPress(X, Y)
+				local button = group:check(X, Y)
 				if active ~= button then
 					active.pressed = false
 				end
@@ -78,7 +76,7 @@ function ButtonManager.release(id, x, y, p, time)
 	local active = ButtonManager.active[id]
 	if active then
 		for _, group in ipairs(ButtonManager.list) do
-			local button = group:checkPress(X, Y)
+			local button = group:check(X, Y)
 			if button then
 				ButtonManager._release(active.key, time)
 				active.pressed = false

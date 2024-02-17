@@ -9,6 +9,9 @@ function ModsState:enter()
 	self.bg:loadTexture(paths.getImage('menus/menuDesat'))
 	self.bg:setScrollFactor()
 	self.bg:screenCenter()
+	self.bg:setGraphicSize(math.floor(self.bg.width * (game.width / self.bg.width)))
+	self.bg:updateHitbox()
+	self.bg:screenCenter()
 	self:add(self.bg)
 	if #Mods.mods > 0 then
 		self.bg.color = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color)
@@ -50,17 +53,14 @@ function ModsState:enter()
 		Discord.changePresence({details = "In the Menus", state = "Mods Menu"})
 	elseif device == "Mobile" then
 		self.buttons = ButtonGroup()
-		self.buttons.width = 134
-		self.buttons.height = 134
+		local w = 134
 
-		local w = self.buttons.width
+		local left = Button("left", 0, game.height - w)
+		local right = Button("right", w, left.y)
 
-		local left = Button(2, game.height - w, 0, 0, "left")
-		local right = Button(left.x + w, left.y, 0, 0, "right")
-
-		local enter = Button(game.width - w, left.y, 0, 0, "return")
+		local enter = Button("return", game.width - w, left.y)
 		enter.color = Color.GREEN
-		local back = Button(enter.x - w, left.y, 0, 0, "escape")
+		local back = Button("escape", enter.x - w, left.y, w, w)
 		back.color = Color.RED
 
 		self.buttons:add(left)

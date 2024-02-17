@@ -68,20 +68,16 @@ function Options:enter(parent)
 		game.cameras.add(camButtons, false)
 
 		self.buttons = ButtonGroup()
-		self.buttons.width = 134
-		self.buttons.height = 134
-		self.buttons.cameras = {camButtons}
+		local w = 134
 
-		local w = self.buttons.width
+		local left = Button("left", 0, game.height - w)
+		local up = Button("up", left.x + w, left.y - w)
+		local down = Button("down", up.x, left.y)
+		local right = Button("right", down.x + w, left.y)
 
-		local left = Button(2, game.height - w, 0, 0, "left")
-		local up = Button(left.x + w, left.y - w, 0, 0, "up")
-		local down = Button(up.x, left.y, 0, 0, "down")
-		local right = Button(down.x + w, left.y, 0, 0, "right")
-
-		local enter = Button(game.width - w, left.y, 0, 0, "return")
+		local enter = Button("return", game.width - w, left.y)
 		enter.color = Color.GREEN
-		local back = Button(enter.x - w, left.y, 0, 0, "escape")
+		local back = Button("escape", enter.x - w, left.y)
 		back.color = Color.RED
 
 		self.buttons:add(left)

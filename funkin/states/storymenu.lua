@@ -4,6 +4,9 @@ StoryMenuState.curWeek = 1
 StoryMenuState.curDifficulty = 2
 
 function StoryMenuState:enter()
+	self.script = Script("data/scripts/states/mainmenu", false)
+	local event = self.script:call("create")
+	if event == Script.Event_Cancel then return end
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Story Menu"})
@@ -132,19 +135,16 @@ function StoryMenuState:enter()
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
-		self.buttons.width = 134
-		self.buttons.height = 134
+		local w = 134
 
-		local w = self.buttons.width
+		local left = Button("left", 0, game.height - w)
+		local up = Button("up", left.x + w, left.y - w)
+		local down = Button("down", up.x, left.y)
+		local right = Button("right", down.x + w, left.y)
 
-		local left = Button(2, game.height - w, 0, 0, "left")
-		local up = Button(left.x + w, left.y - w, 0, 0, "up")
-		local down = Button(up.x, left.y, 0, 0, "down")
-		local right = Button(down.x + w, left.y, 0, 0, "right")
-
-		local enter = Button(game.width - w, left.y, 0, 0, "return")
+		local enter = Button("return", game.width - w, left.y)
 		enter.color = Color.GREEN
-		local back = Button(enter.x - w, left.y, 0, 0, "escape")
+		local back = Button("escape", enter.x - w, left.y)
 		back.color = Color.RED
 
 		self.buttons:add(left)
@@ -163,10 +163,15 @@ function StoryMenuState:enter()
 		self:changeWeek()
 		self:changeDifficulty()
 	end
+	self.script:call("postCreate")
 end
 
 local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
+	StoryMenuState.super.update(self, dt)
+	local event = self.script:call("update")
+	if event == Script.Event_Cancel then return end
+
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 30, dt)
 	self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
 
@@ -199,8 +204,6 @@ function StoryMenuState:update(dt)
 		game.switchState(MainMenuState())
 	end
 
-	StoryMenuState.super.update(self, dt)
-
 	tweenDifficulty:update(dt)
 
 	if #self.weeksData > 0 then
@@ -209,6 +212,8 @@ function StoryMenuState:update(dt)
 			lock.visible = (lock.y > game.height / 2)
 		end
 	end
+
+	self.script:call("postUpdate")
 end
 
 function StoryMenuState:selectWeek()
@@ -436,8 +441,13 @@ function StoryMenuState:loadWeeks()
 end
 
 function StoryMenuState:leave()
+	local event = self.script:call("leave")
+	if event == Script.Event_Cancel then return end
+
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil
+
+	self.script:call("postLeave")
 end
 
 return StoryMenuState

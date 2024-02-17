@@ -3,6 +3,11 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
+	self.script = Script("data/scripts/states/title", false)
+
+	local event = self.script:call("create")
+	if event == Script.Event_Cancel then return end
+
 	Discord.changePresence({details = "In the Menus", state = "Title Screen"})
 
 	self.curWacky = self:getIntroTextShit()
@@ -10,9 +15,8 @@ function TitleState:enter()
 	self.skippedIntro = false
 	self.danceLeft = false
 	self.confirmed = false
-	self.sickBeats = 0
 
-	self.gfDance = Sprite(512, 40)
+	self.gfDance = Sprite(game.width - 762, 40)
 	self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
 	self.gfDance:addAnimByIndices("danceLeft", "gfDance", {
 		30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
@@ -28,12 +32,14 @@ function TitleState:enter()
 	self.logoBl:play("bump")
 	self.logoBl:updateHitbox()
 
-	self.titleText = Sprite(100, 576)
+	self.titleText = Sprite(0, 590)
 	self.titleText:setFrames(paths.getSparrowAtlas("menus/title/titleEnter"))
 	self.titleText:addAnimByPrefix("idle", "Press Enter to Begin", 24)
 	self.titleText:addAnimByPrefix("press", "ENTER PRESSED", 24)
 	self.titleText:play("idle")
+	self.titleText:screenCenter("x")
 	self.titleText:updateHitbox()
+	self.titleText.colors = {{50, 60, 205}, {50, 255, 255}}
 
 	self.textGroup = Group()
 	self:add(self.textGroup)
@@ -62,13 +68,13 @@ function TitleState:enter()
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
-		local group = ButtonGroup()
-		local enter = Button(0, 0, game.width, game.height, "return")
+		local enter = Button("return", 0, 0, game.width, game.height)
 		enter.pressedAlpha = 0
 		enter.releasedAlpha = 0
-		group:add(enter)
-		game.buttons.add(group)
+		game.buttons.add(enter)
 	end
+
+	self.script:call("postCreate")
 end
 
 function TitleState:getIntroTextShit()
@@ -80,6 +86,10 @@ function TitleState:getIntroTextShit()
 end
 
 function TitleState:update(dt)
+	TitleState.super.update(self, dt)
+	local event = self.script:call("update", dt)
+	if event == Script.Event_Cancel then return end
+
 	self.conductor.time = game.sound.music:tell() * 1000
 	self.conductor:update(dt)
 
@@ -88,16 +98,44 @@ function TitleState:update(dt)
 	if pressedEnter and not self.confirmed and self.skippedIntro then
 		self.confirmed = true
 		self.titleText:play("press")
-		game.camera:flash({1, 1, 1}, 2)
 		game.sound.play(paths.getSound("confirmMenu"))
+		game.camera:flash(Color.WHITE, 1.5)
 		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
 	end
+	self:updateEnterColor()
 
 	if pressedEnter and not self.skippedIntro and TitleState.initialized then
 		self:skipIntro()
 	end
+	self.script:call("postUpdate", dt)
+end
 
-	TitleState.super.update(self, dt)
+function TitleState:updateEnterColor()
+	local color = self.titleText.colors
+	local time = love.timer.getTime()
+	local t = (math.sin(time * 2 * math.pi / 5) + 1) / 2
+
+	local alpha = 0.8
+	if t <= 0.5 then
+		t = t * 2
+		self.titleText.color = Color.fromRGB(
+			math.lerp(color[2][1], color[1][1], t),
+			math.lerp(color[2][2], color[1][2], t),
+			math.lerp(color[2][3], color[1][3], t))
+		self.titleText.alpha = math.lerp(alpha, 0.5, t)
+	else
+		t = (t - 0.5) * 2
+		self.titleText.color = Color.fromRGB(
+			math.lerp(color[1][1], color[2][1], t),
+			math.lerp(color[1][2], color[2][2], t),
+			math.lerp(color[1][3], color[2][3], t))
+		self.titleText.alpha = math.lerp(0.5, alpha, t)
+	end
+
+	if self.confirmed then
+		self.titleText.color = Color.WHITE
+		self.titleText.alpha = 1
+	end
 end
 
 function TitleState:createCoolText(textTable)
@@ -132,38 +170,29 @@ function TitleState:beat(b)
 		self.gfDance:play("danceRight")
 	end
 
-	self.sickBeats = self.sickBeats + 1
-	if self.sickBeats == 1 then
-		self:createCoolText({
+	switch(b, {
+		[1] = function() self:createCoolText({
 			'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
-		})
-	elseif self.sickBeats == 3 then
-		self:addMoreText('present')
-	elseif self.sickBeats == 4 then
-		self:deleteCoolText()
-	elseif self.sickBeats == 5 then
-		self:createCoolText({'In association', 'with'})
-	elseif self.sickBeats == 7 then
-		self:addMoreText('newgrounds')
-		self.ngSpr.visible = true
-	elseif self.sickBeats == 8 then
-		self:deleteCoolText()
-		self.ngSpr.visible = false
-	elseif self.sickBeats == 9 then
-		self:createCoolText({self.curWacky[1]})
-	elseif self.sickBeats == 11 then
-		self:addMoreText(self.curWacky[2])
-	elseif self.sickBeats == 12 then
-		self:deleteCoolText()
-	elseif self.sickBeats == 13 then
-		self:addMoreText('Friday')
-	elseif self.sickBeats == 14 then
-		self:addMoreText('Night')
-	elseif self.sickBeats == 15 then
-		self:addMoreText('Funkin')
-	elseif self.sickBeats == 16 then
-		self:skipIntro()
-	end
+		}) end,
+		[3] = function() self:addMoreText('present') end,
+		[4] = function() self:deleteCoolText() end,
+		[5] = function() self:createCoolText({'In association', 'with'}) end,
+		[7] = function()
+			self:addMoreText('newgrounds')
+			self.ngSpr.visible = true
+		end,
+		[8] = function()
+			self:deleteCoolText()
+			self.ngSpr.visible = false
+		end,
+		[9] = function() self:createCoolText({self.curWacky[1]}) end,
+		[11] = function() self:addMoreText(self.curWacky[2]) end,
+		[12] = function() self:deleteCoolText() end,
+		[13] = function() self:addMoreText('Friday') end,
+		[14] = function() self:addMoreText('Night') end,
+		[15] = function() self:addMoreText('Funkin') end,
+		[16] = function() self:skipIntro() end
+	})
 end
 
 function TitleState:skipIntro()
@@ -173,9 +202,15 @@ function TitleState:skipIntro()
 		self:add(self.gfDance)
 		self:add(self.logoBl)
 		self:add(self.titleText)
-		game.camera:flash({1, 1, 1}, 4)
+		game.camera:flash(Color.WHITE, 4)
 		self.skippedIntro = true
 	end
+end
+
+function TitleState:leave()
+	local event = self.script:call("leave")
+	if event == Script.Event_Cancel then return end
+	self.script:call("postLeave")
 end
 
 return TitleState

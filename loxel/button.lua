@@ -1,10 +1,10 @@
 ---@class Button:Graphic
 local Button = Graphic:extend("Button")
 
-function Button:new(x, y, width, height, key, color)
+function Button:new(key, x, y, width, height, color)
 	Button.super.new(self, x, y)
-	self.width = width
-	self.height = height
+	self.width = width or 134
+	self.height = height or 134
 	self.key = key
 	self.color = color or Color.fromRGB(28, 26, 40)
 
@@ -16,6 +16,7 @@ function Button:new(x, y, width, height, key, color)
 
 	self.alpha = self.releasedAlpha
 
+	self.visible = true
 	self.stunned = false
 
 	self.lined = true
@@ -39,6 +40,19 @@ function Button:update(dt)
 		self.offset.x = self.line.width / 2
 		self.offset.y = self.line.width / 2
 	end
+
+	self.stunned = not self.visible
+end
+
+function Button:check(x, y)
+	if not self.stunned then
+		if not self.stunned and x >= self.x and
+			x <= self.x + self.width and y >= self.y and
+			y <= self.y + self.height then
+			return self
+		end
+	end
+	return nil
 end
 
 return Button

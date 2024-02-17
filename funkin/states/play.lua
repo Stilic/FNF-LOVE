@@ -1,8 +1,8 @@
 local PauseSubstate = require "funkin.substates.pause"
 local Events = {
-	NoteHit = require "funkin.backend.scripting.events.notehit",
-	PopUpScore = require "funkin.backend.scripting.events.popupscore",
-	CameraMove = require "funkin.backend.scripting.events.cameramove"
+	NoteHit = require "funkin.backend.events.notehit",
+	PopUpScore = require "funkin.backend.events.popupscore",
+	CameraMove = require "funkin.backend.events.cameramove"
 }
 
 ---@class PlayState:State
@@ -115,14 +115,16 @@ function PlayState:enter()
 
 	self.scripts:call("create")
 
-	self.playback = 1
+	self.playback = ClientPrefs.data.playback
 
 	game.sound.loadMusic(paths.getInst(songName))
+	game.sound.music:setPitch(self.playback)
 	game.sound.music:setLooping(false)
 	game.sound.music.onComplete = function() self:endSong() end
 
 	if PlayState.SONG.needsVoices then
 		self.vocals = Sound():load(paths.getVoices(songName))
+		self.vocals:setPitch(self.playback)
 		game.sound.list:add(self.vocals)
 	end
 
@@ -140,8 +142,10 @@ function PlayState:enter()
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 
-	PlayState.pixelStage = false
 	PlayState.SONG.stage = self:loadStageWithSongName(songName)
+
+	-- reset ui stage
+	PlayState.pixelStage = false
 
 	self.stage = Stage(PlayState.SONG.stage)
 	self:add(self.stage)
@@ -287,7 +291,6 @@ function PlayState:enter()
 	self:add(self.judgeSprites)
 
 	self.camFollow = {x = 0, y = 0}
-	self:cameraMovement()
 
 	if PlayState.prevCamFollow ~= nil then
 		game.camera.target = PlayState.prevCamFollow
@@ -376,24 +379,25 @@ function PlayState:enter()
 		local w, h = game.width / 4, game.height
 
 		self.buttons = ButtonGroup()
-		self.buttons.width = w
-		self.buttons.height = h
-		self.buttons.cameras = {self.camOther}
-		self.buttons.fill = "line"
-		self.buttons.lined = false
-		self.buttons.visible = false
 
-		self.buttons.config.round = {0, 0}
-
-		local left = Button(0, 0, w, h, "left", Color.PURPLE)
-		local down = Button(w, 0, w, h, "down", Color.BLUE)
-		local up = Button(w * 2, 0, w, h, "up", Color.GREEN)
-		local right = Button(w * 3, 0, w, h, "right", Color.RED)
+		local left = Button("left", 0, 0, w, h, Color.PURPLE)
+		local down = Button("down", w, 0, w, h, Color.BLUE)
+		local up = Button("up", w * 2, 0, w, h, Color.GREEN)
+		local right = Button("right", w * 3, 0, w, h, Color.RED)
 
 		self.buttons:add(left)
 		self.buttons:add(down)
 		self.buttons:add(up)
 		self.buttons:add(right)
+		self.buttons:set({
+			cameras = {self.camOther},
+			fill = "line",
+			lined = false,
+			visible = false,
+			config = {
+				round = {0, 0}
+			}
+		})
 	end
 
 	self:add(self.receptors)
@@ -475,18 +479,12 @@ end
 
 function PlayState:startCountdown()
 	if love.system.getDevice() == "Mobile" then
-		self.buttons.visible = true
+		self.buttons:set({visible = true})
 		game.buttons.add(self.buttons)
 	end
 
 	local event = self.scripts:call("startCountdown")
 	if event == Script.Event_Cancel then return end
-
-	self.playback = ClientPrefs.data.playback
-	game.sound.music:setPitch(self.playback)
-	if self.vocals then
-		self.vocals:setPitch(self.playback)
-	end
 
 	self.startedCountdown = true
 
@@ -542,7 +540,7 @@ function fadeGroupSprites(obj)
 end
 
 function PlayState:update(dt)
-	dt = dt * self.playback
+	if self.startedCountdown then dt = dt * self.playback end
 	self.lastTick = love.timer.getTime()
 
 	self.scripts:call("update", dt)
@@ -553,18 +551,12 @@ function PlayState:update(dt)
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
-			self.playback = ClientPrefs.data.playback -- reload playback for skip countdown
-
-			game.sound.music:setPitch(self.playback)
 			game.sound.music:seek(self.startPos / 1000)
 			game.sound.music:play()
-
 			if self.vocals then
-				self.vocals:setPitch(self.playback)
 				self.vocals:seek(game.sound.music:tell())
 				self.vocals:play()
 			end
-
 			self.scripts:call("songStart")
 		end
 	end
@@ -578,9 +570,7 @@ function PlayState:update(dt)
 		util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4 * self.stage.camSpeed, dt),
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4 * self.stage.camSpeed, dt)
 
-	if self.startedCountdown then
-		self:cameraMovement()
-	end
+	self:cameraMovement()
 
 	local mult = util.coolLerp(self.iconP1.scale.x, 1, 15, dt)
 	self.iconP1.scale = {x = mult, y = mult}
@@ -654,7 +644,7 @@ function PlayState:update(dt)
 				end
 
 				if love.system.getDevice() == "Mobile" then
-					self.buttons.visible = false
+					self.buttons:set({visible = false})
 					game.buttons.remove(self.buttons)
 				end
 
@@ -707,7 +697,7 @@ function PlayState:update(dt)
 		self.boyfriend.visible = false
 
 		if love.system.getDevice() == "Mobile" then
-			self.buttons.visible = false
+			self.buttons:set({visible = false})
 			game.buttons.remove(self.buttons)
 		end
 
@@ -849,6 +839,8 @@ function PlayState:updateNotes()
 end
 
 function PlayState:cameraMovement()
+	-- if not self.startedCountdown then return end
+
 	local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
 	local target
 	if section ~= nil then
@@ -879,7 +871,17 @@ function PlayState:cameraMovement()
 
 		local event = self.scripts:event("onCameraMove", Events.CameraMove(target))
 		if not event.cancelled then
-			self.camFollow = {x = camX - event.offset.x, y = camY - event.offset.y}
+			self.camFollow = {x = camX, y = camY}
+		end
+	end
+
+	if paths.formatToSongPath(self.SONG.song) == 'tutorial' then
+		if section.mustHitSection then
+			Timer.tween((self.conductor.stepCrotchet * 4 / 1000),
+				game.camera, {zoom = 1}, 'in-out-elastic')
+		else
+			Timer.tween((self.conductor.stepCrotchet * 4 / 1000),
+				game.camera, {zoom = 1.3}, 'in-out-elastic')
 		end
 	end
 end
@@ -922,7 +924,7 @@ function PlayState:closeSubstate()
 		end
 
 		if love.system.getDevice() == "Mobile" then
-			self.buttons.visible = true
+			self.buttons:set({visible = true})
 			game.buttons.add(self.buttons)
 		end
 	end
@@ -1563,9 +1565,6 @@ function PlayState:loadStageWithSongName(songName)
 		else
 			curStage = "stage"
 		end
-	end
-	if songName == "senpai" or songName == "roses" or songName == "thorns" then
-		PlayState.pixelStage = true
 	end
 	return curStage
 end

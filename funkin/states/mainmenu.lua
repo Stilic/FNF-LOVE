@@ -3,6 +3,10 @@ local MainMenuState = State:extend("MainMenuState")
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
+	self.script = Script("data/scripts/states/mainmenu", false)
+	local event = self.script:call("create")
+	if event == Script.Event_Cancel then return end
+
 	-- Update Presence
 	if love.system.getDevice() == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Main Menu"})
@@ -78,35 +82,39 @@ function MainMenuState:enter()
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
-		self.buttons.width = 134
-		self.buttons.height = 134
+		local w = 134
 
-		local w = self.buttons.width
+		local down = Button("down", 0, game.height - w)
+		local up = Button("up", 0, down.y - w)
+		local mods = Button("6", game.width - w, 0)
+		mods:screenCenter("y")
 
-		local down = Button(2, game.height - w, 0, 0, "down")
-		local up = Button(down.x, down.y - w, 0, 0, "up")
-
-		local enter = Button(game.width - w, down.y, 0, 0, "return")
+		local enter = Button("return", game.width - w, down.y)
 		enter.color = Color.GREEN
-		local back = Button(enter.x - w, down.y, 0, 0, "escape")
+		local back = Button("escape", enter.x - w, down.y)
 		back.color = Color.RED
 
-		local mods = Button(enter.x, game.height / 2 - w / 2, 0, 0, "6")
-
-		self.buttons:add(up)
 		self.buttons:add(down)
+		self.buttons:add(up)
+		self.buttons:add(mods)
+
 		self.buttons:add(enter)
 		self.buttons:add(back)
-		self.buttons:add(mods)
 
 		self:add(self.buttons)
 		game.buttons.add(self.buttons)
 	end
 
 	self:changeSelection()
+
+	self.script:call("postCreate")
 end
 
 function MainMenuState:update(dt)
+	MainMenuState.super.update(self, dt)
+	local event = self.script:call("update", dt)
+	if event == Script.Event_Cancel then return end
+
 	if not self.selectedSomethin and self.throttles then
 		if self.throttles.up:check() then self:changeSelection(-1) end
 		if self.throttles.down:check() then self:changeSelection(1) end
@@ -133,9 +141,9 @@ function MainMenuState:update(dt)
 		util.coolLerp(game.camera.target.x, self.camFollow.x, 10, dt),
 		util.coolLerp(game.camera.target.y, self.camFollow.y, 10, dt)
 
-	MainMenuState.super.update(self, dt)
-
 	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
+
+	self.script:call("postUpdate", dt)
 end
 
 local triggerChoices = {
@@ -148,7 +156,7 @@ local triggerChoices = {
 	options = {false, function(self)
 		local device = love.system.getDevice()
 		if device == "Mobile" then
-			self.buttons.visible = false
+			
 			game.buttons.remove(self.buttons)
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
@@ -157,7 +165,7 @@ local triggerChoices = {
 			if device == "Desktop" then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 			elseif device == "Mobile" then
-				self.buttons.visible = true
+				self.buttons:set({visible = true})
 				game.buttons.add(self.buttons)
 			end
 		end)
@@ -231,6 +239,9 @@ function MainMenuState:changeSelection(huh)
 end
 
 function MainMenuState:leave()
+	local event = self.script:call("leave")
+	if event == Script.Event_Cancel then return end
+
 	if self.optionsUI then self.optionsUI:destroy() end
 	self.optionsUI = nil
 
@@ -239,6 +250,8 @@ function MainMenuState:leave()
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil
+
+	self.script:call("postLeave")
 end
 
 return MainMenuState

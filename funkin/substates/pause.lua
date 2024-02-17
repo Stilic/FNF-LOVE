@@ -37,21 +37,17 @@ function PauseSubstate:enter()
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
-		self.buttons.width = 134
-		self.buttons.height = 134
+		local w = 134
+		local gw, gh = game.width, game.height
 
-		local w = self.buttons.width
-
-		local down = Button(2, game.height - w, 0, 0, "down")
-		local up = Button(down.x, down.y - w, 0, 0, "up")
-
-		local enter = Button(game.width - w, down.y, 0, 0, "return")
+		local down = Button("down", 0, gh - w)
+		local up = Button("up", 0, down.y - w)
+		local enter = Button("return", gw - w, down.y)
 		enter.color = Color.GREEN
 
-		self.buttons:add(up)
 		self.buttons:add(down)
+		self.buttons:add(up)
 		self.buttons:add(enter)
-
 		self:add(self.buttons)
 		game.buttons.add(self.buttons)
 	end
@@ -81,14 +77,14 @@ function PauseSubstate:update(dt)
 			["Options"] = function()
 				local device = love.system.getDevice()
 				if device == "Mobile" then
-					self.buttons.visible = false
+					self.buttons:set({visible = false})
 					game.buttons.remove(self.buttons)
 				end
 				self.optionsUI = self.optionsUI or Options(false, function()
 					self.blockInput = false
 
 					if device == "Mobile" then
-						self.buttons.visible = true
+						self.buttons:set({visible = true})
 						game.buttons.add(self.buttons)
 					end
 

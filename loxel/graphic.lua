@@ -84,7 +84,10 @@ function Graphic:__render(camera)
 	local type, fill, config, pi180 = self.type, self.fill, self.config, math.pi / 180
 	local rad, seg, rnd = config.radius, config.segments, config.round
 	local verts, contype = config.vertices, config.type
-	local ang1, ang2 = config.angle[1] * pi180, config.angle[2] * pi180
+	local ang1, ang2 = 0, 0
+	if config.angle then
+		ang1, ang2 = config.angle[1] * pi180, config.angle[2] * pi180
+	end
 	if fill == "line" then x, y = x + linesize / 2, y + linesize / 2 end
 
 	local color = self.color

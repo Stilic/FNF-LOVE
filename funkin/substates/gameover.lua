@@ -26,19 +26,12 @@ function GameOverSubstate:new(x, y)
 	self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
 
 	if love.system.getDevice() == "Mobile" then
-		local camButtons = Camera()
-		game.cameras.add(camButtons, false)
-
 		self.buttons = ButtonGroup()
-		self.buttons.width = 134
-		self.buttons.height = 134
-		self.buttons.cameras = {camButtons}
+		local w = 134
 
-		local w = self.buttons.width
-
-		local enter = Button(game.width - w, game.height - w, 0, 0, "return")
+		local enter = Button("return", game.width - w, down.y)
 		enter.color = Color.GREEN
-		local back = Button(enter.x - w, enter.y, 0, 0, "escape")
+		local back = Button("escape", enter.x - w, down.y)
 		back.color = Color.RED
 
 		self.buttons:add(enter)
