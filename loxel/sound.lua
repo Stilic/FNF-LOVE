@@ -137,12 +137,6 @@ end
 
 function Sound:update()
 	local isFinished = self:isFinished()
-	local isPlaying = self:isPlaying()
-
-	if isPlaying and self.__wasPlaying then
-		self.__wasPlaying = false
-	end
-
 	if isFinished and not self.__isFinished then
 		local onComplete = self.onComplete
 		if self.autoDestroy then
@@ -155,7 +149,6 @@ function Sound:update()
 	end
 
 	self.__isFinished = isFinished
-	self.__wasPlaying = isPlaying
 
 	if self.__fadeStartTime then
         local currentTime = love.timer.getTime()
