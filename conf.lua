@@ -26,8 +26,17 @@ function love.conf(t)
 	t.window.minwidth = 160
 	t.window.minheight = 90
 	t.window.fullscreen = false
+	t.window.usedpiscale = false
 
 	t.modules.physics = false
 	t.modules.touch = false
 	t.modules.video = false
+
+	-- this is bad i think -Vi
+	require "love.system"
+	local OS = love.system.getOS()
+	if OS == "Android" or OS == "iOS" then
+		t.window.fullscreen = true
+		t.window.resizable = false
+	end
 end
