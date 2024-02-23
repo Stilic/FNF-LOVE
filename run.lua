@@ -1,5 +1,6 @@
 -- messy messy fucking codes
 -- read with caution
+local OS = love.system.getOS()
 
 local restrictedfs = false
 function love.filesystem.isRestricted()
