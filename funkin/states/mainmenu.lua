@@ -224,12 +224,7 @@ function MainMenuState:changeSelection(huh)
 	game.sound.play(paths.getSound('scrollMenu'))
 
 	MainMenuState.curSelected = MainMenuState.curSelected + huh
-
-	if MainMenuState.curSelected > #self.optionShit then
-		MainMenuState.curSelected = 1
-	elseif MainMenuState.curSelected < 1 then
-		MainMenuState.curSelected = #self.optionShit
-	end
+	MainMenuState.curSelected = (MainMenuState.curSelected - 1) % #self.optionShit + 1
 
 	for _, spr in ipairs(self.menuItems.members) do
 		spr:play('idle')

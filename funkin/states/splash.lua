@@ -88,10 +88,8 @@ function Splash:startSplash()
 	end)
 
 	if love.system.getDevice() == "Mobile" then
-		local enter = Button("return", 0, 0, game.width, game.height)
-		enter.pressedAlpha = 0
-		enter.releasedAlpha = 0
-		game.buttons.add(enter)
+		local key = Button("return", 0, 0, game.width, game.height)
+		game.buttons.add(key)
 	end
 end
 

@@ -14,6 +14,8 @@ function TitleState:enter()
 
 	Discord.changePresence({details = "In the Menus", state = "Title Screen"})
 
+	self.skipTransIn = true
+
 	self.curWacky = self:getIntroTextShit()
 
 	self.skippedIntro = false
@@ -72,10 +74,8 @@ function TitleState:enter()
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
-		local enter = Button("return", 0, 0, game.width, game.height)
-		enter.pressedAlpha = 0
-		enter.releasedAlpha = 0
-		game.buttons.add(enter)
+		local key = Button("return", 0, 0, game.width, game.height)
+		game.buttons.add(key
 	end
 
 	self.script:call("postCreate")

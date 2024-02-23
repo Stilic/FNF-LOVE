@@ -134,12 +134,7 @@ function ModsState:changeSelection(change)
 	if change == nil then change = 0 end
 
 	self.curSelected = self.curSelected + change
-
-	if self.curSelected > #Mods.mods then
-		self.curSelected = 1
-	elseif self.curSelected < 1 then
-		self.curSelected = #Mods.mods
-	end
+	self.curSelected = (self.curSelected - 1) % #Mods.mods + 1
 
 	local cardMidPointX = self.cardGroup.members[self.curSelected].x + 210
 	self.camFollow = {x = cardMidPointX, y = game.height / 2}
