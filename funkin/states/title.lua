@@ -75,7 +75,7 @@ function TitleState:enter()
 
 	if love.system.getDevice() == "Mobile" then
 		local key = Button("return", 0, 0, game.width, game.height)
-		game.buttons.add(key
+		game.buttons.add(key)
 	end
 
 	self.script:call("postCreate")
