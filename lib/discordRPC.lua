@@ -25,8 +25,8 @@ if discordRPClib then success, v = pcall(ffi.load, discordRPClib) end
 if success then
 	discordRPClib = v
 else
-	local __NULL__ = function () end
-	return setmetatable({}, {__index = function () return __NULL__ end})
+	local __NULL__ = function() end
+	return setmetatable({}, {__index = function() return __NULL__ end})
 end
 ffi.cdef [[
 typedef struct DiscordRichPresence {
@@ -101,37 +101,37 @@ end
 -- callback proxies
 -- note: callbacks are not JIT compiled (= SLOW), try to avoid doing performance critical tasks in them
 -- luajit.org/ext_ffi_semantics.html
-local ready_proxy = ffi.cast("readyPtr", function (request)
+local ready_proxy = ffi.cast("readyPtr", function(request)
 	if discordRPC.ready then
 		discordRPC.ready(unpackDiscordUser(request))
 	end
 end)
 
-local disconnected_proxy = ffi.cast("disconnectedPtr", function (errorCode, message)
+local disconnected_proxy = ffi.cast("disconnectedPtr", function(errorCode, message)
 	if discordRPC.disconnected then
 		discordRPC.disconnected(errorCode, ffi.string(message))
 	end
 end)
 
-local errored_proxy = ffi.cast("erroredPtr", function (errorCode, message)
+local errored_proxy = ffi.cast("erroredPtr", function(errorCode, message)
 	if discordRPC.errored then
 		discordRPC.errored(errorCode, ffi.string(message))
 	end
 end)
 
-local joinGame_proxy = ffi.cast("joinGamePtr", function (joinSecret)
+local joinGame_proxy = ffi.cast("joinGamePtr", function(joinSecret)
 	if discordRPC.joinGame then
 		discordRPC.joinGame(ffi.string(joinSecret))
 	end
 end)
 
-local spectateGame_proxy = ffi.cast("spectateGamePtr", function (spectateSecret)
+local spectateGame_proxy = ffi.cast("spectateGamePtr", function(spectateSecret)
 	if discordRPC.spectateGame then
 		discordRPC.spectateGame(ffi.string(spectateSecret))
 	end
 end)
 
-local joinRequest_proxy = ffi.cast("joinRequestPtr", function (request)
+local joinRequest_proxy = ffi.cast("joinRequestPtr", function(request)
 	if discordRPC.joinRequest then
 		discordRPC.joinRequest(unpackDiscordUser(request))
 	end
@@ -267,7 +267,7 @@ function discordRPC.respond(userId, reply)
 end
 
 -- garbage collection callback
-getmetatable(discordRPC.gcDummy).__gc = function ()
+getmetatable(discordRPC.gcDummy).__gc = function()
 	discordRPC.shutdown()
 	ready_proxy:free()
 	disconnected_proxy:free()

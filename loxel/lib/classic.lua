@@ -56,7 +56,8 @@ end
 ---@param T any
 function Classic:is(T)
 	local mt = self
-	repeat mt = getmetatable(mt)
+	repeat
+		mt = getmetatable(mt)
 		if mt == T then return true end
 	until mt == nil
 	return false

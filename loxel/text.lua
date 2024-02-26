@@ -33,7 +33,9 @@ end
 function Text:__updateDimension()
 	if self.__content == self.content and self.__font == self.font and
 		self.__limit == self.limit
-	then return end
+	then
+		return
+	end
 	self.__content = self.content
 	self.__limit = self.limit
 	self.__font = self.font

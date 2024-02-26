@@ -159,7 +159,8 @@ end
 
 function Camera:renderObjects()
 	for i, o in ipairs(self.__renderQueue) do
-		if type(o) == "function" then o(self)
+		if type(o) == "function" then
+			o(self)
 		else
 			o:__render(self)
 			table.clear(o.__cameraQueue)
@@ -186,8 +187,11 @@ function Camera:drawSimple(_skipCheck)
 
 	game.__pushBoundScissor(w, h, sx, sy)
 	if not Project.flags.LoxelDisableScissorOnRenderCameraSimple then
-		if self.clipCam then grap.setScissor(x, y, w, h)
-		else grap.setScissor(0, 0, w, h) end
+		if self.clipCam then
+			grap.setScissor(x, y, w, h)
+		else
+			grap.setScissor(0, 0, w, h)
+		end
 	end
 
 	grap.push()
@@ -244,8 +248,11 @@ function Camera:drawComplex(_skipCheck)
 	grap.clear(color[1], color[2], color[3], color[4])
 	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
 
-	if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-	else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+	if self.clipCam then
+		grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+	else
+		grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+	end
 	grap.rotate(math.rad(self.angle))
 	grap.scale(self.__zoom.x, self.__zoom.y)
 	grap.translate(-w2, -h2)
@@ -255,8 +262,11 @@ function Camera:drawComplex(_skipCheck)
 
 	color = self.__flashColor
 	if self.__flashAlpha > 0 then
-		if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-		else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+		if self.clipCam then
+			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+		else
+			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+		end
 		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
 		grap.translate(-w2, -h2)
 		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)

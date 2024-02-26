@@ -178,9 +178,11 @@ function TitleState:beat(b)
 	end
 
 	switch(b, {
-		[1] = function() self:createCoolText({
-			'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
-		}) end,
+		[1] = function()
+			self:createCoolText({
+				'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
+			})
+		end,
 		[3] = function() self:addMoreText('present') end,
 		[4] = function() self:deleteCoolText() end,
 		[5] = function() self:createCoolText({'In association', 'with'}) end,

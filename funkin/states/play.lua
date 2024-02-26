@@ -612,7 +612,7 @@ function PlayState:update(dt)
 
 	self.timeArc.x = self.timeArcBG.x
 	if PlayState.conductor.time > 0 and
-			PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+		PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
 		self.timeTxt.content = util.formatTime(songTime)
 
 		local timeAngle = ((PlayState.conductor.time / 1000) /

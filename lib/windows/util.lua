@@ -110,7 +110,7 @@ function Util.setCursor(type)
 	local selectedType = CursorType[type:upper()]
 	if selectedType then
 		local systemCursor = ffi.C.LoadCursorA(nil, ffi.cast("const char*", selectedType))
-    	ffi.C.SetCursor(systemCursor)
+		ffi.C.SetCursor(systemCursor)
 	end
 end
 

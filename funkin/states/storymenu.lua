@@ -373,8 +373,11 @@ function StoryMenuState:checkSongsAssets(songs, diff)
 			table.insert(errorList, path)
 		end
 	end
-	if #jsonList > 0 and #audioList <= 0 then title = "Charts(s)"
-	elseif #jsonList <= 0 and #audioList > 0 then title = "Audio(s)" end
+	if #jsonList > 0 and #audioList <= 0 then
+		title = "Charts(s)"
+	elseif #jsonList <= 0 and #audioList > 0 then
+		title = "Audio(s)"
+	end
 	if #errorList <= 0 then return true end
 
 	self.inSubstate = true

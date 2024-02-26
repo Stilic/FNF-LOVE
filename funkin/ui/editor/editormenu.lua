@@ -2,18 +2,18 @@
 local EditorMenu = SpriteGroup:extend("EditorMenu")
 
 function EditorMenu:new(completionCallback)
-    EditorMenu.super.new(self)
+	EditorMenu.super.new(self)
 
-    self.exit = false
+	self.exit = false
 	self.completionCallback = completionCallback
 
 	self.optionShit = {
-		{"charter", "Chart Editor"},
+		{"charter",   "Chart Editor"},
 		{"character", "Character Editor"}
 	}
 	self.curSelected = 1
 
-    self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
+	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
 	self.bg.alpha = 0
 	self.bg:setScrollFactor()
 	self:add(self.bg)
@@ -54,7 +54,7 @@ function EditorMenu:enter(parent)
 		end
 
 		local icon = Sprite()
-		icon:loadTexture(paths.getImage("editor/menu/"..self.optionShit[i+1][1]))
+		icon:loadTexture(paths.getImage("editor/menu/" .. self.optionShit[i + 1][1]))
 		icon:updateHitbox()
 		icon.ID = optionText.ID
 		self.grpIcon:add(icon)
@@ -116,7 +116,7 @@ function EditorMenu:update(dt)
 		end
 		if textTracker then
 			icon:setPosition(textTracker.x + textTracker:getWidth() + 10,
-			textTracker.y - 30)
+				textTracker.y - 30)
 		end
 	end
 end

@@ -105,7 +105,7 @@ local function encode(v, i)
 	statusBuilder[#statusBuilder + 1] = res
 end
 
-encode_map["nil"] = function ()
+encode_map["nil"] = function()
 	return "null"
 end
 

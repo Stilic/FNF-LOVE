@@ -120,13 +120,13 @@ function BackDrop:__render(camera)
 	love.graphics.translate(x + self.__x, y + self.__y)
 	for _, square in ipairs(self.squares.x) do
 		love.graphics.setColor(self.color[1], self.color[2], self.color[3],
-		(self.color[4] or 1) * self.alpha)
+			(self.color[4] or 1) * self.alpha)
 		love.graphics.rectangle("fill", square.x, square.y, square.size, square.size)
 	end
 
 	for _, square in ipairs(self.squares.y) do
 		love.graphics.setColor(self.color2[1], self.color2[2], self.color2[3],
-		(self.color2[4] or 1) * self.alpha)
+			(self.color2[4] or 1) * self.alpha)
 		love.graphics.rectangle("fill", square.x, square.y, square.size, square.size)
 	end
 	love.graphics.setStencilTest()

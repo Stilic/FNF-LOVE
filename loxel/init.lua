@@ -154,13 +154,19 @@ function love.run()
 		end
 
 		if love.window.hasFocus() then
-			if b then sleep(cap - dt)
-			else sleep(dt < 0.001 and 0.001 or 0) end
+			if b then
+				sleep(cap - dt)
+			else
+				sleep(dt < 0.001 and 0.001 or 0)
+			end
 			collectgarbage(__step__)
 			focused = true
 		else
-			if focused then collectgarbage(); collectgarbage()
-			else collectgarbage(__step__) end
+			if focused then
+				collectgarbage(); collectgarbage()
+			else
+				collectgarbage(__step__)
+			end
 			focused = sleep(cap)
 		end
 	end
@@ -271,7 +277,7 @@ if Project.flags.LoxelShowPrintsInScreen or love.system.getDevice() == "Mobile" 
 end
 
 local function temp() return true end
-local metatemp = setmetatable(table, {__index = function()return temp end})
+local metatemp = setmetatable(table, {__index = function() return temp end})
 game = {
 	bound = {members = {}, scroll = {x = 0, y = 0}, super = metatemp},
 	members = {},

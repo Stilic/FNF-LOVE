@@ -19,12 +19,12 @@ local data = {
 
 	{"volume_down",  "Volume -"},
 	{"volume_up",    "Volume +"},
-	{"volume_mute",    "Mute"},
+	{"volume_mute",  "Mute"},
 
 	{"MISCELLANEOUS"},
 	{"fullscreen",   "Fullscreen"},
 	{"pick_mods",    "Mods"},
-	{"asyncInput",   "Asynchronous Input", "boolean", function()
+	{"asyncInput", "Asynchronous Input", "boolean", function()
 		love.asyncInput = not ClientPrefs.data.asyncInput
 		ClientPrefs.data.asyncInput = love.asyncInput
 	end, nil, 0.5}
