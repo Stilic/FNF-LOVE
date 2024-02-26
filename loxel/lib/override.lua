@@ -1,4 +1,4 @@
----@diagnostic disable: duplicate-set-field
+---@diagnostic disable: duplicate-set-field, discard-returns
 -- LUA 5.2-LUA 5.3 and LUA 5.0 BELOW REIMPLEMENTATIONS
 bit32, iter, utf8 = bit, ipairs(math), require "utf8"
 local __string__, __number__, __table__ = "string", "number", "table"
