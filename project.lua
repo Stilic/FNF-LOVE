@@ -23,6 +23,6 @@ return {
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,
 		LoxelDefaultClipCamera = true,
-		LoxelShowPrintsInScreen = true
+		LoxelShowPrintsInScreen = false
 	}
 }
