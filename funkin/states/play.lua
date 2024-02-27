@@ -1112,18 +1112,12 @@ function PlayState:goodNoteHit(n)
 				if not n.mustPress then self.camZooming = true end
 			end
 
-			local time = 0
-			if not n.mustPress or self.botPlay then
-				time = 0.15
-				if n.isSustain and not n.isSustainEnd then
-					time = time * 2
-				end
-			end
 			local receptor = (n.mustPress and self.playerReceptors or
 				self.enemyReceptors).members[n.data + 1]
 
 			if not event.strumGlowCancelled then
-				receptor:confirm(time)
+				receptor:play("confirm", true)
+				receptor.holdTime = ((not n.mustPress or self.botPlay) and (not n.isSustain or n.isSustainEnd)) and 0.175 or 0
 			end
 
 			if not n.isSustain then
