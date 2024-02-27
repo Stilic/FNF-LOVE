@@ -274,6 +274,8 @@ ui = {
 
 -- wip new ui
 newUI = {
+	UINavbar = require "loxel.newui.navbar",
+	UIWindow = require "loxel.newui.window",
 	UIButton = require "loxel.newui.button"
 }
 

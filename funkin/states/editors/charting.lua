@@ -57,6 +57,7 @@ function ChartingState:enter()
 
 	local songName = paths.formatToSongPath(self.__song.song)
 
+	PlayState.pixelStage = false
 	self.__song.stage = PlayState:loadStageWithSongName(songName)
 	self.__song.gfVersion = PlayState:loadGfWithStage(songName, self.__song.stage)
 
@@ -602,11 +603,6 @@ function ChartingState:update(dt)
 						break
 					end
 					self.curSection = self.curSection + 1
-					if self.__song.notes[self.curSection + 1] and
-						self.__song.notes[self.curSection + 1].changeBPM then
-						ChartingState.conductor:setBPM(
-							self.__song.notes[self.curSection + 1].bpm)
-					end
 				end
 			end
 
@@ -653,7 +649,8 @@ function ChartingState:update(dt)
 
 		if self.curSelectedNote ~= nil then
 			local datacheck = n.data
-			if n.mustPress ~= self.__song.notes[n.section].mustHitSection then
+			if self.__song.notes[n.section] and n.mustPress ~=
+				self.__song.notes[n.section].mustHitSection then
 				datacheck = datacheck + 4
 			end
 			if self.curSelectedNote[1] == n.time and self.curSelectedNote[3] ~=
@@ -810,7 +807,7 @@ function ChartingState:strumPosUpdate()
 end
 
 function ChartingState:loadSong(song)
-	game.sound.loadMusic(paths.getInst(song))
+	game.sound.loadMusic(paths.getInst(song)):setPitch(1)
 	ChartingState.conductor = Conductor():setSong(self.__song)
 	ChartingState.conductor.onStep = function(s)
 		self:resyncVocals()
@@ -827,12 +824,6 @@ function ChartingState:loadSong(song)
 			self.curSection = self.curSection + 1
 			self.stepsToDo = self.stepsToDo +
 				math.round(self:getSectionBeats() * 4)
-
-			if self.__song.notes[self.curSection + 1] and
-				self.__song.notes[self.curSection + 1].changeBPM then
-				ChartingState.conductor:setBPM(
-					self.__song.notes[self.curSection + 1].bpm)
-			end
 
 			self:update_UI_Section()
 		end
@@ -901,53 +892,51 @@ end
 
 function ChartingState:selectNote(note)
 	local datacheck = note.data
-	if note.mustPress ~= self.__song.notes[note.section].mustHitSection then
-		datacheck = datacheck + 4
-	end
-	for _, n in ipairs(self.__song.notes[note.section].sectionNotes) do
-		if n ~= self.curSelectedNote and #n > 2 and n[1] == note.time and n[2] ==
-			datacheck then
-			self.curSelectedNote = n
-			break
+	if self.__song.notes[note.section] then
+		if note.mustPress ~= self.__song.notes[note.section].mustHitSection then
+			datacheck = datacheck + 4
+		end
+		for _, n in ipairs(self.__song.notes[note.section].sectionNotes) do
+			if n ~= self.curSelectedNote and #n > 2 and n[1] == note.time and n[2] ==
+				datacheck then
+				self.curSelectedNote = n
+				break
+			end
 		end
 	end
 end
 
 function ChartingState:deleteNote(note)
 	local datacheck = note.data
-	if note.mustPress ~= self.__song.notes[note.section].mustHitSection then
-		datacheck = datacheck + 4
-	end
-	for _, n in ipairs(self.__song.notes[note.section].sectionNotes) do
-		if n[1] == note.time and n[2] == datacheck then
-			if n == self.curSelectedNote then
-				self.curSelectedNote = nil
+	if self.__song.notes[note.section] then
+		if note.mustPress ~= self.__song.notes[note.section].mustHitSection then
+			datacheck = datacheck + 4
+		end
+		for _, n in ipairs(self.__song.notes[note.section].sectionNotes) do
+			if n[1] == note.time and n[2] == datacheck then
+				if n == self.curSelectedNote then
+					self.curSelectedNote = nil
+				end
+				table.delete(self.__song.notes[note.section].sectionNotes, n)
+				self.allNotes:remove(note):destroy()
+				break
 			end
-			table.delete(self.__song.notes[note.section].sectionNotes, n)
-			break
 		end
 	end
-	self:generateNotes()
 end
 
 function ChartingState:addNote()
 	local mouseX = (game.mouse.x + game.camera.scroll.x)
-	local dummyTime = (self.dummyArrow.y /
+	local bpmChanges, lastChange = ChartingState.conductor.bpmChanges, ChartingState.conductor.dummyBPMChange
+	local dummyStep = (self.dummyArrow.y /
 			((16 * ChartingState.conductor.stepCrotchet) *
-				(ChartingState.conductor.bpm / 60) / 1) * 1000) /
-		self.gridSize
+				(ChartingState.conductor.bpm / 60) / 4) * 1000) / self.gridSize
 
-	local noteStrumTime = ChartingState.conductor:getTimeFromStep(dummyTime)
+	local noteStrumTime = Conductor.stepToTimeFromBPMChange(lastChange, dummyStep, 0)
 	local noteData = math.floor(((mouseX - self.gridSize * 9) - self.gridSize) /
 		self.gridSize)
 	local noteSus = 0
 	local noteType = nil
-
-	local dummyStep = (self.dummyArrow.y /
-			((16 * ChartingState.conductor.stepCrotchet) *
-				(ChartingState.conductor.bpm / 60) / 4) * 1000) /
-		self.gridSize
-	local time = ChartingState.conductor:getTimeFromStep(dummyStep)
 
 	local arrowSection = 0
 	local stepsToDo = 0
@@ -955,28 +944,49 @@ function ChartingState:addNote()
 		if self.__song.notes[i + 1] ~= nil then
 			stepsToDo = stepsToDo +
 				math.round(self:getSectionBeats(arrowSection) * 4)
-			if stepsToDo > ChartingState.conductor:getStepFromTime(time) then
+			if stepsToDo > Conductor.getStepFromBPMChange(lastChange, noteStrumTime, 0) then
 				break
 			end
 			arrowSection = arrowSection + 1
 		end
 	end
 
-	if self.__song.notes[arrowSection + 1].mustHitSection then
+	local mustHitSection = self.__song.notes[arrowSection + 1].mustHitSection
+	local gottaHitNote = mustHitSection
+	if noteData > 3 then
+		gottaHitNote = not gottaHitNote
+	end
+
+	if mustHitSection then
 		if noteData < 4 then
 			noteData = noteData + 4
 		else
 			noteData = noteData - 4
 		end
+		gottaHitNote = not gottaHitNote
 	end
 
 	table.insert(self.__song.notes[arrowSection + 1].sectionNotes,
 		{noteStrumTime, noteData, noteSus})
-	self.curSelectedNote =
-		self.__song.notes[arrowSection + 1].sectionNotes[#self.__song.notes[arrowSection +
-		1].sectionNotes]
 
-	self:generateNotes()
+	local noteIndex = #self.__song.notes[arrowSection + 1].sectionNotes
+
+	local note = Note(noteStrumTime, noteData % 4)
+	note.section = arrowSection + 1
+	note.index = noteIndex
+	note.step = Conductor.getStepFromBPMChange(lastChange, noteStrumTime, 0)
+	note.mustPress = gottaHitNote
+	note.type = noteType
+	note:setGraphicSize(self.gridSize, self.gridSize)
+	note:updateHitbox()
+	local id = (note.mustPress and note.data + 4 or note.data)
+	local yval = note.step * self.gridSize
+	local xval = (self.gridBox.x) + (self.gridSize * id)
+	note.x = xval + note.scrollOffset.x
+	note.y = yval + note.scrollOffset.y
+	self.allNotes:add(note)
+
+	self.curSelectedNote = self.__song.notes[arrowSection + 1].sectionNotes[noteIndex]
 end
 
 function ChartingState:getSectionTime()
@@ -1018,7 +1028,6 @@ function ChartingState:changeSection(sec)
 	end
 	game.sound.music:pause()
 	if self.vocals then self.vocals:pause() end
-	ChartingState.conductor:update()
 	self:strumPosUpdate()
 
 	local totalSteps = 0

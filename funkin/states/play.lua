@@ -222,8 +222,8 @@ function PlayState:enter()
 	self.totalPlayed = 0
 	self.totalHit = 0.0
 
-	game.camera.alpha = (100 - ClientPrefs.data.backgroundDim) / 100
 	self.camHUD = Camera()
+	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 	self.camOther = Camera()
 	game.cameras.add(self.camHUD, false)
 	game.cameras.add(self.camOther, false)
@@ -998,7 +998,7 @@ function PlayState:onSettingChange(setting)
 
 		self:updateNotes()
 
-		game.camera.alpha = (100 - ClientPrefs.data.backgroundDim) / 100
+		self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 	elseif setting == 'controls' then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)

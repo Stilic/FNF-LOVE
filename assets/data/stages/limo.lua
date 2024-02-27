@@ -40,12 +40,12 @@ function create()
 	fastCar = Sprite(-300, 160)
 	fastCar:loadTexture(paths.getImage(SCRIPT_PATH .. 'fastCarLol'))
 	fastCar.moves = true
-	self.foreground:add(fastCar)
+	self:add(fastCar, true)
 	resetFastCar()
 end
 
 function postCreate()
-	table.insert(state.members, table.find(state.members, state.gf) + 1, limo)
+	state:insert(state:indexOf(state.gf) + 1, limo)
 end
 
 local updateElapsed = 0
