@@ -547,8 +547,8 @@ function ChartingState:update(dt)
 	ChartingState.songPosition = game.sound.music:tell() * 1000
 	self:strumPosUpdate()
 
-	local mouseX, mouseY = (Mouse.x + game.camera.scroll.x),
-		(Mouse.y + game.camera.scroll.y)
+	local mouseX, mouseY = (game.mouse.x + game.camera.scroll.x),
+		(game.mouse.y + game.camera.scroll.y)
 	if mouseX > self.gridBox.x and mouseX < self.gridBox.x + self.gridBox.width and
 		mouseY > self.strumLine.y - (self.gridSize * 5) and mouseY <
 		self.gridBox.y + (self.gridSize * 4 * 4) + (self.gridSize * 17) then
@@ -565,10 +565,10 @@ function ChartingState:update(dt)
 	end
 
 	if not isTyping then
-		if Mouse.justPressed then
+		if game.mouse.justPressed then
 			for _, n in ipairs(self.allNotes.members) do
-				if Mouse.overlaps(n) then
-					if Mouse.justPressedRight then
+				if game.mouse.overlaps(n) then
+					if game.mouse.justPressedRight then
 						self:deleteNote(n)
 					else
 						self:selectNote(n)
@@ -974,7 +974,7 @@ function ChartingState:deleteNote(note)
 end
 
 function ChartingState:addNote()
-	local mouseX = (Mouse.x + game.camera.scroll.x)
+	local mouseX = (game.mouse.x + game.camera.scroll.x)
 	local dummyTime = (self.dummyArrow.y /
 			((16 * self.conductor.stepCrochet) *
 				(self.conductor.bpm / 60) / 1) * 1000) /
