@@ -495,40 +495,47 @@ function PlayState:startCountdown()
 	self.startedCountdown = true
 
 	local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
-	local countdownData = {
+	local countdownData, crotchet = {
 		{sound = basePath .. "/intro3",  image = nil},
 		{sound = basePath .. "/intro2",  image = basePath .. "/ready"},
 		{sound = basePath .. "/intro1",  image = basePath .. "/set"},
 		{sound = basePath .. "/introGo", image = basePath .. "/go"}
-	}
+	}, PlayState.conductor.crotchet / 1000
+	for swagCounter = 0, #countdownData do
+		local sussyCounter = swagCounter + 1 -- funny word huh
+		self.countdownTimer:after(crotchet * sussyCounter, function()
+			self.scripts:call("countdownTick", swagCounter)
 
-	local crotchet = PlayState.conductor.crotchet / 1000
-	for swagCounter = 0, 4 do
-		self.countdownTimer:after(crotchet * (swagCounter + 1), function()
-			local data = countdownData[swagCounter + 1]
-			if not data then return end
-
-			if data.sound then
-				game.sound.play(paths.getSound(data.sound)):setPitch(self.playback)
-			end
-			if data.image then
-				local countdownSprite = Sprite()
-				countdownSprite:loadTexture(paths.getImage(data.image))
-				countdownSprite.cameras = {self.camHUD}
-				if PlayState.pixelStage then
-					countdownSprite.scale = {x = 6, y = 6}
+			local data = countdownData[sussyCounter]
+			if data then
+				if data.sound then
+					game.sound.play(paths.getSound(data.sound)):setPitch(self.playback)
 				end
-				countdownSprite:updateHitbox()
-				countdownSprite.antialiasing = not PlayState.pixelStage
-				countdownSprite:screenCenter()
+				if data.image then
+					local countdownSprite = Sprite()
+					countdownSprite:loadTexture(paths.getImage(data.image))
+					countdownSprite.cameras = {self.camHUD}
+					if PlayState.pixelStage then
+						countdownSprite.scale = {x = 6, y = 6}
+					end
+					countdownSprite:updateHitbox()
+					countdownSprite.antialiasing = not PlayState.pixelStage
+					countdownSprite:screenCenter()
 
-				Timer.tween(crotchet, countdownSprite, {alpha = 0},
-					"in-out-cubic", function()
-						self:remove(countdownSprite)
-						countdownSprite:destroy()
-					end)
-				self:add(countdownSprite)
+					Timer.tween(crotchet, countdownSprite, {alpha = 0},
+						"in-out-cubic", function()
+							self:remove(countdownSprite)
+							countdownSprite:destroy()
+						end)
+					self:add(countdownSprite)
+				end
 			end
+
+			self.boyfriend:beat(swagCounter)
+			self.gf:beat(swagCounter)
+			self.dad:beat(swagCounter)
+
+			self.scripts:call("postCountdownTick", swagCounter)
 		end)
 	end
 end
@@ -557,7 +564,7 @@ function PlayState:update(dt)
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
-			self.playback = ClientPrefs.data.playback -- reload playback for skip countdown
+			self.playback = ClientPrefs.data.playback -- reload playback for countdown skip
 			Timer.setSpeed(self.playback)
 
 			game.sound.music:setPitch(self.playback)
@@ -575,7 +582,10 @@ function PlayState:update(dt)
 
 	PlayState.notePosition = PlayState.conductor.time
 
-	PlayState.conductor:update()
+	if not self.startingSong then
+		PlayState.conductor:update()
+	end
+
 	PlayState.super.update(self, dt)
 
 	game.camera.target.x, game.camera.target.y =
@@ -1286,12 +1296,8 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
-	if self.startingSong and b > -5 then
-		self.scripts:call("countdownTick", (b + 5))
-	else
-		self.scripts:set("curBeat", b)
-		self.scripts:call("beat")
-	end
+	self.scripts:set("curBeat", b)
+	self.scripts:call("beat")
 
 	local scaleNum = 1.2
 	self.iconP1.scale = {x = scaleNum, y = scaleNum}
@@ -1301,11 +1307,7 @@ function PlayState:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	if self.startingSong and b > -5 then
-		self.scripts:call("postCountdownTick", (b + 5))
-	else
-		self.scripts:call("postBeat")
-	end
+	self.scripts:call("postBeat", b)
 end
 
 function PlayState:section(s)
