@@ -57,52 +57,8 @@ function ChartingState:enter()
 
 	local songName = paths.formatToSongPath(self.__song.song)
 
-	local curStage = self.__song.stage
-	if self.__song.stage == nil then
-		if songName == 'spookeez' or songName == 'south' or songName ==
-			'monster' then
-			curStage = 'spooky'
-		elseif songName == 'pico' or songName == 'philly-nice' or songName ==
-			'blammed' then
-			curStage = 'philly'
-		elseif songName == 'satin-panties' or songName == 'high' or songName ==
-			'milf' then
-			curStage = 'limo'
-		elseif songName == 'cocoa' or songName == 'eggnog' then
-			curStage = 'mall'
-		elseif songName == 'winter-horrorland' then
-			curStage = 'mall-evil'
-		elseif songName == "senpai" or songName == "roses" then
-			curStage = "school"
-		elseif songName == "thorns" then
-			curStage = "school-evil"
-		elseif songName == "ugh" or songName == "guns" or songName == "stress" then
-			curStage = "tank"
-		else
-			curStage = "stage"
-		end
-	end
-	self.__song.stage = curStage
-
-	local gfVersion = self.__song.gfVersion
-	if gfVersion == nil then
-		switch(curStage, {
-			["limo"] = function() gfVersion = "gf-car" end,
-			["mall"] = function() gfVersion = "gf-christmas" end,
-			["mall-evil"] = function() gfVersion = "gf-christmas" end,
-			["school"] = function() gfVersion = "gf-pixel" end,
-			["school-evil"] = function() gfVersion = "gf-pixel" end,
-			["tank"] = function()
-				if songName == 'stress' then
-					gfVersion = "pico-speaker"
-				else
-					gfVersion = "gf-tankmen"
-				end
-			end,
-			default = function() gfVersion = "gf" end
-		})
-		self.__song.gfVersion = gfVersion
-	end
+	self.__song.stage = PlayState:loadStageWithSongName(songName)
+	self.__song.gfVersion = PlayState:loadGfWithStage(songName, self.__song.stage)
 
 	self.allNotes = Group()
 	self.allSustains = Group()
@@ -166,10 +122,10 @@ function ChartingState:enter()
 	self:add(self.iconsGroup)
 	self:updateIcon()
 
-	self.conductorInfo = Text(self.gridBox.x + (self.gridSize * 8) + 20, 20, '',
+	ChartingState.conductorInfo = Text(self.gridBox.x + (self.gridSize * 8) + 20, 20, '',
 		love.graphics.newFont(16))
-	self.conductorInfo:setScrollFactor()
-	self:add(self.conductorInfo)
+	ChartingState.conductorInfo:setScrollFactor()
+	self:add(ChartingState.conductorInfo)
 
 	local textInfo = "NOTE: Note pos on BPM change still broken.\n\n" ..
 		"ENTER Test the chart.\n" ..
@@ -240,8 +196,8 @@ function ChartingState:add_UI_Song()
 	local bpm_stepper = ui.UINumericStepper(10, 140, 1, self.__song.bpm, 1, 400)
 	bpm_stepper.onChanged = function(value)
 		self.__song.bpm = value
-		self.conductor:mapBPMChanges(self.__song)
-		self.conductor:setBPM(value)
+		ChartingState.conductor:mapBPMChanges(self.__song)
+		ChartingState.conductor:setBPM(value)
 		self:updateNotes()
 	end
 
@@ -516,18 +472,18 @@ local colorSine = 0
 function ChartingState:update(dt)
 	ChartingState.super.update(self, dt)
 
-	local oldStep = self.conductor.currentStep
+	local oldStep = ChartingState.conductor.currentStep
 
-	self.conductor:update()
+	ChartingState.conductor:update()
 
-	if oldStep > self.conductor.currentStep then
+	if oldStep > ChartingState.conductor.currentStep then
 		self.curSection = 0
 		self.stepsToDo = 0
 		for i = 0, #self.__song.notes do
 			if self.__song.notes[i + 1] ~= nil then
 				self.stepsToDo = self.stepsToDo +
 					math.round(self:getSectionBeats() * 4)
-				if self.stepsToDo > self.conductor.currentStep then
+				if self.stepsToDo > ChartingState.conductor.currentStep then
 					break
 				end
 				self.curSection = self.curSection + 1
@@ -545,6 +501,7 @@ function ChartingState:update(dt)
 	end
 
 	ChartingState.songPosition = game.sound.music:tell() * 1000
+	ChartingState.conductor.time = ChartingState.songPosition
 	self:strumPosUpdate()
 
 	local mouseX, mouseY = (game.mouse.x + game.camera.scroll.x),
@@ -633,7 +590,7 @@ function ChartingState:update(dt)
 				self.vocals.__source:seek(game.sound.music:tell())
 			end
 
-			self.conductor:__updateTime()
+			ChartingState.conductor:update()
 
 			self.curSection = 0
 			self.stepsToDo = 0
@@ -641,13 +598,13 @@ function ChartingState:update(dt)
 				if self.__song.notes[i + 1] ~= nil then
 					self.stepsToDo = self.stepsToDo +
 						math.round(self:getSectionBeats() * 4)
-					if self.stepsToDo > self.conductor.currentStep then
+					if self.stepsToDo > ChartingState.conductor.currentStep then
 						break
 					end
 					self.curSection = self.curSection + 1
 					if self.__song.notes[self.curSection + 1] and
 						self.__song.notes[self.curSection + 1].changeBPM then
-						self.conductor:setBPM(
+						ChartingState.conductor:setBPM(
 							self.__song.notes[self.curSection + 1].bpm)
 					end
 				end
@@ -688,6 +645,7 @@ function ChartingState:update(dt)
 	end
 
 	ChartingState.songPosition = game.sound.music:tell() * 1000
+	ChartingState.conductor.time = ChartingState.songPosition
 	self:strumPosUpdate()
 
 	for _, n in pairs(self.allNotes.members) do
@@ -723,19 +681,19 @@ function ChartingState:update(dt)
 		end
 	end
 
-	local daText = util.getFormattedTime(ChartingState.songPosition / 1000) ..
+	local daText = util.formatTime(ChartingState.songPosition / 1000) ..
 		' / ' ..
-		util.getFormattedTime(
+		util.formatTime(
 			game.sound.music:getDuration()) ..
 		'\nSection: ' .. self.curSection .. '\nBeat: ' ..
-		self.conductor.currentBeat .. '\nStep: ' ..
-		self.conductor.currentStep
-	self.conductorInfo.content = daText
+		ChartingState.conductor.currentBeat .. '\nStep: ' ..
+		ChartingState.conductor.currentStep
+	ChartingState.conductorInfo.content = daText
 end
 
 function ChartingState:generateNotes()
 	self.allNotes:clear()
-	local bpmChanges, lastChange = self.conductor.bpmChanges, self.conductor.dummyBPMChange
+	local bpmChanges, lastChange = ChartingState.conductor.bpmChanges, ChartingState.conductor.dummyBPMChange
 	for section_num, s in ipairs(self.__song.notes) do
 		if s and s.sectionNotes then
 			for note_num, n in ipairs(s.sectionNotes) do
@@ -748,19 +706,19 @@ function ChartingState:generateNotes()
 						gottaHitNote = not gottaHitNote
 					end
 
-					lastChange = Conductor.getBPMChangeFromTime(bpmChanges, time,
+					lastChange = Conductor.getBPMChangeFromTime(bpmChanges, daStrumTime,
 						lastChange.id) or lastChange
 
 					local note = Note(daStrumTime, daNoteData)
 					note.section = section_num
 					note.index = note_num
-					note.step = Conductor.getStepFromBPMChange(lastChange, time)
+					note.step = Conductor.getStepFromBPMChange(lastChange, daStrumTime, 0)
 					note.mustPress = gottaHitNote
 					note.type = n[4]
 					note:setGraphicSize(self.gridSize, self.gridSize)
 					note:updateHitbox()
 					local id = (note.mustPress and note.data + 4 or note.data)
-					local yval = note.step * (self.gridSize * 4)
+					local yval = note.step * self.gridSize
 					local xval = (self.gridBox.x) + (self.gridSize * id)
 					note.x = xval + note.scrollOffset.x
 					note.y = yval + note.scrollOffset.y
@@ -771,8 +729,8 @@ function ChartingState:generateNotes()
 						if susLength ~= nil and susLength > 0 then
 							local susHeight =
 								math.remapToRange(susLength, 0,
-									self.conductor
-									.stepCrochet * 16, 0,
+									ChartingState.conductor
+									.stepCrotchet * 16, 0,
 									(self.gridSize * 16))
 							local susColor = Color.convert(
 								self.sustainColors[note.data +
@@ -790,14 +748,14 @@ function ChartingState:generateNotes()
 		end
 	end
 
-	table.sort(self.allNotes.members, PlayState.sortByShit)
+	table.sort(self.allNotes.members, Conductor.sortByTime)
 end
 
 function ChartingState:updateNotes(updateTime)
 	if updateTime == nil then updateTime = true end
 	for _, note in ipairs(self.allNotes.members) do
 		if updateTime then
-			note.time = self.conductor:getTimeFromStep(note.step)
+			note.time = ChartingState.conductor:getTimeFromStep(note.step)
 		end
 		local id = (note.mustPress and note.data + 4 or note.data)
 		local yval = note.step * (self.gridSize * 4)
@@ -840,12 +798,12 @@ end
 
 function ChartingState:strumPosUpdate()
 	self.strumLine.y = (self.gridSize * 5) +
-		(self.conductor.currentStepFloat *
+		(ChartingState.conductor.currentStepFloat *
 			self.gridSize)
 	self.gridBox.y = (self.gridSize * -8) + (self.gridSize * 8 *
 		(math.floor(
-			(self.conductor.currentStepFloat / 8) -
-			(self.conductor.stepCrochet / 16) /
+			(ChartingState.conductor.currentStepFloat / 8) -
+			(ChartingState.conductor.stepCrotchet / 16) /
 			self.gridSize)))
 	game.camera.target = self.strumLine
 	self:updateBeatLine()
@@ -853,9 +811,8 @@ end
 
 function ChartingState:loadSong(song)
 	game.sound.loadMusic(paths.getInst(song))
-	game.sound.music:setLooping(true)
-	self.conductor = Conductor():setSong(self.__song)
-	self.conductor.onStep = function(s)
+	ChartingState.conductor = Conductor():setSong(self.__song)
+	ChartingState.conductor.onStep = function(s)
 		self:resyncVocals()
 
 		if self.__song.notes[self.curSection + 2] == nil then
@@ -873,14 +830,14 @@ function ChartingState:loadSong(song)
 
 			if self.__song.notes[self.curSection + 1] and
 				self.__song.notes[self.curSection + 1].changeBPM then
-				self.conductor:setBPM(
+				ChartingState.conductor:setBPM(
 					self.__song.notes[self.curSection + 1].bpm)
 			end
 
 			self:update_UI_Section()
 		end
 	end
-	self.conductor.onBeat = function(b)
+	ChartingState.conductor.onBeat = function(b)
 		if self.metronome then
 			game.sound.play(paths.getSound('metronome'), 0.8)
 		end
@@ -888,9 +845,9 @@ function ChartingState:loadSong(song)
 	if self.__song.needsVoices then
 		self.vocals = Sound():load(paths.getVoices(song))
 		game.sound.list:add(self.vocals)
-		if self.vocals then self.vocals.__source:setLooping(true) end
 	end
 	ChartingState.songPosition = game.sound.music:tell() * 1000
+	ChartingState.conductor.time = ChartingState.songPosition
 
 	local curTime = 0
 	if #self.__song.notes <= 1 then
@@ -976,21 +933,21 @@ end
 function ChartingState:addNote()
 	local mouseX = (game.mouse.x + game.camera.scroll.x)
 	local dummyTime = (self.dummyArrow.y /
-			((16 * self.conductor.stepCrochet) *
-				(self.conductor.bpm / 60) / 1) * 1000) /
+			((16 * ChartingState.conductor.stepCrotchet) *
+				(ChartingState.conductor.bpm / 60) / 1) * 1000) /
 		self.gridSize
 
-	local noteStrumTime = self.conductor:getTimeFromStep(dummyTime)
+	local noteStrumTime = ChartingState.conductor:getTimeFromStep(dummyTime)
 	local noteData = math.floor(((mouseX - self.gridSize * 9) - self.gridSize) /
 		self.gridSize)
 	local noteSus = 0
 	local noteType = nil
 
 	local dummyStep = (self.dummyArrow.y /
-			((16 * self.conductor.stepCrochet) *
-				(self.conductor.bpm / 60) / 4) * 1000) /
+			((16 * ChartingState.conductor.stepCrotchet) *
+				(ChartingState.conductor.bpm / 60) / 4) * 1000) /
 		self.gridSize
-	local time = self.conductor:getTimeFromStep(dummyStep)
+	local time = ChartingState.conductor:getTimeFromStep(dummyStep)
 
 	local arrowSection = 0
 	local stepsToDo = 0
@@ -998,7 +955,7 @@ function ChartingState:addNote()
 		if self.__song.notes[i + 1] ~= nil then
 			stepsToDo = stepsToDo +
 				math.round(self:getSectionBeats(arrowSection) * 4)
-			if stepsToDo > self.conductor:getStepFromTime(time) then
+			if stepsToDo > ChartingState.conductor:getStepFromTime(time) then
 				break
 			end
 			arrowSection = arrowSection + 1
@@ -1061,7 +1018,7 @@ function ChartingState:changeSection(sec)
 	end
 	game.sound.music:pause()
 	if self.vocals then self.vocals:pause() end
-	self.conductor:__updateTime()
+	ChartingState.conductor:update()
 	self:strumPosUpdate()
 
 	local totalSteps = 0
@@ -1071,7 +1028,7 @@ function ChartingState:changeSection(sec)
 		totalSteps = totalSteps + math.round(beats * 4)
 		if i >= self.curSection + 1 then break end
 		if s.changeBPM and s.bpm ~= nil then
-			self.conductor:setBPM(s.bpm)
+			ChartingState.conductor:setBPM(s.bpm)
 		end
 	end
 	self.stepsToDo = totalSteps
@@ -1124,7 +1081,7 @@ function ChartingState:leave()
 	love.mouse.setVisible(false)
 
 	game.save.data.chartingData = self.saveData
-	self.conductor = nil
+	ChartingState.conductor = nil
 
 	Note.chartingMode = false
 end
