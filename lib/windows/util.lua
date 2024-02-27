@@ -40,7 +40,6 @@ ffi.cdef [[
 	HWND FindWindowA(LPCSTR lpClassName, LPCSTR lpWindowName);
 	HWND FindWindowExA(HWND hwndParent, HWND hwndChildAfter, LPCSTR lpszClass, LPCSTR lpszWindow);
 	HWND GetActiveWindow(void);
-	BOOL SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 	LONG GetWindowLongA(HWND hWnd, int nIndex);
 	LONG SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
 	BOOL ShowWindow(HWND hWnd, int nCmdShow);
@@ -84,32 +83,6 @@ function Util.setDarkMode(enable)
 	if result ~= 0 then
 		dwmapi.DwmSetWindowAttribute(window, 20, darkMode, size)
 	end
-	--ffi.C.SetWindowPos(window, nil, 0, 0, 0, 0, bit.bxor(0x0020, 0x0002, 0x0001))
-	--ffi.C.UpdateWindow(window)
-end
-
-function Util.setWindowPosition(x, y, w, h, ...)
-	local window, flags = getMainWindowHandle(), bit.bxor(0x0100, 0x0010, 0x0400)
-	if w == nil then flags = bit.bxor(flags, 0x0001) end
-
-	local w2, h2, data = love.window.getMode()
-	x, y, w, h = x or data.x, y or data.y, w or w2, h or h2
-
-	local style = ffi.C.GetWindowLongA(window, -16)
-	local menu = bit.bnot(bit.band(style, 0x40000000)) >= 0 and (ffi.C.GetMenu(window) and true) or false
-
-	local rect = Rect(0, 0, w, h)
-	if bit.band(style, 0x00C00000) >= 0 then
-		ffi.C.AdjustWindowRectEx(rect, style, menu, 0)
-	end
-
-	ffi.C.SetWindowPos(window, nil,
-		x + rect.x, y + rect.y,
-		rect.right - rect.left, rect.bottom - rect.top,
-		bit.bxor(flags, ...)
-	)
-	rect = nil
-	love.window.getMode()
 end
 
 local currentCursor = "ARROW"
@@ -137,7 +110,7 @@ function Util.setCursor(type)
 	local selectedType = CursorType[type:upper()]
 	if selectedType then
 		local systemCursor = ffi.C.LoadCursorA(nil, ffi.cast("const char*", selectedType))
-    	ffi.C.SetCursor(systemCursor)
+		ffi.C.SetCursor(systemCursor)
 	end
 end
 

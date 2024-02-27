@@ -148,7 +148,7 @@ local defaultTexture = love.graphics.newImage('loxel/assets/missing-sprite.png')
 function Sprite:new(x, y, texture)
 	Sprite.super.new(self, x, y)
 
-	self.texture = defaultTexture
+	self.texture = Sprite.defaultTexture
 
 	self.clipRect = nil
 
@@ -186,7 +186,7 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 	if type(texture) == "string" then
 		texture = love.graphics.newImage(texture)
 	end
-	self.texture = texture or defaultTexture
+	self.texture = texture or Sprite.defaultTexture
 	self.__rectangleMode = false
 
 	self.curAnim = nil

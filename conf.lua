@@ -16,27 +16,10 @@ function love.conf(t)
 	t.renderers = {"metal", "opengl"}
 	--t.excluderenderers = {"vulkan"}
 
-	-- we'll initialize it in run.lua
+	-- we'll initialize the window in run.lua
 	-- reason why is, we need it for mobile window to not be bugging
-	t.window.title = Project.title
-	t.window.icon = Project.icon
-	t.window.width = 1280
-	t.window.height = 720
-	t.window.vsync = false
-	t.window.minwidth = 160
-	t.window.minheight = 90
-	t.window.fullscreen = false
-	t.window.usedpiscale = false
-
+	t.modules.window = false
 	t.modules.physics = false
 	t.modules.touch = false
 	t.modules.video = false
-
-	-- this is bad i think -Vi
-	require "love.system"
-	local OS = love.system.getOS()
-	if OS == "Android" or OS == "iOS" then
-		t.window.fullscreen = true
-		t.window.resizable = false
-	end
 end

@@ -1,4 +1,4 @@
----@diagnostic disable: duplicate-set-field
+---@diagnostic disable: duplicate-set-field, discard-returns
 -- LUA 5.2-LUA 5.3 and LUA 5.0 BELOW REIMPLEMENTATIONS
 bit32, iter, utf8 = bit, ipairs(math), require "utf8"
 local __string__, __number__, __table__ = "string", "number", "table"
@@ -32,6 +32,7 @@ if not table_move then
 		b = b or a; for i = f, e do b[i + t - 1] = a[i] end
 		return b
 	end
+
 	table.move = table_move
 end
 
@@ -159,6 +160,7 @@ function table_clone(list, clone)
 	for i, v in pairs(list) do clone[i] = type(v) == __table__ and table_clone(v) or v end
 	return clone
 end
+
 table.clone = table_clone
 
 function table.splice(list, start, count, ...)

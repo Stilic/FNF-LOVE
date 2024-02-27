@@ -37,10 +37,10 @@ function Sound:reset(cleanup, x, y)
 end
 
 function Sound:fade(duration, startVolume, endVolume)
-    self.__fadeStartTime = love.timer.getTime()
-    self.__fadeDuration = duration
-    self.__startVolume = startVolume
-    self.__endVolume = endVolume
+	self.__fadeStartTime = love.timer.getTime()
+	self.__fadeDuration = duration
+	self.__startVolume = startVolume
+	self.__endVolume = endVolume
 end
 
 function Sound:cleanup()
@@ -151,21 +151,21 @@ function Sound:update()
 	self.__isFinished = isFinished
 
 	if self.__fadeStartTime then
-        local currentTime = love.timer.getTime()
-        local elapsedTime = currentTime - self.__fadeStartTime
+		local currentTime = love.timer.getTime()
+		local elapsedTime = currentTime - self.__fadeStartTime
 
-        if elapsedTime < self.__fadeDuration then
-            local ratio = elapsedTime / self.__fadeDuration
-            local newVolume = self.__startVolume + (self.__endVolume - self.__startVolume) * ratio
-            self:setVolume(newVolume)
-        else
-            self:setVolume(self.__endVolume)
-            self.__fadeStartTime = nil
-            self.__fadeDuration = nil
-            self.__startVolume = nil
-            self.__endVolume = nil
-        end
-    end
+		if elapsedTime < self.__fadeDuration then
+			local ratio = elapsedTime / self.__fadeDuration
+			local newVolume = self.__startVolume + (self.__endVolume - self.__startVolume) * ratio
+			self:setVolume(newVolume)
+		else
+			self:setVolume(self.__endVolume)
+			self.__fadeStartTime = nil
+			self.__fadeDuration = nil
+			self.__startVolume = nil
+			self.__endVolume = nil
+		end
+	end
 end
 
 function Sound:onFocus(focus)

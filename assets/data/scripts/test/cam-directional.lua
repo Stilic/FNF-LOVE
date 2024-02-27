@@ -24,5 +24,5 @@ function postUpdate(dt)
 			camAngle = 0
 		end
 	end
-    game.camera.angle = util.coolLerp(game.camera.angle, camAngle, state.stage.camSpeed, dt)
+	game.camera.angle = util.coolLerp(game.camera.angle, camAngle, state.stage.camSpeed, dt)
 end

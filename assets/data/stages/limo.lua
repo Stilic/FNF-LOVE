@@ -58,7 +58,7 @@ function update(dt)
 	bgLimoTime = bgLimoTime + dt
 	bgLimo.x = -200 + 60 * math.sin(bgLimoTime)
 	for i = 0, 4 do
-		grpLimoDancers.members[i+1].x = ((370 * i) + 230) + 60 * math.sin(bgLimoTime)
+		grpLimoDancers.members[i + 1].x = ((370 * i) + 230) + 60 * math.sin(bgLimoTime)
 	end
 
 	offsetTime = offsetTime + dt
