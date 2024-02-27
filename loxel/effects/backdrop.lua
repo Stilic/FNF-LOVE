@@ -10,34 +10,15 @@ function BackDrop:new(x, y, width, height, size, color, color2, speed)
 	self.size = size or 50
 	self.color = color or {1, 1, 1}
 	self.color2 = color2 or {0.5, 0.5, 0.5}
-	if speed and type(speed) == "table" then
-		self.speed = {x = speed.x, y = speed.y}
-	else
-		self.speed = {x = speed or 0, y = speed or 0}
-	end
+	self.speed = {
+		x = type(speed) == "table" and speed.x or speed or 0,
+		y = type(speed) == "table" and speed.y or speed or 0
+	}
 	self.round = {0, 0}
-
 	self.squares = {x = {}, y = {}}
 
-	self.amountX = math.floor(self.width / self.size) + 4
-	self.amountY = math.floor(self.height / self.size) + 4
-	for i = 1, self.amountX do
-		for j = 1, self.amountY do
-			local idx = (i + j) % 2 + 1
-			local square = {
-				x = (i - 3) * self.size,
-				y = (j - 3) * self.size,
-				size = self.size
-			}
-			if idx == 1 then
-				table.insert(self.squares.x, square)
-			else
-				table.insert(self.squares.y, square)
-			end
-		end
-	end
-	self.__x = 0
-	self.__y = 0
+	self.__x, self.__y = 0, 0
+	self:_updateSquares()
 end
 
 function BackDrop:update(dt)
@@ -50,7 +31,7 @@ function BackDrop:update(dt)
 		end
 	else
 		if self.__x + self.size <= self.size then
-			self.__x = self.size * 2
+			self.__x = self.size
 		end
 	end
 	if self.speed.y > 0 then
@@ -59,29 +40,30 @@ function BackDrop:update(dt)
 		end
 	else
 		if self.__y + self.size <= self.size then
-			self.__y = self.size * 2
+			self.__y = self.size
 		end
 	end
 end
 
-function BackDrop:updateSize(width, height)
-	if width == nil then width = self.width end
-	if height == nil then height = self.height end
+function BackDrop:updateSize(width, height, size)
+	self.width = width or self.width
+	self.height = height or self.height
+	self.size = size or self.size
+	self:_updateSquares()
+end
 
-	self.width = width
-	self.height = height
+function BackDrop:_updateSquares()
 	self.squares.x = {}
 	self.squares.y = {}
+	local amountX = math.floor(self.width / self.size) + 3
+	local amountY = math.floor(self.height / self.size) + 3
 
-	self.amountX = math.floor(self.width / self.size) + 4
-	self.amountY = math.floor(self.height / self.size) + 4
-
-	for i = 1, self.amountX do
-		for j = 1, self.amountY do
+	for i = 1, amountX do
+		for j = 1, amountY do
 			local idx = (i + j) % 2 + 1
 			local square = {
-				x = (i - 3) * self.size,
-				y = (j - 3) * self.size,
+				x = (i - 2) * self.size,
+				y = (j - 2) * self.size,
 				size = self.size
 			}
 			if idx == 1 then
