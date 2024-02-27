@@ -347,7 +347,7 @@ function game.init(app, state, ...)
 		end
 	end
 
-	Sprite.defaultTexture = love.graphics.newImage("art/default.png")
+	Sprite.defaultTexture = love.graphics.newImage("loxel/assets/default.png")
 	Camera.__init(love.graphics.newCanvas(width, height, {
 		format = "normal",
 		dpiscale = 1
