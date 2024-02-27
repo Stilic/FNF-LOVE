@@ -111,11 +111,9 @@ function love.load()
 		end
 	end
 
-	if SoundTray then
-		SoundTray.init(love.graphics.getDimensions())
-		game:add(SoundTray)
-		SoundTray.new()
-	end
+	SoundTray.init(love.graphics.getDimensions())
+	game:add(SoundTray)
+	SoundTray.new()
 
 	game.init(Project, SplashScreen)
 	game:add(game.statsCounter)
