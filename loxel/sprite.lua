@@ -143,8 +143,6 @@ function Sprite.getTiles(texture, tileSize, region, tileSpacing)
 	return tileFrames
 end
 
-local defaultTexture = love.graphics.newImage('loxel/assets/missing-sprite.png')
-
 function Sprite:new(x, y, texture)
 	Sprite.super.new(self, x, y)
 
