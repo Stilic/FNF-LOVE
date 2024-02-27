@@ -32,13 +32,13 @@ end
 function Slider:update()
 	if self.isDragging then
 		if self.sliderType == "horizontal" then
-			local relativeX = (Mouse.x - self.height / 2) - self.x
+			local relativeX = (game.mouse.x - self.height / 2) - self.x
 			local clampedX = math.max(self.min, math.min(
 				self.width - self.height, relativeX))
 			self.value = self.min + (clampedX / (self.width - self.height)) *
 				(self.max - self.min)
 		elseif self.sliderType == "vertical" then
-			local relativeY = (Mouse.y - self.width / 2) - self.y
+			local relativeY = (game.mouse.y - self.width / 2) - self.y
 			local clampedY = math.max(self.min, math.min(
 				self.height - self.width, relativeY))
 			self.value = self.min + (clampedY / (self.height - self.width)) *
@@ -46,22 +46,22 @@ function Slider:update()
 		end
 	end
 
-	if Mouse.justPressed then
-		if Mouse.justPressedLeft then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
-		elseif Mouse.justPressedRight then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
-		elseif Mouse.justPressedMiddle then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+	if game.mouse.justPressed then
+		if game.mouse.justPressedLeft then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
+		elseif game.mouse.justPressedRight then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
+		elseif game.mouse.justPressedMiddle then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
 		end
 	end
-	if Mouse.justReleased then
-		if Mouse.justReleasedLeft then
-			self:mousereleased(Mouse.x, Mouse.y, Mouse.LEFT)
-		elseif Mouse.justReleasedRight then
-			self:mousereleased(Mouse.x, Mouse.y, Mouse.RIGHT)
-		elseif Mouse.justReleasedMiddle then
-			self:mousereleased(Mouse.x, Mouse.y, Mouse.MIDDLE)
+	if game.mouse.justReleased then
+		if game.mouse.justReleasedLeft then
+			self:mousereleased(game.mouse.x, game.mouse.y, game.mouse.LEFT)
+		elseif game.mouse.justReleasedRight then
+			self:mousereleased(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
+		elseif game.mouse.justReleasedMiddle then
+			self:mousereleased(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
 		end
 	end
 end
@@ -94,11 +94,11 @@ end
 
 function Slider:mousepressed(x, y, button)
 	self.isDragging =
-		(button == Mouse.LEFT and isInside(self, Mouse.x, Mouse.y))
+		(button == game.mouse.LEFT and isInside(self, game.mouse.x, game.mouse.y))
 end
 
 function Slider:mousereleased(x, y, button)
-	if button == Mouse.LEFT then self.isDragging = false end
+	if button == game.mouse.LEFT then self.isDragging = false end
 end
 
 return Slider

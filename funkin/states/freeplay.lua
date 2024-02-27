@@ -161,7 +161,7 @@ function FreeplayState:update(dt)
 				local diff =
 					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]:lower()
 				if self:checkSongAssets(daSong, diff) then
-					if Keyboard.pressed.SHIFT then
+					if game.keys.pressed.SHIFT then
 						PlayState.loadSong(daSong, diff)
 						PlayState.storyDifficulty = diff
 						game.switchState(ChartingState())

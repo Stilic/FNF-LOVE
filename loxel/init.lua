@@ -42,6 +42,11 @@ ui = {
 	UISlider = require "loxel.ui.slider"
 }
 
+-- wip new ui
+newUI = {
+	UIButton = require "loxel.newui.button"
+}
+
 if flags.LoxelShowPrintsInScreen or love.system.getDevice() == "Mobile" then
 	ScreenPrint = require "loxel.system.screenprint"
 end
@@ -59,6 +64,8 @@ game = {
 	isSwitchingState = false,
 	dt = 0,
 
+	keys = require "loxel.input.keyboard",
+	mouse = require "loxel.input.mouse",
 	cameras = require "loxel.managers.cameramanager",
 	buttons = require "loxel.managers.buttonmanager",
 	sound = require "loxel.managers.soundmanager",
@@ -135,24 +142,24 @@ local function callUIInput(func, ...)
 	end
 end
 function game.keypressed(...)
-	Keyboard.onPressed(...)
+	game.keys.onPressed(...)
 	callUIInput("keypressed", ...)
 end
 
 function game.keyreleased(...)
-	Keyboard.onReleased(...)
+	game.keys.onReleased(...)
 	callUIInput("keyreleased", ...)
 end
 
 function game.textinput(text) callUIInput("textinput", text) end
 
-function game.wheelmoved(x, y) Mouse.wheel = y end
+function game.wheelmoved(x, y) game.mouse.wheel = y end
 
-function game.mousemoved(x, y) Mouse.onMoved(x, y) end
+function game.mousemoved(x, y) game.mouse.onMoved(x, y) end
 
-function game.mousepressed(x, y, button) Mouse.onPressed(button) end
+function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 
-function game.mousereleased(x, y, button) Mouse.onReleased(button) end
+function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
 
 function game.touchmoved(id, x, y, dx, dy, p, time) game.buttons.move(id, x, y, p, time) end
 
@@ -205,11 +212,11 @@ function game.update(real_dt)
 	for _, o in ipairs(game.bound.members) do if o.update then o:update(dt) end end
 	for _, o in ipairs(game.members) do if o.update then o:update(dt) end end
 
-	-- input must be here
-	Keyboard.update()
-	Mouse.update()
-
 	if not game.isSwitchingState then Gamestate.update(dt) end
+
+	-- input must be here
+	game.keys.update()
+	game.mouse.update()
 end
 
 function game.resize(w, h)

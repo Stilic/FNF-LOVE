@@ -185,7 +185,7 @@ function Options:update(dt)
 
 	local shift
 	if not self.blockInput then
-		shift = Keyboard.pressed.SHIFT or controls:down("reset")
+		shift = game.keys.pressed.SHIFT or controls:down("reset")
 		if controls:pressed("accept") then
 			if self.onTab then
 				self:acceptOption()

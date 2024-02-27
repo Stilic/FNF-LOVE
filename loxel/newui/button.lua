@@ -14,6 +14,8 @@ function Button:new(x, y, width, height, text, callback)
 	self.hovered = false
 	self.callback = callback
 	self.color = {0.5, 0.5, 0.5}
+    self.lineColor = {0.1, 0.1, 0.1}
+    self.lineColorHovered = {0.2, 0.2, 0.2}
 	self.textColor = {1, 1, 1}
 end
 
@@ -36,17 +38,22 @@ end
 
 function Button:__render(camera)
 	local r, g, b, a = love.graphics.getColor()
+    local lineWidth = love.graphics.getLineWidth()
 
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
 		self.alpha)
-	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height, 8, 8)
 
 	if self.hovered then
-		love.graphics.setColor(0.2, 0.2, 0.2, self.alpha)
+		love.graphics.setColor(self.lineColorHovered[1], self.lineColorHovered[2],
+            self.lineColorHovered[3], self.alpha)
 	else
-		love.graphics.setColor(0, 0, 0, self.alpha)
+		love.graphics.setColor(self.lineColor[1], self.lineColor[2], self.lineColor[3],
+		    self.alpha)
 	end
-	love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
+    love.graphics.setLineWidth(1.5)
+	love.graphics.rectangle("line", self.x, self.y, self.width, self.height, 8, 8)
+    love.graphics.setLineWidth(lineWidth)
 
 	local textX = self.x + (self.width - self.font:getWidth(self.text)) / 2
 	local textY = self.y + (self.height - self.font:getHeight()) / 2

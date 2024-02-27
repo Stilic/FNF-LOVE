@@ -305,58 +305,58 @@ function CharacterEditor:update(dt)
 	end
 
 	if not isTyping then
-		if Keyboard.justPressed.SPACE then
+		if game.keys.justPressed.SPACE then
 			self.char:playAnim(self.curAnim[1], true)
 		end
 
-		local shiftMult = Keyboard.pressed.SHIFT and 10 or 1
+		local shiftMult = game.keys.pressed.SHIFT and 10 or 1
 
-		if Keyboard.pressed.A then
+		if game.keys.pressed.A then
 			self.camFollow.x = self.camFollow.x - (2 + shiftMult)
-		elseif Keyboard.pressed.D then
+		elseif game.keys.pressed.D then
 			self.camFollow.x = self.camFollow.x + (2 + shiftMult)
 		end
-		if Keyboard.pressed.W then
+		if game.keys.pressed.W then
 			self.camFollow.y = self.camFollow.y - (2 + shiftMult)
-		elseif Keyboard.pressed.S then
+		elseif game.keys.pressed.S then
 			self.camFollow.y = self.camFollow.y + (2 + shiftMult)
 		end
 		if mouseOnScreen and Mouse.pressedLeft then
 			self.camFollow.x = self.camFollow.x - (Mouse.deltaScreenX * 1.05 / self.curZoom)
 			self.camFollow.y = self.camFollow.y - (Mouse.deltaScreenY * 1.05 / self.curZoom)
 		end
-		if Keyboard.pressed.CONTROL then
-			if Keyboard.justPressed.PLUS then
+		if game.keys.pressed.CONTROL then
+			if game.keys.justPressed.PLUS then
 				self.curZoom = self.curZoom + 0.1
 				if self.curZoom > 1.8 then self.curZoom = 1.8 end
-			elseif Keyboard.justPressed.MINUS then
+			elseif game.keys.justPressed.MINUS then
 				self.curZoom = self.curZoom - 0.1
 				if self.curZoom < 0.1 then self.curZoom = 0.1 end
 			end
 		end
 
-		if Keyboard.justPressed.LEFT then
+		if game.keys.justPressed.LEFT then
 			self.curAnim[6][1] = self.curAnim[6][1] + shiftMult
 			self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
-		elseif Keyboard.justPressed.RIGHT then
+		elseif game.keys.justPressed.RIGHT then
 			self.curAnim[6][1] = self.curAnim[6][1] - shiftMult
 			self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
 		end
-		if Keyboard.justPressed.UP then
+		if game.keys.justPressed.UP then
 			self.curAnim[6][2] = self.curAnim[6][2] + shiftMult
 			self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
-		elseif Keyboard.justPressed.DOWN then
+		elseif game.keys.justPressed.DOWN then
 			self.curAnim[6][2] = self.curAnim[6][2] - shiftMult
 			self:changeOffsets(self.curAnim[6][1], self.curAnim[6][2])
 		end
 
-		if Keyboard.justPressed.Q then
+		if game.keys.justPressed.Q then
 			self:changeAnim(-1)
-		elseif Keyboard.justPressed.E then
+		elseif game.keys.justPressed.E then
 			self:changeAnim(1)
 		end
 
-		if Keyboard.justPressed.ESCAPE then
+		if game.keys.justPressed.ESCAPE then
 			if CharacterEditor.onPlayState then
 				CharacterEditor.onPlayState = false
 				game.switchState(PlayState())
@@ -455,7 +455,7 @@ function CharacterEditor:saveCharacter()
 			icon = self.char.icon,
 			color = self.char.iconColor,
 			flip_x = self.char.jsonFlipX,
-			antialiasing = self.char.anti,
+			antialiasing = self.char.jsonAntialiasing,
 			camera_points = self.char.cameraPosition,
 			sing_duration = self.char.holdTime,
 			scale = self.char.jsonScale

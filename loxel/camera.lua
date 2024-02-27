@@ -54,6 +54,12 @@ function Camera:new(x, y, width, height)
 	self.__flashDuration = 0
 	self.__flashComplete = nil
 
+	self.__fadeColor = {1, 1, 1}
+	self.__fadeAlpha = 0
+	self.__fadeDuration = 0
+	self.__fadeComplete = nil
+	self.__fadeIn = false
+
 	self.__shakeX = 0
 	self.__shakeY = 0
 	self.__shakeAxes = 'xy'
@@ -82,6 +88,17 @@ function Camera:flash(color, duration, onComplete, force)
 	self.__flashAlpha = 1
 end
 
+function Camera:fade(color, duration, fadeIn, onComplete, force)
+	if not force and (self.__fadeDuration > 0) then return end
+
+	self.__fadeColor = color or {0, 0, 0}
+	duration = duration or 1
+	if duration <= 0 then duration = 0.000001 end
+	self.__fadeDuration = duration
+	self.__fadeComplete = onComplete or nil
+	self.__fadeAlpha = fadeIn == true and 0.999999 or 0.000001
+end
+
 function Camera:update(dt)
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
@@ -96,6 +113,24 @@ function Camera:update(dt)
 		self.__flashAlpha = self.__flashAlpha - dt / self.__flashDuration
 		if self.__flashAlpha <= 0 and self.__flashComplete ~= nil then
 			self.__flashComplete()
+		end
+	end
+
+	if self.__fadeDuration > 0 then
+		if self.__fadeIn then
+			self.__fadeAlpha = self.__fadeAlpha - dt / self.__fadeDuration
+			if self.__fadeAlpha <= 0 and self.__fadeComplete ~= nil then
+				self.__fadeAlpha = 0
+				self.__fadeComplete()
+				self.__fadeDuration = 0
+			end
+		else
+			self.__fadeAlpha = self.__fadeAlpha + dt / self.__fadeDuration
+			if self.__fadeAlpha >= 1 and self.__fadeComplete ~= nil then
+				self.__fadeAlpha = 1
+				self.__fadeComplete()
+				self.__fadeDuration = 0
+			end
 		end
 	end
 
@@ -216,6 +251,12 @@ function Camera:drawSimple(_skipCheck)
 		grap.rectangle("fill", 0, 0, w, h)
 	end
 
+	color = self.__fadeColor
+	if self.__fadeDuration > 0 then
+		setSimpleColor(color[1], color[2], color[3], self.__fadeAlpha)
+		grap.rectangle("fill", 0, 0, w, h)
+	end
+
 	grap.setColor = _ogSetColor
 	grap.setScissor(xc, yc, wc, hc)
 	grap.setColor(r, g, b, a)
@@ -260,6 +301,16 @@ function Camera:drawComplex(_skipCheck)
 		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
 		grap.translate(-w2, -h2)
 		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
+		grap.rectangle("fill", 0, 0, w, h)
+	end
+
+	color = self.__fadeColor
+	if self.__fadeDuration > 0 then
+		if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+		else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+		grap.translate(-w2, -h2)
+		grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)
 		grap.rectangle("fill", 0, 0, w, h)
 	end
 

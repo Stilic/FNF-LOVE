@@ -116,6 +116,7 @@ function PlayState:enter()
 	self.scripts:call("create")
 
 	self.playback = 1
+	Timer.setSpeed(1)
 
 	game.sound.loadMusic(paths.getInst(songName))
 	game.sound.music:setLooping(false)
@@ -485,6 +486,7 @@ function PlayState:startCountdown()
 	if event == Script.Event_Cancel then return end
 
 	self.playback = ClientPrefs.data.playback
+	Timer.setSpeed(self.playback)
 	game.sound.music:setPitch(self.playback)
 	if self.vocals then
 		self.vocals:setPitch(self.playback)
@@ -520,7 +522,7 @@ function PlayState:startCountdown()
 				countdownSprite.antialiasing = not PlayState.pixelStage
 				countdownSprite:screenCenter()
 
-				Timer.tween(crotchet / self.playback, countdownSprite, {alpha = 0},
+				Timer.tween(crotchet, countdownSprite, {alpha = 0},
 					"in-out-cubic", function()
 						self:remove(countdownSprite)
 						countdownSprite:destroy()
@@ -556,6 +558,7 @@ function PlayState:update(dt)
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
 			self.playback = ClientPrefs.data.playback -- reload playback for skip countdown
+			Timer.setSpeed(self.playback)
 
 			game.sound.music:setPitch(self.playback)
 			game.sound.music:seek(self.startPos / 1000)
@@ -629,7 +632,7 @@ function PlayState:update(dt)
 	if self.startedCountdown then
 		local PAUSE_PRESSED = controls:pressed("pause")
 		if love.system.getDevice() == "Mobile" then
-			PAUSE_PRESSED = Keyboard.justPressed.ESCAPE
+			PAUSE_PRESSED = game.keys.justPressed.ESCAPE
 		end
 		if PAUSE_PRESSED then
 			local event = self.scripts:call("paused")
@@ -785,8 +788,8 @@ function PlayState:update(dt)
 	end
 
 	if Project.DEBUG_MODE then
-		if Keyboard.justPressed.TWO then self:endSong() end
-		if Keyboard.justPressed.ONE then self.botPlay = not self.botPlay end
+		if game.keys.justPressed.TWO then self:endSong() end
+		if game.keys.justPressed.ONE then self.botPlay = not self.botPlay end
 	end
 
 	self.scripts:call("postUpdate", dt)
@@ -932,6 +935,7 @@ end
 function PlayState:onSettingChange(setting)
 	if setting == 'gameplay' then
 		self.playback = ClientPrefs.data.playback
+		Timer.setSpeed(self.playback)
 		game.sound.music:setPitch(self.playback)
 		if self.vocals then
 			self.vocals:setPitch(self.playback)
@@ -1286,20 +1290,24 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
-	if not self.startingSong then
+	if self.startingSong and b > -5 then
+		self.scripts:call("countdownTick", (b + 5))
+	else
 		self.scripts:set("curBeat", b)
 		self.scripts:call("beat")
-
-		local scaleNum = 1.2
-		self.iconP1.scale = {x = scaleNum, y = scaleNum}
-		self.iconP2.scale = {x = scaleNum, y = scaleNum}
 	end
+
+	local scaleNum = 1.2
+	self.iconP1.scale = {x = scaleNum, y = scaleNum}
+	self.iconP2.scale = {x = scaleNum, y = scaleNum}
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	if not self.startingSong then
+	if self.startingSong and b > -5 then
+		self.scripts:call("postCountdownTick", (b + 5))
+	else
 		self.scripts:call("postBeat")
 	end
 end
@@ -1323,7 +1331,7 @@ function PlayState:section(s)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = PlayState.conductor.crotchet * 0.001 / self.playback
+	local accel = PlayState.conductor.crotchet * 0.001
 
 	local antialias = not PlayState.pixelStage
 	local uiStage = PlayState.pixelStage and "pixel" or "normal"
@@ -1356,7 +1364,7 @@ function PlayState:popUpScore(rating)
 		judgeSpr.visible = not event.hideRating
 
 		Timer.after(accel, function()
-			Timer.tween(0.2 / self.playback, judgeSpr, {alpha = 0}, "linear", function()
+			Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
 				Timer.cancelTweensOf(judgeSpr)
 				judgeSpr:kill()
 			end)
@@ -1385,7 +1393,7 @@ function PlayState:popUpScore(rating)
 		comboSpr.visible = not event.hideCombo
 
 		Timer.after(accel, function()
-			Timer.tween(0.2 / self.playback, comboSpr, {alpha = 0}, "linear", function()
+			Timer.tween(0.2, comboSpr, {alpha = 0}, "linear", function()
 				Timer.cancelTweensOf(comboSpr)
 				comboSpr:kill()
 			end)
@@ -1421,7 +1429,7 @@ function PlayState:popUpScore(rating)
 				numScore.visible = not event.hideScore
 
 				Timer.after(accel * 2, function()
-					Timer.tween(0.2 / self.playback, numScore, {alpha = 0}, "linear", function()
+					Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
 						Timer.cancelTweensOf(numScore)
 						numScore:kill()
 					end)
@@ -1597,6 +1605,7 @@ function PlayState:leave()
 	self.scripts:call("leave")
 
 	PlayState.conductor = nil
+	Timer.setSpeed(1)
 
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)

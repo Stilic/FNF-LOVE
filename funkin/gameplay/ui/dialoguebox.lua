@@ -138,7 +138,7 @@ function DialogueBox:update(dt)
 
 	local ACCEPTED = controls:pressed("accept")
 	if love.system.getDevice() == "Mobile" then
-		ACCEPTED = Keyboard.justPressed.ENTER
+		ACCEPTED = game.keys.justPressed.ENTER
 	end
 	if ACCEPTED then
 		if self.dialogueEnded then

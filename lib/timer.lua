@@ -31,6 +31,8 @@ Timer.__index = Timer
 local function _nothing_() end
 local unpack = unpack or table.unpack
 
+function Timer:setSpeed(speed) self.speed = speed end
+
 function Timer:updateHandle(handle, dt)
 	-- handle: {
 	--   time = <number>,
@@ -39,6 +41,7 @@ function Timer:updateHandle(handle, dt)
 	--   limit = <number>,
 	--   count = <number>,
 	-- }
+	dt = dt * self.speed
 	handle.time = handle.time + dt
 	handle.during(dt, math.max(handle.limit - handle.time, 0))
 
@@ -275,12 +278,14 @@ local function def_tween(func)
 	})
 end
 
+Timer.speed = 1
+
 Timer.tween = def_tween(plain_tween)
 Timer.func_tween = def_tween(func_tween)
 
 -- Timer instancing
 function Timer.new()
-	return setmetatable({functions = {}, tween = Timer.tween}, Timer)
+	return setmetatable({functions = {}, speed = Timer.speed, tween = Timer.tween}, Timer)
 end
 
 -- default instance

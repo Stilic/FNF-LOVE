@@ -143,7 +143,7 @@ function love.load()
 		SoundTray.new()
 	end
 
-	game.init(Project, SplashScreen)
+	game.init(Project, (true and SplashScreen or (require "funkin.states.ui")))
 	game:add(game.statsCounter)
 
 	Discord.init()

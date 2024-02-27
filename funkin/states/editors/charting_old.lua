@@ -547,14 +547,14 @@ function ChartingState:update(dt)
 	ChartingState.songPosition = game.sound.music:tell() * 1000
 	self:strumPosUpdate()
 
-	local mouseX, mouseY = (Mouse.x + game.camera.scroll.x),
-		(Mouse.y + game.camera.scroll.y)
+	local mouseX, mouseY = (game.mouse.x + game.camera.scroll.x),
+		(game.mouse.y + game.camera.scroll.y)
 	if mouseX > self.gridBox.x and mouseX < self.gridBox.x + self.gridBox.width and
 		mouseY > self.strumLine.y - (self.gridSize * 5) and mouseY <
 		self.gridBox.y + (self.gridSize * 4 * 4) + (self.gridSize * 17) then
 		self.dummyArrow.visible = true
 		self.dummyArrow.x = math.floor(mouseX / self.gridSize) * self.gridSize
-		if Keyboard.pressed.SHIFT then
+		if game.keys.pressed.SHIFT then
 			self.dummyArrow.y = (mouseY - (self.gridSize / 2))
 		else
 			local gridmult = self.gridSize / (16 / 16)
@@ -565,10 +565,10 @@ function ChartingState:update(dt)
 	end
 
 	if not isTyping then
-		if Mouse.justPressed then
+		if game.mouse.justPressed then
 			for _, n in ipairs(self.allNotes.members) do
-				if Mouse.overlaps(n) then
-					if Mouse.justPressedRight then
+				if game.mouse.overlaps(n) then
+					if game.mouse.justPressedRight then
 						self:deleteNote(n)
 					else
 						self:selectNote(n)
@@ -584,7 +584,7 @@ function ChartingState:update(dt)
 			end
 		end
 
-		if Keyboard.justPressed.SPACE then
+		if game.keys.justPressed.SPACE then
 			if game.sound.music:isPlaying() then
 				game.sound.music:pause()
 				if self.vocals then self.vocals:pause() end
@@ -598,19 +598,19 @@ function ChartingState:update(dt)
 			end
 		end
 
-		if Keyboard.pressed.W or Keyboard.pressed.S then
+		if game.keys.pressed.W or game.keys.pressed.S then
 			game.sound.music:pause()
 
 			local shiftMult = 1
-			if Keyboard.pressed.CONTROL then
+			if game.keys.pressed.CONTROL then
 				shiftMult = 0.25
-			elseif Keyboard.pressed.SHIFT then
+			elseif game.keys.pressed.SHIFT then
 				shiftMult = 4
 			end
 
 			local daTime = 700 * dt * shiftMult
 
-			if Keyboard.pressed.W then
+			if game.keys.pressed.W then
 				local checkTime = game.sound.music:tell() -
 					(daTime / 1000)
 				if checkTime > 0 then
@@ -656,17 +656,17 @@ function ChartingState:update(dt)
 			self:update_UI_Section()
 		end
 
-		if Keyboard.justPressed.ENTER then
+		if game.keys.justPressed.ENTER then
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 
 			PlayState.chartingMode = true
-			PlayState.startPos = (Keyboard.pressed.CONTROL and
+			PlayState.startPos = (game.keys.pressed.CONTROL and
 				ChartingState.songPosition or 0)
 			game.switchState(PlayState())
 		end
 
-		if Keyboard.justPressed.BACKSPACE then
+		if game.keys.justPressed.BACKSPACE then
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 
@@ -677,12 +677,12 @@ function ChartingState:update(dt)
 		end
 
 		local shiftThing = 1
-		if Keyboard.pressed.SHIFT then shiftThing = 4 end
+		if game.keys.pressed.SHIFT then shiftThing = 4 end
 
-		if Keyboard.justPressed.D then
+		if game.keys.justPressed.D then
 			self:changeSection(self.curSection + shiftThing)
 		end
-		if Keyboard.justPressed.A then
+		if game.keys.justPressed.A then
 			self:changeSection(self.curSection - shiftThing)
 		end
 	end
@@ -974,7 +974,7 @@ function ChartingState:deleteNote(note)
 end
 
 function ChartingState:addNote()
-	local mouseX = (Mouse.x + game.camera.scroll.x)
+	local mouseX = (game.mouse.x + game.camera.scroll.x)
 	local dummyTime = (self.dummyArrow.y /
 			((16 * self.conductor.stepCrochet) *
 				(self.conductor.bpm / 60) / 1) * 1000) /

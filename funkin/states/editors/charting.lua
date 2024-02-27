@@ -12,16 +12,16 @@ function ChartingState:enter()
 end
 
 function ChartingState:update(dt)
-	if Keyboard.justPressed.ENTER then
+	if game.keys.justPressed.ENTER then
 		game.sound.music:stop()
 		if self.vocals then self.vocals:stop() end
 
 		PlayState.chartingMode = true
-		PlayState.startPos = Keyboard.pressed.CONTROL and 0 or 0
+		PlayState.startPos = game.keys.pressed.CONTROL and 0 or 0
 		game.switchState(PlayState())
 	end
 
-	if Keyboard.justPressed.BACKSPACE then
+	if game.keys.justPressed.BACKSPACE then
 		game.sound.music:stop()
 		if self.vocals then self.vocals:stop() end
 
