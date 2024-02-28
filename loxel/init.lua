@@ -4,9 +4,9 @@ Project = require "project"
 
 local isMobile = love.system.getDevice() == "Mobile"
 
-love.window.setTitle(Project.title)
-love.window.setIcon(love.image.newImageData(Project.icon))
 if Project.flags.LoxelInitWindow then
+	love.window.setTitle(Project.title)
+	love.window.setIcon(love.image.newImageData(Project.icon))
 	love.window.setMode(Project.width, Project.height, {fullscreen = isMobile, resizable = not isMobile, vsync = 0, usedpiscale = false})
 end
 

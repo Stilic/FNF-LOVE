@@ -78,6 +78,8 @@ function love.load()
 	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
 
 	local res, isMobile = ClientPrefs.data.resolution, love.system.getDevice() == "Mobile"
+	love.window.setTitle(Project.title)
+	love.window.setIcon(love.image.newImageData(Project.icon))
 	love.window.setMode(Project.width * res, Project.height * res,
 		{fullscreen = isMobile or ClientPrefs.data.fullscreen, resizable = not isMobile, vsync = 0, usedpiscale = false})
 
