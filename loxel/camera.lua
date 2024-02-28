@@ -32,7 +32,7 @@ function Camera:new(x, y, width, height)
 	self.isSimple = true -- indicates if its in simple render
 
 	-- these will turn complex rendering mode in some cases
-	self.clipCam = flags.LoxelDefaultClipCamera == nil and true or flags.LoxelDefaultClipCamera
+	self.clipCam = Project.flags.LoxelDefaultClipCamera == nil and true or Project.flags.LoxelDefaultClipCamera
 	self.antialiasing = true
 
 	self.width = width and (width > 0 and width) or game.width
@@ -53,6 +53,12 @@ function Camera:new(x, y, width, height)
 	self.__flashAlpha = 0
 	self.__flashDuration = 0
 	self.__flashComplete = nil
+
+	self.__fadeColor = {1, 1, 1}
+	self.__fadeAlpha = 0
+	self.__fadeDuration = 0
+	self.__fadeComplete = nil
+	self.__fadeIn = false
 
 	self.__shakeX = 0
 	self.__shakeY = 0
@@ -82,6 +88,17 @@ function Camera:flash(color, duration, onComplete, force)
 	self.__flashAlpha = 1
 end
 
+function Camera:fade(color, duration, fadeIn, onComplete, force)
+	if not force and (self.__fadeDuration > 0) then return end
+
+	self.__fadeColor = color or {0, 0, 0}
+	duration = duration or 1
+	if duration <= 0 then duration = 0.000001 end
+	self.__fadeDuration = duration
+	self.__fadeComplete = onComplete or nil
+	self.__fadeAlpha = fadeIn == true and 0.999999 or 0.000001
+end
+
 function Camera:update(dt)
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
@@ -96,6 +113,24 @@ function Camera:update(dt)
 		self.__flashAlpha = self.__flashAlpha - dt / self.__flashDuration
 		if self.__flashAlpha <= 0 and self.__flashComplete ~= nil then
 			self.__flashComplete()
+		end
+	end
+
+	if self.__fadeDuration > 0 then
+		if self.__fadeIn then
+			self.__fadeAlpha = self.__fadeAlpha - dt / self.__fadeDuration
+			if self.__fadeAlpha <= 0 and self.__fadeComplete ~= nil then
+				self.__fadeAlpha = 0
+				self.__fadeComplete()
+				self.__fadeDuration = 0
+			end
+		else
+			self.__fadeAlpha = self.__fadeAlpha + dt / self.__fadeDuration
+			if self.__fadeAlpha >= 1 and self.__fadeComplete ~= nil then
+				self.__fadeAlpha = 1
+				self.__fadeComplete()
+				self.__fadeDuration = 0
+			end
 		end
 	end
 
@@ -159,7 +194,8 @@ end
 
 function Camera:renderObjects()
 	for i, o in ipairs(self.__renderQueue) do
-		if type(o) == "function" then o(self)
+		if type(o) == "function" then
+			o(self)
 		else
 			o:__render(self)
 			table.clear(o.__cameraQueue)
@@ -185,9 +221,12 @@ function Camera:drawSimple(_skipCheck)
 	_ogSetColor, grap.setColor = grap.setColor, setSimpleColor
 
 	game.__pushBoundScissor(w, h, sx, sy)
-	if not flags.LoxelDisableScissorOnRenderCameraSimple then
-		if self.clipCam then grap.setScissor(x, y, w, h)
-		else grap.setScissor(0, 0, w, h) end
+	if not Project.flags.LoxelDisableScissorOnRenderCameraSimple then
+		if self.clipCam then
+			grap.setScissor(x, y, w, h)
+		else
+			grap.setScissor(0, 0, w, h)
+		end
 	end
 
 	grap.push()
@@ -213,6 +252,12 @@ function Camera:drawSimple(_skipCheck)
 	color = self.__flashColor
 	if self.__flashAlpha > 0 then
 		setSimpleColor(color[1], color[2], color[3], self.__flashAlpha)
+		grap.rectangle("fill", 0, 0, w, h)
+	end
+
+	color = self.__fadeColor
+	if self.__fadeDuration > 0 then
+		setSimpleColor(color[1], color[2], color[3], self.__fadeAlpha)
 		grap.rectangle("fill", 0, 0, w, h)
 	end
 
@@ -244,8 +289,11 @@ function Camera:drawComplex(_skipCheck)
 	grap.clear(color[1], color[2], color[3], color[4])
 	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
 
-	if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-	else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+	if self.clipCam then
+		grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+	else
+		grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+	end
 	grap.rotate(math.rad(self.angle))
 	grap.scale(self.__zoom.x, self.__zoom.y)
 	grap.translate(-w2, -h2)
@@ -255,11 +303,24 @@ function Camera:drawComplex(_skipCheck)
 
 	color = self.__flashColor
 	if self.__flashAlpha > 0 then
+		if self.clipCam then
+			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+		else
+			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+		end
+		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+		grap.translate(-w2, -h2)
+		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
+		grap.rectangle("fill", 0, 0, w, h)
+	end
+
+	color = self.__fadeColor
+	if self.__fadeDuration > 0 then
 		if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
 		else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
 		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
 		grap.translate(-w2, -h2)
-		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
+		grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)
 		grap.rectangle("fill", 0, 0, w, h)
 	end
 
@@ -285,9 +346,9 @@ function Camera:drawComplex(_skipCheck)
 	if self.shader then grap.setShader(shader) end
 end
 
-if flags.LoxelForceRenderCameraComplex then
+if Project.flags.LoxelForceRenderCameraComplex then
 	Camera.draw = Camera.drawComplex
-elseif flags.LoxelDisableRenderCameraComplex then
+elseif Project.flags.LoxelDisableRenderCameraComplex then
 	Camera.draw = Camera.drawSimple
 end
 

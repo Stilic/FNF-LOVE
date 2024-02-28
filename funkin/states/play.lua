@@ -116,6 +116,7 @@ function PlayState:enter()
 	self.scripts:call("create")
 
 	self.playback = 1
+	Timer.setSpeed(1)
 
 	game.sound.loadMusic(paths.getInst(songName))
 	game.sound.music:setLooping(false)
@@ -221,8 +222,8 @@ function PlayState:enter()
 	self.totalPlayed = 0
 	self.totalHit = 0.0
 
-	game.camera.alpha = (100 - ClientPrefs.data.backgroundDim) / 100
 	self.camHUD = Camera()
+	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 	self.camOther = Camera()
 	game.cameras.add(self.camHUD, false)
 	game.cameras.add(self.camOther, false)
@@ -485,6 +486,7 @@ function PlayState:startCountdown()
 	if event == Script.Event_Cancel then return end
 
 	self.playback = ClientPrefs.data.playback
+	Timer.setSpeed(self.playback)
 	game.sound.music:setPitch(self.playback)
 	if self.vocals then
 		self.vocals:setPitch(self.playback)
@@ -493,40 +495,47 @@ function PlayState:startCountdown()
 	self.startedCountdown = true
 
 	local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
-	local countdownData = {
+	local countdownData, crotchet = {
 		{sound = basePath .. "/intro3",  image = nil},
 		{sound = basePath .. "/intro2",  image = basePath .. "/ready"},
 		{sound = basePath .. "/intro1",  image = basePath .. "/set"},
 		{sound = basePath .. "/introGo", image = basePath .. "/go"}
-	}
+	}, PlayState.conductor.crotchet / 1000
+	for swagCounter = 0, #countdownData do
+		local sussyCounter = swagCounter + 1 -- funny word huh
+		self.countdownTimer:after(crotchet * sussyCounter, function()
+			self.scripts:call("countdownTick", swagCounter)
 
-	local crotchet = PlayState.conductor.crotchet / 1000
-	for swagCounter = 0, 4 do
-		self.countdownTimer:after(crotchet * (swagCounter + 1), function()
-			local data = countdownData[swagCounter + 1]
-			if not data then return end
-
-			if data.sound then
-				game.sound.play(paths.getSound(data.sound)):setPitch(self.playback)
-			end
-			if data.image then
-				local countdownSprite = Sprite()
-				countdownSprite:loadTexture(paths.getImage(data.image))
-				countdownSprite.cameras = {self.camHUD}
-				if PlayState.pixelStage then
-					countdownSprite.scale = {x = 6, y = 6}
+			local data = countdownData[sussyCounter]
+			if data then
+				if data.sound then
+					game.sound.play(paths.getSound(data.sound)):setPitch(self.playback)
 				end
-				countdownSprite:updateHitbox()
-				countdownSprite.antialiasing = not PlayState.pixelStage
-				countdownSprite:screenCenter()
+				if data.image then
+					local countdownSprite = Sprite()
+					countdownSprite:loadTexture(paths.getImage(data.image))
+					countdownSprite.cameras = {self.camHUD}
+					if PlayState.pixelStage then
+						countdownSprite.scale = {x = 6, y = 6}
+					end
+					countdownSprite:updateHitbox()
+					countdownSprite.antialiasing = not PlayState.pixelStage
+					countdownSprite:screenCenter()
 
-				Timer.tween(crotchet / self.playback, countdownSprite, {alpha = 0},
-					"in-out-cubic", function()
-						self:remove(countdownSprite)
-						countdownSprite:destroy()
-					end)
-				self:add(countdownSprite)
+					Timer.tween(crotchet, countdownSprite, {alpha = 0},
+						"in-out-cubic", function()
+							self:remove(countdownSprite)
+							countdownSprite:destroy()
+						end)
+					self:add(countdownSprite)
+				end
 			end
+
+			self.boyfriend:beat(swagCounter)
+			self.gf:beat(swagCounter)
+			self.dad:beat(swagCounter)
+
+			self.scripts:call("postCountdownTick", swagCounter)
 		end)
 	end
 end
@@ -555,7 +564,8 @@ function PlayState:update(dt)
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
-			self.playback = ClientPrefs.data.playback -- reload playback for skip countdown
+			self.playback = ClientPrefs.data.playback -- reload playback for countdown skip
+			Timer.setSpeed(self.playback)
 
 			game.sound.music:setPitch(self.playback)
 			game.sound.music:seek(self.startPos / 1000)
@@ -572,7 +582,10 @@ function PlayState:update(dt)
 
 	PlayState.notePosition = PlayState.conductor.time
 
-	PlayState.conductor:update()
+	if not self.startingSong then
+		PlayState.conductor:update()
+	end
+
 	PlayState.super.update(self, dt)
 
 	game.camera.target.x, game.camera.target.y =
@@ -612,7 +625,7 @@ function PlayState:update(dt)
 
 	self.timeArc.x = self.timeArcBG.x
 	if PlayState.conductor.time > 0 and
-			PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+		PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
 		self.timeTxt.content = util.formatTime(songTime)
 
 		local timeAngle = ((PlayState.conductor.time / 1000) /
@@ -629,7 +642,7 @@ function PlayState:update(dt)
 	if self.startedCountdown then
 		local PAUSE_PRESSED = controls:pressed("pause")
 		if love.system.getDevice() == "Mobile" then
-			PAUSE_PRESSED = Keyboard.justPressed.ESCAPE
+			PAUSE_PRESSED = game.keys.justPressed.ESCAPE
 		end
 		if PAUSE_PRESSED then
 			local event = self.scripts:call("paused")
@@ -785,8 +798,8 @@ function PlayState:update(dt)
 	end
 
 	if Project.DEBUG_MODE then
-		if Keyboard.justPressed.TWO then self:endSong() end
-		if Keyboard.justPressed.ONE then self.botPlay = not self.botPlay end
+		if game.keys.justPressed.TWO then self:endSong() end
+		if game.keys.justPressed.ONE then self.botPlay = not self.botPlay end
 	end
 
 	self.scripts:call("postUpdate", dt)
@@ -932,6 +945,7 @@ end
 function PlayState:onSettingChange(setting)
 	if setting == 'gameplay' then
 		self.playback = ClientPrefs.data.playback
+		Timer.setSpeed(self.playback)
 		game.sound.music:setPitch(self.playback)
 		if self.vocals then
 			self.vocals:setPitch(self.playback)
@@ -994,7 +1008,7 @@ function PlayState:onSettingChange(setting)
 
 		self:updateNotes()
 
-		game.camera.alpha = (100 - ClientPrefs.data.backgroundDim) / 100
+		self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 	elseif setting == 'controls' then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
@@ -1108,18 +1122,14 @@ function PlayState:goodNoteHit(n)
 				if not n.mustPress then self.camZooming = true end
 			end
 
-			local time = 0
-			if not n.mustPress or self.botPlay then
-				time = 0.15
-				if n.isSustain and not n.isSustainEnd then
-					time = time * 2
-				end
-			end
 			local receptor = (n.mustPress and self.playerReceptors or
 				self.enemyReceptors).members[n.data + 1]
 
 			if not event.strumGlowCancelled then
-				receptor:confirm(time)
+				receptor:play("confirm", true)
+				if not n.mustPress or self.botPlay then
+					receptor.holdTime = (not n.isSustain or n.isSustainEnd) and 0.175 or 0
+				end
 			end
 
 			if not n.isSustain then
@@ -1286,22 +1296,18 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
-	if not self.startingSong then
-		self.scripts:set("curBeat", b)
-		self.scripts:call("beat")
+	self.scripts:set("curBeat", b)
+	self.scripts:call("beat")
 
-		local scaleNum = 1.2
-		self.iconP1.scale = {x = scaleNum, y = scaleNum}
-		self.iconP2.scale = {x = scaleNum, y = scaleNum}
-	end
+	local scaleNum = 1.2
+	self.iconP1.scale = {x = scaleNum, y = scaleNum}
+	self.iconP2.scale = {x = scaleNum, y = scaleNum}
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	if not self.startingSong then
-		self.scripts:call("postBeat")
-	end
+	self.scripts:call("postBeat", b)
 end
 
 function PlayState:section(s)
@@ -1323,7 +1329,7 @@ function PlayState:section(s)
 end
 
 function PlayState:popUpScore(rating)
-	local accel = PlayState.conductor.crotchet * 0.001 / self.playback
+	local accel = PlayState.conductor.crotchet * 0.001
 
 	local antialias = not PlayState.pixelStage
 	local uiStage = PlayState.pixelStage and "pixel" or "normal"
@@ -1356,7 +1362,7 @@ function PlayState:popUpScore(rating)
 		judgeSpr.visible = not event.hideRating
 
 		Timer.after(accel, function()
-			Timer.tween(0.2 / self.playback, judgeSpr, {alpha = 0}, "linear", function()
+			Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
 				Timer.cancelTweensOf(judgeSpr)
 				judgeSpr:kill()
 			end)
@@ -1385,7 +1391,7 @@ function PlayState:popUpScore(rating)
 		comboSpr.visible = not event.hideCombo
 
 		Timer.after(accel, function()
-			Timer.tween(0.2 / self.playback, comboSpr, {alpha = 0}, "linear", function()
+			Timer.tween(0.2, comboSpr, {alpha = 0}, "linear", function()
 				Timer.cancelTweensOf(comboSpr)
 				comboSpr:kill()
 			end)
@@ -1421,7 +1427,7 @@ function PlayState:popUpScore(rating)
 				numScore.visible = not event.hideScore
 
 				Timer.after(accel * 2, function()
-					Timer.tween(0.2 / self.playback, numScore, {alpha = 0}, "linear", function()
+					Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
 						Timer.cancelTweensOf(numScore)
 						numScore:kill()
 					end)
@@ -1597,6 +1603,7 @@ function PlayState:leave()
 	self.scripts:call("leave")
 
 	PlayState.conductor = nil
+	Timer.setSpeed(1)
 
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)

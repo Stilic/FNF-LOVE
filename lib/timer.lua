@@ -31,6 +31,8 @@ Timer.__index = Timer
 local function _nothing_() end
 local unpack = unpack or table.unpack
 
+function Timer:setSpeed(speed) self.speed = speed end
+
 function Timer:updateHandle(handle, dt)
 	-- handle: {
 	--   time = <number>,
@@ -39,6 +41,7 @@ function Timer:updateHandle(handle, dt)
 	--   limit = <number>,
 	--   count = <number>,
 	-- }
+	dt = dt * self.speed
 	handle.time = handle.time + dt
 	handle.during(dt, math.max(handle.limit - handle.time, 0))
 
@@ -111,7 +114,7 @@ function Timer:clear() self.functions = {} end
 
 function Timer:script(f)
 	local co = coroutine.wrap(f)
-	co(function (t)
+	co(function(t)
 		self:after(t, co)
 		coroutine.yield()
 	end)
@@ -153,7 +156,7 @@ local function func_tween(tween, self, len, subject, target, method, after,
 			if type(v) == 'table' then
 				tween_collect_payload(ref, v, out)
 			else
-				local ok, delta = pcall(function ()
+				local ok, delta = pcall(function()
 					return (v - ref) * 1
 				end)
 				assert(ok, 'Field "' .. k ..
@@ -169,7 +172,7 @@ local function func_tween(tween, self, len, subject, target, method, after,
 		{...}
 
 	local last_s = 0
-	local handle = self:during(len, function (dt)
+	local handle = self:during(len, function(dt)
 		t = t + dt
 		local s = method(math.min(1, t / len), unpack(args))
 		local ds = s - last_s
@@ -181,7 +184,7 @@ local function func_tween(tween, self, len, subject, target, method, after,
 		for ref, t in pairs(to_func_tween) do
 			for key, value in pairs(t) do
 				local setter_args, setter = unpack(value)
-				if not pcall(function ()
+				if not pcall(function()
 						setter(ref, unpack(setter_args))
 					end) then
 					setter(unpack(setter_args))
@@ -201,39 +204,39 @@ end
 local function def_tween(func)
 	return setmetatable({
 		-- helper functions
-		out = function (f) -- 'rotates' a function
-			return function (s, ...) return 1 - f(1 - s, ...) end
+		out = function(f) -- 'rotates' a function
+			return function(s, ...) return 1 - f(1 - s, ...) end
 		end,
-		chain = function (f1, f2) -- concatenates two functions
-			return function (s, ...)
+		chain = function(f1, f2) -- concatenates two functions
+			return function(s, ...)
 				return (s < .5 and f1(2 * s, ...) or 1 + f2(2 * s - 1, ...)) *
 					.5
 			end
 		end,
 
 		-- useful tweening functions
-		linear = function (s) return s end,
-		quad = function (s) return s * s end,
-		cubic = function (s) return s * s * s end,
-		quart = function (s) return s * s * s * s end,
-		quint = function (s) return s * s * s * s * s end,
-		sine = function (s) return 1 - math.cos(s * math.pi / 2) end,
-		expo = function (s) return 2 ^ (10 * (s - 1)) end,
-		circ = function (s) return 1 - math.sqrt(1 - s * s) end,
+		linear = function(s) return s end,
+		quad = function(s) return s * s end,
+		cubic = function(s) return s * s * s end,
+		quart = function(s) return s * s * s * s end,
+		quint = function(s) return s * s * s * s * s end,
+		sine = function(s) return 1 - math.cos(s * math.pi / 2) end,
+		expo = function(s) return 2 ^ (10 * (s - 1)) end,
+		circ = function(s) return 1 - math.sqrt(1 - s * s) end,
 
-		back = function (s, bounciness)
+		back = function(s, bounciness)
 			bounciness = bounciness or 1.70158
 			return s * s * ((bounciness + 1) * s - bounciness)
 		end,
 
-		bounce = function (s) -- magic numbers ahead
+		bounce = function(s) -- magic numbers ahead
 			local a, b = 7.5625, 1 / 2.75
 			return math.min(a * s ^ 2, a * (s - 1.5 * b) ^ 2 + .75,
 				a * (s - 2.25 * b) ^ 2 + .9375,
 				a * (s - 2.625 * b) ^ 2 + .984375)
 		end,
 
-		elastic = function (s, amp, period)
+		elastic = function(s, amp, period)
 			amp, period = amp and math.max(1, amp) or 1, period or .3
 			return (-amp *
 					math.sin(
@@ -247,7 +250,7 @@ local function def_tween(func)
 		__call = func,
 
 		-- fetches function and generated compositions for method `key`
-		__index = function (tweens, key)
+		__index = function(tweens, key)
 			if type(key) == 'function' then return key end
 
 			assert(type(key) == 'string', 'Method must be function or string.')
@@ -260,27 +263,29 @@ local function def_tween(func)
 			end
 
 			local out, chain = rawget(tweens, 'out'), rawget(tweens, 'chain')
-			return construct('^in%-([^-]+)$', function (...)
+			return construct('^in%-([^-]+)$', function(...)
 					return ...
 				end) or construct('^out%-([^-]+)$', out) or
 				construct('^in%-out%-([^-]+)$',
-					function (f)
+					function(f)
 						return chain(f, out(f))
 					end) or
 				construct('^out%-in%-([^-]+)$',
-					function (f)
+					function(f)
 						return chain(out(f), f)
 					end) or error('Unknown interpolation method: ' .. key)
 		end
 	})
 end
 
+Timer.speed = 1
+
 Timer.tween = def_tween(plain_tween)
 Timer.func_tween = def_tween(func_tween)
 
 -- Timer instancing
 function Timer.new()
-	return setmetatable({functions = {}, tween = Timer.tween}, Timer)
+	return setmetatable({functions = {}, speed = Timer.speed, tween = Timer.tween}, Timer)
 end
 
 -- default instance
@@ -290,13 +295,13 @@ local default = Timer.new()
 local module = {}
 for k in pairs(Timer) do
 	if k ~= "__index" then
-		module[k] = function (...) return default[k](default, ...) end
+		module[k] = function(...) return default[k](default, ...) end
 	end
 end
 module.tween = setmetatable({}, {
 	__index = Timer.tween,
-	__newindex = function (k, v) Timer.tween[k] = v end,
-	__call = function (t, ...) return default:tween(...) end
+	__newindex = function(k, v) Timer.tween[k] = v end,
+	__call = function(t, ...) return default:tween(...) end
 })
 
 return setmetatable(module, {__call = Timer.new})

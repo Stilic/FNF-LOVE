@@ -3,6 +3,8 @@ local PauseSubstate = Substate:extend("PauseSubstate")
 function PauseSubstate:new()
 	PauseSubstate.super.new(self)
 
+	Timer.setSpeed(1)
+
 	self.menuItems = {"Resume", "Restart Song", "Options", "Exit to menu"}
 	self.curSelected = 1
 
@@ -72,7 +74,10 @@ function PauseSubstate:update(dt)
 		local daChoice = self.menuItems[self.curSelected]
 
 		switch(daChoice, {
-			["Resume"] = function() self:close() end,
+			["Resume"] = function()
+				Timer.setSpeed(self.parent.playback)
+				self:close()
+			end,
 			["Restart Song"] = function() game.resetState(true) end,
 			["Options"] = function()
 				local device = love.system.getDevice()

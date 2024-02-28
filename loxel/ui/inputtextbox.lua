@@ -175,19 +175,19 @@ function InputTextBox:update(dt)
 		end
 	end
 
-	if Mouse.justPressed then
-		if Mouse.justPressedLeft then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
-		elseif Mouse.justPressedRight then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
-		elseif Mouse.justPressedMiddle then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+	if game.mouse.justPressed then
+		if game.mouse.justPressedLeft then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
+		elseif game.mouse.justPressedRight then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
+		elseif game.mouse.justPressedMiddle then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
 		end
 	end
 end
 
 function InputTextBox:mousepressed(x, y, button, istouch, presses)
-	if button == Mouse.LEFT then
+	if button == game.mouse.LEFT then
 		if x >= self.x and x <= self.x + self.width and y >= self.y and y <=
 			self.y + self.height then
 			self.active = true

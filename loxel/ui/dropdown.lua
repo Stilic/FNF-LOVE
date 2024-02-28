@@ -33,8 +33,8 @@ end
 function Dropdown:update(dt)
 	self.__canScroll = (#self.options > self.__maxShow and true or false)
 
-	if Mouse.wheel ~= 0 and self.__canScroll then
-		self.__curScroll = self.__curScroll - Mouse.wheel
+	if game.mouse.wheel ~= 0 and self.__canScroll then
+		self.__curScroll = self.__curScroll - game.mouse.wheel
 		if self.__curScroll < 0 then
 			self.__curScroll = 0
 		elseif self.__curScroll > #self.options - self.__maxShow then
@@ -46,13 +46,13 @@ function Dropdown:update(dt)
 	self.__openButton:update(dt)
 	self.__slider:update()
 
-	if Mouse.justPressed then
-		if Mouse.justPressedLeft then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
-		elseif Mouse.justPressedRight then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
-		elseif Mouse.justPressedMiddle then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+	if game.mouse.justPressed then
+		if game.mouse.justPressedLeft then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
+		elseif game.mouse.justPressedRight then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
+		elseif game.mouse.justPressedMiddle then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
 		end
 	end
 end
@@ -88,8 +88,8 @@ function Dropdown:__render(camera)
 					2)
 				love.graphics.setScissor(ogScis_x, ogScis_y, ogScis_w, ogScis_h)
 				love.graphics.pop()
-				if Mouse.x >= optionX and Mouse.x < optionX + self.width and
-					Mouse.y >= optionY and Mouse.y < optionY + self.height then
+				if game.mouse.x >= optionX and game.mouse.x < optionX + self.width and
+					game.mouse.y >= optionY and game.mouse.y < optionY + self.height then
 					love.graphics.setColor(0, 0.6, 1)
 					love.graphics.rectangle("fill", optionX, optionY,
 						self.width, self.height)

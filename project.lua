@@ -18,10 +18,11 @@ return {
 		InitialParallelUpdate = true,
 		InitialAsyncInput = false,
 
+		LoxelInitWindow = false,
 		LoxelForceRenderCameraComplex = false,
 		LoxelDisableRenderCameraComplex = false,
 		LoxelDisableScissorOnRenderCameraSimple = false,
 		LoxelDefaultClipCamera = true,
-		LoxelShowPrintsInScreen = true
+		LoxelShowPrintsInScreen = false
 	}
 }

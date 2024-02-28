@@ -18,18 +18,18 @@ function Button:new(x, y, width, height, text, callback)
 end
 
 function Button:update()
-	local mx, my = Mouse.x, Mouse.y
+	local mx, my = game.mouse.x, game.mouse.y
 	self.hovered =
 		(mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
 			self.y + self.height)
 
-	if Mouse.justPressed then
-		if Mouse.justPressedLeft then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
-		elseif Mouse.justPressedRight then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
-		elseif Mouse.justPressedMiddle then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+	if game.mouse.justPressed then
+		if game.mouse.justPressedLeft then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
+		elseif game.mouse.justPressedRight then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
+		elseif game.mouse.justPressedMiddle then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
 		end
 	end
 end

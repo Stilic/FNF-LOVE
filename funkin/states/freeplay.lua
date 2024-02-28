@@ -161,7 +161,7 @@ function FreeplayState:update(dt)
 				local diff =
 					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]:lower()
 				if self:checkSongAssets(daSong, diff) then
-					if Keyboard.pressed.SHIFT then
+					if game.keys.pressed.SHIFT then
 						PlayState.loadSong(daSong, diff)
 						PlayState.storyDifficulty = diff
 						game.switchState(ChartingState())
@@ -199,12 +199,7 @@ function FreeplayState:changeDiff(change)
 	local songdiffs = self.songsData[self.curSelected].difficulties
 
 	FreeplayState.curDifficulty = FreeplayState.curDifficulty + change
-
-	if FreeplayState.curDifficulty > #songdiffs then
-		FreeplayState.curDifficulty = 1
-	elseif FreeplayState.curDifficulty < 1 then
-		FreeplayState.curDifficulty = #songdiffs
-	end
+	FreeplayState.curDifficulty = (FreeplayState.curDifficulty - 1) % #songdiffs + 1
 
 	local daSong = paths.formatToSongPath(self.songsData[self.curSelected].name)
 	self.intendedScore = Highscore.getScore(daSong,
@@ -224,12 +219,7 @@ function FreeplayState:changeSelection(change)
 	if change == nil then change = 0 end
 
 	FreeplayState.curSelected = FreeplayState.curSelected + change
-
-	if FreeplayState.curSelected > #self.songsData then
-		FreeplayState.curSelected = 1
-	elseif FreeplayState.curSelected < 1 then
-		FreeplayState.curSelected = #self.songsData
-	end
+	FreeplayState.curSelected = (FreeplayState.curSelected - 1) % #self.songsData + 1
 
 	local bullShit = 0
 

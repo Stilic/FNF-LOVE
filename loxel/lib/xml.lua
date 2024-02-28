@@ -15,9 +15,9 @@ end
 
 local function fromXmlString(value)
 	value = string.gsub(value, "&#x([%x]+)%",
-		function (h) return string.char(tonumber(h, 16)) end)
+		function(h) return string.char(tonumber(h, 16)) end)
 	value = string.gsub(value, "&#([0-9]+)%",
-		function (h) return string.char(tonumber(h, 10)) end)
+		function(h) return string.char(tonumber(h, 10)) end)
 	value = string.gsub(value, "&quot", "\"")
 	value = string.gsub(value, "&apos", "'")
 	value = string.gsub(value, "&gt", ">")
@@ -28,7 +28,7 @@ end
 
 local function parseArgs(node, s)
 	return string.gsub(s, "(%w+)=([\"'])(.-)%2",
-		function (w, _, a) node:setAttr(w, fromXmlString(a)) end)
+		function(w, _, a) node:setAttr(w, fromXmlString(a)) end)
 end
 
 local function newNode(name)
@@ -68,7 +68,7 @@ local function newNode(name)
 	return node
 end
 
-return function (xmlText)
+return function(xmlText)
 	local stack = {}
 	local top = newNode()
 	table.insert(stack, top)

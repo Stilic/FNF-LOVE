@@ -18,8 +18,6 @@ function StoryMenuState:enter()
 		Discord.changePresence({details = "In the Menus", state = "Story Menu"})
 	end
 
-	self.diffs = {'Easy', PlayState.defaultDifficulty, 'Hard'}
-
 	self.lerpScore = 0
 	self.intendedScore = 0
 
@@ -30,6 +28,7 @@ function StoryMenuState:enter()
 
 	self.movedBack = false
 	self.selectedWeek = false
+	self.diffs = {"Easy", PlayState.defaultDifficulty, "Hard"}
 
 	PlayState.storyMode = true
 
@@ -92,27 +91,28 @@ function StoryMenuState:enter()
 			self.grpWeekCharacters:add(weekCharThing)
 		end
 
-		self.difficultySelector = Group()
+		self.difficultySelector = SpriteGroup()
 		self:add(self.difficultySelector)
 
-		self.leftArrow = Sprite(self.grpWeekText.members[1].x +
-			self.grpWeekText.members[1].width + 10,
-			self.grpWeekText.members[1].y + 10);
+		self.leftArrow = Sprite(0, self.grpWeekText.members[1].y + 10)
 		self.leftArrow:setFrames(ui_tex)
 		self.leftArrow:addAnimByPrefix('idle', "arrow left")
 		self.leftArrow:addAnimByPrefix('press', "arrow push left")
 		self.leftArrow:play('idle')
 		self.difficultySelector:add(self.leftArrow)
 
-		self.sprDifficulty = Sprite(0, self.leftArrow.y);
-		self.difficultySelector:add(self.sprDifficulty);
+		self.sprDifficulty = Sprite(0, self.leftArrow.y)
+		self.difficultySelector:add(self.sprDifficulty)
 
-		self.rightArrow = Sprite(self.leftArrow.x + 376, self.leftArrow.y);
+		self.rightArrow = Sprite(self.leftArrow.x + 376, self.leftArrow.y)
 		self.rightArrow:setFrames(ui_tex)
 		self.rightArrow:addAnimByPrefix('idle', "arrow right")
 		self.rightArrow:addAnimByPrefix('press', "arrow push right")
 		self.rightArrow:play('idle')
 		self.difficultySelector:add(self.rightArrow)
+
+		local grp = self.grpWeekText.members[1]
+		self.difficultySelector.x = grp.x + grp.width + 10
 	end
 
 	self:add(bgYellow)
@@ -234,11 +234,8 @@ function StoryMenuState:selectWeek()
 			table.insert(songTable, paths.formatToSongPath(leWeek.songs[i]))
 		end
 
-		local diff = PlayState.defaultDifficulty
-		switch(StoryMenuState.curDifficulty, {
-			[1] = function() diff = "easy" end,
-			[3] = function() diff = "hard" end
-		})
+		local diff = (leWeek.difficulties and leWeek.difficulties[StoryMenuState.curDifficulty] or
+			self.diffs[StoryMenuState.curDifficulty]):lower()
 
 		if self:checkSongsAssets(songTable, diff) then
 			local toState = PlayState(true, songTable, diff)
@@ -265,22 +262,20 @@ end
 
 function StoryMenuState:changeDifficulty(change)
 	if change == nil then change = 0 end
+	local songdiffs = self.weeksData[StoryMenuState.curWeek].difficulties or
+		self.diffs
 
 	StoryMenuState.curDifficulty = StoryMenuState.curDifficulty + change
+	StoryMenuState.curDifficulty = (StoryMenuState.curDifficulty - 1) % #songdiffs + 1
 
-	if StoryMenuState.curDifficulty > 3 then
-		StoryMenuState.curDifficulty = 1
-	elseif StoryMenuState.curDifficulty < 1 then
-		StoryMenuState.curDifficulty = 3
-	end
-
-	local storyDiff = self.diffs[StoryMenuState.curDifficulty]
+	local storyDiff = songdiffs[StoryMenuState.curDifficulty]
 	local newImage = paths.getImage('menus/storymenu/difficulties/' ..
 		paths.formatToSongPath(storyDiff))
 
 	if self.sprDifficulty.texture ~= newImage then
 		self.sprDifficulty:loadTexture(newImage)
-		self.sprDifficulty.x = self.leftArrow.x + 60 + ((308 - self.sprDifficulty.width) / 3)
+		local area = (self.leftArrow.x + self.leftArrow.width) + self.rightArrow.x
+		self.sprDifficulty.x = (area - self.sprDifficulty.width) / 2
 		self.sprDifficulty.y = self.leftArrow.y - 15
 		self.sprDifficulty.alpha = 0
 
@@ -289,11 +284,7 @@ function StoryMenuState:changeDifficulty(change)
 			{y = self.leftArrow.y + 15, alpha = 1})
 	end
 
-	local diff = ""
-	switch(StoryMenuState.curDifficulty, {
-		[1] = function() diff = "easy" end,
-		[3] = function() diff = "hard" end
-	})
+	local diff = songdiffs[StoryMenuState.curDifficulty]:lower()
 
 	local weekName = self.weeksData[StoryMenuState.curWeek].file
 	self.intendedScore = Highscore.getWeekScore(weekName, diff)
@@ -303,12 +294,7 @@ function StoryMenuState:changeWeek(change)
 	if change == nil then change = 0 end
 
 	StoryMenuState.curWeek = StoryMenuState.curWeek + change
-
-	if StoryMenuState.curWeek > #self.weeksData then
-		StoryMenuState.curWeek = 1
-	elseif StoryMenuState.curWeek < 1 then
-		StoryMenuState.curWeek = #self.weeksData
-	end
+	StoryMenuState.curWeek = (StoryMenuState.curWeek - 1) % #self.weeksData + 1
 
 	local leWeek = self.weeksData[StoryMenuState.curWeek]
 	self.txtWeekTitle.content = leWeek.name:upper()
@@ -341,23 +327,13 @@ function StoryMenuState:updateText()
 	end
 
 	local leWeek = self.weeksData[StoryMenuState.curWeek]
-	local stringThing = {}
-	for i = 1, #leWeek.songs do table.insert(stringThing, leWeek.songs[i]) end
-
-	self.txtTrackList.content = 'TRACKS\n'
-	for i = 1, #stringThing do
-		self.txtTrackList.content = self.txtTrackList.content .. '\n' ..
-			stringThing[i]:upper()
-	end
-
+	local songs = table.concat(leWeek.songs, "\n")
+	self.txtTrackList.content = 'TRACKS\n\n' .. songs:upper()
 	self.txtTrackList:screenCenter("x")
 	self.txtTrackList.x = self.txtTrackList.x - game.width * 0.35
 
-	local diff = ""
-	switch(StoryMenuState.curDifficulty, {
-		[1] = function() diff = "easy" end,
-		[3] = function() diff = "hard" end
-	})
+	local diff = (leWeek.difficulties and leWeek.difficulties[StoryMenuState.curDifficulty] or
+		self.diffs[StoryMenuState.curDifficulty]):lower()
 
 	local weekName = self.weeksData[StoryMenuState.curWeek].file
 	self.intendedScore = Highscore.getWeekScore(weekName, diff)
@@ -397,8 +373,11 @@ function StoryMenuState:checkSongsAssets(songs, diff)
 			table.insert(errorList, path)
 		end
 	end
-	if #jsonList > 0 and #audioList <= 0 then title = "Charts(s)"
-	elseif #jsonList <= 0 and #audioList > 0 then title = "Audio(s)" end
+	if #jsonList > 0 and #audioList <= 0 then
+		title = "Charts(s)"
+	elseif #jsonList <= 0 and #audioList > 0 then
+		title = "Audio(s)"
+	end
 	if #errorList <= 0 then return true end
 
 	self.inSubstate = true

@@ -76,7 +76,7 @@ function create()
 	self:add(tankmanRun)
 
 	fgSprites = Group()
-	self.foreground:add(fgSprites)
+	self:add(fgSprites, true)
 
 	local tankGround = Sprite(-420, -150)
 	tankGround:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankGround'))

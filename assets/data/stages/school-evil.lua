@@ -28,5 +28,5 @@ end
 
 function postCreate()
 	local trailFx = Trail(state.dad, 4, 24, 0.3, 0.069)
-	state:insert(table.find(state.members, state.dad), trailFx)
+	state:insert(state:indexOf(state.dad), trailFx)
 end

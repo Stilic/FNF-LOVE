@@ -66,13 +66,13 @@ function TabMenu:update(dt)
 	end
 	if self.tabs then callChildren(self, 'update', dt) end
 
-	if Mouse.justPressed then
-		if Mouse.justPressedLeft then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.LEFT)
-		elseif Mouse.justPressedRight then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.RIGHT)
-		elseif Mouse.justPressedMiddle then
-			self:mousepressed(Mouse.x, Mouse.y, Mouse.MIDDLE)
+	if game.mouse.justPressed then
+		if game.mouse.justPressedLeft then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
+		elseif game.mouse.justPressedRight then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
+		elseif game.mouse.justPressedMiddle then
+			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
 		end
 	end
 end

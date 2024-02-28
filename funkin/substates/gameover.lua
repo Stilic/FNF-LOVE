@@ -12,6 +12,8 @@ GameOverSubstate.resetVars()
 function GameOverSubstate:new(x, y)
 	GameOverSubstate.super.new(self)
 
+	Timer.setSpeed(1)
+
 	self.updateCam = false
 	self.isFollowing = false
 

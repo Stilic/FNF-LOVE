@@ -28,4 +28,12 @@ function Stage:new(name)
 	self.script:call("create")
 end
 
+function Stage:add(obj, foreground)
+	if foreground then
+		self.foreground:add(obj)
+	else
+		Stage.super.add(self, obj)
+	end
+end
+
 return Stage

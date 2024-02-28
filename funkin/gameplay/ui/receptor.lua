@@ -11,7 +11,7 @@ function Receptor:new(x, y, data, player)
 	self.data = data
 	self.player = player
 
-	self.__timer = 0
+	self.holdTime = 0
 
 	if PlayState.pixelStage then
 		self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
@@ -46,10 +46,10 @@ function Receptor:groupInit()
 end
 
 function Receptor:update(dt)
-	if self.__timer > 0 then
-		self.__timer = self.__timer - dt
-		if self.__timer <= 0 then
-			self.__timer = 0
+	if self.holdTime > 0 then
+		self.holdTime = self.holdTime - dt
+		if self.holdTime <= 0 then
+			self.holdTime = 0
 			self:play("static")
 		end
 	end
@@ -61,24 +61,6 @@ function Receptor:play(anim, force, frame)
 
 	self:centerOffsets()
 	self:centerOrigin()
-
-	if not PlayState.pixelStage and anim == "confirm" then
-		if self.data == 0 then
-			self.offset.x, self.offset.y = self.offset.x - 1, self.offset.y - 3
-		elseif self.data == 1 then
-			self.offset.x, self.offset.y = self.offset.x - 2, self.offset.y - 2
-		elseif self.data == 2 then
-			self.offset.x, self.offset.y = self.offset.x - 1,
-				self.offset.y - 0.5
-		elseif self.data == 3 then
-			self.offset.x = self.offset.x - 1.5
-		end
-	end
-end
-
-function Receptor:confirm(time)
-	self:play("confirm", true)
-	self.__timer = time
 end
 
 return Receptor

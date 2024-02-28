@@ -37,10 +37,10 @@ function Sound:reset(cleanup, x, y)
 end
 
 function Sound:fade(duration, startVolume, endVolume)
-    self.__fadeStartTime = love.timer.getTime()
-    self.__fadeDuration = duration
-    self.__startVolume = startVolume
-    self.__endVolume = endVolume
+	self.__fadeStartTime = love.timer.getTime()
+	self.__fadeDuration = duration
+	self.__startVolume = startVolume
+	self.__endVolume = endVolume
 end
 
 function Sound:cleanup()
@@ -137,12 +137,6 @@ end
 
 function Sound:update()
 	local isFinished = self:isFinished()
-	local isPlaying = self:isPlaying()
-
-	if isPlaying and self.__wasPlaying then
-		self.__wasPlaying = false
-	end
-
 	if isFinished and not self.__isFinished then
 		local onComplete = self.onComplete
 		if self.autoDestroy then
@@ -155,24 +149,23 @@ function Sound:update()
 	end
 
 	self.__isFinished = isFinished
-	self.__wasPlaying = isPlaying
 
 	if self.__fadeStartTime then
-        local currentTime = love.timer.getTime()
-        local elapsedTime = currentTime - self.__fadeStartTime
+		local currentTime = love.timer.getTime()
+		local elapsedTime = currentTime - self.__fadeStartTime
 
-        if elapsedTime < self.__fadeDuration then
-            local ratio = elapsedTime / self.__fadeDuration
-            local newVolume = self.__startVolume + (self.__endVolume - self.__startVolume) * ratio
-            self:setVolume(newVolume)
-        else
-            self:setVolume(self.__endVolume)
-            self.__fadeStartTime = nil
-            self.__fadeDuration = nil
-            self.__startVolume = nil
-            self.__endVolume = nil
-        end
-    end
+		if elapsedTime < self.__fadeDuration then
+			local ratio = elapsedTime / self.__fadeDuration
+			local newVolume = self.__startVolume + (self.__endVolume - self.__startVolume) * ratio
+			self:setVolume(newVolume)
+		else
+			self:setVolume(self.__endVolume)
+			self.__fadeStartTime = nil
+			self.__fadeDuration = nil
+			self.__startVolume = nil
+			self.__endVolume = nil
+		end
+	end
 end
 
 function Sound:onFocus(focus)
