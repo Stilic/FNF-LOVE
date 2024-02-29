@@ -20,23 +20,22 @@ function Button:new(x, y, width, height, text, callback)
 	self.textColor = {1, 1, 1}
 
 	self.lineSize = 0.5
-	self.round = {0, 0}
+	self.round = {4, 4}
 end
 
-function Button:update()
-	local mx, my = game.mouse.x, game.mouse.y
-	self.hovered =
-		(mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
-			self.y + self.height)
+function Button:update(dt)
+	Button.super.update(self, dt)
 
-	if game.mouse.justReleased then
-		if game.mouse.justReleasedLeft then
-			self:mousereleased(game.mouse.x, game.mouse.y, game.mouse.LEFT)
-		elseif game.mouse.justReleasedRight then
-			self:mousereleased(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
-		elseif game.mouse.justReleasedMiddle then
-			self:mousereleased(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
+	if self.active then
+		local mx, my = game.mouse.x, game.mouse.y
+		self.hovered = (mx >= self.x and mx <= self.x + self.width and
+			my >= self.y and my <= self.y + self.height)
+
+		if self.hovered and game.mouse.justReleased then
+			if self.callback then self.callback() end
 		end
+	else
+		self.hovered = false
 	end
 end
 
@@ -83,10 +82,6 @@ function Button:__render(camera)
 	love.graphics.printf(self.text, self.font, textX, textY, self.width, "center")
 
 	love.graphics.setColor(r, g, b, a)
-end
-
-function Button:mousereleased(x, y, button)
-	if self.hovered and self.callback then self.callback() end
 end
 
 return Button

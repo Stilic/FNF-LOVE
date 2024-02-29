@@ -1128,7 +1128,7 @@ function PlayState:goodNoteHit(n)
 			if not event.strumGlowCancelled then
 				receptor:play("confirm", true)
 				if not n.mustPress or self.botPlay then
-					receptor.holdTime = (not n.isSustain or n.isSustainEnd) and 0.175 or 0
+					receptor.holdTime = (not n.isSustain or n.isSustainEnd) and 0.14 or 0
 				end
 			end
 

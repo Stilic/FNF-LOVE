@@ -255,9 +255,6 @@ Trail = require "loxel.effects.trail"
 ParallaxImage = require "loxel.effects.parallax"
 Color = require "loxel.util.color"
 
-Keyboard = require "loxel.input.keyboard"
-Mouse = require "loxel.input.mouse"
-
 Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
@@ -276,7 +273,8 @@ ui = {
 newUI = {
 	UINavbar = require "loxel.newui.navbar",
 	UIWindow = require "loxel.newui.window",
-	UIButton = require "loxel.newui.button"
+	UIButton = require "loxel.newui.button",
+	UICheckbox = require "loxel.newui.checkbox"
 }
 
 if Project.flags.LoxelShowPrintsInScreen or love.system.getDevice() == "Mobile" then

@@ -15,7 +15,6 @@ function Window:new(x, y, width, height, title)
 	self.font:setFilter("nearest", "nearest")
 
 	self.hovered = false
-	self.callback = callback
     self.minimized = false
     self.dragging = false
 
@@ -24,17 +23,15 @@ function Window:new(x, y, width, height, title)
     self.lineColor = {1, 1, 1}
 	self.textColor = {1, 1, 1}
 
-	self.lineSize = 3
+	self.lineSize = 1
 
     self.exitButton = newUI.UIButton(0, 0, 22, 22, 'X', function()
-        self:destroy()
+        self:kill()
     end)
-    self.exitButton.round = {4, 4}
     self.exitButton.color = Color.RED
     self.minButton = newUI.UIButton(0, 0, 22, 22, '-', function()
         self.minimized = not self.minimized
     end)
-    self.minButton.round = {4, 4}
 end
 
 function Window:add(obj)
@@ -46,6 +43,8 @@ end
 function Window:remove(obj) return self.group:remove(obj) end
 
 function Window:update(dt)
+    Window.super.update(self, dt)
+
     self.prevMouseX = self.prevMouseX or game.mouse.x
     self.prevMouseY = self.prevMouseY or game.mouse.y
 
@@ -53,37 +52,21 @@ function Window:update(dt)
 
 	local mx, my = game.mouse.x, game.mouse.y
 	self.hovered =
-		(mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
-			self.y + self.height)
+		(mx >= self.x and mx <= self.x + self.width and my >= self.y - 35 and my <=
+			(self.minimized and self.y or self.y + self.height))
 
     local barHovered =
         (mx >= self.x and mx <= self.x + self.width and my >= self.y - 35 and my <=
             self.y)
 
-	if game.mouse.justPressed then
-		if game.mouse.justPressedLeft then
-			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
-		elseif game.mouse.justPressedRight then
-			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
-		elseif game.mouse.justPressedMiddle then
-			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
-		end
-	end
+    if barHovered and game.mouse.justPressedLeft then
+        self.dragging = true
+        self.prevMouseX = mx
+        self.prevMouseY = my
+    end
 
-    if game.mouse.justPressed then
-		if game.mouse.justPressedLeft then
-			if barHovered then
-                self.dragging = true
-                self.prevMouseX = mx
-                self.prevMouseY = my
-            end
-		end
-	end
-
-    if game.mouse.justReleased then
-        if game.mouse.justReleasedLeft then
-            self.dragging = false
-        end
+    if game.mouse.justReleasedLeft then
+        self.dragging = false
     end
 
     if self.dragging then
@@ -92,7 +75,10 @@ function Window:update(dt)
 
         self.x = self.x + dx
         self.y = self.y + dy
-        self:moved(dx, dy)
+        for _, obj in ipairs(self.members) do
+            obj.x = obj.x + dx
+            obj.y = obj.y + dy
+        end
 
         self.prevMouseX = mx
         self.prevMouseY = my
@@ -110,6 +96,13 @@ function Window:__render(camera)
     local lineWidth = love.graphics.getLineWidth()
 
     if self.minimized then
+        love.graphics.setColor(self.barColor[1], self.barColor[2], self.barColor[3],
+            self.alpha)
+        love.graphics.rectangle("fill", self.x, self.y - 35, self.width, 35, 8, 8)
+
+        love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
+        love.graphics.rectangle("fill", self.x, self.y - 18, self.width, 17, 8, 8)
+
         if self.lineSize > 0 then
             love.graphics.setLineWidth(self.lineSize)
             love.graphics.setColor(self.lineColor[1], self.lineColor[2], self.lineColor[3],
@@ -117,22 +110,7 @@ function Window:__render(camera)
             love.graphics.rectangle("line", self.x, self.y - 35, self.width, 35, 8, 8)
             love.graphics.setLineWidth(lineWidth)
         end
-
-        love.graphics.setColor(self.barColor[1], self.barColor[2], self.barColor[3],
-            self.alpha)
-        love.graphics.rectangle("fill", self.x, self.y - 35, self.width, 35, 8, 8)
-
-        love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
-        love.graphics.rectangle("fill", self.x, self.y - 18, self.width, 17, 8, 8)
     else
-        if self.lineSize > 0 then
-            love.graphics.setLineWidth(self.lineSize)
-            love.graphics.setColor(self.lineColor[1], self.lineColor[2], self.lineColor[3],
-                self.alpha)
-            love.graphics.rectangle("line", self.x, self.y - 35, self.width, self.height + 35, 8, 8)
-            love.graphics.setLineWidth(lineWidth)
-        end
-
         love.graphics.setColor(self.barColor[1], self.barColor[2], self.barColor[3],
             self.alpha)
         love.graphics.rectangle("fill", self.x, self.y - 35, self.width, 50, 8, 8)
@@ -151,6 +129,14 @@ function Window:__render(camera)
         love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
         love.graphics.rectangle("fill", self.x, self.y - 18, self.width, 17)
 
+        if self.lineSize > 0 then
+            love.graphics.setLineWidth(self.lineSize)
+            love.graphics.setColor(self.lineColor[1], self.lineColor[2], self.lineColor[3],
+                self.alpha)
+            love.graphics.rectangle("line", self.x, self.y - 35, self.width, self.height + 35, 8, 8)
+            love.graphics.setLineWidth(lineWidth)
+        end
+
         for _, obj in ipairs(self.members) do
             obj:__render(camera)
         end
@@ -164,25 +150,6 @@ function Window:__render(camera)
     self.minButton:__render(camera)
 
 	love.graphics.setColor(cr, cg, cb, ca)
-end
-
-function Window:mousepressed(x, y, button)
-	if self.hovered and self.callback then self.callback() end
-end
-
-function Window:mousereleased(x, y, button)
-    self.dragging = false
-end
-
-function Window:moved(dx, dy)
-    for _, obj in ipairs(self.members) do
-        if obj.moved then
-            obj:moved(dx, dy)
-        else
-            obj.x = obj.x + dx
-            obj.y = obj.y + dy
-        end
-    end
 end
 
 return Window

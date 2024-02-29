@@ -17,6 +17,7 @@ function Navbar:new(list, position)
     for i, button in ipairs(list) do
         local btn = newUI.UIButton(0, 0, 60, self.height, button[1], button[2])
         btn.lineSize = 0
+        btn.round = {0, 0}
         table.insert(self.buttonList, btn)
     end
 end
@@ -46,13 +47,19 @@ function Navbar:setPosition(position)
     end
 end
 
-function Navbar:update()
-	local mx, my = game.mouse.x, game.mouse.y
-	self.hovered =
-		(mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
-			self.y + self.height)
+function Navbar:update(dt)
+    Navbar.super.update(self, dt)
+
+	if self.active then
+        local mx, my = game.mouse.x, game.mouse.y
+	    self.hovered = (mx >= self.x and mx <= self.x + self.width and
+            my >= self.y and my <= self.y + self.height)
+    else
+        self.hovered = false
+    end
 
     for i, btn in ipairs(self.buttonList) do
+        btn.active = self.active
         btn:setPosition(self.x + ((i-1) * 60), self.y)
         btn:update()
     end

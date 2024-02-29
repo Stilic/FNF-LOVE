@@ -10,6 +10,8 @@ ChartingState.sustainColors = {
 function ChartingState:enter()
 	love.mouse.setVisible(true)
 
+	self.leavingState = false
+
 	self.curSection = 0
 	self.stepsToDo = 0
 	Note.chartingMode = true
@@ -72,7 +74,7 @@ function ChartingState:enter()
 	game.cameras.add(self.camHUD, false)
 	game.cameras.add(self.camOther, false)
 
-	local centerGridX = (game.width / 2) - (self.gridSize * 6)
+	local centerGridX = (game.width / 2) - (self.gridSize * 4)
 	self.gridBox = ui.UIGrid(centerGridX, 0, 40, 8, self.gridSize,
 		{0.4, 0.4, 0.4}, {0.2, 0.2, 0.2})
 
@@ -123,13 +125,12 @@ function ChartingState:enter()
 	self:add(self.iconsGroup)
 	self:updateIcon()
 
-	ChartingState.conductorInfo = Text(self.gridBox.x + (self.gridSize * 8) + 20, 20, '',
+	ChartingState.conductorInfo = Text(self.gridBox.x + (self.gridSize * 8) + 20, 60, '',
 		love.graphics.newFont(16))
 	ChartingState.conductorInfo:setScrollFactor()
 	self:add(ChartingState.conductorInfo)
 
-	local textInfo = "NOTE: Note pos on BPM change still broken.\n\n" ..
-		"ENTER Test the chart.\n" ..
+	local textInfo = "ENTER Test the chart.\n" ..
 		"CTRL + ENTER Test on this position.\n" ..
 		"SPACE Play / Pause song.\n" ..
 		"A / D Change section.\n" .. "W / S Scroll.\n" ..
@@ -140,17 +141,34 @@ function ChartingState:enter()
 
 	self.blockInput = {}
 
-	local tabs = {"Charting", "Note", "Section", "Song"}
-	self.UI_Box = ui.UITabMenu(890, 40, tabs)
-	self.UI_Box.height = (game.height - self.UI_Box.tabHeight) -
-		(self.UI_Box.y * 2)
-	self.UI_Box.cameras = {self.camHUD}
-	self:add(self.UI_Box)
-	self:add_UI_Song()
-	self:add_UI_Section()
-	self:add_UI_Charting()
+	self.navbarChart = newUI.UINavbar({
+		{"File", function()
+		end},
+		{"Chart", function()
+		end},
+		{"Song", function()
+		end},
+		{"Note", function() self:add_UIWindow_Note() end},
+		{"Events", function()
+		end}
+	})
+	self.navbarChart.cameras = {self.camHUD}
+	self:add(self.navbarChart)
 
 	self:updateIcon()
+end
+
+function ChartingState:add_UIWindow_Note()
+	if self.noteWindow then
+		self.noteWindow.exists = not self.noteWindow.exists
+	else
+		self.noteWindow = newUI.UIWindow(4, 84, nil, nil, "Note")
+		self.noteWindow.cameras = {self.camHUD}
+		self:add(self.noteWindow)
+
+		self.noteInfoTxt = Text(10, 10, "Just Window :]")
+		self.noteWindow:add(self.noteInfoTxt)
+	end
 end
 
 function ChartingState:add_UI_Song()
@@ -197,7 +215,6 @@ function ChartingState:add_UI_Song()
 	local bpm_stepper = ui.UINumericStepper(10, 140, 1, self.__song.bpm, 1, 400)
 	bpm_stepper.onChanged = function(value)
 		self.__song.bpm = value
-		ChartingState.conductor:mapBPMChanges(self.__song)
 		ChartingState.conductor:setBPM(value)
 		self:updateNotes()
 	end
@@ -469,6 +486,13 @@ function ChartingState:update_UI_Section()
 		.mustHitSection
 end
 
+function ChartingState:UI_isHovered()
+	if self.noteWindow and self.noteWindow.exists and self.noteWindow.hovered then
+		return true
+	end
+	return false
+end
+
 local colorSine = 0
 function ChartingState:update(dt)
 	ChartingState.super.update(self, dt)
@@ -501,15 +525,19 @@ function ChartingState:update(dt)
 		isTyping = false
 	end
 
-	ChartingState.songPosition = game.sound.music:tell() * 1000
-	ChartingState.conductor.time = ChartingState.songPosition
-	self:strumPosUpdate()
+	local isHovered = self:UI_isHovered()
+
+	if not self.leavingState then
+		ChartingState.songPosition = game.sound.music:tell() * 1000
+		ChartingState.conductor.time = ChartingState.songPosition
+		self:strumPosUpdate()
+	end
 
 	local mouseX, mouseY = (game.mouse.x + game.camera.scroll.x),
 		(game.mouse.y + game.camera.scroll.y)
-	if mouseX > self.gridBox.x and mouseX < self.gridBox.x + self.gridBox.width and
-		mouseY > self.strumLine.y - (self.gridSize * 5) and mouseY <
-		self.gridBox.y + (self.gridSize * 4 * 4) + (self.gridSize * 17) then
+	if not isHovered and mouseX > self.gridBox.x and mouseX < self.gridBox.x +
+		self.gridBox.width and mouseY > self.strumLine.y - (self.gridSize * 5) and
+		mouseY < self.gridBox.y + (self.gridSize * 4 * 4) + (self.gridSize * 17) then
 		self.dummyArrow.visible = true
 		self.dummyArrow.x = math.floor(mouseX / self.gridSize) * self.gridSize
 		if game.keys.pressed.SHIFT then
@@ -522,7 +550,7 @@ function ChartingState:update(dt)
 		self.dummyArrow.visible = false
 	end
 
-	if not isTyping then
+	if not self.leavingState and not isHovered and not isTyping then
 		if game.mouse.justPressed then
 			for _, n in ipairs(self.allNotes.members) do
 				if game.mouse.overlaps(n) then
@@ -606,7 +634,7 @@ function ChartingState:update(dt)
 				end
 			end
 
-			self:update_UI_Section()
+			--self:update_UI_Section()
 		end
 
 		if game.keys.justPressed.ENTER then
@@ -620,6 +648,8 @@ function ChartingState:update(dt)
 		end
 
 		if game.keys.justPressed.BACKSPACE then
+			self.leavingState = true
+
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 
@@ -640,9 +670,11 @@ function ChartingState:update(dt)
 		end
 	end
 
-	ChartingState.songPosition = game.sound.music:tell() * 1000
-	ChartingState.conductor.time = ChartingState.songPosition
-	self:strumPosUpdate()
+	if not self.leavingState then
+		ChartingState.songPosition = game.sound.music:tell() * 1000
+		ChartingState.conductor.time = ChartingState.songPosition
+		self:strumPosUpdate()
+	end
 
 	for _, n in pairs(self.allNotes.members) do
 		n.color = {1, 1, 1}
@@ -825,11 +857,11 @@ function ChartingState:loadSong(song)
 			self.stepsToDo = self.stepsToDo +
 				math.round(self:getSectionBeats() * 4)
 
-			self:update_UI_Section()
+			--self:update_UI_Section()
 		end
 	end
 	ChartingState.conductor.onBeat = function(b)
-		if self.metronome then
+		if self.metronome and game.sound.music:isPlaying() then
 			game.sound.play(paths.getSound('metronome'), 0.8)
 		end
 	end
@@ -863,7 +895,7 @@ end
 function ChartingState:updateIcon()
 	local function getIconFromCharacter(char)
 		local data = paths.getJSON("data/characters/" .. char)
-		return (data and data.healthicon) and data.healthicon or 'bf'
+		return (data and data.icon) and data.icon or 'bf'
 	end
 	local iconLeft = getIconFromCharacter(self.__song.player2)
 	local iconRight = getIconFromCharacter(self.__song.player1)
@@ -872,12 +904,12 @@ function ChartingState:updateIcon()
 	self.iconsGroup:clear()
 
 	local iconLeftSpr = HealthIcon(iconLeft)
-	iconLeftSpr.x, iconLeftSpr.y = self.gridBox.x + 40, 40
+	iconLeftSpr.x, iconLeftSpr.y = self.gridBox.x + 40, 50
 	iconLeftSpr:setScrollFactor()
 
 	local iconRightSpr = HealthIcon(iconRight)
 	iconRightSpr.x, iconRightSpr.y = self.gridBox.x + (self.gridSize * 4) + 40,
-		40
+		50
 	iconRightSpr:setScrollFactor()
 
 	iconLeftSpr.scale = {x = 0.53, y = 0.53}
@@ -933,7 +965,7 @@ function ChartingState:addNote()
 				(ChartingState.conductor.bpm / 60) / 4) * 1000) / self.gridSize
 
 	local noteStrumTime = Conductor.stepToTimeFromBPMChange(lastChange, dummyStep, 0)
-	local noteData = math.floor(((mouseX - self.gridSize * 9) - self.gridSize) /
+	local noteData = math.floor(((mouseX - self.gridSize * 11) - self.gridSize) /
 		self.gridSize)
 	local noteSus = 0
 	local noteType = nil
@@ -1042,7 +1074,7 @@ function ChartingState:changeSection(sec)
 	end
 	self.stepsToDo = totalSteps
 
-	self:update_UI_Section()
+	--self:update_UI_Section()
 end
 
 function ChartingState:addSection()
@@ -1067,7 +1099,6 @@ function ChartingState:loadJson(song)
 	PlayState.loadSong(formatSong, diff)
 	PlayState.storyDifficulty = diff
 	game.resetState()
-	self:add(formatSong)
 end
 
 function ChartingState:saveJson()

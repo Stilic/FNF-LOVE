@@ -298,8 +298,8 @@ function CharacterEditor:update(dt)
 		end
 	end
 
-	local mouseOnScreen = Mouse.x >= 0 and Mouse.x < game.width * 0.7
-		and Mouse.y >= 0 and Mouse.y < game.height
+	local mouseOnScreen = game.mouse.x >= 0 and game.mouse.x < game.width * 0.7
+		and game.mouse.y >= 0 and game.mouse.y < game.height
 	if mouseOnScreen and WindowUtil then
 		WindowUtil.setCursor(mouseHovered and "hand" or "arrow")
 	end
@@ -321,9 +321,9 @@ function CharacterEditor:update(dt)
 		elseif game.keys.pressed.S then
 			self.camFollow.y = self.camFollow.y + (2 + shiftMult)
 		end
-		if mouseOnScreen and Mouse.pressedLeft then
-			self.camFollow.x = self.camFollow.x - (Mouse.deltaScreenX * 1.05 / self.curZoom)
-			self.camFollow.y = self.camFollow.y - (Mouse.deltaScreenY * 1.05 / self.curZoom)
+		if mouseOnScreen and game.mouse.pressedLeft then
+			self.camFollow.x = self.camFollow.x - (game.mouse.deltaScreenX / self.curZoom)
+			self.camFollow.y = self.camFollow.y - (game.mouse.deltaScreenY / self.curZoom)
 		end
 		if game.keys.pressed.CONTROL then
 			if game.keys.justPressed.PLUS then
