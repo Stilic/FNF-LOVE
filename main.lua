@@ -6,15 +6,42 @@ if love.system.getOS() == "Windows" then
 	WindowDialogue = require "lib.windows.dialogue"
 	WindowUtil = require "lib.windows.util"
 
-	local _ogSetMode, _ogUpdateMode = love.window.setMode, love.window.updateMode
+	-- since love 12.0, windows no longer recreates for updateMode
+	if love._version_major < 12 then
+		local _ogUpdateMode = love.window.updateMode
+		local includes = {"x", "y", "centered"}
+		function love.window.updateMode(width, height, settings)
+			if settings then
+				for i, v in pairs(settings) do
+					nuh = not table.find(includes, i) and (i ~= "fullscreen" or v ~= f)
+					if nuh then
+						local s = _ogUpdateMode(width, height, settings)
+						WindowUtil.setDarkMode(true)
+						return s
+					end
+				end
+			end
 
-	function love.window.setMode(...)
-		_ogSetMode(...)
-		WindowUtil.setDarkMode(true)
+			if love.window.getFullscreen() then return false end
+
+			local x, y, flags = love.window.getMode()
+			local centered = true
+			if settings and settings.centered ~= nil then centered = settings.centered end
+			if centered then
+				local width2, height2 = love.window.getDesktopDimensions(flags.display)
+				x, y = (width2 - width) / 2, (height2 - height) / 2
+			else
+				x, y = settings and settings.x or x, settings and settings.y or y
+			end
+
+			WindowUtil.setWindowPosition(x, y, width, height)
+			return true
+		end
 	end
 
-	function love.window.updateMode(...)
-		_ogUpdateMode(...)
+	local _ogSetMode = love.window.setMode
+	function love.window.setMode(...)
+		_ogSetMode(...)
 		WindowUtil.setDarkMode(true)
 	end
 end
