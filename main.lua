@@ -99,33 +99,21 @@ local TransitionFade = require "loxel.transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
 
 function love.load()
-	game.save.init('funkin')
-
-	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
-	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
+	ClientPrefs.loadData()
 
 	local res, isMobile = ClientPrefs.data.resolution, love.system.getDevice() == "Mobile"
 	love.window.setTitle(Project.title)
 	love.window.setIcon(love.image.newImageData(Project.icon))
-	love.window.setMode(Project.width * res, Project.height * res,
-		{fullscreen = isMobile or ClientPrefs.data.fullscreen, resizable = not isMobile, vsync = 0, usedpiscale = false})
+	love.window.setMode(Project.width * res, Project.height * res, {
+		fullscreen = isMobile or ClientPrefs.data.fullscreen,
+		resizable = not isMobile,
+		vsync = 0,
+		usedpiscale = false
+	})
 
 	if Project.bgColor then
 		love.graphics.setBackgroundColor(Project.bgColor)
 	end
-
-	love.FPScap = ClientPrefs.data.fps
-	love.parallelUpdate = ClientPrefs.data.parallelUpdate
-	love.asyncInput = ClientPrefs.data.asyncInput
-	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
-	controls = (require "lib.baton").new({controls = table.clone(ClientPrefs.controls)})
-
-	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
-		love.graphics.newFont('assets/fonts/consolas.ttf', 18))
-	game.statsCounter.showFps = ClientPrefs.data.showFps
-	game.statsCounter.showRender = ClientPrefs.data.showRender
-	game.statsCounter.showMemory = ClientPrefs.data.showMemory
-	game.statsCounter.showDraws = ClientPrefs.data.showDraws
 
 	Mods.loadMods()
 	Highscore.load()

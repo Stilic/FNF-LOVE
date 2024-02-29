@@ -8,6 +8,10 @@ if Project.flags.LoxelInitWindow then
 	love.window.setTitle(Project.title)
 	love.window.setIcon(love.image.newImageData(Project.icon))
 	love.window.setMode(Project.width, Project.height, {fullscreen = isMobile, resizable = not isMobile, vsync = 0, usedpiscale = false})
+
+	if Project.bgColor then
+		love.graphics.setBackgroundColor(Project.bgColor)
+	end
 end
 
 local restrictedfs = false
@@ -86,8 +90,7 @@ local eventhandlers = {
 	gamepadreleased = function(t, j, b) if love.gamepadreleased then return love.gamepadreleased(j, b, t) end end,
 }
 function love.run()
-	local _, _, modes = love.window.getMode()
-	love.FPScap, love.unfocusedFPScap = math.max(modes.refreshrate, 60), 8
+	love.FPScap, love.unfocusedFPScap = math.max(select(3, love.window.getMode()).refreshrate, 60), 8
 	love.autoPause = Project.flags.InitialAutoFocus
 	love.parallelUpdate = Project.flags.InitialParallelUpdate
 	love.asyncInput, thread_event = Project.flags.InitialAsyncInput, love.thread.newThread(thread_event_code)
@@ -222,14 +225,6 @@ function love.errorhandler_quit()
 	if channel_event_active then channel_event_active:push(0) end
 	pcall(love.quit, true)
 end
-
--- local og = love.errorhandler
--- function love.errorhandler(msg)
--- 	love.errorhandler_quit()
--- 	collectgarbage()
--- 	collectgarbage()
--- 	return og(msg)
--- end
 
 local Gamestate = require "loxel.lib.gamestate"
 Classic = require "loxel.lib.classic"
