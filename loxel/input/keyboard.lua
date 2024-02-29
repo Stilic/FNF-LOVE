@@ -120,7 +120,7 @@ local Keyboard = {
 
 for key in pairs(Keyboard.keys) do Keyboard.released[key] = true end
 
-function Keyboard.update()
+function Keyboard.reset()
 	for key in pairs(Keyboard.keys) do
 		if Keyboard.justPressed[key] then Keyboard.justPressed[key] = nil end
 		if Keyboard.justReleased[key] then

@@ -40,7 +40,7 @@ local Mouse = {
 	releasedMiddle = true
 }
 
-function Mouse.update()
+function Mouse.reset()
 	if Mouse.wheel ~= 0 then Mouse.wheel = 0 end
 	if Mouse.isMoved then Mouse.isMoved = false end
 	if Mouse.justPressed then

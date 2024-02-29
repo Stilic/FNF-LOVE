@@ -436,20 +436,19 @@ function game.update(real_dt)
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
 	game.sound.update()
 
-	-- input must be here
-	game.keys.update()
-	game.mouse.update()
-
 	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end
 	for _, o in ipairs(game.members) do triggerCallback(o.update, o, dt) end
 
 	if not game.isSwitchingState then Gamestate.update(dt) end
+
+	game.keys.reset()
+	game.mouse.reset()
 end
 
 function game.resize(w, h)
 	Gamestate.resize(w, h)
-	for _, o in ipairs(game.bound.members) do triggerCallback(o.resize, o, f) end
-	for _, o in ipairs(game.members) do triggerCallback(o.resize, o, f) end
+	for _, o in ipairs(game.bound.members) do triggerCallback(o.resize, o, w, h) end
+	for _, o in ipairs(game.members) do triggerCallback(o.resize, o, w, h) end
 end
 
 function game.focus(f)
