@@ -87,9 +87,9 @@ function Options:enter(parent)
 
 		self.buttons:add(enter)
 		self.buttons:add(back)
+		self.buttons:set({cameras = {camButtons}})
 
-		parent:add(self.buttons)
-		game.buttons.add(self.buttons)
+		self:add(self.buttons)
 	end
 
 	self:revive()
@@ -246,7 +246,6 @@ function Options:leave()
 
 	if self.buttons then
 		self.buttons:destroy()
-		game.buttons.remove(self.buttons)
 		self:remove(self.buttons)
 	end
 	self.buttons = nil

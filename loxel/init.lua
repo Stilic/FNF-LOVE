@@ -292,7 +292,6 @@ game = {
 	keys = require "loxel.input.keyboard",
 	mouse = require "loxel.input.mouse",
 	cameras = require "loxel.managers.cameramanager",
-	buttons = require "loxel.managers.buttonmanager",
 	sound = require "loxel.managers.soundmanager",
 	save = require "loxel.util.save"
 }
@@ -387,18 +386,18 @@ function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 
 function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
 
-function game.touchmoved(id, x, y, dx, dy, p, time) game.buttons.move(id, x, y, p, time) end
+function game.touchmoved(id, x, y, dx, dy, p, time) Button.move(id, x, y, p, time) end
 
-function game.touchpressed(id, x, y, dx, dy, p, time) game.buttons.press(id, x, y, p, time) end
+function game.touchpressed(id, x, y, dx, dy, p, time) Button.press(id, x, y, p, time) end
 
-function game.touchreleased(id, x, y, dx, dy, p, time) game.buttons.release(id, x, y, p, time) end
+function game.touchreleased(id, x, y, dx, dy, p, time) Button.release(id, x, y, p, time) end
 
 local function switch(state)
 	Timer.clear()
 
 	game.cameras.reset()
 	game.sound.destroy()
-	game.buttons.reset()
+	Button.reset()
 
 	triggerCallback(game.onPreStateSwitch, state)
 

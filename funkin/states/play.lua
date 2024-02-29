@@ -330,30 +330,8 @@ function PlayState:enter()
 	self.scoreTxt.outline.width = 1
 	self.scoreTxt.antialiasing = false
 
-	self.timeArcBG = Graphic(72, game.height - 52, 0, 0, {0, 0, 0}, "arc", "line")
-	if self.downScroll then self.timeArcBG.y = 52 end
-	self.timeArcBG.line.width = 18
-	self.timeArcBG.config = {
-		radius = 24,
-		type = "closed",
-		angle = {0, 360},
-		segments = 32
-	}
-	self.timeArcBG:updateDimensions()
-	self.timeArcBG:centerOrigin()
-	self.timeArcBG.offset.x, self.timeArcBG.offset.y = self.timeArcBG.origin.x, self.timeArcBG.origin.y
-
-	self.timeArc = Graphic(self.timeArcBG.x, self.timeArcBG.y, 0, 0, {1, 1, 1}, "arc", "line")
-	self.timeArc.line.width = 10
-	self.timeArc.config = {
-		radius = 24,
-		type = "open",
-		angle = {-90, -90},
-		segments = 32
-	}
-	self.timeArc:updateDimensions()
-	self.timeArc:centerOrigin()
-	self.timeArc.offset.x, self.timeArc.offset.y = self.timeArc.origin.x, self.timeArc.origin.y
+	self.timeArc = ProgressArc(36, game.height - 81, 65, 18, {Color.BLACK, Color.WHITE}, 0, game.sound.music:getDuration() / 1000)
+	if self.downScroll then self.timeArc.y = 16 end
 
 	local songTime = 0
 	if ClientPrefs.data.timeType == "left" then
@@ -361,11 +339,13 @@ function PlayState:enter()
 	end
 
 	local fontTime = paths.getFont("vcr.ttf", 24)
-	self.timeTxt = Text(self.timeArcBG.x + 35, self.timeArcBG.y + 7, util.formatTime(songTime),
+	self.timeTxt = Text((self.timeArc.x + self.timeArc.width) + 4, 0, util.formatTime(songTime),
 		fontTime, {1, 1, 1}, "left")
 	self.timeTxt.outline.width = 2
 	self.timeTxt.antialiasing = false
-	if self.downScroll then self.timeTxt.y = self.timeArcBG.y - 32 end
+
+	self.timeTxt.y = (self.timeArc.y + self.timeArc.width) - self.timeTxt:getHeight()
+	if self.downScroll then self.timeTxt.y = self.timeArc.y end
 
 	self.botplayTxt = Text(604, self.timeTxt.y, 'BOTPLAY MODE',
 		fontTime, {1, 1, 1}, "right", game.width / 2)
@@ -391,11 +371,11 @@ function PlayState:enter()
 			cameras = {self.camOther},
 			fill = "line",
 			lined = false,
-			visible = false,
 			config = {
 				round = {0, 0}
 			}
 		})
+		self.buttons:disable()
 	end
 
 	self:add(self.receptors)
@@ -408,7 +388,6 @@ function PlayState:enter()
 	self:add(self.iconP1)
 	self:add(self.iconP2)
 	self:add(self.scoreTxt)
-	self:add(self.timeArcBG)
 	self:add(self.timeArc)
 	self:add(self.timeTxt)
 	self:add(self.botplayTxt)
@@ -420,7 +399,7 @@ function PlayState:enter()
 	for _, o in ipairs({
 		self.receptors, self.splashes, self.notesGroup, self.sustainsGroup,
 		self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
-		self.scoreTxt, self.timeArcBG, self.timeArc, self.timeTxt, self.botplayTxt
+		self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
 	}) do o.cameras = {self.camHUD} end
 
 	self.lastTick = love.timer.getTime()
@@ -478,8 +457,7 @@ end
 
 function PlayState:startCountdown()
 	if love.system.getDevice() == "Mobile" then
-		self.buttons:set({visible = true})
-		game.buttons.add(self.buttons)
+		self.buttons:enable()
 	end
 
 	local event = self.scripts:call("startCountdown")
@@ -623,15 +601,10 @@ function PlayState:update(dt)
 		songTime = game.sound.music:getDuration() - songTime
 	end
 
-	self.timeArc.x = self.timeArcBG.x
 	if PlayState.conductor.time > 0 and
-		PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+			PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
 		self.timeTxt.content = util.formatTime(songTime)
-
-		local timeAngle = ((PlayState.conductor.time / 1000) /
-				(game.sound.music:getDuration() / 1000)) *
-			0.36
-		self.timeArc.config.angle[2] = -90 + math.ceil(timeAngle)
+		self.timeArc.tracker = PlayState.conductor.time / 1000
 	end
 
 	if self.camZooming then
@@ -668,8 +641,7 @@ function PlayState:update(dt)
 				end
 
 				if love.system.getDevice() == "Mobile" then
-					self.buttons:set({visible = false})
-					game.buttons.remove(self.buttons)
+					self.buttons:disable()
 				end
 
 				local pause = PauseSubstate()
@@ -721,8 +693,7 @@ function PlayState:update(dt)
 		self.boyfriend.visible = false
 
 		if love.system.getDevice() == "Mobile" then
-			self.buttons:set({visible = false})
-			game.buttons.remove(self.buttons)
+			self.buttons:disable()
 		end
 
 		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
@@ -936,8 +907,7 @@ function PlayState:closeSubstate()
 		end
 
 		if love.system.getDevice() == "Mobile" then
-			self.buttons:set({visible = true})
-			game.buttons.add(self.buttons)
+			self.buttons:enable()
 		end
 	end
 end
@@ -988,9 +958,11 @@ function PlayState:onSettingChange(setting)
 		if self.downScroll then textOffset = -textOffset end
 		self.scoreTxt.y = self.healthBarBG.y + textOffset + 8
 
-		self.timeArcBG.y = self.downScroll and 52 or game.height - 52
-		self.timeArc.y = self.timeArcBG.y
-		self.timeTxt.y = self.downScroll and self.timeArcBG.y - 32 or self.timeArcBG.y + 7
+		self.timeArc.y = game.height - 81
+		if self.downScroll then self.timeArc.y = 16 end
+
+		self.timeTxt.y = (self.timeArc.y + self.timeArc.width) - self.timeTxt:getHeight()
+		if self.downScroll then self.timeTxt.y = self.timeArc.y end
 
 		self.botplayTxt.visible = self.botPlay
 		self.botplayTxt.y = self.timeTxt.y

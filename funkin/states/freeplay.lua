@@ -117,7 +117,6 @@ function FreeplayState:enter()
 		self.buttons:add(back)
 
 		self:add(self.buttons)
-		game.buttons.add(self.buttons)
 	end
 
 	self.throttles = {}

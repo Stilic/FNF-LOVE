@@ -28,19 +28,22 @@ function GameOverSubstate:new(x, y)
 	self.camFollow = {x = boyfriendMidpointX, y = boyfriendMidpointY}
 
 	if love.system.getDevice() == "Mobile" then
+		local camButtons = Camera()
+		game.cameras.add(camButtons, false)
+
 		self.buttons = ButtonGroup()
 		local w = 134
 
-		local enter = Button("return", game.width - w, down.y)
+		local enter = Button("return", game.width - w, game.height - w)
 		enter.color = Color.GREEN
-		local back = Button("escape", enter.x - w, down.y)
+		local back = Button("escape", enter.x - w, enter.y)
 		back.color = Color.RED
 
 		self.buttons:add(enter)
 		self.buttons:add(back)
+		self.buttons:set({cameras = {camButtons}})
 
 		self:add(self.buttons)
-		game.buttons.add(self.buttons)
 	end
 end
 
@@ -70,7 +73,10 @@ function GameOverSubstate:update(dt)
 			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName))
 			Timer.after(0.7, function()
 				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
-					function() game.resetState() end)
+					function()
+						game.resetState()
+						self.buttons:destroy()
+					end)
 			end)
 			Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
 		end

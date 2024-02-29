@@ -24,7 +24,8 @@ function TypeText:update(dt)
 			self:addLetter(1)
 		end
 
-		if self.index == #self.target then
+		local actualTarget = self:getWrappedContent()
+		if self.index == utf8.len(actualTarget) then
 			self.finished = true
 			if self.completeCallback then self.completeCallback() end
 		end
@@ -49,11 +50,17 @@ end
 
 function TypeText:addLetter(i)
 	self.timer = 0
-
 	self.index = self.index + i
-	self.content = string.sub(self.target, 1, self.index)
 
+	local actualTarget = self:getWrappedContent()
+	self.content = string.sub(actualTarget, 1, self.index)
 	if self.sound then game.sound.play(self.sound) end
+end
+
+function TypeText:getWrappedContent()
+	local _, lines = self.font:getWrap(self.target, self.limit or
+		self:getWidth())
+	return table.concat(lines, "\n")
 end
 
 return TypeText
