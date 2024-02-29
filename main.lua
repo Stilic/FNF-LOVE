@@ -133,6 +133,13 @@ function love.load()
 	SoundTray.new()
 
 	game.init(Project, SplashScreen)
+
+	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
+		love.graphics.newFont('assets/fonts/consolas.ttf', 18))
+	game.statsCounter.showFps = ClientPrefs.data.showFps
+	game.statsCounter.showRender = ClientPrefs.data.showRender
+	game.statsCounter.showMemory = ClientPrefs.data.showMemory
+	game.statsCounter.showDraws = ClientPrefs.data.showDraws
 	game:add(game.statsCounter)
 
 	Discord.init()

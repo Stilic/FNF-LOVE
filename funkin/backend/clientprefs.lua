@@ -87,13 +87,6 @@ function ClientPrefs.loadData()
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()
 	end
 
-	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
-		love.graphics.newFont('assets/fonts/consolas.ttf', 18))
-	game.statsCounter.showFps = ClientPrefs.data.showFps
-	game.statsCounter.showRender = ClientPrefs.data.showRender
-	game.statsCounter.showMemory = ClientPrefs.data.showMemory
-	game.statsCounter.showDraws = ClientPrefs.data.showDraws
-
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 
 	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
