@@ -423,6 +423,7 @@ local function switch(state)
 
 	collectgarbage()
 end
+
 function game.update(real_dt)
 	local dt = game.dt
 	local low = math.min(math.log(1.101 + dt), 0.1)
@@ -437,55 +438,39 @@ function game.update(real_dt)
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
 	game.sound.update()
 
-	for _, o in ipairs(game.bound.members) do if o.update then o:update(dt) end end
-	for _, o in ipairs(game.members) do if o.update then o:update(dt) end end
-
-	if not game.isSwitchingState then Gamestate.update(dt) end
-
 	-- input must be here
 	game.keys.update()
 	game.mouse.update()
+
+	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end
+	for _, o in ipairs(game.members) do triggerCallback(o.update, o, dt) end
+
+	if not game.isSwitchingState then Gamestate.update(dt) end
 end
 
 function game.resize(w, h)
 	Gamestate.resize(w, h)
-	for _, o in ipairs(game.bound.members) do
-		if o.resize then o:resize(w, h) end
-	end
-	for _, o in ipairs(game.members) do
-		if o.resize then o:resize(w, h) end
-	end
+	for _, o in ipairs(game.bound.members) do triggerCallback(o.resize, o, f) end
+	for _, o in ipairs(game.members) do triggerCallback(o.resize, o, f) end
 end
 
 function game.focus(f)
 	game.sound.onFocus(f)
 	Gamestate.focus(f)
-	for _, o in ipairs(game.bound.members) do
-		if o.focus then o:focus(f) end
-	end
-	for _, o in ipairs(game.members) do
-		if o.focus then o:focus(f) end
-	end
+	for _, o in ipairs(game.bound.members) do triggerCallback(o.focus, o, f) end
+	for _, o in ipairs(game.members) do triggerCallback(o.focus, o, f) end
 end
 
 function game.fullscreen(f)
 	Gamestate.fullscreen(f)
-	for _, o in ipairs(game.bound.members) do
-		if o.fullscreen then o:fullscreen(f) end
-	end
-	for _, o in ipairs(game.members) do
-		if o.fullscreen then o:fullscreen(f) end
-	end
+	for _, o in ipairs(game.bound.members) do triggerCallback(o.fullscreen, o, f) end
+	for _, o in ipairs(game.members) do triggerCallback(o.fullscreen, o, f) end
 end
 
 function game.quit()
 	Gamestate.quit()
-	for _, o in ipairs(game.bound.members) do
-		if o.quit then o:quit() end
-	end
-	for _, o in ipairs(game.members) do
-		if o.quit then o:quit() end
-	end
+	for _, o in ipairs(game.bound.members) do triggerCallback(o.quit, o) end
+	for _, o in ipairs(game.members) do triggerCallback(o.quit, o) end
 end
 
 local _ogGetScissor, _ogSetScissor, _ogIntersectScissor
@@ -504,14 +489,14 @@ end
 local function intersectScissor(x, y, w, h)
 	if not _scvX then
 		_scvX, _scvY, _scvW, _scvH = x, y, w, h
-		_ogSetScissor(getRealScissor())
+		return _ogSetScissor(getRealScissor())
 	end
 	_scvX, _scvY = math.max(_scvX, x), math.max(_scvY, y)
-	_scvW, _scvH = math.max(math.min(_scvX + _scvW, x + w) - _scvX, 0),
-		math.max(math.min(_scvY + _scvH, y + h) - _scvY, 0)
+	_scvW, _scvH = math.max(math.min(_scvX + _scvW, x + w) - _scvX, 0), math.max(math.min(_scvY + _scvH, y + h) - _scvY, 0)
 	_ogSetScissor(getRealScissor())
 end
 
+-- need a rework
 local _scissors, _scissorn = {}, 0
 function game.__pushBoundScissor(w, h, sx, sy)
 	local idx = _scissorn * 6; _scissorn = _scissorn + 1
@@ -542,10 +527,6 @@ end
 
 function game.draw()
 	Gamestate.draw()
-	if fade then
-		table.insert(game.cameras.list[#game.cameras.list].__renderQueue,
-			fade.draw)
-	end
 
 	local grap, w, h = love.graphics, game.width, game.height
 	local winW, winH = grap.getDimensions()
