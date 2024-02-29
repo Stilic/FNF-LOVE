@@ -132,10 +132,8 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
-	game.init(Project, (false and SplashScreen or (require "funkin.states.ui")))
+	game.init(Project, SplashScreen)
 	game:add(game.statsCounter)
-
-	love.mouse.setVisible(true)
 
 	Discord.init()
 end
