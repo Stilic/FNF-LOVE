@@ -66,4 +66,42 @@ function ClientPrefs.saveData()
 	game.save.bind('funkin')
 end
 
+function ClientPrefs.loadData()
+	game.save.init('funkin')
+
+	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
+	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
+
+	if game.save.data.prefs then
+		love.FPScap = ClientPrefs.data.fps
+		love.parallelUpdate = ClientPrefs.data.parallelUpdate
+		love.asyncInput = ClientPrefs.data.asyncInput
+
+		local res = ClientPrefs.data.resolution
+		love.window.updateMode(Project.width * res, Project.height * res, {
+			fullscreen = ClientPrefs.data.fullscreen
+		})
+	else
+		ClientPrefs.data.fps = love.FPScap
+		ClientPrefs.data.parallelUpdate = love.parallelUpdate
+		ClientPrefs.data.resolution = love.graphics.getFixedScale()
+	end
+
+	game.statsCounter.showFps = ClientPrefs.data.showFps
+	game.statsCounter.showRender = ClientPrefs.data.showRender
+	game.statsCounter.showMemory = ClientPrefs.data.showMemory
+	game.statsCounter.showDraws = ClientPrefs.data.showDraws
+
+	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
+
+	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
+
+	local config = {controls = table.clone(ClientPrefs.controls)}
+	if controls == nil then
+		controls = (require "lib.baton").new(config)
+	else
+		controls:reset(config)
+	end
+end
+
 return ClientPrefs
