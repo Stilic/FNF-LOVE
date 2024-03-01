@@ -15,7 +15,7 @@ function FreeplayState:enter()
 	end
 
 	-- Update Presence
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Freeplay Menu"})
 	end
 
@@ -117,7 +117,6 @@ function FreeplayState:enter()
 		self.buttons:add(back)
 
 		self:add(self.buttons)
-		game.buttons.add(self.buttons)
 	end
 
 	self.throttles = {}

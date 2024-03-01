@@ -60,10 +60,11 @@ function Options:enter(parent)
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
-	local device = love.system.getDevice()
-	if device == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Options Menu"})
-	elseif device == "Mobile" then
+	end
+
+	if love.system.getDevice() == "Mobile" then
 		local camButtons = Camera()
 		game.cameras.add(camButtons, false)
 
@@ -87,9 +88,9 @@ function Options:enter(parent)
 
 		self.buttons:add(enter)
 		self.buttons:add(back)
+		self.buttons:set({cameras = {camButtons}})
 
-		parent:add(self.buttons)
-		game.buttons.add(self.buttons)
+		self:add(self.buttons)
 	end
 
 	self:revive()
@@ -246,7 +247,6 @@ function Options:leave()
 
 	if self.buttons then
 		self.buttons:destroy()
-		game.buttons.remove(self.buttons)
 		self:remove(self.buttons)
 	end
 	self.buttons = nil

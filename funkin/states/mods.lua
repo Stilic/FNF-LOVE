@@ -40,18 +40,19 @@ function ModsState:enter()
 		self.camFollow = {x = game.width / 2, y = game.height / 2}
 	end
 
-	self.infoTxt = Text(6, game.height * 0.96, 'Select the current Mod to disable',
+	self.infoTxt = Text(6, game.height * 0.96, 'Select the current mod to disable it',
 		paths.getFont('phantommuff.ttf', 24))
 	self.infoTxt:screenCenter('x')
 	self.infoTxt:setScrollFactor()
 	self.infoTxt.visible = (Mods.currentMod ~= nil)
 	self:add(self.infoTxt)
 
-	local device = love.system.getDevice()
 	-- Update Presence
-	if device == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Mods Menu"})
-	elseif device == "Mobile" then
+	end
+
+	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
 		local w = 134
 
@@ -69,7 +70,6 @@ function ModsState:enter()
 		self.buttons:add(back)
 
 		self:add(self.buttons)
-		game.buttons.add(self.buttons)
 	end
 
 	ModsState.super.enter(self)

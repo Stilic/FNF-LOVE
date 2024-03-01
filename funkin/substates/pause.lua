@@ -51,7 +51,6 @@ function PauseSubstate:enter()
 		self.buttons:add(up)
 		self.buttons:add(enter)
 		self:add(self.buttons)
-		game.buttons.add(self.buttons)
 	end
 
 	self:changeSelection()
@@ -78,19 +77,21 @@ function PauseSubstate:update(dt)
 				Timer.setSpeed(self.parent.playback)
 				self:close()
 			end,
-			["Restart Song"] = function() game.resetState(true) end,
+			["Restart Song"] = function()
+				game.resetState(true)
+				if self.buttons then
+					self.buttons:destroy()
+				end
+			end,
 			["Options"] = function()
-				local device = love.system.getDevice()
-				if device == "Mobile" then
-					self.buttons:set({visible = false})
-					game.buttons.remove(self.buttons)
+				if self.buttons then
+					self.buttons:kill()
 				end
 				self.optionsUI = self.optionsUI or Options(false, function()
 					self.blockInput = false
 
-					if device == "Mobile" then
-						self.buttons:set({visible = true})
-						game.buttons.add(self.buttons)
+					if self.buttons then
+						self.buttons:revive()
 					end
 
 					for _, item in ipairs(self.grpShitMenu.members) do
@@ -160,7 +161,7 @@ function PauseSubstate:close()
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil
 
-	if love.system.getDevice() == "Mobile" then game.buttons.remove(self.buttons) end
+	if self.buttons then self.buttons:destroy() end
 	PauseSubstate.super.close(self)
 end
 

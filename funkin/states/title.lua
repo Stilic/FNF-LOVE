@@ -12,7 +12,10 @@ function TitleState:enter()
 		return
 	end
 
-	Discord.changePresence({details = "In the Menus", state = "Title Screen"})
+	-- Update Presence
+	if Discord then
+		Discord.changePresence({details = "In the Menus", state = "Title Screen"})
+	end
 
 	self.skipTransIn = true
 
@@ -74,8 +77,8 @@ function TitleState:enter()
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
-		local key = Button("return", 0, 0, game.width, game.height)
-		game.buttons.add(key)
+		local key = Button("return", 0, 0, game.width, game.height, false)
+		self:add(key)
 	end
 
 	self.script:call("postCreate")

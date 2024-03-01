@@ -13,7 +13,7 @@ function MainMenuState:enter()
 	end
 
 	-- Update Presence
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 	end
 
@@ -107,7 +107,6 @@ function MainMenuState:enter()
 		self.buttons:add(back)
 
 		self:add(self.buttons)
-		game.buttons.add(self.buttons)
 	end
 
 	self:changeSelection()
@@ -162,19 +161,17 @@ local triggerChoices = {
 		game.switchState(FreeplayState())
 	end},
 	options = {false, function(self)
-		local device = love.system.getDevice()
-		if device == "Mobile" then
-			self.buttons:set({visible = false})
-			game.buttons.remove(self.buttons)
+		if self.buttons then
+			self.buttons:kill()
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
 			self.selectedSomethin = false
 
-			if device == "Desktop" then
+			if Discord then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
-			elseif device == "Mobile" then
-				self.buttons:set({visible = true})
-				game.buttons.add(self.buttons)
+			end
+			if self.buttons then
+				self.buttons:revive()
 			end
 		end)
 		self.optionsUI:setScrollFactor()
