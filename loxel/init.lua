@@ -269,7 +269,8 @@ newUI = {
 	UINavbar = require "loxel.newui.navbar",
 	UIWindow = require "loxel.newui.window",
 	UIButton = require "loxel.newui.button",
-	UICheckbox = require "loxel.newui.checkbox"
+	UICheckbox = require "loxel.newui.checkbox",
+	UISlider = require "loxel.newui.slider"
 }
 
 if Project.flags.LoxelShowPrintsInScreen or love.system.getDevice() == "Mobile" then

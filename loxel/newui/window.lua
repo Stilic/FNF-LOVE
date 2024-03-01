@@ -17,6 +17,8 @@ function Window:new(x, y, width, height, title)
 	self.hovered = false
     self.minimized = false
     self.dragging = false
+    self.onClosed = nil
+    self.onMinimized = nil
 
 	self.color = {0.3, 0.3, 0.3}
     self.barColor = {0.4, 0.4, 0.4}
@@ -27,10 +29,12 @@ function Window:new(x, y, width, height, title)
 
     self.exitButton = newUI.UIButton(0, 0, 22, 22, 'X', function()
         self:kill()
+        if self.onClosed then self.onClosed() end
     end)
     self.exitButton.color = Color.RED
     self.minButton = newUI.UIButton(0, 0, 22, 22, '-', function()
         self.minimized = not self.minimized
+        if self.onMinimized then self.onMinimized() end
     end)
 end
 

@@ -60,6 +60,10 @@ function SoundTray.adjust()
 	SoundTray.bar.y = SoundTray.box.y + 34
 end
 
+function SoundTray:fullscreen()
+	self:resize(love.graphics.getDimensions())
+end
+
 function SoundTray:resize(width, height)
 	self.game.width = width
 	self.game.height = height

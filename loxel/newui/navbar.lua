@@ -50,13 +50,9 @@ end
 function Navbar:update(dt)
     Navbar.super.update(self, dt)
 
-	if self.active then
-        local mx, my = game.mouse.x, game.mouse.y
-	    self.hovered = (mx >= self.x and mx <= self.x + self.width and
-            my >= self.y and my <= self.y + self.height)
-    else
-        self.hovered = false
-    end
+    local mx, my = game.mouse.x, game.mouse.y
+	self.hovered = (mx >= self.x and mx <= self.x + self.width and
+        my >= self.y and my <= self.y + self.height)
 
     for i, btn in ipairs(self.buttonList) do
         btn.active = self.active

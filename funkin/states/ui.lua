@@ -63,33 +63,10 @@ function UIState:add_UIWindow()
 
         self.checkboxTest = newUI.UICheckbox(10, 10, 20)
         self.windowTest:add(self.checkboxTest)
+
+        self.sliderTest = newUI.UISlider(10, 80, 150, 10, 0, "horizontal")
+        self.windowTest:add(self.sliderTest)
     end
-end
-
--- still confused about hovered ui
-function UIState:checkHovered()
-    local ret = false
-    for i = #self.uiList, 1, -1 do
-        local u = self.uiList[i]
-        u.active = true
-        if u.hovered and i == #self.uiList then
-            ret = true
-        else
-            u.active = false
-        end
-    end
-    return ret
-end
-
-function UIState:update(dt)
-    UIState.super.update(self, dt)
-
-    --[[local hovered = self:checkHovered()
-    print(hovered)
-
-    if self.windowTest and self.navbarTest then
-        print('window ' .. tostring(self.windowTest.hovered) .. ' | navbar ' .. tostring(self.navbarTest.hovered))
-    end]]
 end
 
 return UIState
