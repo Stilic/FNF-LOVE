@@ -55,8 +55,8 @@ function CharacterEditor:enter()
 
 	self:loadCharacter()
 
-	self.startTimestamp = os.time(os.date("*t"))
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
+		self.startTimestamp = os.time(os.date("*t"))
 		Discord.changePresence({
 			details = "Character Editor",
 			state = "Character: " .. self.curChar,
@@ -213,7 +213,7 @@ function CharacterEditor:add_UI_Character()
 		self.curChar = value
 		self:loadCharacter()
 
-		if love.system.getDevice() == "Desktop" then
+		if Discord then
 			Discord.changePresence({
 				details = "Character Editor",
 				state = "Character: " .. self.curChar,

@@ -14,7 +14,7 @@ function StoryMenuState:enter()
 	end
 
 	-- Update Presence
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Story Menu"})
 	end
 

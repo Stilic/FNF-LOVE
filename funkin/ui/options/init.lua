@@ -60,10 +60,11 @@ function Options:enter(parent)
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
-	local device = love.system.getDevice()
-	if device == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Options Menu"})
-	elseif device == "Mobile" then
+	end
+
+	if love.system.getDevice() == "Mobile" then
 		local camButtons = Camera()
 		game.cameras.add(camButtons, false)
 

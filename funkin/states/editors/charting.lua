@@ -80,12 +80,11 @@ function ChartingState:enter()
 
 	self:add(self.gridBox)
 
-	self.startTimestamp = os.time(os.date("*t"))
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
 		Discord.changePresence({
 			details = "Charting",
 			state = "Song: " .. self.__song.song,
-			startTimestamp = self.startTimestamp
+			startTimestamp = os.time(os.date("*t"))
 		})
 	end
 
@@ -961,8 +960,8 @@ function ChartingState:addNote()
 	local mouseX = (game.mouse.x + game.camera.scroll.x)
 	local bpmChanges, lastChange = ChartingState.conductor.bpmChanges, ChartingState.conductor.dummyBPMChange
 	local dummyStep = (self.dummyArrow.y /
-			((16 * ChartingState.conductor.stepCrotchet) *
-				(ChartingState.conductor.bpm / 60) / 4) * 1000) / self.gridSize
+		((16 * ChartingState.conductor.stepCrotchet) *
+			(ChartingState.conductor.bpm / 60) / 4) * 1000) / self.gridSize
 
 	local noteStrumTime = Conductor.stepToTimeFromBPMChange(lastChange, dummyStep, 0)
 	local noteData = math.floor(((mouseX - self.gridSize * 11) - self.gridSize) /

@@ -15,7 +15,7 @@ function FreeplayState:enter()
 	end
 
 	-- Update Presence
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Freeplay Menu"})
 	end
 

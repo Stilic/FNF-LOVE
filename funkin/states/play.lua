@@ -432,7 +432,7 @@ function PlayState:enter()
 		self:startCountdown()
 	end
 
-	if love.system.getDevice() == 'Desktop' then
+	if Discord then
 		local detailsText = "Freeplay"
 		if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
@@ -625,7 +625,7 @@ function PlayState:update(dt)
 
 				self.paused = true
 
-				if love.system.getDevice() == 'Desktop' then
+				if Discord then
 					local detailsText = "Freeplay"
 					if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
@@ -669,7 +669,7 @@ function PlayState:update(dt)
 		game.sound.music:pause()
 		if self.vocals then self.vocals:pause() end
 
-		if love.system.getDevice() == 'Desktop' then
+		if Discord then
 			local detailsText = "Freeplay"
 			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
@@ -884,7 +884,7 @@ function PlayState:closeSubstate()
 		game.sound.music:play()
 		if self.vocals then self.vocals:play() end
 
-		if love.system.getDevice() == 'Desktop' then
+		if Discord then
 			local detailsText = "Freeplay"
 			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
@@ -1240,7 +1240,7 @@ function PlayState:step(s)
 			PlayState.conductor.time = time
 		end
 
-		if love.system.getDevice() == "Desktop" then
+		if Discord then
 			local detailsText = "Freeplay"
 			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
@@ -1412,7 +1412,7 @@ function PlayState:popUpScore(rating)
 end
 
 function PlayState:focus(f)
-	if love.system.getDevice() == 'Desktop' then
+	if Discord then
 		if f then
 			local detailsText = "Freeplay"
 			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end

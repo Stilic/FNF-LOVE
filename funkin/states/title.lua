@@ -12,7 +12,10 @@ function TitleState:enter()
 		return
 	end
 
-	Discord.changePresence({details = "In the Menus", state = "Title Screen"})
+	-- Update Presence
+	if Discord then
+		Discord.changePresence({details = "In the Menus", state = "Title Screen"})
+	end
 
 	self.skipTransIn = true
 

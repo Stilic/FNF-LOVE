@@ -13,7 +13,7 @@ function MainMenuState:enter()
 	end
 
 	-- Update Presence
-	if love.system.getDevice() == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 	end
 
@@ -161,16 +161,17 @@ local triggerChoices = {
 		game.switchState(FreeplayState())
 	end},
 	options = {false, function(self)
-		local device = love.system.getDevice()
-		if device == "Mobile" then
+		local isMobile = love.system.getDevice() == "Mobile"
+		if isMobile then
 			self.buttons:disable()
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
 			self.selectedSomethin = false
 
-			if device == "Desktop" then
+			if Discord then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
-			elseif device == "Mobile" then
+			end
+			if isMobile then
 				self.buttons:enable()
 			end
 		end)

@@ -47,11 +47,12 @@ function ModsState:enter()
 	self.infoTxt.visible = (Mods.currentMod ~= nil)
 	self:add(self.infoTxt)
 
-	local device = love.system.getDevice()
 	-- Update Presence
-	if device == "Desktop" then
+	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Mods Menu"})
-	elseif device == "Mobile" then
+	end
+
+	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
 		local w = 134
 
