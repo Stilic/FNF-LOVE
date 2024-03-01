@@ -375,7 +375,7 @@ function PlayState:enter()
 				round = {0, 0}
 			}
 		})
-		self.buttons:disable()
+		self.buttons:kill()
 	end
 
 	self:add(self.receptors)
@@ -457,7 +457,7 @@ end
 
 function PlayState:startCountdown()
 	if love.system.getDevice() == "Mobile" then
-		self.buttons:enable()
+		self.buttons:revive()
 	end
 
 	local event = self.scripts:call("startCountdown")
@@ -602,7 +602,7 @@ function PlayState:update(dt)
 	end
 
 	if PlayState.conductor.time > 0 and
-			PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+		PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
 		self.timeTxt.content = util.formatTime(songTime)
 		self.timeArc.tracker = PlayState.conductor.time / 1000
 	end
@@ -641,7 +641,7 @@ function PlayState:update(dt)
 				end
 
 				if love.system.getDevice() == "Mobile" then
-					self.buttons:disable()
+					self.buttons:kill()
 				end
 
 				local pause = PauseSubstate()
@@ -693,7 +693,7 @@ function PlayState:update(dt)
 		self.boyfriend.visible = false
 
 		if love.system.getDevice() == "Mobile" then
-			self.buttons:disable()
+			self.buttons:kill()
 		end
 
 		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
@@ -907,7 +907,7 @@ function PlayState:closeSubstate()
 		end
 
 		if love.system.getDevice() == "Mobile" then
-			self.buttons:enable()
+			self.buttons:revive()
 		end
 	end
 end
