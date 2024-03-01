@@ -40,13 +40,9 @@ ffi.cdef [[
 	HWND FindWindowA(LPCSTR lpClassName, LPCSTR lpWindowName);
 	HWND FindWindowExA(HWND hwndParent, HWND hwndChildAfter, LPCSTR lpszClass, LPCSTR lpszWindow);
 	HWND GetActiveWindow(void);
-	LONG GetWindowLongA(HWND hWnd, int nIndex);
 	LONG SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
-	BOOL SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags);
 	BOOL ShowWindow(HWND hWnd, int nCmdShow);
 	BOOL UpdateWindow(HWND hWnd);
-	HMENU GetMenu(HWND hWnd);
-	BOOL AdjustWindowRectEx(LPRECT lpRect, DWORD dwStyle, BOOL bMenu, DWORD dwExStyle);
 
 	HRESULT DwmGetWindowAttribute(HWND hwnd, DWORD dwAttribute, PVOID pvAttribute, DWORD cbAttribute);
 	HRESULT DwmSetWindowAttribute(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
@@ -72,42 +68,14 @@ local function getWindowHandle(title)
 	return window
 end
 
-local function getMainWindowHandle()
-	return ffi.C.GetActiveWindow() or getWindowHandle(love.window.getTitle())
-end
-
 function Util.setDarkMode(enable)
-	local window = getMainWindowHandle()
+	local window = ffi.C.GetActiveWindow() or getWindowHandle(love.window.getTitle())
 
 	local darkMode, size = ffiNew("int[1]", toInt(enable))
 	local result = dwmapi.DwmSetWindowAttribute(window, 19, darkMode, size)
 	if result ~= 0 then
 		dwmapi.DwmSetWindowAttribute(window, 20, darkMode, size)
 	end
-end
-
-function Util.setWindowPosition(x, y, w, h, ...)
-	local window, flags = getMainWindowHandle(), bit.bxor(0x0100, 0x0010, 0x0400)
-	if w == nil then flags = bit.bxor(flags, 0x0001) end
-
-	local w2, h2, data = love.window.getMode()
-	x, y, w, h = x or data.x, y or data.y, w or w2, h or h2
-
-	local style = ffi.C.GetWindowLongA(window, -16)
-	local menu = bit.bnot(bit.band(style, 0x40000000)) >= 0 and (ffi.C.GetMenu(window) and true) or false
-
-	local rect = Rect(0, 0, w, h)
-	if bit.band(style, 0x00C00000) >= 0 then
-		ffi.C.AdjustWindowRectEx(rect, style, menu, 0)
-	end
-
-	ffi.C.SetWindowPos(window, nil,
-		x + rect.x, y + rect.y,
-		rect.right - rect.left, rect.bottom - rect.top,
-		bit.bxor(flags, ...)
-	)
-	rect = nil
-	love.window.getMode()
 end
 
 local currentCursor = "ARROW"

@@ -6,39 +6,6 @@ if love.system.getOS() == "Windows" then
 	WindowDialogue = require "lib.windows.dialogue"
 	WindowUtil = require "lib.windows.util"
 
-	-- since love 12.0, windows no longer recreates for updateMode
-	if love._version_major < 12 then
-		local _ogUpdateMode = love.window.updateMode
-		local includes = {"x", "y", "centered"}
-		function love.window.updateMode(width, height, settings)
-			if settings then
-				for i, v in pairs(settings) do
-					nuh = not table.find(includes, i) and (i ~= "fullscreen" or v ~= f)
-					if nuh then
-						local s = _ogUpdateMode(width, height, settings)
-						WindowUtil.setDarkMode(true)
-						return s
-					end
-				end
-			end
-
-			if love.window.getFullscreen() then return false end
-
-			local x, y, flags = love.window.getMode()
-			local centered = true
-			if settings and settings.centered ~= nil then centered = settings.centered end
-			if centered then
-				local width2, height2 = love.window.getDesktopDimensions(flags.display)
-				x, y = (width2 - width) / 2, (height2 - height) / 2
-			else
-				x, y = settings and settings.x or x, settings and settings.y or y
-			end
-
-			WindowUtil.setWindowPosition(x, y, width, height)
-			return true
-		end
-	end
-
 	local _ogSetMode = love.window.setMode
 	function love.window.setMode(...)
 		_ogSetMode(...)
@@ -54,12 +21,15 @@ util = require "funkin.util"
 
 ClientPrefs = require "funkin.backend.clientprefs"
 Conductor = require "funkin.backend.conductor"
-Discord = require "funkin.backend.discord"
 Highscore = require "funkin.backend.highscore"
 Mods = require "funkin.backend.mods"
 Script = require "funkin.backend.scripting.script"
 ScriptsHandler = require "funkin.backend.scripting.scriptshandler"
 Throttle = require "funkin.backend.throttle"
+
+if love.system.getDevice() == "Desktop" then
+	Discord = require "funkin.backend.discord"
+end
 
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 Note = require "funkin.gameplay.ui.note"
@@ -101,7 +71,31 @@ local TransitionFade = require "loxel.transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
 
 function love.load()
-	ClientPrefs.loadData()
+	game.save.init('funkin')
+
+	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
+	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
+
+	if game.save.data.prefs then
+		love.FPScap = ClientPrefs.data.fps
+		love.parallelUpdate = ClientPrefs.data.parallelUpdate
+		love.asyncInput = ClientPrefs.data.asyncInput
+	else
+		ClientPrefs.data.fps = love.FPScap
+		ClientPrefs.data.parallelUpdate = love.parallelUpdate
+		ClientPrefs.data.resolution = love.graphics.getFixedScale()
+	end
+
+	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
+
+	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
+
+	local config = {controls = table.clone(ClientPrefs.controls)}
+	if controls == nil then
+		controls = (require "lib.baton").new(config)
+	else
+		controls:reset(config)
+	end
 
 	local res, isMobile = ClientPrefs.data.resolution, love.system.getDevice() == "Mobile"
 	love.window.setTitle(Project.title)
@@ -144,7 +138,9 @@ function love.load()
 	game.statsCounter.showDraws = ClientPrefs.data.showDraws
 	game:add(game.statsCounter)
 
-	Discord.init()
+	if Discord then
+		Discord.init()
+	end
 end
 
 function love.resize(w, h) game.resize(w, h) end
@@ -186,7 +182,7 @@ function love.update(dt)
 	Timer.update(dt)
 	game.update(dt)
 
-	if love.system.getDevice() == "Desktop" then Discord.update() end
+	if Discord then Discord.update() end
 	if controls:pressed("fullscreen") then love.window.setFullscreen(not love.window.getFullscreen()) end
 end
 
@@ -204,7 +200,9 @@ end
 function love.quit()
 	ClientPrefs.saveData()
 	game.quit()
-	Discord.shutdown()
+	if Discord then
+		Discord.shutdown()
+	end
 end
 
 local function error_printer(msg, layer)
