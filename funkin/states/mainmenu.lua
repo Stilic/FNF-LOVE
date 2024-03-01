@@ -163,7 +163,7 @@ local triggerChoices = {
 	options = {false, function(self)
 		local isMobile = love.system.getDevice() == "Mobile"
 		if isMobile then
-			self.buttons:disable()
+			self.buttons:kill()
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
 			self.selectedSomethin = false
@@ -172,7 +172,7 @@ local triggerChoices = {
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 			end
 			if isMobile then
-				self.buttons:enable()
+				self.buttons:revive()
 			end
 		end)
 		self.optionsUI:setScrollFactor()

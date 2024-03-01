@@ -84,13 +84,13 @@ function PauseSubstate:update(dt)
 			["Options"] = function()
 				local device = love.system.getDevice()
 				if device == "Mobile" then
-					self.buttons:disable()
+					self.buttons:kill()
 				end
 				self.optionsUI = self.optionsUI or Options(false, function()
 					self.blockInput = false
 
 					if device == "Mobile" then
-						self.buttons:enable()
+						self.buttons:revive()
 					end
 
 					for _, item in ipairs(self.grpShitMenu.members) do
