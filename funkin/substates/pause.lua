@@ -79,17 +79,18 @@ function PauseSubstate:update(dt)
 			end,
 			["Restart Song"] = function()
 				game.resetState(true)
-				self.buttons:destroy()
+				if self.buttons then
+					self.buttons:destroy()
+				end
 			end,
 			["Options"] = function()
-				local device = love.system.getDevice()
-				if device == "Mobile" then
+				if self.buttons then
 					self.buttons:kill()
 				end
 				self.optionsUI = self.optionsUI or Options(false, function()
 					self.blockInput = false
 
-					if device == "Mobile" then
+					if self.buttons then
 						self.buttons:revive()
 					end
 
@@ -160,7 +161,7 @@ function PauseSubstate:close()
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil
 
-	if love.system.getDevice() == "Mobile" then self.buttons:destroy() end
+	if self.buttons then self.buttons:destroy() end
 	PauseSubstate.super.close(self)
 end
 

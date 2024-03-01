@@ -161,8 +161,7 @@ local triggerChoices = {
 		game.switchState(FreeplayState())
 	end},
 	options = {false, function(self)
-		local isMobile = love.system.getDevice() == "Mobile"
-		if isMobile then
+		if self.buttons then
 			self.buttons:kill()
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
@@ -171,7 +170,7 @@ local triggerChoices = {
 			if Discord then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 			end
-			if isMobile then
+			if self.buttons then
 				self.buttons:revive()
 			end
 		end)

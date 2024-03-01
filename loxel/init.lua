@@ -272,7 +272,7 @@ newUI = {
 	UICheckbox = require "loxel.newui.checkbox"
 }
 
-if Project.flags.LoxelShowPrintsInScreen or love.system.getDevice() == "Mobile" then
+if isMobile or Project.flags.LoxelShowPrintsInScreen then
 	ScreenPrint = require "loxel.system.screenprint"
 end
 

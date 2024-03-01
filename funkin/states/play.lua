@@ -392,7 +392,7 @@ function PlayState:enter()
 	self:add(self.timeTxt)
 	self:add(self.botplayTxt)
 
-	if love.system.getDevice() == "Mobile" then self:add(self.buttons) end
+	if self.buttons then self:add(self.buttons) end
 
 	self:recalculateRating()
 
@@ -456,7 +456,7 @@ function PlayState:enter()
 end
 
 function PlayState:startCountdown()
-	if love.system.getDevice() == "Mobile" then
+	if self.buttons then
 		self.buttons:revive()
 	end
 
@@ -613,11 +613,7 @@ function PlayState:update(dt)
 	end
 
 	if self.startedCountdown then
-		local PAUSE_PRESSED = controls:pressed("pause")
-		if love.system.getDevice() == "Mobile" then
-			PAUSE_PRESSED = game.keys.justPressed.ESCAPE
-		end
-		if PAUSE_PRESSED then
+		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
 			local event = self.scripts:call("paused")
 			if event ~= Script.Event_Cancel then
 				game.sound.music:pause()
@@ -640,7 +636,7 @@ function PlayState:update(dt)
 					})
 				end
 
-				if love.system.getDevice() == "Mobile" then
+				if self.buttons then
 					self.buttons:kill()
 				end
 
@@ -692,7 +688,7 @@ function PlayState:update(dt)
 		self.camHUD.visible = false
 		self.boyfriend.visible = false
 
-		if love.system.getDevice() == "Mobile" then
+		if self.buttons then
 			self.buttons:kill()
 		end
 
@@ -906,7 +902,7 @@ function PlayState:closeSubstate()
 			})
 		end
 
-		if love.system.getDevice() == "Mobile" then
+		if self.buttons then
 			self.buttons:revive()
 		end
 	end

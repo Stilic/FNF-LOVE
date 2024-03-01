@@ -115,11 +115,12 @@ function DialogueBox:new(dialogueList)
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = ButtonGroup()
+		game.buttons.add(self.buttons)
+
 		local enter = Button(0, 0, game.width, game.height, "return")
 		enter.pressedAlpha = 0
 		enter.releasedAlpha = 0
 		self.buttons:add(enter)
-		game.buttons.add(self.buttons)
 	end
 end
 
@@ -136,11 +137,7 @@ function DialogueBox:update(dt)
 		self.dialogueStarted = true
 	end
 
-	local ACCEPTED = controls:pressed("accept")
-	if love.system.getDevice() == "Mobile" then
-		ACCEPTED = game.keys.justPressed.ENTER
-	end
-	if ACCEPTED then
+	if self.buttons and game.keys.justPressed.ENTER or controls:pressed("accept") then
 		if self.dialogueEnded then
 			if self.dialogueList[2] == nil and self.dialogueList[1] ~= nil then
 				if not self.isEnding then
