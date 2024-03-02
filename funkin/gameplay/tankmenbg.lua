@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local TankmenBG = Sprite:extend("TankmenBG")
 
 TankmenBG.animationNotes = {}

@@ -1,3 +1,7 @@
+local SpriteGroup = loxel.group.SpriteGroup
+local Color = loxel.util.Color
+local Graphic = loxel.Graphic
+
 local ProgressArc = SpriteGroup:extend("ProgressArc")
 
 function ProgressArc:new(x, y, size, lsize, colors, tracker, max)

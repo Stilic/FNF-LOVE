@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local upperBopper
 local bottomBopper
 local santa

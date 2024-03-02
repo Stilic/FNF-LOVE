@@ -1,5 +1,7 @@
 local decodeJson = (require "lib.json").decode
 
+local Sprite = loxel.Sprite
+
 local function readFile(key)
 	if paths.exists(key, "file") then return love.filesystem.read(key) end
 	return nil

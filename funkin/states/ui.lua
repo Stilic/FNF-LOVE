@@ -1,3 +1,11 @@
+local State = loxel.State
+local Sprite = loxel.Sprite
+
+local UINavbar = loxel.ui.UINavbar
+local UIwindow = loxel.ui.UIWindow
+local UICheckbox = loxel.ui.UICheckbox
+local UISlider = loxel.ui.UISlider
+
 local UIState = State:extend("UIState")
 
 -- for new loxel ui testing
@@ -13,7 +21,7 @@ function UIState:enter()
 
     self.uiList = {}
 
-    self.navbarTest = newUI.UINavbar({
+    self.navbarTest = UINavbar({
         {"File", function()
             if self.windowTest ~= nil then
                 self.windowTest.title = 'File!'
@@ -56,15 +64,15 @@ function UIState:add_UIWindow()
             self.windowTest:kill()
         end
     else
-        self.windowTest = newUI.UIWindow(0, 0, nil, nil, title)
+        self.windowTest = UIWindow(0, 0, nil, nil, title)
         self.windowTest:screenCenter()
         self:add(self.windowTest)
         table.insert(self.uiList, self.windowTest)
 
-        self.checkboxTest = newUI.UICheckbox(10, 10, 20)
+        self.checkboxTest = UICheckbox(10, 10, 20)
         self.windowTest:add(self.checkboxTest)
 
-        self.sliderTest = newUI.UISlider(10, 80, 150, 10, 0, "horizontal")
+        self.sliderTest = UISlider(10, 80, 150, 10, 0, "horizontal")
         self.windowTest:add(self.sliderTest)
     end
 end

@@ -1,5 +1,7 @@
-require "love.window"
-require "loxel.lib.override"
+local source = (...) and (...):gsub('%.init$', '') .. ".src." or ""
+
+require("love.window")
+require(source .. "lib.override")
 Project = require "project"
 
 local isMobile = love.system.getDevice() == "Mobile"
@@ -226,55 +228,80 @@ function love.errorhandler_quit()
 	pcall(love.quit, true)
 end
 
-local Gamestate = require "loxel.lib.gamestate"
-Classic = require "loxel.lib.classic"
+local Gamestate = require(source .. "lib.gamestate")
 
-Basic = require "loxel.basic"
-Object = require "loxel.object"
-Sound = require "loxel.sound"
-Graphic = require "loxel.graphic"
-Sprite = require "loxel.sprite"
-Camera = require "loxel.camera"
-Text = require "loxel.text"
-TypeText = require "loxel.typetext"
-Bar = require "loxel.ui.bar"
-Group = require "loxel.group.group"
-SpriteGroup = require "loxel.group.spritegroup"
-TransitionData = require "loxel.transition.transitiondata"
-Transition = require "loxel.transition.transition"
-State = require "loxel.state"
-Substate = require "loxel.substate"
-Flicker = require "loxel.effects.flicker"
-BackDrop = require "loxel.effects.backdrop"
-Trail = require "loxel.effects.trail"
-ParallaxImage = require "loxel.effects.parallax"
-Color = require "loxel.util.color"
+loxel = {
+	Classic = require(source .. "lib.classic"),
+	Basic = require(source .. "basic"),
+	Object = require(source .. "object"),
+	Sound = require(source .. "sound"),
+	Graphic = require(source .. "graphic"),
+	Sprite = require(source .. "sprite"),
+	Camera = require(source .. "camera"),
+	Text = require(source .. "text"),
+	TypeText = require(source .. "typetext"),
+	Bar = require(source .. "oldui.bar"),
+	State = require(source .. "state"),
+	Substate = require(source .. "substate"),
+	Button = require(source .. "button"),
 
-Button = require "loxel.button"
-ButtonGroup = require "loxel.group.buttongroup"
+	group = {
+		Group = require(source .. "group.group"),
+		SpriteGroup = require(source .. "group.spritegroup"),
+		ButtonGroup = require(source .. "group.buttongroup")
+	},
 
-ui = {
-	UIButton = require "loxel.ui.button",
-	UICheckbox = require "loxel.ui.checkbox",
-	UIDropDown = require "loxel.ui.dropdown",
-	UIGrid = require "loxel.ui.grid",
-	UIInputTextBox = require "loxel.ui.inputtextbox",
-	UINumericStepper = require "loxel.ui.numericstepper",
-	UITabMenu = require "loxel.ui.tabmenu",
-	UISlider = require "loxel.ui.slider"
-}
+	transition = {
+		TransitionFade = require(source .. "transition.transitionfade"),
+		TransitionData = require(source .. "transition.transitiondata"),
+		Transition = require(source .. "transition.transition")
+	},
 
--- wip new ui
-newUI = {
-	UINavbar = require "loxel.newui.navbar",
-	UIWindow = require "loxel.newui.window",
-	UIButton = require "loxel.newui.button",
-	UICheckbox = require "loxel.newui.checkbox",
-	UISlider = require "loxel.newui.slider"
+	effects = {
+		Flicker = require(source .. "effects.flicker"),
+		BackDrop = require(source .. "effects.backdrop"),
+		Trail = require(source .. "effects.trail"),
+		ParallaxImage = require(source .. "effects.parallax")
+	},
+
+	util = {
+		Color = require(source .. "util.color"),
+		Save = require(source .. "util.save")
+	},
+
+	input = {
+		Keyboard = require(source .. "input.keyboard"),
+		Mouse = require(source .. "input.mouse")
+	},
+
+	managers = {
+		Camera = require(source .. "managers.cameramanager"),
+		Sound = require(source .. "managers.soundmanager")
+	},
+
+	oldUI = {
+		UIButton = require(source .. "oldui.button"),
+		UICheckbox = require(source .. "oldui.checkbox"),
+		UIDropDown = require(source .. "oldui.dropdown"),
+		UIGrid = require(source .. "oldui.grid"),
+		UIInputTextBox = require(source .. "oldui.inputtextbox"),
+		UINumericStepper = require(source .. "oldui.numericstepper"),
+		UITabMenu = require(source .. "oldui.tabmenu"),
+		UISlider = require(source .. "oldui.slider")
+	},
+
+	-- wip new ui
+	ui = {
+		UINavbar = require(source .. "ui.navbar"),
+		UIWindow = require(source .. "ui.window"),
+		UIButton = require(source .. "ui.button"),
+		UICheckbox = require(source .. "ui.checkbox"),
+		UISlider = require(source .. "ui.slider")
+	}
 }
 
 if isMobile or Project.flags.LoxelShowPrintsInScreen then
-	ScreenPrint = require "loxel.system.screenprint"
+	ScreenPrint = require(source .. "system.screenprint")
 end
 
 local function temp() return true end
@@ -290,14 +317,14 @@ game = {
 	isSwitchingState = false,
 	dt = 0,
 
-	keys = require "loxel.input.keyboard",
-	mouse = require "loxel.input.mouse",
-	cameras = require "loxel.managers.cameramanager",
-	sound = require "loxel.managers.soundmanager",
-	save = require "loxel.util.save"
+	keys = loxel.input.Keyboard,
+	mouse = loxel.input.Mouse,
+	cameras = loxel.managers.Camera,
+	sound = loxel.managers.Sound,
+	save = loxel.util.Save
 }
-Classic.implement(game, Group)
-Classic.implement(game.bound, Group)
+loxel.Classic.implement(game, loxel.group.Group)
+loxel.Classic.implement(game.bound, loxel.group.Group)
 
 local function triggerCallback(callback, ...) if callback then callback(...) end end
 
@@ -342,12 +369,12 @@ function game.init(app, state, ...)
 		end
 	end
 
-	Sprite.defaultTexture = love.graphics.newImage("loxel/assets/default.png")
-	Camera.__init(love.graphics.newCanvas(width, height, {
+	loxel.Sprite.defaultTexture = love.graphics.newImage(source:gsub('%.src.$', '/') .. "assets/default.png")
+	loxel.Camera.__init(love.graphics.newCanvas(width, height, {
 		format = "normal",
 		dpiscale = 1
 	}))
-	Transition.__init(width, height, game.bound)
+	loxel.transition.Transition.__init(width, height, game.bound)
 
 	love.mouse.setVisible(false)
 
@@ -360,10 +387,10 @@ function game.init(app, state, ...)
 end
 
 local function callUIInput(func, ...)
-	for _, o in ipairs(ui.UIInputTextBox.instances) do
+	for _, o in ipairs(loxel.oldUI.UIInputTextBox.instances) do
 		if o[func] then o[func](o, ...) end
 	end
-	for _, o in ipairs(ui.UINumericStepper.instances) do
+	for _, o in ipairs(loxel.oldUI.UINumericStepper.instances) do
 		if o[func] then o[func](o, ...) end
 	end
 end
@@ -387,18 +414,18 @@ function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 
 function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
 
-function game.touchmoved(id, x, y, dx, dy, p, time) Button.move(id, x, y, p, time) end
+function game.touchmoved(id, x, y, dx, dy, p, time) loxel.Button.move(id, x, y, p, time) end
 
-function game.touchpressed(id, x, y, dx, dy, p, time) Button.press(id, x, y, p, time) end
+function game.touchpressed(id, x, y, dx, dy, p, time) loxel.Button.press(id, x, y, p, time) end
 
-function game.touchreleased(id, x, y, dx, dy, p, time) Button.release(id, x, y, p, time) end
+function game.touchreleased(id, x, y, dx, dy, p, time) loxel.Button.release(id, x, y, p, time) end
 
 local function switch(state)
 	Timer.clear()
 
 	game.cameras.reset()
 	game.sound.destroy()
-	Button.reset()
+	loxel.Button.reset()
 
 	triggerCallback(game.onPreStateSwitch, state)
 
@@ -433,7 +460,7 @@ function game.update(real_dt)
 	end
 	game.dt = dt
 
-	for _, o in ipairs(Flicker.instances) do o:update(dt) end
+	for _, o in ipairs(loxel.effects.Flicker.instances) do o:update(dt) end
 	game.sound.update()
 
 	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end

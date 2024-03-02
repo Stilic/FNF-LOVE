@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local AlphaCharacter = Sprite:extend("AlphaCharacter")
 
 AlphaCharacter.row = 0

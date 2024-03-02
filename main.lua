@@ -67,8 +67,12 @@ GameOverSubstate = require "funkin.substates.gameover"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
-local TransitionFade = require "loxel.transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
+
+
+local TransitionFade = loxel.transition.TransitionFade
+local State = loxel.State
+local Object = loxel.Object
 
 function love.load()
 	game.save.init('funkin')

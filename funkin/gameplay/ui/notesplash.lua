@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local NoteSplash = Sprite:extend("NoteSplash")
 
 function NoteSplash:new(x, y)

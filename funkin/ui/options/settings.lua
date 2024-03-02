@@ -1,3 +1,9 @@
+local SpriteGroup = loxel.group.SpriteGroup
+local Group = loxel.group.Group
+local Graphic = loxel.Graphic
+local Text = loxel.Text
+local Color = loxel.util.Color
+
 local Settings = {}
 Settings.__index = Settings
 

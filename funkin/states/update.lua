@@ -1,3 +1,8 @@
+local State = loxel.State
+local Sprite = loxel.Sprite
+local Group = loxel.group.Group
+local Text = loxel.Text
+
 local UpdateState = State:extend("UpdateState")
 
 local updateVersion = ''

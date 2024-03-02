@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local BackgroundDancer = Sprite:extend("BackgroundDancer")
 
 function BackgroundDancer:new(x, y)

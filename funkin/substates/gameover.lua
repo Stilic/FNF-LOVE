@@ -1,3 +1,13 @@
+local Substate = loxel.Substate
+local Graphic = loxel.Graphic
+local Group = loxel.group.Group
+local Text = loxel.Text
+
+if love.system.getDevice() == "Mobile" then
+local ButtonGroup = loxel.group.ButtonGroup
+local Button = loxel.Button
+end
+
 local GameOverSubstate = Substate:extend("GameOverSubstate")
 
 function GameOverSubstate.resetVars()
@@ -75,7 +85,9 @@ function GameOverSubstate:update(dt)
 				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
 					function()
 						game.resetState()
-						self.buttons:destroy()
+						if love.system.getDevice() == "Mobile" then
+							self.buttons:destroy()
+						end
 					end)
 			end)
 			Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")

@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local Note = Sprite:extend("Note")
 
 Note.swagWidth = 160 * 0.7

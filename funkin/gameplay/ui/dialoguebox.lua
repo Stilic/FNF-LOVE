@@ -1,3 +1,13 @@
+local SpriteGroup = loxel.group.SpriteGroup
+local Color = loxel.util.Color
+local Sprite = loxel.Sprite
+local TypeText = loxel.TypeText
+
+if love.system.getDevice() == "Mobile" then
+local ButtonGroup = loxel.group.ButtonGroup
+local Button = loxel.Button
+end
+
 local DialogueBox = SpriteGroup:extend("DialogueBox")
 
 function DialogueBox:new(dialogueList)
@@ -156,7 +166,9 @@ function DialogueBox:update(dt)
 					end
 
 					Timer.after(1, function()
-						game.buttons.remove(self.buttons)
+						if love.system.getDevice() == "Mobile" then
+							game.buttons.remove(self.buttons)
+						end
 						self.finishThing()
 						self:kill()
 					end)

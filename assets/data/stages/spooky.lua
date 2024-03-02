@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local hallowBG
 
 function create()

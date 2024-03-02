@@ -1,3 +1,14 @@
+local State = loxel.State
+local Sprite = loxel.Sprite
+local Group = loxel.group.Group
+local Text = loxel.Text
+local Flicker = loxel.effects.Flicker
+
+if love.system.getDevice() == "Mobile" then
+local ButtonGroup = loxel.group.ButtonGroup
+local Button = loxel.Button
+end
+
 local MainMenuState = State:extend("MainMenuState")
 
 MainMenuState.curSelected = 1

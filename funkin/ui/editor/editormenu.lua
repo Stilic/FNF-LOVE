@@ -1,3 +1,8 @@
+local SpriteGroup = loxel.group.SpriteGroup
+local Sprite = loxel.Sprite
+local Graphic = loxel.Graphic
+local Group = loxel.group.Group
+
 ---@class EditorMenu
 local EditorMenu = SpriteGroup:extend("EditorMenu")
 

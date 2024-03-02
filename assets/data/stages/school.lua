@@ -1,3 +1,5 @@
+local Sprite = loxel.Sprite
+
 local bgGirls
 
 function create()

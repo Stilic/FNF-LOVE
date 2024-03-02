@@ -1,3 +1,6 @@
+local Sprite = loxel.Sprite
+local Sound = loxel.Sound
+
 local lightColors = {
 	{49,  162, 253}, {49, 253, 140}, {251, 51, 245}, {253, 69, 49},
 	{251, 166, 51}

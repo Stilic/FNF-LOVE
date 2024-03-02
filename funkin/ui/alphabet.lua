@@ -1,4 +1,5 @@
 local AlphaCharacter = require "funkin.ui.alphacharacter"
+local SpriteGroup = loxel.group.SpriteGroup
 
 local Alphabet = SpriteGroup:extend("Alphabet")
 

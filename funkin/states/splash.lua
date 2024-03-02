@@ -1,5 +1,11 @@
-local Splash = State:extend("Splash")
 local UpdateState = require "funkin.states.update"
+
+local State = loxel.State
+local Sprite = loxel.Sprite
+local Group = loxel.group.Group
+local Text = loxel.Text
+
+local Splash = State:extend("Splash")
 
 function Splash:enter()
 	self.skipTransIn = true
