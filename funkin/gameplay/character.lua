@@ -130,8 +130,8 @@ end
 
 function Character:beat(b)
 	if self.lastHit > 0 then
-		if self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime <
-			PlayState.conductor.time then
+		if self.lastHit + math.max(1, self.holdTime - 4) <
+			PlayState.conductor.currentBeat then
 			self:dance()
 			self.lastHit = 0
 		end
@@ -161,7 +161,7 @@ function Character:sing(dir, type)
 	if self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, true)
 
-	self.lastHit = PlayState.conductor.time
+	self.lastHit = PlayState.conductor.currentBeat
 end
 
 function Character:dance(force)
