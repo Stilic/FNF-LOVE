@@ -1,5 +1,3 @@
-local Classic = loxel.Classic
-
 ---@class Conductor:Classic
 local Conductor = Classic:extend("Conductor")
 

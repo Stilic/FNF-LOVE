@@ -1,6 +1,3 @@
-local Sprite = loxel.Sprite
-local Trail = loxel.effects.Trail
-
 function create()
 	self.camZoom = 1.05
 

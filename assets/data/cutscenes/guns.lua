@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 local bgMusic
 local cutsceneTimer
 

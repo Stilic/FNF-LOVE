@@ -63,3 +63,11 @@ function postCreate()
 		end
 	end
 end
+
+function postGoodNoteHit(n)
+	if not n.mustPress then
+		local receptor = state.enemyReceptors.members[n.data + 1]
+		receptor:centerOffsets()
+		receptor:centerOrigin()
+	end
+end

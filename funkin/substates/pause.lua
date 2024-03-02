@@ -1,13 +1,3 @@
-local Substate = loxel.Substate
-local Graphic = loxel.Graphic
-local Group = loxel.group.Group
-local Text = loxel.Text
-
-if love.system.getDevice() == "Mobile" then
-local ButtonGroup = loxel.group.ButtonGroup
-local Button = loxel.Button
-end
-
 local PauseSubstate = Substate:extend("PauseSubstate")
 
 function PauseSubstate:new()

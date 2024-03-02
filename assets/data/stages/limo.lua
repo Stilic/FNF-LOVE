@@ -1,6 +1,3 @@
-local Sprite = loxel.Sprite
-local Group = loxel.group.Group
-
 local bgLimo
 local grpLimoDancers
 local limo

@@ -1,5 +1,3 @@
-local Object = loxel.Object
-
 local CancellableEvent = Object:extend("CancellableEvent")
 
 CancellableEvent.cancelled = false

@@ -1,18 +1,5 @@
 local buildCharFile = require("funkin.backend.jsonbuilder").buildChar
 
-local State = loxel.State
-local Camera = loxel.Camera
-local Sprite = loxel.Sprite
-local Group = loxel.group.Group
-local Text = loxel.Text
-
-local UIInputTextBox = loxel.oldUI.UIInputTextBox
-local UIDropDown = loxel.oldUI.UIDropDown
-local UIButton = loxel.oldUI.UIButton
-local UICheckbox = loxel.oldUI.UICheckbox
-local UINumericStepper = loxel.oldUI.UINumericStepper
-local UITabMenu = loxel.oldUI.UITabMenu
-
 local CharacterEditor = State:extend("CharacterEditor")
 
 CharacterEditor.onPlayState = false
@@ -90,12 +77,12 @@ function CharacterEditor:enter()
 	self.blockInput = {}
 	self.hoveredUI = {}
 
-	self.charTab = UITabMenu(game.width * 0.7, 0, {'Character'})
+	self.charTab = ui.UITabMenu(game.width * 0.7, 0, {'Character'})
 	self.charTab.width = game.width * 0.3
 	self.charTab.height = game.height * 0.5
 	self:add(self.charTab)
 
-	self.animationTab = UITabMenu(game.width * 0.7, self.charTab.height,
+	self.animationTab = ui.UITabMenu(game.width * 0.7, self.charTab.height,
 		{'Animation'})
 	self.animationTab.width = game.width * 0.3
 	self.animationTab.height = game.height * 0.5
@@ -119,10 +106,10 @@ function CharacterEditor:add_UI_Character()
 	local tab_char = Group()
 	tab_char.name = 'Character'
 
-	local save_char = UIButton(140, 10, 100, 20, 'Save',
+	local save_char = ui.UIButton(140, 10, 100, 20, 'Save',
 		function() self:saveCharacter() end)
 
-	local playable_check = UICheckbox(10, 40, 20)
+	local playable_check = ui.UICheckbox(10, 40, 20)
 	playable_check.checked = self.isPlayer
 	playable_check.callback = function()
 		self.isPlayer = not self.isPlayer
@@ -143,7 +130,7 @@ function CharacterEditor:add_UI_Character()
 		end
 	end
 
-	local flipX_check = UICheckbox(10, 70, 20)
+	local flipX_check = ui.UICheckbox(10, 70, 20)
 	flipX_check.checked = self.char.flipX
 	if self.isPlayer then flipX_check.checked = not flipX_check.checked end
 	flipX_check.callback = function()
@@ -152,14 +139,14 @@ function CharacterEditor:add_UI_Character()
 		if self.isPlayer then self.char.flipX = not self.char.flipX end
 	end
 
-	local camX_stepper = UINumericStepper(10, 168, 10,
+	local camX_stepper = ui.UINumericStepper(10, 168, 10,
 		self.char.cameraPosition.x, -9000,
 		9000)
 	camX_stepper.onChanged = function(value)
 		self.char.cameraPosition.x = value
 	end
 
-	local camY_stepper = UINumericStepper(camX_stepper.x + 90,
+	local camY_stepper = ui.UINumericStepper(camX_stepper.x + 90,
 		camX_stepper.y, 10,
 		self.char.cameraPosition.y, -9000,
 		9000)
@@ -167,7 +154,7 @@ function CharacterEditor:add_UI_Character()
 		self.char.cameraPosition.y = value
 	end
 
-	local posX_stepper = UINumericStepper(camX_stepper.x,
+	local posX_stepper = ui.UINumericStepper(camX_stepper.x,
 		camX_stepper.y + 50, 10,
 		self.char.positionTable.x, -9000,
 		9000)
@@ -175,7 +162,7 @@ function CharacterEditor:add_UI_Character()
 		self.char.positionTable.x = value
 		self.char.x = (self.isPlayer and 770 or 100) + self.char.positionTable.x
 	end
-	local posY_stepper = UINumericStepper(posX_stepper.x + 90,
+	local posY_stepper = ui.UINumericStepper(posX_stepper.x + 90,
 		posX_stepper.y, 10,
 		self.char.positionTable.y, -9000,
 		9000)
@@ -184,7 +171,7 @@ function CharacterEditor:add_UI_Character()
 		self.char.y = 100 + self.char.positionTable.y
 	end
 
-	local healthIcon_input = UIInputTextBox(10, 118, 80, 20)
+	local healthIcon_input = ui.UIInputTextBox(10, 118, 80, 20)
 	healthIcon_input.text = self.char.icon
 	healthIcon_input.onChanged = function(value)
 		self.char.icon = value
@@ -217,7 +204,7 @@ function CharacterEditor:add_UI_Character()
 		end
 	end
 
-	local char_dropdown = UIDropDown(10, 10, optionsChar)
+	local char_dropdown = ui.UIDropDown(10, 10, optionsChar)
 	char_dropdown.selectedLabel = self.curChar
 	char_dropdown.onChanged = function(value)
 		self.isPlayer = value:startsWith('bf')

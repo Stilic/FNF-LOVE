@@ -1,7 +1,3 @@
-local Substate = loxel.Substate
-local Graphic = loxel.Graphic
-local Text = loxel.Text
-
 local AssetsErrorSubstate = Substate:extend("AssetsErrorSubstate")
 
 function AssetsErrorSubstate:new(filetype, filepath)

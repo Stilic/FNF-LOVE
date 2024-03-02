@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 function create()
 	self.camZoom = 0.9
 

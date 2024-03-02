@@ -1,5 +1,3 @@
-local Color = loxel.util.Color
-
 local SoundTray = {
 	bars = {},
 	game = {width = 0, height = 0},

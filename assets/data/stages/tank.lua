@@ -1,6 +1,3 @@
-local Sprite = loxel.Sprite
-local Group = loxel.group.Group
-
 local tankWatchtower
 local tankGround
 local tankAngle = love.math.random(-90, 45)

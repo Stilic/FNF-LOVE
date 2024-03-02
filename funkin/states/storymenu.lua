@@ -1,16 +1,3 @@
-local State = loxel.State
-local SpriteGroup = loxel.group.SpriteGroup
-local Sprite = loxel.Sprite
-local Group = loxel.group.Group
-local Text = loxel.Text
-local Color = loxel.util.Color
-local Graphic = loxel.Graphic
-
-if love.system.getDevice() == "Mobile" then
-local ButtonGroup = loxel.group.ButtonGroup
-local Button = loxel.Button
-end
-
 local StoryMenuState = State:extend("StoryMenuState")
 
 StoryMenuState.curWeek = 1

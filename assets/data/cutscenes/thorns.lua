@@ -1,6 +1,4 @@
 local DialogueBox = require "funkin.gameplay.ui.dialoguebox"
-local Sprite = loxel.Sprite
-local Color = loxel.util.Color
 
 local doof
 local music

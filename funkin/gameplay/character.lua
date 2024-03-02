@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 local Character = Sprite:extend("Character")
 
 Character.editorMode = false

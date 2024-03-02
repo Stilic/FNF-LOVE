@@ -1,5 +1,3 @@
-local Classic = loxel.Classic
-
 ---@class ScriptsHandler:Classic
 local ScriptsHandler = Classic:extend("ScriptsHandler")
 

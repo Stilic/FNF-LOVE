@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 ---@class MenuCharacter:Sprite
 local MenuCharacter = Sprite:extend("MenuCharacter")
 

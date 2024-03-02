@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 local Receptor = Sprite:extend("Receptor")
 
 Receptor.pixelAnim = { -- {static, pressed, confirm}

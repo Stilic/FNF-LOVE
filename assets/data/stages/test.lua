@@ -1,5 +1,3 @@
-local ParallaxImage = loxel.effects.ParallaxImage
-
 function create()
 	self.camZoom = 0.9
 

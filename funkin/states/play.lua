@@ -5,21 +5,6 @@ local Events = {
 	CameraMove = require "funkin.backend.scripting.events.cameramove"
 }
 
-local State = loxel.State
-local Sprite = loxel.Sprite
-local SpriteGroup = loxel.group.SpriteGroup
-local Group = loxel.group.Group
-local Text = loxel.Text
-local Sound = loxel.Sound
-local Camera = loxel.Camera
-local Bar = loxel.Bar
-local Color = loxel.util.Color
-
-if love.system.getDevice() == "Mobile" then
-local ButtonGroup = loxel.group.ButtonGroup
-local Button = loxel.Button
-end
-
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
 

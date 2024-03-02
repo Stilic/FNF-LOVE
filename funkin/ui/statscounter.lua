@@ -1,5 +1,3 @@
-local Object = loxel.Object
-
 -- this code fucking sucks
 local StatsCounter = Object:extend("StatsCounter")
 

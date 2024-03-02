@@ -1,6 +1,3 @@
-local Sprite = loxel.Sprite
-local Color = loxel.util.Color
-
 ---@class MenuItem:Sprite
 local MenuItem = Sprite:extend("MenuItem")
 

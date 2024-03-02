@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 function create()
 	Timer.after(0.5, function()
 		state.camHUD.visible = false

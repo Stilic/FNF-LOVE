@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 local HealthIcon = Sprite:extend("HealthIcon")
 
 HealthIcon.defaultIcon = "face"

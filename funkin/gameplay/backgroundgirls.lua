@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 local BackgroundGirls = Sprite:extend("BackgroundGirls")
 
 function BackgroundGirls:new(x, y, isPissed)

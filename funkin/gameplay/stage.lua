@@ -1,5 +1,3 @@
-local Group = loxel.group.Group
-
 local Stage = Group:extend("Stage")
 
 function Stage:new(name)

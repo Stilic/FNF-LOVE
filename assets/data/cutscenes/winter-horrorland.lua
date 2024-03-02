@@ -1,5 +1,3 @@
-local Sprite = loxel.Sprite
-
 function create()
 	state.camHUD.visible = false
 

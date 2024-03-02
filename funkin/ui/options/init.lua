@@ -1,12 +1,3 @@
-local SpriteGroup = loxel.group.SpriteGroup
-local Graphic = loxel.Graphic
-local Text = loxel.Text
-
-if love.system.getDevice() == "Mobile" then
-local ButtonGroup = loxel.group.ButtonGroup
-local Button = loxel.Button
-end
-
 ---@class Options:SpriteGroup
 local Options = SpriteGroup:extend("Options")
 

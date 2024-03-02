@@ -1,8 +1,3 @@
-local SpriteGroup = loxel.group.SpriteGroup
-local Sprite = loxel.Sprite
-local Graphic = loxel.Graphic
-local Text = loxel.Text
-
 local ModCard = SpriteGroup:extend("ModCard")
 
 function ModCard:new(x, y, mods)

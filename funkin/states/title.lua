@@ -1,8 +1,3 @@
-local State = loxel.State
-local Sprite = loxel.Sprite
-local Group = loxel.group.Group
-local Color = loxel.util.Color
-
 local TitleState = State:extend("TitleState")
 
 TitleState.initialized = false

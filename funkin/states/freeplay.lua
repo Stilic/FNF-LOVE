@@ -1,16 +1,4 @@
 local json = require "lib.json".encode
-
-local State = loxel.State
-local Sprite = loxel.Sprite
-local Group = loxel.group.Group
-local Text = loxel.Text
-local Color = loxel.util.Color
-
-if love.system.getDevice() == "Mobile" then
-local ButtonGroup = loxel.group.ButtonGroup
-local Button = loxel.Button
-end
-
 local FreeplayState = State:extend("FreeplayState")
 
 FreeplayState.curSelected = 1
