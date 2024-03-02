@@ -319,7 +319,7 @@ function Conductor:updateSection(dontHit)
 
 		self.currentSection = #passedSections
 		self.currentSectionFloat = self.currentSection
-		sectionChange = Conductor.getSectionChange(self.sectionChanges, self.currentSection,
+		sectionChange = Conductor.getSectionChange(self.sectionChanges, self.currentSection + 1,
 			sectionChange == nil and 0 or sectionChange.id) or self.dummySectionChange
 
 		self.stepsOnSection = sectionChange.beats * 4
