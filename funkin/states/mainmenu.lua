@@ -162,7 +162,7 @@ local triggerChoices = {
 	end},
 	options = {false, function(self)
 		if self.buttons then
-			self.buttons:kill()
+			self.buttons:disable()
 		end
 		self.optionsUI = self.optionsUI or Options(true, function()
 			self.selectedSomethin = false
@@ -171,7 +171,7 @@ local triggerChoices = {
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 			end
 			if self.buttons then
-				self.buttons:revive()
+				self.buttons:enable()
 			end
 		end)
 		self.optionsUI:setScrollFactor()
