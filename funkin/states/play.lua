@@ -232,13 +232,16 @@ function PlayState:enter()
 	self.playerReceptors = Group()
 	self.enemyReceptors = Group()
 
-	local rx, ry = game.width / 2, 50
+	local fieldCount, keyCount = 3, 4
+	local swagWidth = Note.swagWidth - (fieldCount > 2 and 5 or 0)
+	local separation = math.max(swagWidth * keyCount, game.width / math.pow(2, fieldCount - 1)) - (fieldCount > 2 and 1 or 0)
+	local rx, ry = game.width / 2 - (separation * (fieldCount - 1) + swagWidth * keyCount) / 2, 50
 	if self.downScroll then ry = game.height - 100 - ry end
-	for i = 0, 1 do
-		for j = 0, 3 do
-			local rep = Receptor(rx + (game.width / 4) * (i == 1 and 1 or -1),
+	for i = 0, fieldCount - 1, 1 do
+		for j = 0, keyCount - 1, 1 do
+			local rep = Receptor(rx + separation * i + swagWidth * j,
 				ry, j, i)
-			rep:groupInit()
+			rep:setScrollFactor()
 			self.receptors:add(rep)
 			if i == 1 then
 				if self.middleScroll then rep.x = rep.x - (game.width / 4) end

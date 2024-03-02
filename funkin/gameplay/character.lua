@@ -161,7 +161,7 @@ function Character:sing(dir, type)
 	if self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, true)
 
-	self.lastHit = math.floor(PlayState.conductor.time)
+	self.lastHit = PlayState.conductor.time
 end
 
 function Character:dance(force)
