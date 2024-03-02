@@ -650,12 +650,12 @@ function PlayState:update(dt)
 			if self.vocals then self.vocals:pause() end
 			game.switchState(ChartingState())
 		end
-		if controls:pressed("debug_2") then
+		--[[if controls:pressed("debug_2") then
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 			CharacterEditor.onPlayState = true
 			game.switchState(CharacterEditor())
-		end
+		end]]
 		if controls:pressed("reset") then self.health = 0 end
 	end
 

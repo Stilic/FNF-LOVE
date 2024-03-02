@@ -38,6 +38,8 @@ function ChartingState:enter()
 	self.bg:setScrollFactor()
 	self:add(self.bg)
 
+	self.bgMusic = game.sound.play(paths.getMusic('chart_loop'), 0.4, true)
+
 	if PlayState.SONG ~= nil then
 		self.__song = PlayState.SONG
 	else
@@ -140,14 +142,20 @@ function ChartingState:enter()
 
 	self.blockInput = {}
 
-	self.navbarChart = newUI.UINavbar({
+	self.navbarChart = ui.UINavbar({
 		{"File", function()
 		end},
 		{"Chart", function()
 		end},
 		{"Song", function()
 		end},
-		{"Note", function() self:add_UIWindow_Note() end},
+		{"Note", function()
+			if self.noteWindow and self.noteWindow.alive then
+				self.noteWindow:kill()
+			else
+				self:add_UIWindow_Note()
+			end
+		end},
 		{"Events", function()
 		end}
 	})
@@ -157,16 +165,51 @@ function ChartingState:enter()
 	self:updateIcon()
 end
 
-function ChartingState:add_UIWindow_Note()
+function ChartingState:add_UIWindow_Note(note)
 	if self.noteWindow then
-		self.noteWindow.exists = not self.noteWindow.exists
+		self.noteWindow:clear()
+		self.noteWindow:revive()
 	else
-		self.noteWindow = newUI.UIWindow(4, 84, nil, nil, "Note")
+		self.noteWindow = ui.UIWindow(4, 84, nil, nil, "Note")
 		self.noteWindow.cameras = {self.camHUD}
 		self:add(self.noteWindow)
+	end
 
-		self.noteInfoTxt = Text(10, 10, "Just Window :]")
-		self.noteWindow:add(self.noteInfoTxt)
+	if note then
+		local noteTimeTxt = Text(220, 12, 'Time')
+		noteTimeTxt.antialiasing = false
+		self.noteWindow:add(noteTimeTxt)
+
+		local noteTimeInput = ui.UIInputTextBox(10, 10, 200)
+		noteTimeInput.text = tostring(note.time)
+		noteTimeInput.onChanged = function(text)
+			if text:match("[0123456789%.]+") == text then
+				note.time = tonumber(text)
+				self.curSelectedNote[1] = note.time
+				noteTimeTxt.content = 'Time'
+				noteTimeTxt.color = Color.WHITE
+
+				local bpmChanges, lastChange = ChartingState.conductor.bpmChanges,
+					ChartingState.conductor.dummyBPMChange
+
+				note.step = Conductor.getStepFromBPMChange(lastChange, note.time, 0)
+				local yval = note.step * self.gridSize
+				note.y = yval + note.scrollOffset.y
+			else
+				noteTimeTxt.content = 'Time (invalid number)'
+				noteTimeTxt.color = {1, 0.5, 0.5}
+			end
+		end
+		self.noteWindow:add(noteTimeInput)
+
+		local noteTypeDropDown = ui.UIDropDown(10, 40, {
+			'Normal Note',
+			'Hurt Note',
+			'Alt Note'
+		})
+		self.noteWindow:add(noteTypeDropDown)
+	else
+		--
 	end
 end
 
@@ -395,19 +438,13 @@ function ChartingState:add_UI_Charting()
 		game.save.data.chartingData = self.saveData
 	end
 
-	local inst_vol = 0.6
-	local voices_vol = 1
-
-	game.sound.music:setVolume(inst_vol)
-	if self.vocals then self.vocals:setVolume(voices_vol) end
-
 	local mute_inst = ui.UICheckbox(110, 140, 20)
 	mute_inst.checked = false
 	mute_inst.callback = function()
 		if mute_inst.checked then
 			game.sound.music:setVolume(0)
 		else
-			game.sound.music:setVolume(inst_vol)
+			game.sound.music:setVolume(1)
 		end
 	end
 
@@ -417,24 +454,22 @@ function ChartingState:add_UI_Charting()
 		if mute_voices.checked then
 			if self.vocals then self.vocals:setVolume(0) end
 		else
-			if self.vocals then self.vocals:setVolume(voices_vol) end
+			if self.vocals then self.vocals:setVolume(1) end
 		end
 	end
 
-	local vol_inst_stepper = ui.UINumericStepper(10, 140, 0.05, inst_vol, 0, 1)
+	local vol_inst_stepper = ui.UINumericStepper(10, 140, 0.05, 1, 0, 1)
 	vol_inst_stepper.onChanged = function(value)
 		if not mute_inst.checked then
-			inst_vol = value
-			game.sound.music:setVolume(inst_vol)
+			game.sound.music:setVolume(1)
 		end
 	end
 
-	local vol_voices_stepper = ui.UINumericStepper(10, 190, 0.05, voices_vol, 0,
+	local vol_voices_stepper = ui.UINumericStepper(10, 190, 0.05, 1, 0,
 		1)
 	vol_voices_stepper.onChanged = function(value)
 		if not mute_voices.checked then
-			voices_vol = value
-			if self.vocals then self.vocals:setVolume(voices_vol) end
+			if self.vocals then self.vocals:setVolume(1) end
 		end
 	end
 
@@ -515,6 +550,16 @@ function ChartingState:update(dt)
 		end
 	end
 
+	if not self.leavingState then
+		if game.sound.music:isPlaying() and self.bgMusic:isPlaying() then
+			self.bgMusic:pause()
+		elseif not game.sound.music:isPlaying() and not self.bgMusic:isPlaying() then
+			self.bgMusic:play()
+		end
+	else
+		if self.bgMusic:isPlaying() then self.bgMusic:pause() end
+	end
+
 	local isTyping = false
 	for _, inputObj in ipairs(self.blockInput) do
 		if inputObj.active then
@@ -555,8 +600,10 @@ function ChartingState:update(dt)
 				if game.mouse.overlaps(n) then
 					if game.mouse.justPressedRight then
 						self:deleteNote(n)
+						if self.noteWindow then self.noteWindow:kill() end
 					else
 						self:selectNote(n)
+						self:add_UIWindow_Note(n)
 					end
 					return
 				end
@@ -565,7 +612,10 @@ function ChartingState:update(dt)
 				self.gridBox.width and mouseY > self.strumLine.y -
 				(self.gridSize * 5) and mouseY < self.gridBox.y +
 				(self.gridSize * 4 * 4) + (self.gridSize * 17) then
-				self:addNote()
+				local n = self:addNote()
+				if self.noteWindow and self.noteWindow.alive then
+					self:add_UIWindow_Note(n)
+				end
 			end
 		end
 
@@ -1018,6 +1068,8 @@ function ChartingState:addNote()
 	self.allNotes:add(note)
 
 	self.curSelectedNote = self.__song.notes[arrowSection + 1].sectionNotes[noteIndex]
+
+	return note
 end
 
 function ChartingState:getSectionTime()

@@ -76,7 +76,7 @@ end
 
 local triggerChoice = {
 	["Chart Editor"] = function() game.switchState(ChartingState()) end,
-	["Character Editor"] = function() game.switchState(CharacterEditor()) end
+	--["Character Editor"] = function() game.switchState(CharacterEditor()) end
 }
 
 function EditorMenu:update(dt)
@@ -103,9 +103,11 @@ function EditorMenu:update(dt)
 		end
 
 		if controls:pressed('accept') then
-			game.sound.music:stop()
 			local switch = triggerChoice[self.optionShit[self.curSelected][2]]
-			switch()
+			if switch then
+				game.sound.music:stop()
+				switch()
+			end
 		end
 	end
 

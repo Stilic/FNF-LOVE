@@ -13,7 +13,7 @@ function UIState:enter()
 
     self.uiList = {}
 
-    self.navbarTest = newUI.UINavbar({
+    self.navbarTest = ui.UINavbar({
         {"File", function()
             if self.windowTest ~= nil then
                 self.windowTest.title = 'File!'
@@ -46,6 +46,29 @@ function UIState:enter()
     self:add(self.navbarTest)
 
     table.insert(self.uiList, self.navbarTest)
+
+    self.inputTest = ui.UIInputTextBox(100, 150)
+    self:add(self.inputTest)
+
+    self.numStepTest = ui.UINumericStepper(100, 180)
+    self:add(self.numStepTest)
+
+    self.dropdownTest = ui.UIDropDown(250, 150, {
+        'bf',
+        'gf',
+        'dad',
+        'mom',
+        'spooky',
+        'pico',
+        'tankman',
+        'monster',
+        'senpai',
+        'spirit',
+        'bf-pixel',
+        'gf-pixel',
+        'senpai-angry'
+    })
+    self:add(self.dropdownTest)
 end
 
 function UIState:add_UIWindow()
@@ -56,15 +79,15 @@ function UIState:add_UIWindow()
             self.windowTest:kill()
         end
     else
-        self.windowTest = newUI.UIWindow(0, 0, nil, nil, title)
+        self.windowTest = ui.UIWindow(0, 0, nil, nil)
         self.windowTest:screenCenter()
         self:add(self.windowTest)
         table.insert(self.uiList, self.windowTest)
 
-        self.checkboxTest = newUI.UICheckbox(10, 10, 20)
+        self.checkboxTest = ui.UICheckbox(10, 10, 20)
         self.windowTest:add(self.checkboxTest)
 
-        self.sliderTest = newUI.UISlider(10, 80, 150, 10, 0, "horizontal")
+        self.sliderTest = ui.UISlider(10, 80, 150, 10, 0, "horizontal")
         self.windowTest:add(self.sliderTest)
     end
 end

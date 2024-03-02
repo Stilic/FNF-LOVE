@@ -1,6 +1,7 @@
 local Keyboard = {
 	---@class Keys
 	keys = {
+		ANY = nil,
 		A = "a",
 		B = "b",
 		C = "c",
@@ -130,9 +131,24 @@ function Keyboard.reset()
 	Keyboard.input = nil
 end
 
+local invalidKeys = {
+	'escape', 'shift', 'windows', 'alt', 'ctrl', 'pageup', 'pagedown',
+	'home', 'end', 'insert', 'delete', 'backspace', 'capslock', 'scrolllock',
+	'numlock', 'return', 'left', 'down', 'up', 'right', 'tab', 'menu',
+	'printscreen', 'pause', 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8',
+	'f9', 'f10', 'f11', 'f12'
+}
+local shiftKeys = {
+	["0"] = ")", ["1"] = "!", ["2"] = "@", ["3"] = "#", ["4"] = "$",
+	["5"] = "%", ["6"] = "^", ["7"] = "&", ["8"] = "*", ["9"] = "(",
+	["-"] = "_", ["="] = "+", ["["] = "{", ["]"] = "}", [";"] = ":",
+	["'"] = '"', ["`"] = "~", [","] = "<", ["."] = ">", ["/"] = "?",
+	["\""] = "|"
+}
+
 function Keyboard.onPressed(key)
 	for k, value in pairs(Keyboard.keys) do
-		if key == '=' then key = '+' end
+		if key == 'kpenter' then key = "return" end
 		if key == 'lshift' or key == 'rshift' then key = 'shift' end
 		if key == 'lgui' or key == 'rgui' then key = 'windows' end
 		if key == 'lalt' or key == 'ralt' then key = 'alt' end
@@ -145,12 +161,23 @@ function Keyboard.onPressed(key)
 			Keyboard.released[k] = nil
 		end
 	end
-	Keyboard.input = key
+	Keyboard.justPressed.ANY = true
+	Keyboard.pressed.ANY = true
+	Keyboard.justReleased.ANY = nil
+	Keyboard.released.ANY = nil
+
+	if not table.find(invalidKeys, key) then
+		if key == 'space' then key = ' ' end
+		if key:startsWith('kp') then key = key:gsub('kp', '') end
+		if Keyboard.pressed.SHIFT and shiftKeys[key] then
+			key = shiftKeys[key]
+		end
+		Keyboard.input = key
+	end
 end
 
 function Keyboard.onReleased(key)
 	for k, value in pairs(Keyboard.keys) do
-		if key == '=' then key = '+' end
 		if key == 'lshift' or key == 'rshift' then key = 'shift' end
 		if key == 'lgui' or key == 'rgui' then key = 'windows' end
 		if key == 'lalt' or key == 'ralt' then key = 'alt' end
@@ -163,6 +190,10 @@ function Keyboard.onReleased(key)
 			Keyboard.released[k] = true
 		end
 	end
+	Keyboard.justPressed.ANY = nil
+	Keyboard.pressed.ANY = nil
+	Keyboard.justReleased.ANY = true
+	Keyboard.released.ANY = true
 end
 
 return Keyboard

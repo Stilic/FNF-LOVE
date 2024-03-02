@@ -254,23 +254,15 @@ Button = require "loxel.button"
 ButtonGroup = require "loxel.group.buttongroup"
 
 ui = {
+	UINavbar = require "loxel.ui.navbar",
+	UIWindow = require "loxel.ui.window",
 	UIButton = require "loxel.ui.button",
 	UICheckbox = require "loxel.ui.checkbox",
 	UIDropDown = require "loxel.ui.dropdown",
 	UIGrid = require "loxel.ui.grid",
 	UIInputTextBox = require "loxel.ui.inputtextbox",
 	UINumericStepper = require "loxel.ui.numericstepper",
-	UITabMenu = require "loxel.ui.tabmenu",
 	UISlider = require "loxel.ui.slider"
-}
-
--- wip new ui
-newUI = {
-	UINavbar = require "loxel.newui.navbar",
-	UIWindow = require "loxel.newui.window",
-	UIButton = require "loxel.newui.button",
-	UICheckbox = require "loxel.newui.checkbox",
-	UISlider = require "loxel.newui.slider"
 }
 
 if isMobile or Project.flags.LoxelShowPrintsInScreen then
@@ -359,25 +351,9 @@ function game.init(app, state, ...)
 	Gamestate.switch(state(...))
 end
 
-local function callUIInput(func, ...)
-	for _, o in ipairs(ui.UIInputTextBox.instances) do
-		if o[func] then o[func](o, ...) end
-	end
-	for _, o in ipairs(ui.UINumericStepper.instances) do
-		if o[func] then o[func](o, ...) end
-	end
-end
-function game.keypressed(...)
-	game.keys.onPressed(...)
-	callUIInput("keypressed", ...)
-end
+function game.keypressed(...) game.keys.onPressed(...) end
 
-function game.keyreleased(...)
-	game.keys.onReleased(...)
-	callUIInput("keyreleased", ...)
-end
-
-function game.textinput(text) callUIInput("textinput", text) end
+function game.keyreleased(...) game.keys.onReleased(...) end
 
 function game.wheelmoved(x, y) game.mouse.wheel = y end
 

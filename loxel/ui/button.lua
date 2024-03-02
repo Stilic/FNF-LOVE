@@ -8,58 +8,78 @@ function Button:new(x, y, width, height, text, callback)
 	self.height = height or 20
 
 	self.text = text or "Button"
-	self.font = love.graphics.getFont()
+	self.font = love.graphics.newFont(12)
 	self.font:setFilter("nearest", "nearest")
 
 	self.hovered = false
 	self.callback = callback
-	self.color = {0.5, 0.5, 0.5}
+
+	self.color = {0.3, 0.3, 0.3}
+    self.lineColor = {1, 1, 1}
+    self.lineColorHovered = {0.8, 0.8, 0.8}
 	self.textColor = {1, 1, 1}
+
+	self.lineSize = 0.5
+	self.round = {4, 4}
 end
 
-function Button:update()
-	local mx, my = game.mouse.x, game.mouse.y
-	self.hovered =
-		(mx >= self.x and mx <= self.x + self.width and my >= self.y and my <=
-			self.y + self.height)
+function Button:update(dt)
+	Button.super.update(self, dt)
 
-	if game.mouse.justPressed then
-		if game.mouse.justPressedLeft then
-			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.LEFT)
-		elseif game.mouse.justPressedRight then
-			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.RIGHT)
-		elseif game.mouse.justPressedMiddle then
-			self:mousepressed(game.mouse.x, game.mouse.y, game.mouse.MIDDLE)
-		end
+	local mx, my = game.mouse.x, game.mouse.y
+	self.hovered = (mx >= self.x and mx <= self.x + self.width and
+		my >= self.y and my <= self.y + self.height)
+
+	if self.hovered and game.mouse.justReleased then
+		if self.callback then self.callback() end
 	end
 end
 
-function Button:__render(camera)
+function Button:__render()
 	local r, g, b, a = love.graphics.getColor()
+    local lineWidth = love.graphics.getLineWidth()
 
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
 		self.alpha)
-	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height)
+	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height,
+		self.round[1], self.round[2])
+
+	love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
+	love.graphics.rectangle("fill", self.x, self.y + self.height / 2, self.width,
+		self.height / 2, self.round[1], self.round[2])
 
 	if self.hovered then
-		love.graphics.setColor(0.2, 0.2, 0.2, self.alpha)
-	else
-		love.graphics.setColor(0, 0, 0, self.alpha)
+		local color = {0, 0, 0, 0.1 / self.alpha}
+		if game.mouse.pressed then
+			color = {1, 1, 1, 0.1 / self.alpha}
+		end
+		love.graphics.setColor(unpack(color))
+		love.graphics.rectangle("fill", self.x, self.y, self.width, self.height,
+			self.round[1], self.round[2])
 	end
-	love.graphics.rectangle("line", self.x, self.y, self.width, self.height)
 
-	local textX = self.x + (self.width - self.font:getWidth(self.text)) / 2
+    if self.lineSize > 0 then
+		if self.hovered then
+			love.graphics.setColor(self.lineColorHovered[1],
+				self.lineColorHovered[2], self.lineColorHovered[3], self.alpha)
+		else
+			love.graphics.setColor(self.lineColor[1], self.lineColor[2],
+				self.lineColor[3], self.alpha)
+		end
+		love.graphics.setLineWidth(self.lineSize)
+		love.graphics.rectangle("line", self.x, self.y, self.width, self.height,
+			self.round[1], self.round[2])
+    	love.graphics.setLineWidth(lineWidth)
+	end
+
+	local textX = self.x
 	local textY = self.y + (self.height - self.font:getHeight()) / 2
 
 	love.graphics.setColor(self.textColor[1], self.textColor[2],
 		self.textColor[3], self.alpha)
-	love.graphics.print(self.text, textX, textY)
+	love.graphics.printf(self.text, self.font, textX, textY, self.width, "center")
 
 	love.graphics.setColor(r, g, b, a)
-end
-
-function Button:mousepressed(x, y, button)
-	if self.hovered and self.callback then self.callback() end
 end
 
 return Button

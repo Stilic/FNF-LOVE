@@ -27,12 +27,12 @@ function Window:new(x, y, width, height, title)
 
 	self.lineSize = 1
 
-    self.exitButton = newUI.UIButton(0, 0, 22, 22, 'X', function()
+    self.exitButton = ui.UIButton(0, 0, 22, 22, 'X', function()
         self:kill()
         if self.onClosed then self.onClosed() end
     end)
     self.exitButton.color = Color.RED
-    self.minButton = newUI.UIButton(0, 0, 22, 22, '-', function()
+    self.minButton = ui.UIButton(0, 0, 22, 22, '-', function()
         self.minimized = not self.minimized
         if self.onMinimized then self.onMinimized() end
     end)
@@ -45,6 +45,24 @@ function Window:add(obj)
 end
 
 function Window:remove(obj) return self.group:remove(obj) end
+
+function Window:sort(func) return self.group:sort(func) end
+
+function Window:recycle(class, factory, revive) return self.group:recycle(class, factory, revive) end
+
+function Window:clear() self.group:clear() end
+
+function Window:kill()
+	self.group:kill(); Object.super.kill(self)
+end
+
+function Window:revive()
+	self.group:revive(); Object.super.revive(self)
+end
+
+function Window:destroy()
+	self.group:destroy(); Object.super.destroy(self)
+end
 
 function Window:update(dt)
     Window.super.update(self, dt)

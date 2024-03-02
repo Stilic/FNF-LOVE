@@ -173,8 +173,6 @@ function love.touchpressed(...) game.touchpressed(...) end
 
 function love.touchreleased(...) game.touchreleased(...) end
 
-function love.textinput(text) game.textinput(text) end
-
 function love.update(dt)
 	controls:update()
 

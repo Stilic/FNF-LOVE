@@ -15,7 +15,7 @@ function Navbar:new(list, position)
     self.lineSize = 4
 
     for i, button in ipairs(list) do
-        local btn = newUI.UIButton(0, 0, 60, self.height, button[1], button[2])
+        local btn = ui.UIButton(0, 0, 60, self.height, button[1], button[2])
         btn.lineSize = 0
         btn.round = {0, 0}
         table.insert(self.buttonList, btn)
@@ -61,7 +61,7 @@ function Navbar:update(dt)
     end
 end
 
-function Navbar:__render(camera)
+function Navbar:__render()
 	local r, g, b, a = love.graphics.getColor()
     local lineWidth = love.graphics.getLineWidth()
 
@@ -90,7 +90,7 @@ function Navbar:__render(camera)
     end
 
     for i, btn in ipairs(self.buttonList) do
-        btn:__render(camera)
+        btn:__render()
     end
 
 	love.graphics.setColor(r, g, b, a)
