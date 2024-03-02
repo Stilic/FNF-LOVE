@@ -18,7 +18,7 @@ function Character:new(x, y, char, isPlayer)
 	self.__reverseDraw = false
 
 	self.holdTime = 4
-	self.lastHit = 0
+	self.lastHit = math.negative_infinity
 
 	self.danceSpeed = 2
 	self.danced = false
@@ -133,7 +133,7 @@ function Character:beat(b)
 		if self.lastHit + math.max(1, self.holdTime - 4) <
 			PlayState.conductor.currentBeat then
 			self:dance()
-			self.lastHit = 0
+			self.lastHit = math.negative_infinity
 		end
 	elseif b % self.danceSpeed == 0 then
 		self:dance(self.danceSpeed < 2)

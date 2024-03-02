@@ -758,7 +758,7 @@ function PlayState:update(dt)
 
 				if self.gf.__animations['sad'] then
 					self.gf:playAnim('sad', true)
-					self.gf.lastHit = PlayState.conductor.time
+					self.gf.lastHit = PlayState.conductor.currentBeat
 				end
 				self:popUpScore()
 			end
