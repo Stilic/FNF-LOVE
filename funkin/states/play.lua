@@ -375,7 +375,7 @@ function PlayState:enter()
 				round = {0, 0}
 			}
 		})
-		self.buttons:kill()
+		self.buttons:disable()
 	end
 
 	self:add(self.receptors)
@@ -457,7 +457,7 @@ end
 
 function PlayState:startCountdown()
 	if self.buttons then
-		self.buttons:revive()
+		self.buttons:enable()
 	end
 
 	local event = self.scripts:call("startCountdown")
@@ -637,7 +637,7 @@ function PlayState:update(dt)
 				end
 
 				if self.buttons then
-					self.buttons:kill()
+					self.buttons:disable()
 				end
 
 				local pause = PauseSubstate()
@@ -689,7 +689,7 @@ function PlayState:update(dt)
 		self.boyfriend.visible = false
 
 		if self.buttons then
-			self.buttons:kill()
+			self.buttons:disable()
 		end
 
 		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
@@ -901,10 +901,10 @@ function PlayState:closeSubstate()
 				endTimestamp = math.floor(endTimestamp)
 			})
 		end
+	end
 
-		if self.buttons then
-			self.buttons:revive()
-		end
+	if self.buttons then
+		self.buttons:enable()
 	end
 end
 

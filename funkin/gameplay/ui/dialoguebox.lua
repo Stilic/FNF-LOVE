@@ -114,13 +114,8 @@ function DialogueBox:new(dialogueList)
 	self.dialogueEnded = false
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = ButtonGroup()
-		game.buttons.add(self.buttons)
-
-		local enter = Button(0, 0, game.width, game.height, "return")
-		enter.pressedAlpha = 0
-		enter.releasedAlpha = 0
-		self.buttons:add(enter)
+		self.button = Button("return", 0, 0, game.width, game.height, false)
+		self:add(self.button)
 	end
 end
 
@@ -156,7 +151,7 @@ function DialogueBox:update(dt)
 					end
 
 					Timer.after(1, function()
-						game.buttons.remove(self.buttons)
+						self.button:destroy()
 						self.finishThing()
 						self:kill()
 					end)

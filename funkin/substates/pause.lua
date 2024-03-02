@@ -85,13 +85,13 @@ function PauseSubstate:update(dt)
 			end,
 			["Options"] = function()
 				if self.buttons then
-					self.buttons:kill()
+					self.buttons:disable()
 				end
 				self.optionsUI = self.optionsUI or Options(false, function()
 					self.blockInput = false
 
 					if self.buttons then
-						self.buttons:revive()
+						self.buttons:enable()
 					end
 
 					for _, item in ipairs(self.grpShitMenu.members) do
