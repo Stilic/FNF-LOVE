@@ -26,25 +26,23 @@ function ProgressArc:new(x, y, size, lsize, colors, tracker, max)
 		segments = 32
 	}
 	self:add(self.arc)
-	self:updatePosition()
+	self.arc.x = (self.bg.width - self.arc.width) / 2
+	self.arc.y = (self.bg.height - self.arc.height) / 2
 
 	self.tracker = tracker or 1
 	self.max = max or 2
 end
 
 function ProgressArc:update(dt)
-	self:updatePosition()
-
 	local angle = (self.tracker / self.max) * 0.36
 	self.arc.config.angle[2] = -90 + math.ceil(angle)
 
 	if self.width ~= self.size then self.width = self.size end
 	if self.width ~= self.height then self.height = self.width end
 
-	if self.arc.line.width ~= self.linesize then
-		self.arc.line.width = self.linesize * 0.5
-		self.arc.width = self.bg.width - self.arc.line.width
-		self.arc.height = self.bg.height - self.arc.line.width
+	if self.size ~= self.bg.width or self.size ~= self.bg.height or
+			self.linesize ~= self.bg.line.size then
+		self:__updateDimensions()
 	end
 end
 
@@ -55,9 +53,16 @@ function ProgressArc:updateColors(color1, color2)
 	self.bg.color = self.colors[2]
 end
 
-function ProgressArc:updatePosition()
-	self.arc.x = self.bg.x + (self.bg.width - self.arc.width) / 2
-	self.arc.y = self.bg.y + (self.bg.height - self.arc.height) / 2
+function ProgressArc:__updateDimensions()
+	self.bg.width, self.bg.height = self.size, self.size
+	self.bg.line.width = self.linesize
+
+	self.arc.line.width = self.linesize * 0.5
+	self.arc.width = self.bg.width - self.arc.line.width
+	self.arc.height = self.bg.height - self.arc.line.width
+
+	self.arc.x = (self.bg.width - self.arc.width) / 2
+	self.arc.y = (self.bg.height - self.arc.height) / 2
 end
 
 return ProgressArc

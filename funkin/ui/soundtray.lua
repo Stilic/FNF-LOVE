@@ -29,6 +29,8 @@ end
 function SoundTray.new(font)
 	SoundTray.visible = false
 	SoundTray.silent = false
+	SoundTray.canSpawn = false
+	SoundTray.timer = 0
 
 	SoundTray.text.font = font or love.graphics.newFont(22)
 
@@ -71,33 +73,28 @@ function SoundTray:resize(width, height)
 end
 
 function SoundTray:update(dt)
-	if self.visible then
-		clock = clock + dt
-		if self.box.y <= -72 then
-			self.visible = false
-			clock = 0
-		end
-	end
+	if self.throttles.up:check() then self:adjustVolume(1) end
+	if self.throttles.down:check() then self:adjustVolume(-1) end
+	if controls:pressed("volume_mute") then self:toggleMute() end
 
-	if self.throttles.up:check() then
-		self:adjustVolume(1)
-	elseif self.throttles.down:check() then
-		self:adjustVolume(-1)
-	elseif controls:pressed("volume_mute") then
-		self:toggleMute()
-	end
+	self.timer = self.timer + dt
+	if self.timer >= 2 then self.canSpawn = false end
 
-	if clock >= 2 then
-		self.box.y = math.lerp(-80, self.box.y, math.exp(-dt * 6))
-	else
+	if self.canSpawn then
+		self.visible = true
 		self.box.y = math.lerp(22, self.box.y, math.exp(-dt * 14))
+	else
+		self.box.y = math.lerp(-82, self.box.y, math.exp(-dt * 7))
+		if self.box.y < -75 then self.visible = false end
 	end
+
 	self.adjust()
 end
 
+
 function SoundTray:adjustVolume(amount)
-	self.visible = true
-	clock = 0
+	self.canSpawn = true
+	self.timer = 0
 
 	local newVolume = n + amount
 	newVolume = math.max(0, math.min(10, newVolume))
