@@ -81,7 +81,7 @@ function Settings:changeOption(id, add, optionsUI, bind)
 			ret = func(add)
 			value = self:getOption(id)
 		elseif functype == "table" then
-			value = func[math.wrap(math.find(func, value) + add, 1, #func)]
+			value = func[math.wrap(table.find(func, value) + add, 1, #func + 1)]
 		else
 			-- TODO: input
 		end
@@ -90,7 +90,7 @@ function Settings:changeOption(id, add, optionsUI, bind)
 			ret = func(add)
 			value = self:getOption(id)
 		elseif functype == "table" then
-			value = func[math.wrap(value + add, 1, #func)]
+			value = func[math.wrap(value + add, 1, #func + 1)]
 		else
 			value = value + add
 		end
