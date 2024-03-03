@@ -8,6 +8,18 @@ local data = {
 	{"botplayMode",  "Botplay",       "boolean"}, -- this shouldnt be here.
 
 	{"MISCELLANEOUS"},
+	{"hitSound", "Hit Sound", "number", function(add)
+		local value = ClientPrefs.data.hitSound
+		value = value + add
+		if value > 100 then
+			value = 100
+		elseif value < 0 then
+			value = 0
+		end
+		ClientPrefs.data.hitSound = value
+	end, function(value)
+		return tostring(value) .. "%"
+	end},
 	{"backgroundDim", "Background Dim", "number", function(add)
 		local value = ClientPrefs.data.backgroundDim
 		value = value + add

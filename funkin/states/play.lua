@@ -1042,6 +1042,11 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 		end
 
 		self:goodNoteHit(coolNote)
+
+		if ClientPrefs.data.hitSound > 0 then
+			local vol = ClientPrefs.data.hitSound / 100
+			game.sound.play(paths.getSound('hitsound'), vol)
+		end
 	end
 
 	PlayState.conductor.time = prev

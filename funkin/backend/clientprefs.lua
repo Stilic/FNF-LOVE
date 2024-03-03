@@ -9,6 +9,7 @@ ClientPrefs.data = {
 	middleScroll = false,
 	noteSplash = true,
 	backgroundDim = 0,
+	hitSound = 0,
 	pauseMusic = 'railways',
 	botplayMode = false,
 	timeType = 'left',
