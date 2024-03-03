@@ -316,8 +316,11 @@ function Camera:drawComplex(_skipCheck)
 
 	color = self.__fadeColor
 	if self.__fadeDuration > 0 then
-		if self.clipCam then grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-		else grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY) end
+		if self.clipCam then
+			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+		else
+			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+		end
 		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
 		grap.translate(-w2, -h2)
 		grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)

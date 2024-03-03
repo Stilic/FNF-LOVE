@@ -69,6 +69,14 @@ function PlayState.loadSong(song, diff)
 	return true
 end
 
+function PlayState.getFieldPosition(fieldCount, keyCount, downScroll)
+	local swagWidth = Note.swagWidth - (fieldCount > 2 and 5 or 0)
+	local separation = math.max(swagWidth * keyCount, game.width / math.pow(2, fieldCount - 1)) - (fieldCount > 2 and 1 or 0)
+	local rx, ry = game.width / 2 - (separation * (fieldCount - 1) + swagWidth * keyCount) / 2, 50
+	if downScroll then ry = game.height - 100 - ry end
+	return rx, ry, swagWidth, separation
+end
+
 function PlayState:new(storyMode, song, diff)
 	PlayState.super.new(self)
 
@@ -86,12 +94,8 @@ function PlayState:new(storyMode, song, diff)
 		if not PlayState.loadSong(song, diff) then
 			setmetatable(self, TitleState)
 			TitleState.new(self)
-			return
 		end
 	end
-
-	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
-	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 end
 
 function PlayState:enter()
@@ -102,6 +106,11 @@ function PlayState:enter()
 	PlayState.conductor.onStep = bind(self, self.step)
 	PlayState.conductor.onBeat = bind(self, self.beat)
 	PlayState.conductor.onSection = bind(self, self.section)
+
+	self.keyCount = 4
+
+	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
+	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts")
@@ -232,22 +241,23 @@ function PlayState:enter()
 	self.playerReceptors = Group()
 	self.enemyReceptors = Group()
 
-	local fieldCount, keyCount = 3, 4
-	local swagWidth = Note.swagWidth - (fieldCount > 2 and 5 or 0)
-	local separation = math.max(swagWidth * keyCount, game.width / math.pow(2, fieldCount - 1)) - (fieldCount > 2 and 1 or 0)
-	local rx, ry = game.width / 2 - (separation * (fieldCount - 1) + swagWidth * keyCount) / 2, 50
-	if self.downScroll then ry = game.height - 100 - ry end
-	for i = 0, fieldCount - 1, 1 do
-		for j = 0, keyCount - 1, 1 do
-			local rep = Receptor(rx + separation * i + swagWidth * j,
+	local rx, ry, swagWidth, separation = PlayState.getFieldPosition(self.middleScroll and 1 or 2, self.keyCount, self.downScroll)
+	for i = 0, 1, 1 do
+		local x, isPlayer = rx + separation * i, i == 1
+		if self.middleScroll then
+			isPlayer = not isPlayer
+		end
+		for j = 0, self.keyCount - 1, 1 do
+			local rep = Receptor(x + swagWidth * j,
 				ry, j, i)
 			rep:setScrollFactor()
 			self.receptors:add(rep)
-			if i == 1 then
-				if self.middleScroll then rep.x = rep.x - (game.width / 4) end
+			if isPlayer then
 				self.playerReceptors:add(rep)
 			else
-				if self.middleScroll then rep.visible = false end
+				if self.middleScroll then
+					rep.visible = false
+				end
 				self.enemyReceptors:add(rep)
 			end
 		end
@@ -930,21 +940,13 @@ function PlayState:onSettingChange(setting)
 		end
 		self.timeTxt.content = util.formatTime(songTime)
 
-		local rx, ry = game.width / 2, 50
-		if self.downScroll then ry = game.height - 100 - ry end
+		local rx, ry, swagWidth, separation = PlayState.getFieldPosition(self.middleScroll and 1 or 2, self.keyCount, self.downScroll)
 		for _, rep in ipairs(self.receptors.members) do
-			rep:setPosition(rx + (game.width / 4) * (rep.player == 1 and 1 or -1), ry)
+			rep:setPosition(rx + separation * rep.player + swagWidth * rep.data,
+				ry)
 			local oldAnim = {name = rep.curAnim.name, frame = rep.curFrame}
-			rep:groupInit()
 			rep:play(oldAnim.name, true, oldAnim.frame)
-			rep.visible = true
-			if self.middleScroll then
-				if rep.player == 1 then
-					rep.x = rep.x - (game.width / 4)
-				else
-					rep.visible = false
-				end
-			end
+			rep.visible = not self.middleScroll or rep.player == 0
 		end
 
 		self.healthBarBG.y = self.downScroll and game.height * 0.08 or game.height * 0.9

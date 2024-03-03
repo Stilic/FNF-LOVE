@@ -4,6 +4,7 @@ function beat()
 		state.gf.lastHit = PlayState.conductor.currentBeat
 		if curBeat ~= 79 then
 			state.boyfriend:playAnim('hey', true)
+			state.boyfriend.lastHit = PlayState.conductor.currentBeat
 		end
 	end
 end

@@ -15,8 +15,8 @@ function Button:new(x, y, width, height, text, callback)
 	self.callback = callback
 
 	self.color = {0.3, 0.3, 0.3}
-    self.lineColor = {1, 1, 1}
-    self.lineColorHovered = {0.8, 0.8, 0.8}
+	self.lineColor = {1, 1, 1}
+	self.lineColorHovered = {0.8, 0.8, 0.8}
 	self.textColor = {1, 1, 1}
 
 	self.lineSize = 0.5
@@ -37,7 +37,7 @@ end
 
 function Button:__render()
 	local r, g, b, a = love.graphics.getColor()
-    local lineWidth = love.graphics.getLineWidth()
+	local lineWidth = love.graphics.getLineWidth()
 
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
 		self.alpha)
@@ -58,7 +58,7 @@ function Button:__render()
 			self.round[1], self.round[2])
 	end
 
-    if self.lineSize > 0 then
+	if self.lineSize > 0 then
 		if self.hovered then
 			love.graphics.setColor(self.lineColorHovered[1],
 				self.lineColorHovered[2], self.lineColorHovered[3], self.alpha)
@@ -69,7 +69,7 @@ function Button:__render()
 		love.graphics.setLineWidth(self.lineSize)
 		love.graphics.rectangle("line", self.x, self.y, self.width, self.height,
 			self.round[1], self.round[2])
-    	love.graphics.setLineWidth(lineWidth)
+		love.graphics.setLineWidth(lineWidth)
 	end
 
 	local textX = self.x

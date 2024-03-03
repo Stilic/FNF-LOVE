@@ -11,11 +11,11 @@ function Checkbox:new(x, y, size, callback)
 	self.callback = callback
 
 	self.color = {0.2, 0.2, 0.2}
-    self.lineColor = {1, 1, 1}
-    self.lineColorHovered = {0.8, 0.8, 0.8}
-    self.checkColor = {1, 1, 1}
+	self.lineColor = {1, 1, 1}
+	self.lineColorHovered = {0.8, 0.8, 0.8}
+	self.checkColor = {1, 1, 1}
 
-    self.lineSize = 0.5
+	self.lineSize = 0.5
 	self.round = {4, 4}
 end
 
@@ -28,26 +28,26 @@ function Checkbox:update(dt)
 			self.y + self.size)
 
 	if self.hovered and game.mouse.justReleased then
-        self.checked = not self.checked
-        if self.callback then self.callback() end
+		self.checked = not self.checked
+		if self.callback then self.callback() end
 	end
 end
 
 function Checkbox:__render()
 	local r, g, b, a = love.graphics.getColor()
-    local lineWidth = love.graphics.getLineWidth()
+	local lineWidth = love.graphics.getLineWidth()
 
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
 		self.alpha)
 	love.graphics.rectangle("fill", self.x, self.y, self.size, self.size,
-        self.round[1], self.round[2])
+		self.round[1], self.round[2])
 
-    love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
+	love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
 	love.graphics.rectangle("fill", self.x, self.y + self.size / 2, self.size,
-        self.size / 2, self.round[1], self.round[2])
+		self.size / 2, self.round[1], self.round[2])
 
 	if self.hovered then
-        local color = {0, 0, 0, 0.1 / self.alpha}
+		local color = {0, 0, 0, 0.1 / self.alpha}
 		if game.mouse.pressed then
 			color = {1, 1, 1, 0.1 / self.alpha}
 		end
@@ -62,11 +62,11 @@ function Checkbox:__render()
 			self.lineColor[3], self.alpha)
 	end
 
-    if self.lineSize > 0 then
+	if self.lineSize > 0 then
 		love.graphics.setLineWidth(self.lineSize)
 		love.graphics.rectangle("line", self.x, self.y, self.size, self.size,
-            self.round[1], self.round[2])
-    	love.graphics.setLineWidth(lineWidth)
+			self.round[1], self.round[2])
+		love.graphics.setLineWidth(lineWidth)
 	end
 
 	if self.checked then
@@ -77,7 +77,7 @@ function Checkbox:__render()
 
 		love.graphics.translate(checkX, checkY)
 		love.graphics.setColor(self.checkColor[1], self.checkColor[2],
-            self.checkColor[3], self.alpha)
+			self.checkColor[3], self.alpha)
 
 		local logo_position = {(-self.size) * 0.3, (-self.size) * -0.3}
 

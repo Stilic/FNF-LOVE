@@ -7,27 +7,27 @@ function Dropdown:new(x, y, options)
 	self.width = 90
 	self.height = 20
 
-    self.font = font or love.graphics.newFont(12)
+	self.font = font or love.graphics.newFont(12)
 	self.font:setFilter("nearest", "nearest")
 
 	self.options = options
 	self.selectedOption = 1
-    self.selectedLabel = self.options[1]
+	self.selectedLabel = self.options[1]
 
-    self.hovered = false
+	self.hovered = false
 	self.isOpen = false
-    self.onChanged = nil
+	self.onChanged = nil
 
-    self.color = {0.2, 0.2, 0.2}
+	self.color = {0.2, 0.2, 0.2}
 	self.lineColor = {1, 1, 1}
-    self.textColor = {1, 1, 1}
-    self.hoverColor = {1, 1, 1}
+	self.textColor = {1, 1, 1}
+	self.hoverColor = {1, 1, 1}
 
 	self.__canScroll = false
 	self.__curScroll = 0
 	self.__maxShow = 10
 
-    self.lineSize = 0.5
+	self.lineSize = 0.5
 	self.round = {4, 4}
 
 	self.__openButton = ui.UIButton(0, 0, self.height, self.height, "",
@@ -54,9 +54,9 @@ function Dropdown:update(dt)
 
 	if game.mouse.justReleasedLeft then
 		local optionClicked = self:isMouseOverOption(game.mouse.x, game.mouse.y)
-        if self.isOpen and optionClicked then
-            self:selectOption(optionClicked + self.__curScroll)
-        end
+		if self.isOpen and optionClicked then
+			self:selectOption(optionClicked + self.__curScroll)
+		end
 	end
 end
 
@@ -70,18 +70,18 @@ local function drawBoid(mode, x, y, length, width, angle)
 end
 
 function Dropdown:__render(camera)
-    local r, g, b, a = love.graphics.getColor()
-    local lineWidth = love.graphics.getLineWidth()
+	local r, g, b, a = love.graphics.getColor()
+	local lineWidth = love.graphics.getLineWidth()
 	local ogScis_x, ogScis_y, ogScis_w, ogScis_h = love.graphics.getScissor()
-    local mx, my = game.mouse.x, game.mouse.y
+	local mx, my = game.mouse.x, game.mouse.y
 
 	if self.isOpen then
-        local heightOption = #self.options
-        if heightOption > self.__maxShow then heightOption = self.__maxShow end
-        love.graphics.setColor(self.color[1], self.color[2],
-            self.color[3], self.alpha)
-	    love.graphics.rectangle("fill", self.x, self.y, self.width,
-            self.height * (heightOption + 1), self.round[1], self.round[2])
+		local heightOption = #self.options
+		if heightOption > self.__maxShow then heightOption = self.__maxShow end
+		love.graphics.setColor(self.color[1], self.color[2],
+			self.color[3], self.alpha)
+		love.graphics.rectangle("fill", self.x, self.y, self.width,
+			self.height * (heightOption + 1), self.round[1], self.round[2])
 
 		for i, option in ipairs(self.options) do
 			if i > self.__curScroll and i <= (self.__maxShow + self.__curScroll) then
@@ -89,13 +89,13 @@ function Dropdown:__render(camera)
 				local optionX = self.x
 				local optionY = self.y + (self.height * fakeIndex)
 
-                love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
-	            love.graphics.rectangle("fill", optionX, optionY + self.height / 2,
-                    self.width, self.height / 2, self.round[1],
-                        self.round[2])
+				love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
+				love.graphics.rectangle("fill", optionX, optionY + self.height / 2,
+					self.width, self.height / 2, self.round[1],
+					self.round[2])
 
-                love.graphics.setColor(self.textColor[1], self.textColor[2],
-                    self.textColor[3], self.alpha)
+				love.graphics.setColor(self.textColor[1], self.textColor[2],
+					self.textColor[3], self.alpha)
 				love.graphics.push()
 				love.graphics.setScissor(optionX + 2, optionY, self.width - 7,
 					self.height)
@@ -106,12 +106,12 @@ function Dropdown:__render(camera)
 				love.graphics.pop()
 				if mx >= optionX and mx < optionX + self.width and
 					my >= optionY and my < optionY + self.height then
-                    love.graphics.setColor(self.hoverColor[1], self.hoverColor[2],
-                        self.hoverColor[3], 0.1 / self.alpha)
+					love.graphics.setColor(self.hoverColor[1], self.hoverColor[2],
+						self.hoverColor[3], 0.1 / self.alpha)
 					love.graphics.rectangle("fill", optionX, optionY,
 						self.width, self.height)
-                    love.graphics.setColor(self.textColor[1], self.textColor[2],
-                        self.textColor[3], self.alpha)
+					love.graphics.setColor(self.textColor[1], self.textColor[2],
+						self.textColor[3], self.alpha)
 					love.graphics.push()
 					love.graphics.setScissor(optionX + 2, optionY,
 						self.width - 7, self.height)
@@ -125,37 +125,37 @@ function Dropdown:__render(camera)
 			end
 		end
 
-        if self.lineSize > 0 then
-            love.graphics.setColor(self.lineColor[1], self.lineColor[2],
-                self.lineColor[3], self.alpha)
-            love.graphics.setLineWidth(self.lineSize)
-            love.graphics.rectangle("line", self.x, self.y, self.width,
-                self.height * (heightOption + 1), self.round[1], self.round[2])
-            love.graphics.setLineWidth(lineWidth)
-        end
+		if self.lineSize > 0 then
+			love.graphics.setColor(self.lineColor[1], self.lineColor[2],
+				self.lineColor[3], self.alpha)
+			love.graphics.setLineWidth(self.lineSize)
+			love.graphics.rectangle("line", self.x, self.y, self.width,
+				self.height * (heightOption + 1), self.round[1], self.round[2])
+			love.graphics.setLineWidth(lineWidth)
+		end
 	end
 
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3],
 		self.alpha)
 	love.graphics.rectangle("fill", self.x, self.y, self.width + self.height,
-        self.height, self.round[1], self.round[2])
+		self.height, self.round[1], self.round[2])
 
-    love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
+	love.graphics.setColor(0, 0, 0, 0.1 / self.alpha)
 	love.graphics.rectangle("fill", self.x, self.y + self.height / 2,
-        self.width + self.height, self.height / 2, self.round[1],
-            self.round[2])
+		self.width + self.height, self.height / 2, self.round[1],
+		self.round[2])
 
-    if self.lineSize > 0 then
-        love.graphics.setColor(self.lineColor[1], self.lineColor[2],
-            self.lineColor[3], self.alpha)
-        love.graphics.setLineWidth(self.lineSize)
-        love.graphics.rectangle("line", self.x, self.y, self.width + self.height,
-            self.height, self.round[1], self.round[2])
-        love.graphics.setLineWidth(lineWidth)
-    end
+	if self.lineSize > 0 then
+		love.graphics.setColor(self.lineColor[1], self.lineColor[2],
+			self.lineColor[3], self.alpha)
+		love.graphics.setLineWidth(self.lineSize)
+		love.graphics.rectangle("line", self.x, self.y, self.width + self.height,
+			self.height, self.round[1], self.round[2])
+		love.graphics.setLineWidth(lineWidth)
+	end
 
 	love.graphics.setColor(self.textColor[1], self.textColor[2],
-        self.textColor[3], self.alpha)
+		self.textColor[3], self.alpha)
 	love.graphics.push()
 	love.graphics.setScissor(self.x + 2, self.y, self.width - 7, self.height)
 	love.graphics.print(self.selectedLabel, self.x + 5,
@@ -187,7 +187,7 @@ function Dropdown:__render(camera)
 			90)
 	end
 
-    love.graphics.setColor(r, g, b, a)
+	love.graphics.setColor(r, g, b, a)
 end
 
 function Dropdown:selectOption(index)
