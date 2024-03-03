@@ -531,8 +531,7 @@ function PlayState:startCountdown()
 	end
 end
 
-local fadeGroupSprites
-function fadeGroupSprites(obj)
+local function fadeGroupSprites(obj)
 	if obj then
 		if obj:is(Group) then
 			for _, o in ipairs(obj.members) do fadeGroupSprites(o) end

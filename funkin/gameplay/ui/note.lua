@@ -14,8 +14,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 	self.data = data
 	self.prevNote = prevNote
 	if sustain == nil then sustain = false end
-	self.isSustain, self.isSustainEnd = sustain, false
-	self.parentNote, children = parentNote, false
+	self.isSustain, self.isSustainEnd, self.parentNote = sustain, false, parentNote
 	self.mustPress = false
 	self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
 	self.earlyHitMult, self.lateHitMult = 1, 1
