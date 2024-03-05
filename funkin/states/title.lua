@@ -100,6 +100,14 @@ function TitleState:update(dt)
 	self.conductor.time = game.sound.music:tell() * 1000
 	self.conductor:update(dt)
 
+	if love.system.getDevice() == "Mobile" and game.keys.justPressed.ESCAPE then
+		local name = love.window.getTitle()
+		if #name == 0 or name == "Untitled" then name = "Game" end
+
+		local pressed = love.window.showMessageBox("Quit " .. name .. "?", "", {"OK", "Cancel"})
+		if pressed == 1 then love.quit(); os.exit(); end
+	end
+
 	local pressedEnter = controls:pressed("accept")
 
 	if pressedEnter and not self.confirmed and self.skippedIntro then

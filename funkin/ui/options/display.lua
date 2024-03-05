@@ -108,9 +108,8 @@ local data = {
 
 if love.system.getDevice() == "Mobile" then
 	for _, v in pairs(data) do
-		if v[1] == "fullscreen" then
+		if #v > 1 and v[1] == "fullscreen" or v[1] == "resolution" then
 			table.delete(data, v)
-			break
 		end
 	end
 end

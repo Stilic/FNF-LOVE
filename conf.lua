@@ -1,7 +1,7 @@
 local Project = require "project"
 
 function love.conf(t)
-	t.identity = Project.company
+	t.identity = Project.package
 	t.console = Project.DEBUG_MODE
 	t.gammacorrect = false
 	t.highdpi = false
@@ -16,7 +16,7 @@ function love.conf(t)
 	t.renderers = {"metal", "opengl"}
 	--t.excluderenderers = {"vulkan"}
 
-	-- we'll initialize the window in run.lua
+	-- we'll initialize the window in loxel/init.lua
 	-- reason why is, we need it for mobile window to not be bugging
 	t.modules.window = false
 	t.modules.physics = false
