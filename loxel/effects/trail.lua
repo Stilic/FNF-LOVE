@@ -74,12 +74,11 @@ function Trail:update(dt)
 		local sprPosition
 		if #self.__recentPositions == self.__trailLength then
 			sprPosition = table.remove(self.__recentPositions)
-		else
-			sprPosition = {
-				x = self.target.x - self.target.offset.x,
-				y = self.target.y - self.target.offset.y
-			}
 		end
+		sprPosition = {
+			x = self.target.x - self.target.offset.x,
+			y = self.target.y - self.target.offset.y
+		}
 		table.insert(self.__recentPositions, 1, sprPosition)
 
 		if self.rotationsEnabled then
