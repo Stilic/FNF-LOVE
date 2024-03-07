@@ -38,7 +38,11 @@ function ChartingState:enter()
 	self.bg:setScrollFactor()
 	self:add(self.bg)
 
+	self.playback = 1
+	self.focused = true
+
 	self.bgMusic = game.sound.play(paths.getMusic('chart_loop'), 0.4, true)
+	game.sound.list:add(self.bgMusic)
 
 	if PlayState.SONG ~= nil then
 		self.__song = PlayState.SONG
@@ -148,10 +152,15 @@ function ChartingState:enter()
 		{"Chart", function()
 		end},
 		{"Song", function()
+			if self.UISongWindow and self.UISongWindow.alive then
+				self.UISongWindow:kill()
+			else
+				self:add_UIWindow_Song()
+			end
 		end},
 		{"Note", function()
-			if self.noteWindow and self.noteWindow.alive then
-				self.noteWindow:kill()
+			if self.UINoteWindow and self.UINoteWindow.alive then
+				self.UINoteWindow:kill()
 			else
 				self:add_UIWindow_Note()
 			end
@@ -165,20 +174,103 @@ function ChartingState:enter()
 	self:updateIcon()
 end
 
-function ChartingState:add_UIWindow_Note(note)
-	if self.noteWindow then
-		self.noteWindow:clear()
-		self.noteWindow:revive()
+function ChartingState:add_UIWindow_Song()
+	if self.UISongWindow then
+		self.UISongWindow:clear()
+		self.UISongWindow:revive()
 	else
-		self.noteWindow = ui.UIWindow(4, 84, nil, nil, "Note")
-		self.noteWindow.cameras = {self.camHUD}
-		self:add(self.noteWindow)
+		self.UISongWindow = ui.UIWindow(4, 84, nil, 300, "Song")
+		self.UISongWindow.cameras = {self.camHUD}
+		self:add(self.UISongWindow)
+	end
+
+	local rectline = Graphic(10, 10, 380, 100, {0.15, 0.15, 0.15},
+		"rectangle", "line")
+	rectline.line.width = 1
+	rectline.config.round = {4, 4}
+
+	local instTxt = Text(rectline.x + 18, rectline.y - 6, ' Instrumental ')
+	instTxt.bgColor = {0.3, 0.3, 0.3}
+	instTxt.antialiasing = false
+
+	local format = 'Volume - {val}%'
+	local instVolTxt = Text(rectline.x + 15, rectline.y + 14, '')
+	instVolTxt.content = format:gsub('{val}',
+		tostring(game.sound.music:getVolume() * 100))
+	instVolTxt.antialiasing = false
+
+	local instVolSlider = ui.UISlider(rectline.x + 15, rectline.y + 35, 150, 10,
+		game.sound.music:getVolume(), 0.1)
+	instVolSlider.onChanged = function(value)
+		game.sound.music:setVolume(value)
+		instVolTxt.content = format:gsub('{val}',
+			tostring(game.sound.music:getVolume() * 100))
+	end
+
+	self.UISongWindow:add(rectline)
+	self.UISongWindow:add(instTxt)
+	self.UISongWindow:add(instVolTxt)
+	self.UISongWindow:add(instVolSlider)
+
+	local rectline = Graphic(10, 120, 380, 100, {0.15, 0.15, 0.15},
+		"rectangle", "line")
+	rectline.line.width = 1
+	rectline.config.round = {4, 4}
+
+	local vocTxt = Text(rectline.x + 18, rectline.y - 6, ' Voices ')
+	vocTxt.bgColor = {0.3, 0.3, 0.3}
+	vocTxt.antialiasing = false
+
+	local vocVolTxt = Text(rectline.x + 15, rectline.y + 14, '')
+	vocVolTxt.content = format:gsub('{val}',
+		tostring(self.vocals:getVolume() * 100))
+	vocVolTxt.antialiasing = false
+
+	local vocVolSlider = ui.UISlider(rectline.x + 15, rectline.y + 35, 150, 10,
+		self.vocals:getVolume(), 0.1)
+	vocVolSlider.onChanged = function(value)
+		self.vocals:setVolume(value)
+		vocVolTxt.content = format:gsub('{val}',
+			tostring(self.vocals:getVolume() * 100))
+	end
+
+	self.UISongWindow:add(rectline)
+	self.UISongWindow:add(vocTxt)
+	self.UISongWindow:add(vocVolTxt)
+	self.UISongWindow:add(vocVolSlider)
+
+	local format = 'Playback - {val}%'
+	local playbackTxt = Text(10, rectline.y + 30, '')
+	playbackTxt.content = format:gsub('{val}', '1')
+	playbackTxt.antialiasing = false
+
+	local playbackSlider = ui.UISlider(10, rectline.y + 50, 380, 10,
+		1, 0.05, nil, 0.2, 2)
+	playbackSlider.onChanged = function(value)
+		self.playback = value
+		game.sound.music:setPitch(value)
+		self.vocals:setPitch(value)
+		playbackTxt.content = format:gsub('{val}', tostring(value))
+	end
+
+	self.UISongWindow:add(playbackTxt)
+	self.UISongWindow:add(playbackSlider)
+end
+
+function ChartingState:add_UIWindow_Note(note)
+	if self.UINoteWindow then
+		self.UINoteWindow:clear()
+		self.UINoteWindow:revive()
+	else
+		self.UINoteWindow = ui.UIWindow(4, 84, nil, nil, "Note")
+		self.UINoteWindow.cameras = {self.camHUD}
+		self:add(self.UINoteWindow)
 	end
 
 	if note then
 		local noteTimeTxt = Text(220, 12, 'Time')
 		noteTimeTxt.antialiasing = false
-		self.noteWindow:add(noteTimeTxt)
+		self.UINoteWindow:add(noteTimeTxt)
 
 		local noteTimeInput = ui.UIInputTextBox(10, 10, 200)
 		noteTimeInput.text = tostring(note.time)
@@ -200,16 +292,27 @@ function ChartingState:add_UIWindow_Note(note)
 				noteTimeTxt.color = {1, 0.5, 0.5}
 			end
 		end
-		self.noteWindow:add(noteTimeInput)
+		self.UINoteWindow:add(noteTimeInput)
 
 		local noteTypeDropDown = ui.UIDropDown(10, 40, {
 			'Normal Note',
 			'Hurt Note',
 			'Alt Note'
 		})
-		self.noteWindow:add(noteTypeDropDown)
+		if note.type then
+			noteTypeDropDown:selectOption(table.find(noteTypeDropDown.options,
+				note.type))
+		else
+			noteTypeDropDown:selectOption(1)
+		end
+		self.UINoteWindow:add(noteTypeDropDown)
 	else
-		--
+		local noteTypeDropDown = ui.UIDropDown(10, 10, {
+			'Normal Note',
+			'Hurt Note',
+			'Alt Note'
+		})
+		self.UINoteWindow:add(noteTypeDropDown)
 	end
 end
 
@@ -521,7 +624,7 @@ function ChartingState:update_UI_Section()
 end
 
 function ChartingState:UI_isHovered()
-	if self.noteWindow and self.noteWindow.exists and self.noteWindow.hovered then
+	if self.UINoteWindow and self.UINoteWindow.exists and self.UINoteWindow.hovered then
 		return true
 	end
 	return false
@@ -550,11 +653,12 @@ function ChartingState:update(dt)
 		end
 	end
 
-	if not self.leavingState then
+	if self.focused and not self.leavingState then
 		if game.sound.music:isPlaying() and self.bgMusic:isPlaying() then
 			self.bgMusic:pause()
 		elseif not game.sound.music:isPlaying() and not self.bgMusic:isPlaying() then
 			self.bgMusic:play()
+			self.bgMusic:fade(2, 0, 0.4)
 		end
 	else
 		if self.bgMusic:isPlaying() then self.bgMusic:pause() end
@@ -600,7 +704,7 @@ function ChartingState:update(dt)
 				if game.mouse.overlaps(n) then
 					if game.mouse.justPressedRight then
 						self:deleteNote(n)
-						if self.noteWindow then self.noteWindow:kill() end
+						if self.UINoteWindow then self.UINoteWindow:kill() end
 					else
 						self:selectNote(n)
 						self:add_UIWindow_Note(n)
@@ -613,7 +717,7 @@ function ChartingState:update(dt)
 				(self.gridSize * 5) and mouseY < self.gridBox.y +
 				(self.gridSize * 4 * 4) + (self.gridSize * 17) then
 				local n = self:addNote()
-				if self.noteWindow and self.noteWindow.alive then
+				if self.UINoteWindow and self.UINoteWindow.alive then
 					self:add_UIWindow_Note(n)
 				end
 			end
@@ -1167,6 +1271,8 @@ function ChartingState:saveJson()
 		json_file:close()
 	end
 end
+
+function ChartingState:focus(f) self.focused = f end
 
 function ChartingState:leave()
 	love.mouse.setVisible(false)

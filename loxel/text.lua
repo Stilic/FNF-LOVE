@@ -9,6 +9,7 @@ function Text:new(x, y, content, font, color, align, limit)
 	self.color = color or self.color
 	self.alignment = align or "left"
 	self.limit = limit
+	self.bgColor = {0, 0, 0, 0}
 
 	self.outline = {
 		style = "normal",
@@ -131,6 +132,11 @@ function Text:__render(camera)
 			end
 		end
 	end
+
+	color = self.bgColor
+	local bgAlpha = #color > 3 and color[4] * self.alpha or self.alpha
+	love.graphics.setColor(color[1], color[2], color[3], bgAlpha)
+	love.graphics.rectangle("fill", x, y, self.__width, self.__height)
 
 	color = self.color
 	love.graphics.setColor(color[1], color[2], color[3], self.alpha)

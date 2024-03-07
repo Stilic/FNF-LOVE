@@ -13,6 +13,7 @@ function Slider:new(x, y, width, height, value, snap, sliderType, min, max)
 	self.snap = snap or nil
 
 	self.dragging = false
+	self.onChanged = nil
 	self.sliderType = (type(sliderType) == "string") and sliderType:lower()
 
 	self.color = {0.2, 0.2, 0.2}
@@ -21,31 +22,6 @@ function Slider:new(x, y, width, height, value, snap, sliderType, min, max)
 
 	self.lineSize = 0.5
 	self.round = {4, 4}
-
-	self:initKnob()
-end
-
-function Slider:initKnob()
-	local newValue
-	if self.sliderType == "vertical" then
-		local clampedY = math.max(self.min, math.min(
-			self.height - self.width, self.y))
-		newValue = self.min + (clampedY / (self.height - self.width)) *
-			(self.max - self.min)
-	else
-		local clampedX = math.max(self.min, math.min(
-			self.width - self.height, self.x))
-		newValue = self.min + (clampedX / (self.width - self.height)) *
-			(self.max - self.min)
-	end
-
-	if self.snap then
-		newValue =
-			math.floor((newValue + self.snap * 0.5) / self.snap) * self.snap
-		newValue = math.max(self.min, math.min(self.max, newValue))
-	end
-
-	self.value = newValue
 end
 
 function Slider:update()
@@ -72,7 +48,10 @@ function Slider:update()
 			newValue = math.max(self.min, math.min(self.max, newValue))
 		end
 
-		self.value = newValue
+		if self.value ~= newValue then
+			self.value = newValue
+			if self.onChanged then self.onChanged(self.value) end
+		end
 	end
 
 	if game.mouse.justPressedLeft then
@@ -109,11 +88,12 @@ function Slider:__render()
 			for i = self.min, self.max, self.snap do
 				local snapY = self.y + (i - self.min) / (self.max - self.min) *
 					(self.height - self.width) + self.width / 2 - 1
-				local snapWidth = stepCount % 2 == 0 and 15 or 10
+				local snapWidth = stepCount % 2 == 0 and 10 or 5
+				local xOffset = stepCount % 2 == 0 and 5 or 2.5
 
 				love.graphics.setColor(0, 0, 0, 0.5 / self.alpha)
-				love.graphics.rectangle("fill", self.x - snapWidth, snapY,
-					snapWidth, 2)
+				love.graphics.rectangle("fill", self.x - xOffset, snapY,
+					self.width + snapWidth, 2)
 
 				stepCount = (stepCount + 1) % 2
 			end
@@ -159,11 +139,12 @@ function Slider:__render()
 			for i = self.min, self.max, self.snap do
 				local snapX = self.x + (i - self.min) / (self.max - self.min) *
 					(self.width - self.height) + self.height / 2 - 1
-				local snapHeight = stepCount % 2 == 0 and 15 or 10
+				local snapHeight = stepCount % 2 == 0 and 10 or 5
+				local yOffset = stepCount % 2 == 0 and 5 or 2.5
 
 				love.graphics.setColor(0, 0, 0, 0.5 / self.alpha)
-				love.graphics.rectangle("fill", snapX, self.y - snapHeight,
-					2, snapHeight)
+				love.graphics.rectangle("fill", snapX, self.y - yOffset,
+					2, self.height + snapHeight)
 
 				stepCount = (stepCount + 1) % 2
 			end

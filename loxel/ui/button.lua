@@ -27,8 +27,8 @@ function Button:update(dt)
 	Button.super.update(self, dt)
 
 	local mx, my = game.mouse.x, game.mouse.y
-	self.hovered = (mx >= self.x and mx <= self.x + self.width and
-		my >= self.y and my <= self.y + self.height)
+	self.hovered = (mx >= self.x and mx < self.x + self.width and
+		my >= self.y and my < self.y + self.height)
 
 	if self.hovered and game.mouse.justReleased then
 		if self.callback then self.callback() end

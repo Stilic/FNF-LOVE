@@ -41,6 +41,7 @@ end
 function Window:add(obj)
 	obj.x = obj.x + self.x
 	obj.y = obj.y + self.y
+	obj.cameras = self.cameras
 	return self.group:add(obj)
 end
 
@@ -159,8 +160,14 @@ function Window:__render(camera)
 			love.graphics.setLineWidth(lineWidth)
 		end
 
-		for _, obj in ipairs(self.members) do
-			obj:__render(camera)
+		for _, member in ipairs(self.members) do
+			if member.x then
+				love.graphics.push()
+				member:__render(camera)
+				love.graphics.pop()
+			else
+				member:__render(camera)
+			end
 		end
 	end
 
