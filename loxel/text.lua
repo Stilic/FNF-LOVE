@@ -136,7 +136,7 @@ function Text:__render(camera)
 	color = self.bgColor
 	local bgAlpha = #color > 3 and color[4] * self.alpha or self.alpha
 	love.graphics.setColor(color[1], color[2], color[3], bgAlpha)
-	love.graphics.rectangle("fill", x, y, self.__width, self.__height)
+	love.graphics.rectangle("fill", x, y, self:getWidth(), self:getHeight())
 
 	color = self.color
 	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
