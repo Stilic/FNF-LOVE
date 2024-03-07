@@ -95,17 +95,17 @@ function FreeplayState:enter()
 	self:add(self.scoreText)
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = ButtonGroup()
+		self.buttons = VirtualPadGroup()
 		local w = 134
 
-		local left = Button("left", 0, game.height - w)
-		local up = Button("up", left.x + w, left.y - w)
-		local down = Button("down", up.x, left.y)
-		local right = Button("right", down.x + w, left.y)
+		local left = VirtualPad("left", 0, game.height - w)
+		local up = VirtualPad("up", left.x + w, left.y - w)
+		local down = VirtualPad("down", up.x, left.y)
+		local right = VirtualPad("right", down.x + w, left.y)
 
-		local enter = Button("return", game.width - w, left.y)
+		local enter = VirtualPad("return", game.width - w, left.y)
 		enter.color = Color.GREEN
-		local back = Button("escape", enter.x - w, left.y)
+		local back = VirtualPad("escape", enter.x - w, left.y)
 		back.color = Color.RED
 
 		self.buttons:add(left)

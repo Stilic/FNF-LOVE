@@ -88,7 +88,7 @@ function Splash:startSplash()
 	end)
 
 	if love.system.getDevice() == "Mobile" then
-		self:add(Button("return", 0, 0, game.width, game.height, false))
+		self:add(VirtualPad("return", 0, 0, game.width, game.height, false))
 	end
 end
 

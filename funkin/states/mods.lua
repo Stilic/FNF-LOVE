@@ -53,15 +53,15 @@ function ModsState:enter()
 	end
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = ButtonGroup()
+		self.buttons = VirtualPadGroup()
 		local w = 134
 
-		local left = Button("left", 0, game.height - w)
-		local right = Button("right", w, left.y)
+		local left = VirtualPad("left", 0, game.height - w)
+		local right = VirtualPad("right", w, left.y)
 
-		local enter = Button("return", game.width - w, left.y)
+		local enter = VirtualPad("return", game.width - w, left.y)
 		enter.color = Color.GREEN
-		local back = Button("escape", enter.x - w, left.y, w, w)
+		local back = VirtualPad("escape", enter.x - w, left.y, w, w)
 		back.color = Color.RED
 
 		self.buttons:add(left)

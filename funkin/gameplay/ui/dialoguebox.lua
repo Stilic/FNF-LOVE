@@ -114,7 +114,7 @@ function DialogueBox:new(dialogueList)
 	self.dialogueEnded = false
 
 	if love.system.getDevice() == "Mobile" then
-		self.button = Button("return", 0, 0, game.width, game.height, false)
+		self.button = VirtualPad("return", 0, 0, game.width, game.height, false)
 		self:add(self.button)
 	end
 end

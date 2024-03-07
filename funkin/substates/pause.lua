@@ -38,13 +38,13 @@ function PauseSubstate:enter()
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = ButtonGroup()
+		self.buttons = VirtualPadGroup()
 		local w = 134
 		local gw, gh = game.width, game.height
 
-		local down = Button("down", 0, gh - w)
-		local up = Button("up", 0, down.y - w)
-		local enter = Button("return", gw - w, down.y)
+		local down = VirtualPad("down", 0, gh - w)
+		local up = VirtualPad("up", 0, down.y - w)
+		local enter = VirtualPad("return", gw - w, down.y)
 		enter.color = Color.GREEN
 
 		self.buttons:add(down)

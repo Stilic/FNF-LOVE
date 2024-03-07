@@ -250,8 +250,8 @@ Trail = require "loxel.effects.trail"
 ParallaxImage = require "loxel.effects.parallax"
 Color = require "loxel.util.color"
 
-Button = require "loxel.button"
-ButtonGroup = require "loxel.group.buttongroup"
+VirtualPad = require "loxel.virtualpad"
+VirtualPadGroup = require "loxel.group.virtualpadgroup"
 
 ui = {
 	UINavbar = require "loxel.ui.navbar",
@@ -363,18 +363,18 @@ function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 
 function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
 
-function game.touchmoved(id, x, y, dx, dy, p, time) Button.move(id, x, y, p, time) end
+function game.touchmoved(id, x, y, dx, dy, p, time) VirtualPad.move(id, x, y, p, time) end
 
-function game.touchpressed(id, x, y, dx, dy, p, time) Button.press(id, x, y, p, time) end
+function game.touchpressed(id, x, y, dx, dy, p, time) VirtualPad.press(id, x, y, p, time) end
 
-function game.touchreleased(id, x, y, dx, dy, p, time) Button.release(id, x, y, p, time) end
+function game.touchreleased(id, x, y, dx, dy, p, time) VirtualPad.release(id, x, y, p, time) end
 
 local function switch(state)
 	Timer.clear()
 
 	game.cameras.reset()
 	game.sound.destroy()
-	Button.reset()
+	VirtualPad.reset()
 
 	triggerCallback(game.onPreStateSwitch, state)
 

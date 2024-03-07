@@ -269,9 +269,6 @@ function PlayState:enter()
 	splash.alpha = 0
 	self.splashes:add(splash)
 
-	self.judgeSprites = SpriteGroup()
-	self.judgeSprites:setPosition(self.stage.ratingPos.x, self.stage.ratingPos.y)
-
 	PlayState.SONG.gfVersion = self:loadGfWithStage(songName, PlayState.SONG.stage)
 
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
@@ -298,7 +295,8 @@ function PlayState:enter()
 	end
 
 	self:add(self.stage.foreground)
-	self:add(self.judgeSprites)
+	self.judgement = Judgement(self.stage.ratingPos.x, self.stage.ratingPos.y)
+	self:add(self.judgement)
 
 	self.camFollow = {x = 0, y = 0}
 	self:cameraMovement()
@@ -369,12 +367,12 @@ function PlayState:enter()
 	if love.system.getDevice() == "Mobile" then
 		local w, h = game.width / 4, game.height
 
-		self.buttons = ButtonGroup()
+		self.buttons = VirtualPadGroup()
 
-		local left = Button("left", 0, 0, w, h, Color.PURPLE)
-		local down = Button("down", w, 0, w, h, Color.BLUE)
-		local up = Button("up", w * 2, 0, w, h, Color.GREEN)
-		local right = Button("right", w * 3, 0, w, h, Color.RED)
+		local left = VirtualPad("left", 0, 0, w, h, Color.PURPLE)
+		local down = VirtualPad("down", w, 0, w, h, Color.BLUE)
+		local up = VirtualPad("up", w * 2, 0, w, h, Color.GREEN)
+		local right = VirtualPad("right", w * 3, 0, w, h, Color.RED)
 
 		self.buttons:add(left)
 		self.buttons:add(down)
@@ -750,7 +748,6 @@ function PlayState:update(dt)
 				self.misses = self.misses + 1
 
 				self.totalPlayed = self.totalPlayed + 1
-				self:recalculateRating()
 
 				local np = n.isSustain and n.parentNote or n
 				np.tooLate = true
@@ -769,7 +766,7 @@ function PlayState:update(dt)
 					self.gf:playAnim('sad', true)
 					self.gf.lastHit = PlayState.conductor.currentBeat
 				end
-				self:popUpScore()
+				self:recalculateRating()
 			end
 
 			self:removeNote(n)
@@ -1136,7 +1133,6 @@ function PlayState:goodNoteHit(n)
 						splash.x, splash.y = receptor.x, receptor.y
 						splash:setup(n.data)
 					end
-					self:popUpScore(rating.name)
 
 					self.totalHit = self.totalHit + rating.mod
 					self.totalPlayed = self.totalPlayed + 1
@@ -1305,117 +1301,6 @@ function PlayState:section(s)
 	self.scripts:call("postSection")
 end
 
-function PlayState:popUpScore(rating)
-	local accel = PlayState.conductor.crotchet * 0.001
-
-	local antialias = not PlayState.pixelStage
-	local uiStage = PlayState.pixelStage and "pixel" or "normal"
-
-	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
-	if not event.cancelled then
-		local judgeSpr = self.judgeSprites:recycle()
-
-		if rating == nil then rating = "shit" end
-		judgeSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/" ..
-			rating))
-		judgeSpr.alpha = 1
-		judgeSpr:setGraphicSize(math.floor(judgeSpr.width *
-			(PlayState.pixelStage and 4.7 or 0.7)))
-		judgeSpr:updateHitbox()
-		judgeSpr:screenCenter()
-		judgeSpr.moves = true
-		-- use fixed values to display at the same position on a different resolution
-		judgeSpr.x = (1280 - judgeSpr.width) * 0.5 + 190
-		judgeSpr.y = (720 - judgeSpr.height) * 0.5 - 60
-		judgeSpr.velocity.x = 0
-		judgeSpr.velocity.y = 0
-		judgeSpr.alpha = 1
-		if self.combo <= 0 then judgeSpr.alpha = 0 end
-		judgeSpr.antialiasing = antialias
-
-		judgeSpr.acceleration.y = 550
-		judgeSpr.velocity.y = judgeSpr.velocity.y - math.random(140, 175)
-		judgeSpr.velocity.x = judgeSpr.velocity.x - math.random(0, 10)
-		judgeSpr.visible = not event.hideRating
-
-		Timer.after(accel, function()
-			Timer.tween(0.2, judgeSpr, {alpha = 0}, "linear", function()
-				Timer.cancelTweensOf(judgeSpr)
-				judgeSpr:kill()
-			end)
-		end)
-
-		local comboSpr = self.judgeSprites:recycle()
-		comboSpr:loadTexture(paths.getImage("skins/" .. uiStage .. "/combo"))
-		comboSpr.alpha = 1
-		comboSpr:setGraphicSize(math.floor(comboSpr.width *
-			(PlayState.pixelStage and 4.2 or 0.6)))
-		comboSpr:updateHitbox()
-		comboSpr:screenCenter()
-		comboSpr.moves = true
-		-- use fixed values to display at the same position on a different resolution
-		comboSpr.x = (1280 - comboSpr.width) * 0.5 + 250
-		comboSpr.y = (720 - comboSpr.height) * 0.5
-		comboSpr.velocity.x = 0
-		comboSpr.velocity.y = 0
-		comboSpr.alpha = 1
-		if self.combo <= 9 then comboSpr.alpha = 0 end
-		comboSpr.antialiasing = antialias
-
-		comboSpr.acceleration.y = 600
-		comboSpr.velocity.y = comboSpr.velocity.y - 150
-		comboSpr.velocity.x = comboSpr.velocity.x + math.random(1, 10)
-		comboSpr.visible = not event.hideCombo
-
-		Timer.after(accel, function()
-			Timer.tween(0.2, comboSpr, {alpha = 0}, "linear", function()
-				Timer.cancelTweensOf(comboSpr)
-				comboSpr:kill()
-			end)
-		end)
-
-		local lastSpr
-		local coolX, comboStr = 1280 * 0.55, string.format("%03d", self.combo)
-		if self.combo < 0 then comboStr = string.format("-%03d", math.abs(self.combo)) end
-		for i = 1, #comboStr do
-			if self.combo >= 10 or self.combo <= 0 then
-				local digit = tostring(comboStr:sub(i, i)) or ""
-
-				if digit == "-" then digit = "negative" end
-
-				local numScore = self.judgeSprites:recycle()
-				numScore:loadTexture(paths.getImage(
-					"skins/" .. uiStage .. "/num" .. digit))
-				numScore:setGraphicSize(math.floor(numScore.width *
-					(PlayState.pixelStage and 4.5 or
-						0.5)))
-				numScore:updateHitbox()
-				numScore.moves = true
-				numScore.x = (lastSpr and lastSpr.x or coolX - 90) + numScore.width
-				numScore.y = judgeSpr.y + 115
-				numScore.velocity.y = 0
-				numScore.velocity.x = 0
-				numScore.alpha = 1
-				numScore.antialiasing = antialias
-
-				numScore.acceleration.y = math.random(200, 300)
-				numScore.velocity.y = numScore.velocity.y - math.random(140, 160)
-				numScore.velocity.x = math.random(-5.0, 5.0)
-				numScore.visible = not event.hideScore
-
-				Timer.after(accel * 2, function()
-					Timer.tween(0.2, numScore, {alpha = 0}, "linear", function()
-						Timer.cancelTweensOf(numScore)
-						numScore:kill()
-					end)
-				end)
-
-				lastSpr = numScore
-			end
-		end
-	end
-end
-
 function PlayState:focus(f)
 	if Discord then
 		if f then
@@ -1458,8 +1343,8 @@ end
 local ratingFormat, noRating = "(%s) %s", "?"
 function PlayState:recalculateRating(rating)
 	if rating then
-		rating = rating .. "s"
-		if self[rating] then self[rating] = self[rating] + 1 end
+		local ratingAdd = rating .. "s"
+		if self[ratingAdd] then self[ratingAdd] = self[ratingAdd] + 1 end
 	end
 
 	local ratingStr = noRating
@@ -1518,6 +1403,14 @@ function PlayState:recalculateRating(rating)
 
 	self.scoreTxt.content = self.scoreFormat:gsub("%%(%w+)", vars)
 	self.scoreTxt:updateHitbox()
+
+	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
+	if not event.cancelled then
+		self.judgement.ratingVisible = not event.hideRating
+		self.judgement.comboSprVisible = not event.hideCombo
+		self.judgement.comboNumVisible = not event.hideScore
+		self.judgement:spawn(rating, self.combo)
+	end
 end
 
 function PlayState:loadStageWithSongName(songName)

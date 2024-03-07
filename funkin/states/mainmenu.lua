@@ -86,17 +86,17 @@ function MainMenuState:enter()
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = ButtonGroup()
+		self.buttons = VirtualPadGroup()
 		local w = 134
 
-		local down = Button("down", 0, game.height - w)
-		local up = Button("up", 0, down.y - w)
-		local mods = Button("6", game.width - w, 0)
+		local down = VirtualPad("down", 0, game.height - w)
+		local up = VirtualPad("up", 0, down.y - w)
+		local mods = VirtualPad("6", game.width - w, 0)
 		mods:screenCenter("y")
 
-		local enter = Button("return", game.width - w, down.y)
+		local enter = VirtualPad("return", game.width - w, down.y)
 		enter.color = Color.GREEN
-		local back = Button("escape", enter.x - w, down.y)
+		local back = VirtualPad("escape", enter.x - w, down.y)
 		back.color = Color.RED
 
 		self.buttons:add(down)

@@ -77,7 +77,7 @@ function TitleState:enter()
 	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
-		self:add(Button("return", 0, 0, game.width, game.height, false))
+		self:add(VirtualPad("return", 0, 0, game.width, game.height, false))
 	end
 
 	self.script:call("postCreate")

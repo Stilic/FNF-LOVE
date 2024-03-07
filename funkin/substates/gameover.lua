@@ -31,12 +31,12 @@ function GameOverSubstate:new(x, y)
 		local camButtons = Camera()
 		game.cameras.add(camButtons, false)
 
-		self.buttons = ButtonGroup()
+		self.buttons = VirtualPadGroup()
 		local w = 134
 
-		local enter = Button("return", game.width - w, game.height - w)
+		local enter = VirtualPad("return", game.width - w, game.height - w)
 		enter.color = Color.GREEN
-		local back = Button("escape", enter.x - w, enter.y)
+		local back = VirtualPad("escape", enter.x - w, enter.y)
 		back.color = Color.RED
 
 		self.buttons:add(enter)
