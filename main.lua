@@ -160,6 +160,8 @@ function love.keyreleased(...)
 	game.keyreleased(...)
 end
 
+function love.textinput(key) game.textinput(key) end
+
 function love.wheelmoved(...) game.wheelmoved(...) end
 
 function love.mousemoved(...) game.mousemoved(...) end

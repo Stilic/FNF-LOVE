@@ -67,7 +67,7 @@ function Settings:getOptionString(id)
 	return value or "Unknown"
 end
 
-function Settings:enterOption(id)
+function Settings:enterOption(id, optionsUI)
 	local bind = self.curBind
 	if self.tab then
 		local selectedStr = "< " .. self:getOptionString(id, bind) .. " >"
@@ -198,9 +198,8 @@ function Settings:makeOption(group, i, font, tabWidth, titleWidth, binds)
 	return binds
 end
 
-function Settings:changeBindSelection(add, dont)
-	--self.optionsCursor
-
+function Settings:changeBind(id, add, dont)
+	self.curBind = math.wrap(self.curBind + add, 1, self.binds + 1)
 	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
 end
 

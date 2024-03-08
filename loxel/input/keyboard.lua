@@ -116,7 +116,10 @@ local Keyboard = {
 	released = {},
 
 	---@type string
-	input = nil
+	input = nil,
+
+	---@type string
+	loveInput = nil
 }
 
 for key in pairs(Keyboard.keys) do Keyboard.released[key] = true end
@@ -129,6 +132,7 @@ function Keyboard.reset()
 		end
 	end
 	Keyboard.input = nil
+	Keyboard.loveInput = nil
 end
 
 local invalidKeys = {
@@ -163,6 +167,8 @@ local shiftKeys = {
 }
 
 function Keyboard.onPressed(key)
+	Keyboard.loveInput = key
+
 	for k, value in pairs(Keyboard.keys) do
 		if key == 'kpenter' then key = "return" end
 		if key == 'lshift' or key == 'rshift' then key = 'shift' end

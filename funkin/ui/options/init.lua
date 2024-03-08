@@ -170,7 +170,7 @@ function Options:enterOption()
 	self.changingOption = true
 	self.prevVal = self.selectedTab.data:getOption(self.curSelect)
 
-	self.selectedTab.data:enterOption(self.curSelect)
+	self.selectedTab.data:enterOption(self.curSelect, self)
 end
 
 function Options:changeOption(add, dont)
@@ -195,11 +195,19 @@ end
 
 function Options:cancelChanges()
 	self.selectedTab.data:cancel(self.curSelect, self.prevVal)
+	if self.applySettings then
+		self.applySettings(self.settingsNames[self.curTab]:lower(),
+			self.selectedTab.data.settings[self.curSelect][1])
+	end
 
 	self.changingOption = false
 	self.prevVal = nil
 
 	game.sound.play(paths.getSound("cancelMenu"))
+end
+
+function Options:changeBind(id, add, dont)
+	self.selectedTab.data:changeBind(id, add, dont)
 end
 
 function Options:update(dt)
@@ -208,18 +216,29 @@ function Options:update(dt)
 	local shift = self.blockInput and game.keys.pressed.SHIFT or controls:down("reset")
 	local selecty = 0
 	if self.onTab then
-		if not self.changingOption then
-			if self.throttles.up:check() then self:changeSelection(shift and -2 or -1) end
-			if self.throttles.down:check() then self:changeSelection(shift and 2 or 1) end
-			if controls:pressed("accept") then self:enterOption() end
-			if controls:pressed("back") then return self:exitTab() end
-		else
-			self.throttles.left.step = 0.02
-			self.throttles.right.step = 0.02
-			if self.throttles.left:check() then self:changeOption(shift and -2 or -1) end
-			if self.throttles.right:check() then self:changeOption(shift and 2 or 1) end
-			if controls:pressed("accept") then self:acceptOption() end
-			if controls:pressed("back") then return self:cancelChanges() end
+		if not self.blockInput then
+			if not self.changingOption then
+				local binds = self.selectedTab.data.binds
+				if binds > 1 then
+					if self.throttles.left:check() then
+						self:changeBind(self.curSelect, shift and -2 or -1)
+					end
+					if self.throttles.right:check() then
+						self:changeBind(self.curSelect, shift and 2 or 1)
+					end
+				end
+				if self.throttles.up:check() then self:changeSelection(shift and -2 or -1) end
+				if self.throttles.down:check() then self:changeSelection(shift and 2 or 1) end
+				if controls:pressed("accept") then self:enterOption() end
+				if controls:pressed("back") then return self:exitTab() end
+			else
+				self.throttles.left.step = 0.02
+				self.throttles.right.step = 0.02
+				if self.throttles.left:check() then self:changeOption(shift and -2 or -1) end
+				if self.throttles.right:check() then self:changeOption(shift and 2 or 1) end
+				if controls:pressed("accept") then self:acceptOption() end
+				if controls:pressed("back") then return self:cancelChanges() end
+			end
 		end
 
 		selecty = self.selectedTab.data:getY(self.curSelect)

@@ -355,6 +355,8 @@ function game.keypressed(...) game.keys.onPressed(...) end
 
 function game.keyreleased(...) game.keys.onReleased(...) end
 
+function game.textinput(key) game.keys.loveInput = key end
+
 function game.wheelmoved(x, y) game.mouse.wheel = y end
 
 function game.mousemoved(x, y) game.mouse.onMoved(x, y) end

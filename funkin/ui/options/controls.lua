@@ -41,41 +41,60 @@ Controls.titleWidth = 1 / 5
 
 function Controls:getOptionString(id, bind)
 	local option = self.settings[id]
-	if option[1] == "asyncInput" then return Settings.getOptionString(self, id, bind) end
+	if option[1] == "asyncInput" then return Settings.getOptionString(self, id, 1) end
 	local str = ClientPrefs.controls[option[1]][bind]
 	return str and str:sub(5):capitalize() or "None"
 end
 
-function Controls:changeOption(id, add, optionsUI, bind)
+function Controls:enterOption(id, optionsUI)
 	local option = self.settings[id]
-	if option[1] == "asyncInput" then return Settings.changeOption(self, id, add, optionsUI, bind) end
-	return false
-end
-
---[[
-function Controls:acceptOption(id, optionsUI, bind)
+	if option[1] == "asyncInput" then
+		self.curBind = 1
+		return Settings.enterOption(self, id)
+	end
 	optionsUI.blockInput = true
+	optionsUI.changingOption = false
 	self.onBinding = true
 
 	if not self.bg then
 		self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
 		self.bg:setScrollFactor()
 		self.bg.alpha = 0.5
+
+		self.waitInputTxt = Text(0, 0, "Rebinding...", paths.getFont("phantommuff.ttf", 40),
+			{1, 1, 1}, "center", game.width)
+		self.waitInputTxt:screenCenter('y')
+		self.waitInputTxt:setScrollFactor()
 	end
 	optionsUI:add(self.bg)
+	optionsUI:add(self.waitInputTxt)
+end
 
+function Controls:changeOption(id, add, optionsUI, bind)
+	local option = self.settings[id]
+	if option[1] == "asyncInput" then return Settings.changeOption(self, id, add, optionsUI, 1) end
 	return false
+end
+
+function Controls:changeBind(id, add, dont)
+	local option = self.settings[id]
+	if option[1] ~= "asyncInput" then return Settings.changeBind(self, id, add) end
 end
 
 function Controls:update(dt, optionsUI)
 	if not self.onBinding then return end
+
+	if self.onBinding and game.keys.loveInput then
+		game.sound.play(paths.getSound('confirmMenu'))
+	end
+
 	if controls:pressed("back") then
 		optionsUI:remove(self.bg)
+		optionsUI:remove(self.waitInputTxt)
 		optionsUI.blockInput = false
 		self.onBinding = false
 		return
 	end
 end
-]]
 
 return Controls
