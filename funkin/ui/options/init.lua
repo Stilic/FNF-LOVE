@@ -19,6 +19,7 @@ function Options:new(showBG, completionCallback)
 	self.onTab = false
 	self.changingOption = false
 	self.blockInput = false
+	self.prevVal = nil
 
 	self.focus = 0
 
@@ -121,8 +122,8 @@ function Options:enterTab()
 	local name = self.settingsNames[self.curTab]
 	self.titleTxt.content = name
 
-	self.optionsCursor.visible = true
 	self:changeSelection()
+	self.optionsCursor.visible = true
 end
 
 function Options:exitTab()
@@ -165,6 +166,13 @@ function Options:changeSelection(add, dont)
 	self.optionsCursor.height = tab.data:getSize()
 end
 
+function Options:enterOption()
+	self.changingOption = true
+	self.prevVal = self.selectedTab.data:getOption(self.curSelect)
+
+	self.selectedTab.data:enterOption(self.curSelect)
+end
+
 function Options:changeOption(add, dont)
 	if self.selectedTab.data:changeOption(self.curSelect, add, self) and self.applySettings then
 		self.applySettings(self.settingsNames[self.curTab]:lower(),
@@ -178,35 +186,40 @@ function Options:acceptOption(dont)
 		self.applySettings(self.settingsNames[self.curTab]:lower(),
 			self.selectedTab.data.settings[self.curSelect][1])
 	end
+
+	self.prevVal = nil
+	self.changingOption = false
+
 	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
+end
+
+function Options:cancelChanges()
+	self.selectedTab.data:cancel(self.curSelect, self.prevVal)
+
+	self.changingOption = false
+	self.prevVal = nil
+
+	game.sound.play(paths.getSound("cancelMenu"))
 end
 
 function Options:update(dt)
 	Options.super.update(self, dt)
 
-	local shift
-	if not self.blockInput then
-		shift = game.keys.pressed.SHIFT or controls:down("reset")
-		if controls:pressed("accept") then
-			if self.onTab then
-				self:acceptOption()
-			else
-				self:enterTab()
-			end
-		elseif controls:pressed("back") then
-			if self.onTab then
-				self:exitTab()
-			else
-				return self.parent:remove(self)
-			end
-		end
-	end
-
+	local shift = self.blockInput and game.keys.pressed.SHIFT or controls:down("reset")
 	local selecty = 0
 	if self.onTab then
-		if not self.blockInput then
+		if not self.changingOption then
 			if self.throttles.up:check() then self:changeSelection(shift and -2 or -1) end
 			if self.throttles.down:check() then self:changeSelection(shift and 2 or 1) end
+			if controls:pressed("accept") then self:enterOption() end
+			if controls:pressed("back") then return self:exitTab() end
+		else
+			self.throttles.left.step = 0.02
+			self.throttles.right.step = 0.02
+			if self.throttles.left:check() then self:changeOption(shift and -2 or -1) end
+			if self.throttles.right:check() then self:changeOption(shift and 2 or 1) end
+			if controls:pressed("accept") then self:acceptOption() end
+			if controls:pressed("back") then return self:cancelChanges() end
 		end
 
 		selecty = self.selectedTab.data:getY(self.curSelect)
@@ -221,25 +234,18 @@ function Options:update(dt)
 		if self.selectedTab.data.update then self.selectedTab.data:update(dt, self) end
 	else
 		self.focus = 0
+
+		self.throttles.left.step = 1 / 18
+		self.throttles.right.step = 1 / 18
+		if self.throttles.left:check() then self:changeTab(-1) end
+		if self.throttles.right:check() then self:changeTab(1) end
+		if controls:pressed("accept") then self:enterTab() end
+		if controls:pressed("back") then return self.parent:remove(self) end
 	end
 
 	self.tabGroup.y = util.coolLerp(self.tabGroup.y, self.taby - self.focus, 12, dt)
 	self.tabBG.y = self.tabGroup.y
 	self.optionsCursor.y = self.tabBG.y + selecty
-
-	if not self.blockInput then
-		if self.onTab then
-			self.throttles.left.step = 0.02
-			self.throttles.right.step = 0.02
-			if self.throttles.left:check() then self:changeOption(shift and -2 or -1) end
-			if self.throttles.right:check() then self:changeOption(shift and 2 or 1) end
-		else
-			self.throttles.left.step = 1 / 18
-			self.throttles.right.step = 1 / 18
-			if self.throttles.left:check() then self:changeTab(-1) end
-			if self.throttles.right:check() then self:changeTab(1) end
-		end
-	end
 end
 
 function Options:leave()

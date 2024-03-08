@@ -5,10 +5,12 @@ function Settings:base(name, settings)
 	local cls = {}
 	cls.name = name
 	cls.settings = settings
+	cls.curBind = 1
 	cls.binds = 1
 	cls.size = 30
 	cls.margin = 15
 	cls.titleWidth = 0.5
+	cls.selected = false
 
 	return setmetatable(cls, self)
 end
@@ -42,14 +44,16 @@ function Settings:makeLines(width, offset, lines, starti, endi)
 	end
 end
 
-function Settings:getOption(id, bind)
+function Settings:getOption(id)
 	local option = self.settings[id]
+	local bind = self.curBind
 	if type(option[3]) == "table" then return option[bind][3] and option[bind][3]() or nil end
 	return ClientPrefs.data[option[1]]
 end
 
-function Settings:getOptionString(id, bind)
+function Settings:getOptionString(id)
 	local option, value = self.settings[id], self:getOption(id)
+	local bind = self.curBind
 	if type(option[3]) == "table" then return option[bind][2](value) end
 	if type(option[5]) == "function" then return option[5](value) end
 
@@ -63,8 +67,42 @@ function Settings:getOptionString(id, bind)
 	return value or "Unknown"
 end
 
-function Settings:changeOption(id, add, optionsUI, bind)
+function Settings:enterOption(id)
+	local bind = self.curBind
+	if self.tab then
+		local selectedStr = "< " .. self:getOptionString(id, bind) .. " >"
+		self.tab.items[id].texts[bind].content = selectedStr
+		self.selected = true
+	end
+end
+
+function Settings:leaveOption(id)
+	local bind = self.curBind
+	if self.tab then
+		self.tab.items[id].texts[bind].content = self:getOptionString(id, bind)
+		self.selected = false
+	end
+end
+
+function Settings:cancel(id, oldValue)
+	local bind = self.curBind
+	local func = self.settings[id][4]
+	local functype, ret = type(func)
+	local val
+
+	if ClientPrefs.data[self.settings[id][1]] ~= oldValue then
+		if func and functype == "function" then func(0) end
+		ClientPrefs.data[self.settings[id][1]] = oldValue
+	end
+
+	if self.tab then
+		self.tab.items[id].texts[bind].content = self:getOptionString(id, bind)
+	end
+end
+
+function Settings:changeOption(id, add, optionsUI)
 	local option, value = self.settings[id], self:getOption(id)
+	local bind = self.curBind
 	local prev = value
 
 	local optiontype, func = option[3], option[4]
@@ -101,18 +139,22 @@ function Settings:changeOption(id, add, optionsUI, bind)
 	end
 
 	if functype ~= "function" then ClientPrefs.data[option[1]] = value end
-	if self.tab then self.tab.items[id].texts[bind or 1].content = self:getOptionString(id, bind) end
+	if self.tab then
+		local selectedStr = self:getOptionString(id, bind)
+		if self.selected then selectedStr = "< " .. selectedStr .. " >" end
+		self.tab.items[id].texts[bind].content = selectedStr
+	end
 	if ret ~= nil then return ret end
 	return value ~= prev
 end
 
-function Settings:acceptOption(id, optionsUI, bind)
+function Settings:acceptOption(id, cancel, optionsUI)
 	local option = self.settings[id]
+	local bind = self.curBind
 	local optiontype = option[3]
 
-	if optiontype == "boolean" then
-		return self:changeOption(id, 1)
-	elseif type(optiontype) == "table" or #self.tab.items[id].texts > 1 then
+	self:leaveOption(id, bind)
+	if type(optiontype) == "table" or #self.tab.items[id].texts > 1 then
 		if bind then
 			local ret = option[3][bind][1](0, value, optionsUI, bind)
 			if ret ~= nil then return ret end

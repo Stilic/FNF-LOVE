@@ -40,7 +40,7 @@ local data = {
 
 		ClientPrefs.data.resolution = value
 		---@diagnostic disable-next-line: missing-parameter
-		love.window.updateMode(Project.width * value, Project.height * value)
+		love.window.setMode(Project.width * value, Project.height * value)
 	end, function(value)
 		local _, ymax = love.window.getMaxDesktopDimensions()
 		local height = Project.height * value
