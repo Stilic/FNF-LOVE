@@ -55,7 +55,7 @@ function Judgement:spawn(rating, combo)
 
 	local comboSpr = create("combo", PlayState.pixelStage and 4.2 or 0.6,
 			0, 0, combo > 9 and 1 or 0, accel)
-	comboSpr.x, comboSpr.y = (1280 - comboSpr.width) / 2 + 250, (720 - comboSpr.height) / 2, combo > 9
+	comboSpr.x, comboSpr.y = (1280 - comboSpr.width) / 2 + 250, (720 - comboSpr.height) / 2
 	comboSpr.acceleration.y = 600
 	comboSpr.velocity.y = comboSpr.velocity.y - 150
 	comboSpr.velocity.x = comboSpr.velocity.x + math.random(1, 10)

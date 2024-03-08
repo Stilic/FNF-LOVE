@@ -42,6 +42,7 @@ BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 Character = require "funkin.gameplay.character"
 Stage = require "funkin.gameplay.stage"
 TankmenBG = require "funkin.gameplay.tankmenbg"
+Judgement = require "funkin.gameplay.ui.judgement"
 
 Alphabet = require "funkin.ui.alphabet"
 MenuCharacter = require "funkin.ui.menucharacter"
