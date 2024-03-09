@@ -124,10 +124,18 @@ function Options:enterTab()
 
 	self:changeSelection()
 	self.optionsCursor.visible = true
+
+	if self.selectedTab.data.binds > 1 then
+		self:changeBind(self.curSelect, 0)
+	end
 end
 
 function Options:exitTab()
 	self.optionsCursor.visible = false
+
+	if self.selectedTab.data.onLeaveTab then
+		self.selectedTab.data:onLeaveTab(self.curSelect)
+	end
 
 	self.selectedTab = nil
 	self.onTab = false
@@ -154,6 +162,7 @@ end
 
 function Options:changeSelection(add, dont)
 	local tab = self.selectedTab
+	local prev = self.curSelect
 	self.curSelect = math.wrap(self.curSelect + (add or 0), 1, #tab.items + 1)
 	while tab.items[self.curSelect].isTitle do
 		self.curSelect = math.wrap(self.curSelect + (add and add < 0 and -1 or 1), 1, #tab.items + 1)
@@ -164,6 +173,10 @@ function Options:changeSelection(add, dont)
 	self.optionsCursor.x = self.tabBG.x
 	self.optionsCursor.width = self.tabBG.width
 	self.optionsCursor.height = tab.data:getSize()
+
+	if self.selectedTab.data.onChangeSelection then
+		self.selectedTab.data:onChangeSelection(self.curSelect, prev)
+	end
 end
 
 function Options:enterOption()
@@ -216,6 +229,12 @@ function Options:update(dt)
 	local shift = self.blockInput and game.keys.pressed.SHIFT or controls:down("reset")
 	local selecty = 0
 	if self.onTab then
+		local dont = false
+		if self.selectedTab.data.update then
+			dont = self.selectedTab.data:update(dt, self)
+			if dont then return end
+		end
+
 		if not self.blockInput then
 			if not self.changingOption then
 				local binds = self.selectedTab.data.binds
@@ -249,8 +268,6 @@ function Options:update(dt)
 			while selecty - self.focus < top and self.focus > 0 do self.focus = self.focus - size end
 			self.focus = math.clamp(self.focus, 0, max)
 		end
-
-		if self.selectedTab.data.update then self.selectedTab.data:update(dt, self) end
 	else
 		self.focus = 0
 

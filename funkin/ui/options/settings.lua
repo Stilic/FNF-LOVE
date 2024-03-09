@@ -73,6 +73,7 @@ function Settings:enterOption(id, optionsUI)
 		local selectedStr = "< " .. self:getOptionString(id, bind) .. " >"
 		self.tab.items[id].texts[bind].content = selectedStr
 		self.selected = true
+		if self.binds > 1 then self:changeBind(id, 0) end
 	end
 end
 
@@ -88,7 +89,6 @@ function Settings:cancel(id, oldValue)
 	local bind = self.curBind
 	local func = self.settings[id][4]
 	local functype, ret = type(func)
-	local val
 
 	if ClientPrefs.data[self.settings[id][1]] ~= oldValue then
 		if func and functype == "function" then func(0) end
@@ -199,7 +199,16 @@ function Settings:makeOption(group, i, font, tabWidth, titleWidth, binds)
 end
 
 function Settings:changeBind(id, add, dont)
-	self.curBind = math.wrap(self.curBind + add, 1, self.binds + 1)
+	if self.tab then
+		local prevBind = self.curBind
+		local prevTxt = self.tab.items[id].texts[self.curBind]
+		self.curBind = math.wrap(self.curBind + add, 1, self.binds + 1)
+		local newTxt = self.tab.items[id].texts[self.curBind]
+
+		prevTxt.content = self:getOptionString(id, prevBind)
+		newTxt.content = "> " .. self:getOptionString(id, self.curBind) .. " <"
+	end
+
 	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
 end
 

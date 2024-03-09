@@ -36,8 +36,34 @@ if Project.DEBUG_MODE then
 end
 
 local Controls = Settings:base("Controls", data)
-Controls.binds = 4
-Controls.titleWidth = 1 / 5
+Controls.binds = 2
+Controls.titleWidth = 1 / 3
+
+function Controls:onLeaveTab(id)
+	if self.binds > 1 then
+		for bind = 1, self.binds do
+			local item = self.tab.items[id]
+			if item and item.texts then
+				local obj = item.texts[bind]
+				if obj then obj.content = self:getOptionString(id, bind) end
+			end
+		end
+	end
+end
+
+function Controls:onChangeSelection(id, prevID)
+	if self.binds > 1 then
+		for bind = 1, self.binds do
+			local item = self.tab.items[prevID]
+			if item and item.texts then
+				local obj = item.texts[bind]
+				if obj then obj.content = self:getOptionString(prevID, bind) end
+			end
+		end
+	end
+	self:changeBind(id, 0)
+	self.curSelect = id
+end
 
 function Controls:getOptionString(id, bind)
 	local option = self.settings[id]
@@ -84,16 +110,48 @@ end
 function Controls:update(dt, optionsUI)
 	if not self.onBinding then return end
 
-	if self.onBinding and game.keys.loveInput then
-		game.sound.play(paths.getSound('confirmMenu'))
-	end
-
 	if controls:pressed("back") then
 		optionsUI:remove(self.bg)
 		optionsUI:remove(self.waitInputTxt)
 		optionsUI.blockInput = false
 		self.onBinding = false
-		return
+
+		return true
+	end
+
+	if self.onBinding and game.keys.loveInput then
+		game.sound.play(paths.getSound('confirmMenu'))
+		optionsUI:remove(self.bg)
+		optionsUI:remove(self.waitInputTxt)
+		optionsUI.blockInput = false
+		self.onBinding = false
+
+		local controlsTable = table.clone(ClientPrefs.controls)
+
+		local option = self.settings[self.curSelect]
+		local keyName = option[1]
+
+		local newBind = "key:" .. game.keys.loveInput:lower()
+		local secBind = self.curBind == 1 and 2 or 1
+		local oldBind = controlsTable[keyName][self.curBind]
+
+		controlsTable[keyName][self.curBind] = newBind
+
+		if controlsTable[keyName][self.curBind] == controlsTable[keyName][secBind] then
+			controlsTable[keyName][secBind] = oldBind
+		end
+
+		ClientPrefs.controls = table.clone(controlsTable)
+		local config = {controls = table.clone(ClientPrefs.controls)}
+		controls:reset(config)
+
+		self:changeBind(self.curSelect, 0)
+		if optionsUI.applySettings then
+			optionsUI.applySettings(optionsUI.settingsNames[optionsUI.curTab]:lower(),
+				optionsUI.selectedTab.data.settings[self.curSelect][1])
+		end
+
+		return true
 	end
 end
 
