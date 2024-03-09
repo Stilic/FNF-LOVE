@@ -128,7 +128,8 @@ function Controls:update(dt, optionsUI)
 
 		local controlsTable = table.clone(ClientPrefs.controls)
 
-		local option = self.settings[self.curSelect]
+		local id = self.curSelect
+		local option = self.settings[id]
 		local keyName = option[1]
 
 		local newBind = "key:" .. game.keys.loveInput:lower()
@@ -145,11 +146,18 @@ function Controls:update(dt, optionsUI)
 		local config = {controls = table.clone(ClientPrefs.controls)}
 		controls:reset(config)
 
-		self:changeBind(self.curSelect, 0)
-		if optionsUI.applySettings then
-			optionsUI.applySettings(optionsUI.settingsNames[optionsUI.curTab]:lower(),
-				optionsUI.selectedTab.data.settings[self.curSelect][1])
+		if self.binds > 1 then
+			for bind = 1, self.binds do
+				local item = self.tab.items[id]
+				if item and item.texts then
+					local obj = item.texts[bind]
+					if obj then obj.content = self:getOptionString(id, bind) end
+				end
+			end
 		end
+
+		self:changeBind(id, 0)
+		optionsUI:acceptOption()
 
 		return true
 	end

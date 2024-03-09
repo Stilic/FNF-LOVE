@@ -232,10 +232,8 @@ function Options:update(dt)
 		local dont = false
 		if self.selectedTab.data.update then
 			dont = self.selectedTab.data:update(dt, self)
-			if dont then return end
 		end
-
-		if not self.blockInput then
+		if not dont and not self.blockInput then
 			if not self.changingOption then
 				local binds = self.selectedTab.data.binds
 				if binds > 1 then
