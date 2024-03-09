@@ -155,9 +155,7 @@ function Controls:update(dt, optionsUI)
 				end
 			end
 		end
-
 		self:changeBind(id, 0)
-		optionsUI:acceptOption()
 
 		return true
 	end
