@@ -219,8 +219,8 @@ function Options:cancelChanges()
 	game.sound.play(paths.getSound("cancelMenu"))
 end
 
-function Options:changeBind(id, add, dont)
-	self.selectedTab.data:changeBind(id, add, dont)
+function Options:changeBind(add, dont)
+	self.selectedTab.data:changeBind(self.curSelect, add, dont)
 end
 
 function Options:update(dt)
@@ -238,12 +238,8 @@ function Options:update(dt)
 			if not self.changingOption then
 				local binds = self.selectedTab.data.binds
 				if binds > 1 then
-					if self.throttles.left:check() then
-						self:changeBind(self.curSelect, shift and -2 or -1)
-					end
-					if self.throttles.right:check() then
-						self:changeBind(self.curSelect, shift and 2 or 1)
-					end
+					if self.throttles.left:check() then self:changeBind(shift and -2 or -1) end
+					if self.throttles.right:check() then self:changeBind(shift and 2 or 1) end
 				end
 				if self.throttles.up:check() then self:changeSelection(shift and -2 or -1) end
 				if self.throttles.down:check() then self:changeSelection(shift and 2 or 1) end
