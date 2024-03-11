@@ -2,7 +2,7 @@ local ClientPrefs = {}
 
 ClientPrefs.data = {
 	-- controls
-	asyncInput = false,
+	asyncInput = true,
 
 	-- gameplay
 	downScroll = false,

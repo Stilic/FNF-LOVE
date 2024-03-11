@@ -111,8 +111,6 @@ local regex_withoutExt = "(.+)%..+$"
 
 function string:ext() return self:match(regex_ext) or self end
 
-function string:hasExt() return self:match(regex_ext) ~= nil end
-
 function string:withoutExt() return self:match(regex_withoutExt) or self end
 
 function string:capitalize() return self:sub(1, 1):upper() .. self:sub(2) end

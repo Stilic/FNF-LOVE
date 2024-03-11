@@ -46,14 +46,9 @@ end
 
 function Mods.loadMods()
 	Mods.mods = {}
-	if paths.exists('mods/modsList.txt', 'file') then
-		local listData = love.filesystem.read('mods/modsList.txt'):gsub('\r', ''):split('\n')
-		for _, dir in pairs(listData) do
+	for _, dir in ipairs(love.filesystem.getDirectoryItems('mods')) do
+		if love.filesystem.getInfo('mods/' .. dir, 'directory') ~= nil then
 			table.insert(Mods.mods, dir)
-		end
-	else
-		for _, dir in ipairs(love.filesystem.getDirectoryItems('mods')) do
-			if not dir:hasExt() then table.insert(Mods.mods, dir) end
 		end
 	end
 
