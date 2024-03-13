@@ -53,6 +53,7 @@ Options = require "funkin.ui.options"
 StatsCounter = require "funkin.ui.statscounter"
 SoundTray = require "funkin.ui.soundtray"
 
+CreditsState = require "funkin.states.credits"
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
 ModsState = require "funkin.states.mods"

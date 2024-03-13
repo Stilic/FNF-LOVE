@@ -140,6 +140,10 @@ function MainMenuState:update(dt)
 		if controls:pressed("debug_1") then
 			self:openEditorMenu()
 		end
+
+		if game.keys.justPressed.TAB then
+			-- game.switchState(CreditsState())
+		end
 	end
 
 	game.camera.target.x, game.camera.target.y =

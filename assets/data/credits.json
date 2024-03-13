@@ -1,0 +1,60 @@
+[
+	{
+		"header": "Engine Team",
+		"credits": [
+			{
+				"name": "someone",
+				"icon": "someone",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Github",
+						"text": "/something"
+					}
+				]
+			},
+			{
+				"name": "someone",
+				"icon": "someone",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			}
+		]
+	},
+	{
+		"header": "Funkin Team",
+		"credits": [
+			{
+				"name": "someone",
+				"icon": "someone",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Github",
+						"text": "/something"
+					}
+				]
+			}
+		]
+	}
+]
