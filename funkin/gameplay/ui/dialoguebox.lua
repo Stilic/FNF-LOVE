@@ -1,6 +1,6 @@
 local DialogueBox = SpriteGroup:extend("DialogueBox")
 
-function DialogueBox:new(dialogueList)
+function DialogueBox:new(dialogueList, delayFirst)
 	DialogueBox.super.new(self)
 
 	local colorBG = Color.convert({179, 223, 216})
@@ -109,6 +109,8 @@ function DialogueBox:new(dialogueList)
 	self.finishThing = nil
 	self.isEnding = false
 
+	self.delayFirst = delayFirst or 0
+
 	self.dialogueOpened = false
 	self.dialogueStarted = false
 	self.dialogueEnded = false
@@ -123,7 +125,11 @@ function DialogueBox:update(dt)
 	if self.box.curAnim then
 		if self.box.curAnim.name == 'normalOpen' and self.box.animFinished then
 			self.box:play('normal')
-			self.dialogueOpened = true
+			if self.delayFirst > 0 then
+				Timer.after(self.delayFirst, function() self.dialogueOpened = true end)
+			else
+				self.dialogueOpened = true
+			end
 		end
 	end
 

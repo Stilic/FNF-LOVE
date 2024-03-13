@@ -6,6 +6,7 @@ function create()
 	local dialogue = love.filesystem.read(paths.getPath('songs/thorns/dialogue.txt')):split('\n')
 	local red = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.convert({255, 27, 49}))
 	local white = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.WHITE)
+	local black = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.BLACK)
 
 	local senpaiEvil = Sprite()
 	senpaiEvil:setFrames(paths.getSparrowAtlas('stages/school-evil/senpaiCrazy'))
@@ -19,7 +20,7 @@ function create()
 
 	music = game.sound.play(paths.getMusic('gameplay/LunchboxScary'), 0.8, true, true)
 
-	doof = DialogueBox(dialogue)
+	doof = DialogueBox(dialogue, 2)
 	doof:setScrollFactor()
 	doof.cameras = {state.camHUD}
 	doof.finishThing = function()
@@ -32,6 +33,21 @@ function create()
 
 	white:setScrollFactor()
 	white.alpha = 0
+
+	black:setScrollFactor()
+	state:add(black)
+
+	for delay = 1, 7 do
+		Timer.after(0.3 * delay, function()
+			if black.alpha == 1 then
+				game.camera.target.y = game.camera.target.y - 64
+			end
+			black.alpha = black.alpha - 0.15
+			if black.alpha < 0 then
+				state:remove(black)
+			end
+		end)
+	end
 
 	state.camHUD.visible = false
 
@@ -55,6 +71,7 @@ function create()
 						game.camera.zoom = state.stage.camZoom
 						state:add(doof)
 						state.camHUD.visible = true
+						state.camHUD:flash(Color.WHITE, 4)
 					end)
 					Timer.after(2.4, function()
 						game.camera.zoom = 1.4

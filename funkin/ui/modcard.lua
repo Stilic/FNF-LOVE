@@ -32,6 +32,11 @@ function ModCard:new(x, y, mods)
 	self.descTxt = Text(14, 224, metadata.description, love.graphics.newFont(13),
 		{1, 1, 1}, "left", 392)
 	self:add(self.descTxt)
+
+	local enabledColor = (Mods.currentMod == mods and Color.GREEN or Color.RED)
+	self.enableCheck = Graphic(4, 562, 15, 54, enabledColor)
+	self.enableCheck.config.round = {6, 6}
+	self:add(self.enableCheck)
 end
 
 return ModCard
