@@ -32,19 +32,19 @@ function Color.HSL(h, s, l)
 end
 
 function Color.HSLtoRGB(h, s, l)
-	local C = ( 1 - math.abs( l + l - 1 ))*s
-	local m = l - 0.5*C
+	local c = (1 - math.abs(l + l - 1)) * s
+	local m = l - 0.5 * c
 	local r, g, b = m, m, m
 	if h == h then
-		local h_ = (h % 1.0) * 6.0
-		local X = C * (1 - math.abs(h_ % 2 - 1))
-		C, X = C + m, X + m
-		if     h_ < 1 then r, g, b = C, X, m
-		elseif h_ < 2 then r, g, b = X, C, m
-		elseif h_ < 3 then r, g, b = m, C, X
-		elseif h_ < 4 then r, g, b = m, X, C
-		elseif h_ < 5 then r, g, b = X, m, C
-		else               r, g, b = C, m, X
+		local h = (h % 1.0) * 6.0
+		local x = c * (1 - math.abs(h % 2 - 1))
+		c, x = c + m, x + m
+		if     h < 1 then r, g, b = c, x, m
+		elseif h < 2 then r, g, b = x, c, m
+		elseif h < 3 then r, g, b = m, c, x
+		elseif h < 4 then r, g, b = m, x, c
+		elseif h < 5 then r, g, b = x, m, c
+		else              r, g, b = c, m, X
 		end
 	end
 	return r, g, b
