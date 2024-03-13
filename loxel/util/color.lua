@@ -31,9 +31,44 @@ function Color.HSL(h, s, l)
 	return r + m, g + m, b + m
 end
 
-function Color.HSLtoRGB(...)
-	local r, g, b = Color.HSL(...)
-	return r * 255, g * 255, b * 255
+function Color.HSLtoRGB(h, s, l)
+	local c = (1 - math.abs(l + l - 1)) * s
+	local m = l - 0.5 * c
+	local r, g, b = m, m, m
+	if h == h then
+		local h = (h % 1.0) * 6.0
+		local x = c * (1 - math.abs(h % 2 - 1))
+		c, x = c + m, x + m
+		if     h < 1 then r, g, b = c, x, m
+		elseif h < 2 then r, g, b = x, c, m
+		elseif h < 3 then r, g, b = m, c, x
+		elseif h < 4 then r, g, b = m, x, c
+		elseif h < 5 then r, g, b = x, m, c
+		else              r, g, b = c, m, X
+		end
+	end
+	return r, g, b
+end
+
+function Color.RGBtoHSL(r, g, b)
+	local max = math.max(r, g, b)
+	local min = math.min(r, g, b)
+	local h, s, l = 0, 0, (max + min) / 2
+
+	if max ~= min then
+		local d = max - min
+		s = l > 0.5 and d / (2 - max - min) or d / (max + min)
+		if max == r then
+			h = (g - b) / d + (g < b and 6 or 0)
+		elseif max == g then
+			h = (b - r) / d + 2
+		else
+			h = (r - g) / d + 4
+		end
+		h = h / 6
+	end
+
+	return h, s, l
 end
 
 function Color.fromHSL(...)
