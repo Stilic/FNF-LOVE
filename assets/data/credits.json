@@ -3,8 +3,8 @@
 		"header": "Engine Team",
 		"credits": [
 			{
-				"name": "someone",
-				"icon": "someone",
+				"name": "Stilic",
+				"icon": "stilic",
 				"color": "#D54040",
 				"description": "something",
 				"social": [
@@ -19,8 +19,72 @@
 				]
 			},
 			{
-				"name": "someone",
-				"icon": "someone",
+				"name": "Raltyro",
+				"icon": "ralty",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			},
+			{
+				"name": "Fellyn",
+				"icon": "fellyn",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			},
+			{
+				"name": "Victor Kaoy",
+				"icon": "vickaoy",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			},
+			{
+				"name": "Blue Colorsin",
+				"icon": "bluecolorsin",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			},
+			{
+				"name": "Ralsin",
+				"icon": "ralsin",
 				"color": "#D54040",
 				"description": "something",
 				"social": [
@@ -40,8 +104,8 @@
 		"header": "Funkin Team",
 		"credits": [
 			{
-				"name": "someone",
-				"icon": "someone",
+				"name": "Ninjamuffin99",
+				"icon": "ninjamuffin",
 				"color": "#D54040",
 				"description": "something",
 				"social": [
@@ -52,6 +116,54 @@
 					{
 						"name": "Github",
 						"text": "/something"
+					}
+				]
+			},
+			{
+				"name": "Phantom Arcade",
+				"icon": "phantomarcade",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			},
+			{
+				"name": "EvilSk8r",
+				"icon": "evilsk8r",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
+					}
+				]
+			},
+			{
+				"name": "Kawaii Sprite",
+				"icon": "kawaiisprite",
+				"color": "#D54040",
+				"description": "something",
+				"social": [
+					{
+						"name": "X",
+						"text": "@something"
+					},
+					{
+						"name": "Youtube",
+						"text": "@something"
 					}
 				]
 			}

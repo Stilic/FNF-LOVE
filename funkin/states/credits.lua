@@ -9,9 +9,11 @@ function CreditsState:enter()
 	self.bg:setGraphicSize(math.floor(self.bg.width * (game.width / self.bg.width)))
 	self.bg:updateHitbox()
 	self.bg:screenCenter()
+    self.bg:setScrollFactor()
 
 	self:add(self.bg)
 	self.bd = BackDrop(0, 0, game.width, game.height, 72, {1,0,0,1}, {0,0,0,0}, 26)
+    self.bd:setScrollFactor()
 	self:add(self.bd)
 	self.bd.alpha = 0.5
 
@@ -39,6 +41,7 @@ function CreditsState:enter()
 
 	u.card = Group()
 	u.icon = Sprite(u.leftBox.x + u.leftBox.width + 10, 10)
+    u.icon:setScrollFactor()
 	u.icon:setGraphicSize(100)
 	u.icon:updateHitbox()
 	u.card:add(u.icon)
@@ -47,6 +50,7 @@ function CreditsState:enter()
 		paths.getFont("phantommuff.ttf", 75))
 	u.name:setOutline("normal", 4)
 	u.name.y = 10 + (u.icon.height - u.name:getHeight()) / 2
+    u.name:setScrollFactor()
 	u.card:add(u.name)
 
 	u.rightBox = Graphic(
@@ -54,11 +58,14 @@ function CreditsState:enter()
 		game.width - u.leftBox.width - 30, game.height - 100 - 30, Color.fromRGB(10, 12, 26))
 	u.rightBox.alpha = 0.4
 	u.rightBox.config.round = {16, 16}
+    u.rightBox:setScrollFactor()
 	u.card:add(u.rightBox)
 
 	u.desc = Text(
 		u.rightBox.x + 10, u.rightBox.y + 10, "Description",
 			paths.getFont("vcr.ttf", 32), nil, nil, u.rightBox.width - 10)
+    u.desc.antialiasing = false
+    u.desc:setScrollFactor()
 	u.card:add(u.desc)
 
 	u.mediaList = Group()
@@ -76,7 +83,11 @@ function CreditsState:enter()
 	self:createPeopleList()
 	self:change(0)
 
-	local device = love.system.getDevice() 
+    self.throttles = {}
+	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
+	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
+
+	local device = love.system.getDevice()
 	if device == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Credits"})
 	elseif device == "Mobile" then
@@ -97,15 +108,12 @@ end
 
 function CreditsState:update(dt)
 	CreditsState.super.update(self, dt)
-	if controls:pressed("back") then
-		game.switchState(MainMenuState())
-	end
-	if controls:pressed("ui_up") then
-		self:change(-1)
-	end
-	if controls:pressed("ui_down") then
-		self:change(1)
-	end
+
+    if self.throttles then
+        if controls:pressed("back") then game.switchState(MainMenuState()) end
+	    if self.throttles.up:check() then self:change(-1) end
+	    if self.throttles.down:check() then self:change(1) end
+    end
 
 	local colorBG = Color.fromString(self.data[self.curTab].credits[self.curSelected].color or "#DF7B29")
 	self.bg.color[1], self.bg.color[2], self.bg.color[3] =
@@ -142,11 +150,14 @@ function CreditsState:createSocialList()
 		local img = Sprite(u.rightBox.x + 10, 0, paths.getImage("menus/credits/social/" .. icon))
 		img.y = u.rightBox.y + u.rightBox.height - (img.height * i) - (10 * i)
 		img:updateHitbox()
+        img:setScrollFactor()
 		u.mediaList:add(img)
 
 		local txt = Text(img.x + img.width + 10, img.y,
 			name, paths.getFont("vcr.ttf", 34))
 		txt:setOutline("normal", 4)
+        txt.antialiasing = false
+        txt:setScrollFactor()
 		u.mediaList:add(txt)
 	end
 
@@ -163,9 +174,26 @@ function CreditsState:change(n)
 	game.sound.play(paths.getSound('scrollMenu'))
 	local u = self.ui
 	self.curSelected = self.curSelected + n
+    if self.curSelected > #self.data[self.curTab].credits or self.curSelected < 1 then
+        if self.curSelected > #self.data[self.curTab].credits then
+            self.curSelected = 1
+        end
+        self.curTab = self.curTab + n
+        self.curTab = (self.curTab - 1) % #self.data + 1
+        if self.curSelected < 1 then
+            self.curSelected = #self.data[self.curTab].credits
+        end
+    end
 	self.curSelected = (self.curSelected - 1) % #self.data[self.curTab].credits + 1
 
-	u.selectBar.y = 10 + 64 * (self.curSelected - 1) + 10
+    local currentList = self.curSelected
+    if self.curTab > 1 then
+        for dataID, data in ipairs(self.data) do
+            if dataID == self.curTab then break end
+            currentList = currentList + #data.credits
+        end
+    end
+	u.selectBar.y = 104 + 84 * (self.curTab - 1) + 64 * (currentList - 1)
 	self:reloadCard()
 end
 
@@ -195,6 +223,7 @@ function CreditsState:createPeopleCard(name, people, i)
 	card:add(box)
 
 	local title = Text(10, box.y + 10, name or "UNKNOWN", paths.getFont("vcr.ttf", 36))
+    title.antialiasing = false
 	title.limit = box.width - 10
 	title.alignment = "center"
 	card:add(title)
@@ -210,6 +239,7 @@ function CreditsState:createPeopleCard(name, people, i)
 		local txt = Text(img.x + img.width + 10, 0,
 			name, paths.getFont("vcr.ttf", 38))
 		txt.y = img.y + (img.height - txt:getHeight()) / 2
+        txt.antialiasing = false
 		grp:add(txt)
 
 		grp.id = i

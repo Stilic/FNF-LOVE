@@ -142,7 +142,7 @@ function MainMenuState:update(dt)
 		end
 
 		if game.keys.justPressed.TAB then
-			-- game.switchState(CreditsState())
+			game.switchState(CreditsState())
 		end
 	end
 
