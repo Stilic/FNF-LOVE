@@ -115,6 +115,8 @@ function PlayState:enter()
 	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
 	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 
+	self.timer = Timer.new()
+
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts")
 	self.scripts:loadDirectory("data/scripts/" .. songName)
@@ -425,20 +427,43 @@ function PlayState:enter()
 	controls:bindRelease(self.bindedKeyRelease)
 
 	self.startingSong = true
-
-	self.countdownTimer = Timer.new()
 	self.startedCountdown = false
 
 	if self.storyMode and not PlayState.seenCutscene then
 		PlayState.seenCutscene = true
 
-		local fileExist = paths.exists(paths.getMods('data/cutscenes/' .. songName .. '.lua'), 'file') or
-			paths.exists(paths.getPath('data/cutscenes/' .. songName .. '.lua'), 'file')
-		if fileExist then
-			local cutsceneScript = Script('data/cutscenes/' .. songName)
+		local cutscenePaths = {paths.getMods('data/cutscenes/' .. songName .. '.lua'),
+			paths.getMods('data/cutscenes/' .. songName .. '.json'),
+			paths.getPath('data/cutscenes/' .. songName .. '.lua'),
+			paths.getPath('data/cutscenes/' .. songName .. '.json')}
 
-			cutsceneScript:call("create")
-			table.insert(self.scripts.scripts, cutsceneScript)
+		local fileExist, cutsceneType
+		for i, path in ipairs(cutscenePaths) do
+			if paths.exists(path, 'file') then
+				fileExist = true
+				switch(path:ext(), {
+					["lua"] = function() cutsceneType = "script" end,
+					["json"] = function() cutsceneType = "data" end,
+				})
+			end
+		end
+		if fileExist then
+			switch(cutsceneType, {
+				["script"] = function()
+					local cutsceneScript = Script('data/cutscenes/' .. songName)
+
+					cutsceneScript:call("create")
+					table.insert(self.scripts.scripts, cutsceneScript)
+				end,
+				["data"] = function()
+					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName)
+					for i, event in ipairs(cutsceneData.cutscene) do
+						self.timer:after(event.time / 1000, function()
+							self:executeCutsceneEvent(event.event)
+						end)
+					end
+				end
+			})
 		else
 			self:startCountdown()
 		end
@@ -495,7 +520,7 @@ function PlayState:startCountdown()
 	}, PlayState.conductor.crotchet / 1000
 	for swagCounter = 0, #countdownData do
 		local sussyCounter = swagCounter + 1 -- funny word huh
-		self.countdownTimer:after(crotchet * sussyCounter, function()
+		self.timer:after(crotchet * sussyCounter, function()
 			self.scripts:call("countdownTick", swagCounter)
 
 			local data = countdownData[sussyCounter]
@@ -549,7 +574,7 @@ function PlayState:update(dt)
 
 	self.scripts:call("update", dt)
 
-	self.countdownTimer:update(dt)
+	self.timer:update(dt)
 
 	if self.startedCountdown then
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
@@ -1159,13 +1184,38 @@ function PlayState:endSong(skip)
 		PlayState.seenCutscene = true
 
 		local songName = paths.formatToSongPath(PlayState.SONG.song)
-		local fileExist = (paths.exists(paths.getMods('data/cutscenes/' .. songName .. '-end.lua'), 'file') or
-			paths.exists(paths.getPath('data/cutscenes/' .. songName .. '-end.lua'), 'file'))
+		local cutscenePaths = {paths.getMods('data/cutscenes/' .. songName .. '.lua'),
+			paths.getMods('data/cutscenes/' .. songName .. '.json'),
+			paths.getPath('data/cutscenes/' .. songName .. '.lua'),
+			paths.getPath('data/cutscenes/' .. songName .. '.json')}
+
+		local fileExist, cutsceneType
+		for i, path in ipairs(cutscenePaths) do
+			if paths.exists(path, 'file') then
+				fileExist = true
+				switch(path:ext(), {
+					["lua"] = function() cutsceneType = "script" end,
+					["json"] = function() cutsceneType = "data" end,
+				})
+			end
+		end
 		if fileExist then
-			local cutsceneScript = Script('data/cutscenes/' .. songName .. '-end')
-			cutsceneScript:call("create")
-			table.insert(self.scripts.scripts, cutsceneScript)
-			cutsceneScript:call("postCreate")
+			switch(cutsceneType, {
+				["script"] = function()
+					local cutsceneScript = Script('data/cutscenes/' .. songName .. '-end')
+					cutsceneScript:call("create")
+					table.insert(self.scripts.scripts, cutsceneScript)
+					cutsceneScript:call("postCreate")
+				end,
+				["data"] = function()
+					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName .. '-end')
+					for i, event in ipairs(cutsceneData.cutscene) do
+						self.timer:after(event.time / 1000, function()
+							self:executeCutsceneEvent(event.event, true)
+						end)
+					end
+				end
+			})
 			return
 		else
 			self:endSong(true)
@@ -1343,6 +1393,69 @@ function PlayState:focus(f)
 	end
 end
 
+function PlayState:executeCutsceneEvent(event, isEnd)
+	switch(event.name, {
+		['Camera Position'] = function()
+			local xCam, yCam = event.params[1], event.params[2]
+			local isTweening = event.params[3]
+			local time = event.params[4]
+			local ease = event.params[6] .. '-' .. event.params[5]
+			if isTweening then
+				self.timer:tween(time, game.camera.target, {x = xCam, y = yCam}, ease)
+				self.timer:tween(time, self.camFollow, {x = xCam, y = yCam}, ease)
+			else
+				self.camFollow = {x = xCam, y = yCam}
+			end
+		end,
+		['Camera Zoom'] = function()
+			local zoomCam = event.params[1]
+			local isTweening = event.params[2]
+			local time = event.params[3]
+			local ease = event.params[5] .. '-' .. event.params[4]
+			if isTweening then
+				self.timer:tween(time, game.camera, {zoom = zoomCam}, ease)
+			else
+				game.camera.zoom = zoomCam
+			end
+		end,
+		['Play Sound'] = function()
+			local soundPath = event.params[1]
+			local volume = event.params[2]
+			local isFading = event.params[3]
+			local time = event.params[4]
+			local volStart, volEnd = event.params[5], event.params[6]
+
+			local sound = game.sound.play(paths.getSound(soundPath), volume)
+			if isFading then sound:fade(time, volStart, volEnd) end
+		end,
+		['Play Animation'] = function()
+			local character = nil
+			switch(event.params[1], {
+				['bf'] = function() character = self.boyfriend end,
+				['gf'] = function() character = self.gf end,
+				['dad'] = function() character = self.dad end
+			})
+			local animation = event.params[2]
+
+			if character then character:playAnim(animation, true) end
+		end,
+		['End Cutscene'] = function()
+			if isEnd then
+				self:endSong(true)
+			else
+				local skipCountdown = event.params[1]
+				if skipCountdown then
+					PlayState.conductor.time = 0
+					self.startedCountdown = true
+					if self.buttons then self.buttons:enable() end
+				else
+					self:startCountdown()
+				end
+			end
+		end,
+	})
+end
+
 local ratingFormat, noRating = "(%s) %s", "?"
 function PlayState:recalculateRating(rating)
 	if rating then
@@ -1353,38 +1466,23 @@ function PlayState:recalculateRating(rating)
 	local ratingStr = noRating
 	if self.totalPlayed > 0 then
 		local accuracy, class = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
-		if accuracy >= 1 then
-			class = "X"
-		elseif accuracy >= 0.99 then
-			class = "S+"
-		elseif accuracy >= 0.95 then
-			class = "S"
-		elseif accuracy >= 0.90 then
-			class = "A"
-		elseif accuracy >= 0.80 then
-			class = "B"
-		elseif accuracy >= 0.70 then
-			class = "C"
-		elseif accuracy >= 0.60 then
-			class = "D"
-		elseif accuracy >= 0.50 then
-			class = "E"
-		else
-			class = "F"
-		end
+		if accuracy >= 1 then class = "X"
+		elseif accuracy >= 0.99 then class = "S+"
+		elseif accuracy >= 0.95 then class = "S"
+		elseif accuracy >= 0.90 then class = "A"
+		elseif accuracy >= 0.80 then class = "B"
+		elseif accuracy >= 0.70 then class = "C"
+		elseif accuracy >= 0.60 then class = "D"
+		elseif accuracy >= 0.50 then class = "E"
+		else class = "F" end
 		self.accuracy = accuracy
 
 		local fc
 		if self.misses < 1 then
-			if self.bads > 0 or self.shits > 0 then
-				fc = "FC"
-			elseif self.goods > 0 then
-				fc = "GFC"
-			elseif self.sicks > 0 then
-				fc = "SFC"
-			else
-				fc = "FC"
-			end
+			if self.bads > 0 or self.shits > 0 then fc = "FC"
+			elseif self.goods > 0 then fc = "GFC"
+			elseif self.sicks > 0 then fc = "SFC"
+			else fc = "FC" end
 		else
 			fc = self.misses >= 10 and "Clear" or "SDCB"
 		end

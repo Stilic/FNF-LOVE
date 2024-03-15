@@ -66,6 +66,7 @@ EditorMenu = require "funkin.ui.editor.editormenu"
 AssetsErrorSubstate = require "funkin.substates.assetserror"
 GameOverSubstate = require "funkin.substates.gameover"
 
+CutsceneState = require "funkin.states.editors.cutscene"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 

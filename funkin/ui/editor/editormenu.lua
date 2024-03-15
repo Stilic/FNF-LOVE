@@ -9,7 +9,8 @@ function EditorMenu:new(completionCallback)
 
 	self.optionShit = {
 		{"charter",   "Chart Editor"},
-		{"character", "Character Editor"}
+		{"character", "Character Editor"},
+		{"charter", "Cutscene Editor"}
 	}
 	self.curSelected = 1
 
@@ -76,7 +77,8 @@ end
 
 local triggerChoice = {
 	["Chart Editor"] = function() game.switchState(ChartingState()) end,
-	--["Character Editor"] = function() game.switchState(CharacterEditor()) end
+	--["Character Editor"] = function() game.switchState(CharacterEditor()) end,
+	["Cutscene Editor"] = function() game.switchState(CutsceneState()) end
 }
 
 function EditorMenu:update(dt)
