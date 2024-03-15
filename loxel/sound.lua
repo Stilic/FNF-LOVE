@@ -14,6 +14,7 @@ function Sound:revive()
 	self.__volume = 1
 	self.__pitch = 1
 	self.__duration = 0
+	self.__time = 0
 	self.__wasPlaying = nil
 end
 
@@ -108,6 +109,7 @@ function Sound:play(volume, looped, pitch, restart)
 
 	self.__paused = false
 	self.__isFinished = false
+	if math.abs(self.__time - self:getDuration()) <= 0.1 then self:seek(0) end
 	self:setVolume(volume)
 	self:setLooping(looped)
 	self:setPitch(pitch)
@@ -123,6 +125,7 @@ end
 
 function Sound:stop()
 	self.__paused = true
+	self.__time = 0
 	if self.__source then pcall(self.__source.stop, self.__source) end
 	return self
 end
@@ -136,6 +139,8 @@ function Sound:proximity(x, y, target, radius)
 end
 
 function Sound:update()
+	if self:isPlaying() then self.__time = self:tell() end
+
 	local isFinished = self:isFinished()
 	if isFinished and not self.__isFinished then
 		local onComplete = self.onComplete
@@ -193,7 +198,7 @@ end
 
 function Sound:isFinished()
 	return self.active and not self.__paused and not self:isPlaying() and
-		not self.__source:isLooping()
+		not self.__source:isLooping() and math.abs(self.__time - self:getDuration()) <= 0.1
 end
 
 function Sound:tell()
@@ -205,7 +210,7 @@ end
 
 function Sound:seek(position)
 	if not self.__source then return false end
-
+	self.__time = position
 	return pcall(self.__source.seek, self.__source, position)
 end
 
