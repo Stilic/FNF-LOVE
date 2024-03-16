@@ -988,10 +988,23 @@ function PlayState:onSettingChange(setting)
 		self.botplayTxt.y = self.timeTxt.y
 
 		if self.downScroll then
+			local lastIconScale = self.iconP1.scale.x
+			self.iconP1.scale = {x = 1, y = 1}
+			self.iconP2.scale = {x = 1, y = 1}
+
+			self.iconP1:updateHitbox()
+			self.iconP2:updateHitbox()
+
 			for _, o in ipairs({
 				self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
 				self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
 			}) do o.y = -o.y + (o.offset.y * 2) + game.height + (o.getHeight and o:getHeight() or o.height) * -1 end
+
+			self.iconP1.scale = {x = lastIconScale, y = lastIconScale}
+			self.iconP2.scale = {x = lastIconScale, y = lastIconScale}
+
+			self.iconP1:updateHitbox()
+			self.iconP2:updateHitbox()
 		end
 
 		local n
