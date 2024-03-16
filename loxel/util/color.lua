@@ -1,4 +1,5 @@
-local Color = {
+---@class ColorTable
+local colorTable = {
 	WHITE = {1, 1, 1},
 	BLACK = {0, 0, 0},
 	RED = {1, 0, 0},
@@ -8,6 +9,9 @@ local Color = {
 	CYAN = {0, 1, 1},
 	YELLOW = {1, 1, 0}
 }
+
+---@class Color:ColorTable
+local Color = {}
 
 function Color.HSL(h, s, l)
 	if s <= 0 then return l, l, l end
@@ -91,5 +95,11 @@ function Color.convert(rgb)
 		rgb[2] / 255,
 		rgb[3] / 255}
 end
+
+setmetatable(Color, {
+    __index = function(tbl, key)
+        if colorTable[key] then return table.clone(colorTable[key]) end
+    end
+})
 
 return Color

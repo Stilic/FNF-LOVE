@@ -5,19 +5,15 @@ local defaultData = {
         header = "Engine Team",
         credits = {
             {
-                name = "Stilic",
-                icon = "stilic",
-                color = "#FFCA45",
-                description = "something",
+				name = "Stilic", icon = "stilic", color = "#FFCA45",
+            	description = "something",
                 social = {
                     {name = "X", text = "@stilic_dev"},
                     {name = "Github", text = "/Stilic"}
                 }
             },
             {
-                name = "Raltyro",
-                icon = "ralty",
-                color = "#FF4545",
+				name = "Raltyro", icon = "ralty", color = "#FF4545",
                 description = "something",
                 social = {
                     {name = "X", text = "@raltyro"},
@@ -26,9 +22,7 @@ local defaultData = {
                 }
             },
             {
-                name = "Fellyn",
-                icon = "fellyn",
-                color = "#E49CFA",
+                name = "Fellyn", icon = "fellyn", color = "#E49CFA",
                 description = "something",
                 social = {
                     {name = "X", text = "@FellynnLol_"},
@@ -37,18 +31,14 @@ local defaultData = {
                 }
             },
             {
-                name = "Victor Kaoy",
-                icon = "vickaoy",
-                color = "#D1794D",
+            	name = "Victor Kaoy", icon = "vickaoy", color = "#D1794D",
                 description = "something",
                 social = {
                     {name = "X", text = "@vk15_"}
                 }
             },
             {
-                name = "Blue Colorsin",
-                icon = "bluecolorsin",
-                color = "#2B56FF",
+                name = "Blue Colorsin", icon = "bluecolorsin", color = "#2B56FF",
                 description = "something",
                 social = {
                     {name = "X", text = "@BlueColorsin"},
@@ -57,9 +47,7 @@ local defaultData = {
                 }
             },
             {
-                name = "Ralsin",
-                icon = "ralsin",
-                color = "#383838",
+                name = "Ralsin", icon = "ralsin", color = "#383838",
                 description = "something",
                 social = {
                     {name = "X", text = "@ralsi_"},
@@ -73,9 +61,7 @@ local defaultData = {
         header = "Funkin' Team",
         credits = {
             {
-                name = "Ninjamuffin99",
-                icon = "ninjamuffin",
-                color = "#FF392B",
+                name = "Ninjamuffin99", icon = "ninjamuffin", color = "#FF392B",
                 description = "Programmer of Friday Night Funkin'",
                 social = {
                     {name = "X", text = "@ninja_muffin99"},
@@ -84,9 +70,7 @@ local defaultData = {
                 }
             },
             {
-                name = "Phantom Arcade",
-                icon = "phantomarcade",
-                color = "#EBC73B",
+                name = "Phantom Arcade", icon = "phantomarcade", color = "#EBC73B",
                 description = "Animator of Friday Night Funkin'",
                 social = {
                     {name = "X", text = "@PhantomArcade3K"},
@@ -94,18 +78,14 @@ local defaultData = {
                 }
             },
             {
-                name = "EvilSk8r",
-                icon = "evilsk8r",
-                color = "#5EED3E",
+                name = "EvilSk8r", icon = "evilsk8r", color = "#5EED3E",
                 description = "Artist of Friday Night Funkin'",
                 social = {
                     {name = "X", text = "@evilsk8r"}
                 }
             },
             {
-                name = "Kawai Sprite",
-                icon = "kawaisprite",
-                color = "#4185FA",
+                name = "Kawai Sprite", icon = "kawaisprite", color = "#4185FA",
                 description = "Musician of Friday Night Funkin'",
                 social = {
                     {name = "X", text = "@kawaisprite"},
@@ -209,7 +189,7 @@ function CreditsState:enter()
 	self:add(u.usersMenu)
 	self:add(u.infoMenu)
 
-	self:change(0, true)
+	self:changeSelection()
 
 	local colorBG = Color.fromString(self.data[self.curTab].credits[self.curSelected].color or "#DF7B29")
 	self.bg.color = colorBG
@@ -245,8 +225,8 @@ end
 function CreditsState:update(dt)
 	CreditsState.super.update(self, dt)
 	if self.throttles then
-		if self.throttles.up:check() then self:change(-1) end
-		if self.throttles.down:check() then self:change(1) end
+		if self.throttles.up:check() then self:changeSelection(-1) end
+		if self.throttles.down:check() then self:changeSelection(1) end
 	end
 	if controls:pressed("back") then
 		game.sound.play(paths.getSound('cancelMenu'))
@@ -279,7 +259,8 @@ function CreditsState:update(dt)
 		util.coolLerp(self.bd.color[3], colorBG[3], 3, dt)
 end
 
-function CreditsState:change(n)
+function CreditsState:changeSelection(n)
+	if n == nil then n = 0 end
 	game.sound.play(paths.getSound('scrollMenu'))
 
 	local u = self.ui

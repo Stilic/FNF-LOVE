@@ -320,8 +320,7 @@ function PlayState:enter()
 	self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
 	self.healthBarBG:updateHitbox()
 	self.healthBarBG:screenCenter("x")
-	self.healthBarBG.y =
-		(self.downScroll and game.height * 0.08 or game.height * 0.9)
+	self.healthBarBG.y = game.height * 0.9
 	self.healthBarBG:setScrollFactor()
 
 	self.healthBar = Bar(self.healthBarBG.x + 4, self.healthBarBG.y + 4,
@@ -337,17 +336,13 @@ function PlayState:enter()
 	self.iconP2 = HealthIcon(self.dad.icon, false)
 	self.iconP2.y = self.healthBar.y - 75
 
-	local textOffset = 36
-	if self.downScroll then textOffset = -textOffset end
-
 	local fontScore = paths.getFont("vcr.ttf", 17)
-	self.scoreTxt = Text(game.width / 2, self.healthBarBG.y + textOffset + 8, "", fontScore, {1, 1, 1},
+	self.scoreTxt = Text(game.width / 2, self.healthBarBG.y + 44, "", fontScore, {1, 1, 1},
 		"center")
 	self.scoreTxt.outline.width = 1
 	self.scoreTxt.antialiasing = false
 
 	self.timeArc = ProgressArc(36, game.height - 81, 65, 18, {Color.BLACK, Color.WHITE}, 0, game.sound.music:getDuration() / 1000)
-	if self.downScroll then self.timeArc.y = 16 end
 
 	local songTime = 0
 	if ClientPrefs.data.timeType == "left" then
@@ -359,9 +354,7 @@ function PlayState:enter()
 		fontTime, {1, 1, 1}, "left")
 	self.timeTxt.outline.width = 2
 	self.timeTxt.antialiasing = false
-
 	self.timeTxt.y = (self.timeArc.y + self.timeArc.width) - self.timeTxt:getHeight()
-	if self.downScroll then self.timeTxt.y = self.timeArc.y end
 
 	self.botplayTxt = Text(604, self.timeTxt.y, 'BOTPLAY MODE',
 		fontTime, {1, 1, 1}, "right", game.width / 2)
@@ -417,6 +410,13 @@ function PlayState:enter()
 		self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
 		self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
 	}) do o.cameras = {self.camHUD} end
+
+	if self.downScroll then
+		for _, o in ipairs({
+			self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
+			self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
+		}) do o.y = -o.y + game.height + (o.getHeight and o:getHeight() or o.height) * -1 end
+	end
 
 	self.lastTick = love.timer.getTime()
 
@@ -973,24 +973,26 @@ function PlayState:onSettingChange(setting)
 			rep.visible = not self.middleScroll or rep.player == 0
 		end
 
-		self.healthBarBG.y = self.downScroll and game.height * 0.08 or game.height * 0.9
+		self.healthBarBG.y = game.height * 0.9
 		self.healthBar.y = self.healthBarBG.y + 4
 
 		self.iconP1.y = self.healthBar.y - 75
 		self.iconP2.y = self.healthBar.y - 75
 
-		local textOffset = 36
-		if self.downScroll then textOffset = -textOffset end
-		self.scoreTxt.y = self.healthBarBG.y + textOffset + 8
+		self.scoreTxt.y = self.healthBarBG.y + 44
 
 		self.timeArc.y = game.height - 81
-		if self.downScroll then self.timeArc.y = 16 end
-
 		self.timeTxt.y = (self.timeArc.y + self.timeArc.width) - self.timeTxt:getHeight()
-		if self.downScroll then self.timeTxt.y = self.timeArc.y end
 
 		self.botplayTxt.visible = self.botPlay
 		self.botplayTxt.y = self.timeTxt.y
+
+		if self.downScroll then
+			for _, o in ipairs({
+				self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
+				self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
+			}) do o.y = -o.y + game.height + (o.getHeight and o:getHeight() or o.height) * -1 end
+		end
 
 		local n
 		for i = 1, #self.unspawnNotes do
@@ -1134,6 +1136,12 @@ function PlayState:goodNoteHit(n)
 				end
 			end
 
+			if n.mustPress and not n.ignoreNote then
+				if self.health > 2 then self.health = 2 end
+				self.health = self.health + (n.isSustain and 0.013 or 0.023)
+				self.healthBar:setValue(self.health)
+			end
+
 			if not n.isSustain then
 				if n.mustPress then
 					local diff, rating = math.abs(n.time - PlayState.conductor.time),
@@ -1149,11 +1157,6 @@ function PlayState:goodNoteHit(n)
 						if self.combo < 0 then self.combo = 0 end
 						self.combo = self.combo + 1
 						self.score = self.score + rating.score
-
-						if self.health > 2 then self.health = 2 end
-
-						self.health = self.health + 0.023
-						self.healthBar:setValue(self.health)
 					end
 
 					if ClientPrefs.data.noteSplash and rating.splash then
