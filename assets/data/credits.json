@@ -5,165 +5,177 @@
 			{
 				"name": "Stilic",
 				"icon": "stilic",
-				"color": "#D54040",
+				"color": "#FFCA45",
 				"description": "something",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@stilic_dev"
 					},
 					{
 						"name": "Github",
-						"text": "/something"
+						"text": "/Stilic"
 					}
 				]
 			},
 			{
 				"name": "Raltyro",
 				"icon": "ralty",
-				"color": "#D54040",
+				"color": "#FF4545",
 				"description": "something",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@raltyro"
 					},
 					{
 						"name": "Youtube",
-						"text": "@something"
+						"text": "@Raltyro"
+					},
+					{
+						"name": "Github",
+						"text": "/Raltyro"
 					}
 				]
 			},
 			{
 				"name": "Fellyn",
 				"icon": "fellyn",
-				"color": "#D54040",
+				"color": "#DB59FF",
 				"description": "something",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@FellynnLol_"
 					},
 					{
 						"name": "Youtube",
-						"text": "@something"
+						"text": "@FellynnMusic_"
+					},
+					{
+						"name": "Github",
+						"text": "/FellynYukira"
 					}
 				]
 			},
 			{
 				"name": "Victor Kaoy",
 				"icon": "vickaoy",
-				"color": "#D54040",
+				"color": "#D1794D",
 				"description": "something",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
-					},
-					{
-						"name": "Youtube",
-						"text": "@something"
+						"text": "@vk15_"
 					}
 				]
 			},
 			{
 				"name": "Blue Colorsin",
 				"icon": "bluecolorsin",
-				"color": "#D54040",
+				"color": "#2B56FF",
 				"description": "something",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@BlueColorsin"
 					},
 					{
 						"name": "Youtube",
-						"text": "@something"
+						"text": "@BlueColorsin"
+					},
+					{
+						"name": "Github",
+						"text": "/BlueColorsin"
 					}
 				]
 			},
 			{
 				"name": "Ralsin",
 				"icon": "ralsin",
-				"color": "#D54040",
+				"color": "#383838",
 				"description": "something",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@ralsi_"
 					},
 					{
 						"name": "Youtube",
-						"text": "@something"
+						"text": "@ralsin"
+					},
+					{
+						"name": "Github",
+						"text": "/Ralsin"
 					}
 				]
 			}
 		]
 	},
 	{
-		"header": "Funkin Team",
+		"header": "Funkin' Team",
 		"credits": [
 			{
 				"name": "Ninjamuffin99",
 				"icon": "ninjamuffin",
-				"color": "#D54040",
-				"description": "something",
+				"color": "#FF392B",
+				"description": "Programmer of Friday Night Funkin'",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@ninja_muffin99"
+					},
+					{
+						"name": "Youtube",
+						"text": "@camerontaylor5970"
 					},
 					{
 						"name": "Github",
-						"text": "/something"
+						"text": "/ninjamuffin99"
 					}
 				]
 			},
 			{
 				"name": "Phantom Arcade",
 				"icon": "phantomarcade",
-				"color": "#D54040",
-				"description": "something",
+				"color": "#EBC73B",
+				"description": "Animator of Friday Night Funkin'",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@PhantomArcade3K"
 					},
 					{
 						"name": "Youtube",
-						"text": "@something"
+						"text": "@PhantomArcade"
 					}
 				]
 			},
 			{
 				"name": "EvilSk8r",
 				"icon": "evilsk8r",
-				"color": "#D54040",
-				"description": "something",
+				"color": "#5EED3E",
+				"description": "Artist of Friday Night Funkin'",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
-					},
-					{
-						"name": "Youtube",
-						"text": "@something"
+						"text": "@evilsk8r"
 					}
 				]
 			},
 			{
-				"name": "Kawaii Sprite",
-				"icon": "kawaiisprite",
-				"color": "#D54040",
-				"description": "something",
+				"name": "Kawai Sprite",
+				"icon": "kawaisprite",
+				"color": "#4185FA",
+				"description": "Musician of Friday Night Funkin'",
 				"social": [
 					{
 						"name": "X",
-						"text": "@something"
+						"text": "@kawaisprite"
 					},
 					{
 						"name": "Youtube",
-						"text": "@something"
+						"text": "@KawaiSprite"
 					}
 				]
 			}

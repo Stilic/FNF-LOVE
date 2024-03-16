@@ -4,6 +4,7 @@ function CreditsState:enter()
 	CreditsState.super.enter(self)
 	self.data = paths.getJSON("data/credits")
 
+	self.lastHeight = 0
 	self.curSelected = 1
 	self.curTab = 1
 
@@ -95,7 +96,7 @@ function CreditsState:enter()
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
-	local device = love.system.getDevice() 
+	local device = love.system.getDevice()
 	if device == "Desktop" then
 		Discord.changePresence({details = "In the Menus", state = "Credits"})
 	elseif device == "Mobile" then
@@ -188,7 +189,6 @@ function CreditsState:change(n)
 	self:reloadSocials()
 end
 
-local lastHeight = 0
 function CreditsState:addUsers(name, people, i)
 	local u = self.ui
 
@@ -196,7 +196,7 @@ function CreditsState:addUsers(name, people, i)
 	u.usersMenu:add(card)
 
 	local box = Graphic(0, 0, u.userBox.width - 20, 60)
-	box.y = (lastHeight > 0 and lastHeight + 10 or 0)
+	box.y = (self.lastHeight > 0 and self.lastHeight + 10 or 0)
 	box.alpha = 0.2
 	box.config.round = {18, 18}
 	box:setScrollFactor(0, 1)
@@ -231,9 +231,9 @@ function CreditsState:addUsers(name, people, i)
 
 	for i = 1, #people do
 		local img, txt = makeCard(people[i].name, people[i].icon, i)
-		lastHeight = img.y + img.height + 10
+		self.lastHeight = img.y + img.height + 10
 	end
-	u.userBox.height = lastHeight + 10
+	u.userBox.height = self.lastHeight + 10
 end
 
 function CreditsState:reloadSocials()
