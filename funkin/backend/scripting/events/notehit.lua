@@ -7,6 +7,7 @@ function NoteHitEvent:new(note, character)
 
 	self.cancelledAnim = false
 	self.strumGlowCancelled = false
+	self.unmuteVocals = true
 
 	self.note = note
 	self.character = character
@@ -18,6 +19,10 @@ end
 
 function NoteHitEvent:cancelStrumGlow()
 	self.strumGlowCancelled = true
+end
+
+function NoteHitEvent:cancelUnmuteVocals()
+	self.unmuteVocals = false
 end
 
 return NoteHitEvent

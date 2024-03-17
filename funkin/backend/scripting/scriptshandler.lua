@@ -8,21 +8,21 @@ function ScriptsHandler:new() self.scripts = {} end
 ---@param file string
 function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)) end
 
+---add script to list
+---@param script Script
+function ScriptsHandler:add(script) table.insert(self.scripts, script) end
+
+---remove script from list
+---@param script Script
+function ScriptsHandler:remove(script) table.delete(self.scripts, script) end
+
 ---loads all scripts in a directory to the handler
 ---@param ... string
 function ScriptsHandler:loadDirectory(...)
 	for _, dir in ipairs({...}) do
-		if Mods.currentMod then
-			for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getMods(dir))) do
-				if file:endsWith('.lua') then
-					self:loadScript(string.withoutExt(dir .. "/" .. file))
-				end
-			end
-		end
-		for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(dir))) do
-			if file:endsWith('.lua') then
-				self:loadScript(string.withoutExt(dir .. "/" .. file))
-			end
+		local path = Mods.currentMod and paths.getMods(dir) or paths.getPath(dir)
+		for _, file in ipairs(love.filesystem.getDirectoryItems(path)) do
+			if file:endsWith('.lua') then self:loadScript(string.withoutExt(dir .. "/" .. file)) end
 		end
 	end
 end
@@ -34,9 +34,7 @@ function ScriptsHandler:call(func, ...)
 	local retValue = Script.Event_Continue
 	for _, script in ipairs(self.scripts) do
 		local retScript = script:call(func, ...)
-		if retScript == Script.Event_Cancel then
-			retValue = Script.Event_Cancel
-		end
+		if retScript == Script.Event_Cancel then retValue = Script.Event_Cancel end
 	end
 	return retValue
 end

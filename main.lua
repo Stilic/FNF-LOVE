@@ -273,11 +273,12 @@ function love.errorhandler(msg)
 	collectgarbage()
 	collectgarbage()
 
+	local interactTxt = ""
 	if love.system then
-		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
+		interactTxt = interactTxt .. "\n\nPress Ctrl+C or tap to copy this error"
 	end
-	p = p .. "\nPress ESC to quit"
-	p = p .. "\nPress Ctrl+R to restart"
+	interactTxt = interactTxt .. "\nPress ESC to quit"
+	interactTxt = interactTxt .. "\nPress Ctrl+R to restart"
 
 	local menuDesat, funkinLogo, fnfFont18, fnfFont20
 	local bgMusic, missSfx
@@ -300,7 +301,7 @@ function love.errorhandler(msg)
 	end
 
 	local dontDraw = false
-	local __error__, __center__, focused = "[ ERROR ]", "center"
+	local __error__, __align__, focused = "[ ERROR ]", "left"
 	local scale1, scale2, gameW, gameH, hgameW, hgameH, retval
 	local menuDesatW, menuDesatH, funkinLogoW, funkinLogoH
 	local function draw(force)
@@ -317,15 +318,18 @@ function love.errorhandler(msg)
 
 		love.graphics.setColor(0.2, 0.2, 0.2)
 		love.graphics.draw(menuDesat, hgameW, hgameH, 0, scale1, scale1, menuDesatW / 2, menuDesatH / 2)
-		love.graphics.draw(funkinLogo, hgameW, hgameH, 0, scale2, scale2, funkinLogoW / 2, funkinLogoH / 2)
+		love.graphics.draw(funkinLogo, (hgameW * 2) - (450 / scale2), hgameH, 0, scale2 / 1.5, scale2 / 1.5, funkinLogoW / 2, funkinLogoH / 2)
 
 		love.graphics.setColor(1, 1, 1)
 
 		love.graphics.setFont(fnfFont20)
-		love.graphics.printf(__error__, 40, 40, love.graphics.getWidth() - 80, __center__)
+		love.graphics.printf(__error__, 40, 40, love.graphics.getWidth() - 80, __align__)
 
 		love.graphics.setFont(fnfFont18)
-		love.graphics.printf(p, 40, 110, love.graphics.getWidth() - 80, __center__)
+		love.graphics.printf(p, 40, 110, love.graphics.getWidth() - 80, __align__)
+
+		love.graphics.setFont(fnfFont18)
+		love.graphics.printf(interactTxt, 40, love.graphics.getHeight() - 130, love.graphics.getWidth() - 80, __align__)
 
 		love.graphics.present()
 	end

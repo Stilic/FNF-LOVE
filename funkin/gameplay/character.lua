@@ -153,12 +153,14 @@ end
 
 function Character:sing(dir, type)
 	local anim = "sing" .. string.upper(Note.directions[dir + 1])
-	local suffix = ''
-	switch(type:lower(), {
-		['miss'] = function() suffix = "miss" end,
-		['alt'] = function() suffix = "-alt" end
-	})
-	if self.__animations[anim .. suffix] then anim = anim .. suffix end
+	local suffix
+	if type then
+		switch(type:lower(), {
+			['miss'] = function() suffix = "miss" end,
+			['alt'] = function() suffix = "-alt" end
+		})
+	end
+	if suffix and self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, true)
 
 	self.lastHit = PlayState.conductor.currentBeat

@@ -105,7 +105,7 @@ function TitleState:update(dt)
 		if #name == 0 or name == "Untitled" then name = "Game" end
 
 		local pressed = love.window.showMessageBox("Quit " .. name .. "?", "", {"OK", "Cancel"})
-		if pressed == 1 then love.quit(); os.exit(); end
+		if pressed == 1 then love.event.push("quit") end
 	end
 
 	local pressedEnter = controls:pressed("accept")

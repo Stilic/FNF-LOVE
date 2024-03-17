@@ -1,9 +1,5 @@
 local PauseSubstate = require "funkin.substates.pause"
-local Events = {
-	NoteHit = require "funkin.backend.scripting.events.notehit",
-	PopUpScore = require "funkin.backend.scripting.events.popupscore",
-	CameraMove = require "funkin.backend.scripting.events.cameramove"
-}
+local Events = require "funkin.backend.scripting.events"
 
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
@@ -118,9 +114,7 @@ function PlayState:enter()
 	self.timer = Timer.new()
 
 	self.scripts = ScriptsHandler()
-	self.scripts:loadDirectory("data/scripts")
-	self.scripts:loadDirectory("data/scripts/" .. songName)
-	self.scripts:loadDirectory("songs/" .. songName)
+	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs/" .. songName)
 
 	self.scripts:set("curSection", PlayState.conductor.currentSection)
 	self.scripts:set("bpm", PlayState.conductor.bpm)
@@ -768,33 +762,7 @@ function PlayState:update(dt)
 		if PlayState.notePosition > 350 / PlayState.SONG.speed + n.time then
 			if not n.ignoreNote and n.mustPress and not n.wasGoodHit and
 				(not n.isSustain or not n.parentNote.tooLate) then
-				if self.vocals then self.vocals:setVolume(0) end
-
-				if self.combo > 0 then self.combo = 0 end
-				self.combo = self.combo - 1
-				self.score = self.score - 100
-				self.misses = self.misses + 1
-
-				self.totalPlayed = self.totalPlayed + 1
-
-				local np = n.isSustain and n.parentNote or n
-				np.tooLate = true
-				for _, no in ipairs(np.children) do
-					no.tooLate = true
-				end
-
-				if self.health < 0 then self.health = 0 end
-
-				self.health = self.health - 0.0475
-				self.healthBar:setValue(self.health)
-
-				self.boyfriend:sing(n.data, "miss")
-
-				if self.gf.__animations['sad'] then
-					self.gf:playAnim('sad', true)
-					self.gf.lastHit = PlayState.conductor.currentBeat
-				end
-				self:recalculateRating()
+				self:noteMiss(n)
 			end
 
 			self:removeNote(n)
@@ -1114,6 +1082,46 @@ function PlayState:onKeyRelease(key, type)
 	end
 end
 
+function PlayState:noteMiss(n)
+	self.scripts:call("noteMiss", n)
+
+	local event
+	event = self.scripts:event("onNoteMiss", Events.NoteMiss(n, (n.mustPress and self.boyfriend or self.dad)))
+
+	if not event.cancelled then
+		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
+
+		if self.combo > 0 then self.combo = 0 end
+		self.combo = self.combo - 1
+		self.score = self.score - 100
+		self.misses = self.misses + 1
+
+		self.totalPlayed = self.totalPlayed + 1
+
+		local np = n.isSustain and n.parentNote or n
+		np.tooLate = true
+		for _, no in ipairs(np.children) do
+			no.tooLate = true
+		end
+
+		self.health = self.health - 0.0475
+		if self.health < 0 then self.health = 0 end
+		self.healthBar:setValue(self.health)
+
+		if not event.cancelledAnim then
+			self.boyfriend:sing(n.data, "miss")
+		end
+
+		if not event.cancelledSadGF and self.gf.__animations['sad'] then
+			self.gf:playAnim('sad', true)
+			self.gf.lastHit = PlayState.conductor.currentBeat
+		end
+		self:recalculateRating()
+	end
+
+	self.scripts:call("postNoteMiss", n)
+end
+
 function PlayState:goodNoteHit(n)
 	if not n.wasGoodHit then
 		n.wasGoodHit = true
@@ -1123,7 +1131,7 @@ function PlayState:goodNoteHit(n)
 		event = self.scripts:event("onNoteHit", Events.NoteHit(n, (n.mustPress and self.boyfriend or self.dad)))
 
 		if not event.cancelled then
-			if self.vocals then self.vocals:setVolume(1) end
+			if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
 
 			local animType = ''
 			if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
@@ -1150,8 +1158,8 @@ function PlayState:goodNoteHit(n)
 			end
 
 			if n.mustPress and not n.ignoreNote then
-				if self.health > 2 then self.health = 2 end
 				self.health = self.health + (n.isSustain and 0.013 or 0.023)
+				if self.health > 2 then self.health = 2 end
 				self.healthBar:setValue(self.health)
 			end
 
