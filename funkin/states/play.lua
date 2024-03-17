@@ -914,7 +914,6 @@ function PlayState:closeSubstate()
 end
 
 function PlayState:onSettingChange(category, setting)
-	print(setting, what)
 	if category == "gameplay" then
 		switch(setting, {
 			["downScroll"]=function()
