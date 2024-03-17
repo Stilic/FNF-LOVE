@@ -409,7 +409,7 @@ function PlayState:enter()
 		for _, o in ipairs({
 			self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
 			self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
-		}) do o.y = -o.y + (o.offset.y * 2) + game.height + (o.getHeight and o:getHeight() or o.height) * -1 end
+		}) do o.y = -o.y + (o.offset.y * 2) + game.height - (o.getHeight and o:getHeight() or o.height) end
 	end
 
 	self.lastTick = love.timer.getTime()
@@ -966,7 +966,7 @@ function PlayState:onSettingChange(setting)
 			for _, o in ipairs({
 				self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
 				self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
-			}) do o.y = -o.y + (o.offset.y * 2) + game.height + (o.getHeight and o:getHeight() or o.height) * -1 end
+			}) do o.y = -o.y + (o.offset.y * 2) + game.height - (o.getHeight and o:getHeight() or o.height) end
 
 			self.iconP1.scale = {x = lastIconScale, y = lastIconScale}
 			self.iconP2.scale = {x = lastIconScale, y = lastIconScale}
