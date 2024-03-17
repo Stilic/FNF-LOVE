@@ -913,83 +913,97 @@ function PlayState:closeSubstate()
 	end
 end
 
-function PlayState:onSettingChange(setting)
-	if setting == 'gameplay' then
-		self.playback = ClientPrefs.data.playback
-		Timer.setSpeed(self.playback)
-		game.sound.music:setPitch(self.playback)
-		if self.vocals then
-			self.vocals:setPitch(self.playback)
+function PlayState:onSettingChange(category, setting)
+	print(setting, what)
+	if category == "gameplay" then
+		switch(setting, {
+			["downScroll"]=function()
+				self.downScroll = ClientPrefs.data.downScroll
+
+				self.healthBarBG.y = game.height * 0.9
+				self.healthBar.y = self.healthBarBG.y + 4
+
+				self.iconP1.y = self.healthBar.y - 75
+				self.iconP2.y = self.healthBar.y - 75
+
+				self.scoreTxt.y = self.healthBarBG.y + 44
+
+				self.timeArc.y = game.height - 81
+				self.timeTxt.y = (self.timeArc.y + self.timeArc.width) - self.timeTxt:getHeight()
+
+				self.botplayTxt.y = self.timeTxt.y
+
+				if self.downScroll then
+					local lastIconScale = self.iconP1.scale.x
+					self.iconP1.scale = {x = 1, y = 1}
+					self.iconP2.scale = {x = 1, y = 1}
+
+					self.iconP1:updateHitbox()
+					self.iconP2:updateHitbox()
+
+					for _, o in ipairs({
+						self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
+						self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
+					}) do o.y = -o.y + (o.offset.y * 2) + game.height - (o.getHeight and o:getHeight() or o.height) end
+
+					self.iconP1.scale = {x = lastIconScale, y = lastIconScale}
+					self.iconP2.scale = {x = lastIconScale, y = lastIconScale}
+
+					self.iconP1:updateHitbox()
+					self.iconP2:updateHitbox()
+				end
+			end,
+			["middleScroll"]=function()
+				self.middleScroll = ClientPrefs.data.middleScroll
+
+				for _, rep in ipairs(self.receptors.members) do
+					rep.visible = not self.middleScroll or rep.player == 0
+				end
+
+				local n
+				for i = 1, #self.unspawnNotes do
+					n = self.unspawnNotes[i]
+					n.visible = not self.middleScroll or n.mustPress
+				end
+
+				for i = 1, #self.allNotes.members do
+					n = self.allNotes.members[i]
+					n.visible = not self.middleScroll or n.mustPress
+				end
+			end,
+			["botplayMode"]=function()
+				self.botPlay = ClientPrefs.data.botplayMode
+				self.botplayTxt.visible = self.botPlay
+			end,
+			["backgroundDim"]=function()
+				self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
+			end,
+			["playback"]=function()
+				self.playback = ClientPrefs.data.playback
+				Timer.setSpeed(self.playback)
+				game.sound.music:setPitch(self.playback)
+				if self.vocals then
+					self.vocals:setPitch(self.playback)
+				end
+			end,
+			["timeType"]=function()
+				local songTime = PlayState.conductor.time / 1000
+				if ClientPrefs.data.timeType == "left" then
+					songTime = game.sound.music:getDuration() - songTime
+				end
+				self.timeTxt.content = util.formatTime(songTime)
+			end,
+		})
+
+		if setting == "downScroll" or setting == "middleScroll" then
+			local rx, ry, swagWidth, separation = PlayState.getFieldPosition(self.middleScroll and 1 or 2, self.keyCount, self.downScroll)
+			for _, rep in ipairs(self.receptors.members) do
+				rep:setPosition(rx + separation * rep.player + swagWidth * rep.data,
+					ry)
+			end
+			self:updateNotes()
 		end
-
-		self.botPlay = ClientPrefs.data.botplayMode
-		self.downScroll = ClientPrefs.data.downScroll
-		self.middleScroll = ClientPrefs.data.middleScroll
-
-		local songTime = PlayState.conductor.time / 1000
-		if ClientPrefs.data.timeType == "left" then
-			songTime = game.sound.music:getDuration() - songTime
-		end
-		self.timeTxt.content = util.formatTime(songTime)
-
-		local rx, ry, swagWidth, separation = PlayState.getFieldPosition(self.middleScroll and 1 or 2, self.keyCount, self.downScroll)
-		for _, rep in ipairs(self.receptors.members) do
-			rep:setPosition(rx + separation * rep.player + swagWidth * rep.data,
-				ry)
-			local oldAnim = {name = rep.curAnim.name, frame = rep.curFrame}
-			rep:play(oldAnim.name, true, oldAnim.frame)
-			rep.visible = not self.middleScroll or rep.player == 0
-		end
-
-		self.healthBarBG.y = game.height * 0.9
-		self.healthBar.y = self.healthBarBG.y + 4
-
-		self.iconP1.y = self.healthBar.y - 75
-		self.iconP2.y = self.healthBar.y - 75
-
-		self.scoreTxt.y = self.healthBarBG.y + 44
-
-		self.timeArc.y = game.height - 81
-		self.timeTxt.y = (self.timeArc.y + self.timeArc.width) - self.timeTxt:getHeight()
-
-		self.botplayTxt.visible = self.botPlay
-		self.botplayTxt.y = self.timeTxt.y
-
-		if self.downScroll then
-			local lastIconScale = self.iconP1.scale.x
-			self.iconP1.scale = {x = 1, y = 1}
-			self.iconP2.scale = {x = 1, y = 1}
-
-			self.iconP1:updateHitbox()
-			self.iconP2:updateHitbox()
-
-			for _, o in ipairs({
-				self.healthBarBG, self.healthBar, self.iconP1, self.iconP2,
-				self.scoreTxt, self.timeArc, self.timeTxt, self.botplayTxt
-			}) do o.y = -o.y + (o.offset.y * 2) + game.height - (o.getHeight and o:getHeight() or o.height) end
-
-			self.iconP1.scale = {x = lastIconScale, y = lastIconScale}
-			self.iconP2.scale = {x = lastIconScale, y = lastIconScale}
-
-			self.iconP1:updateHitbox()
-			self.iconP2:updateHitbox()
-		end
-
-		local n
-		for i = 1, #self.unspawnNotes do
-			n = self.unspawnNotes[i]
-			n.visible = not self.middleScroll or n.mustPress
-		end
-
-		for i = 1, #self.allNotes.members do
-			n = self.allNotes.members[i]
-			n.visible = not self.middleScroll or n.mustPress
-		end
-
-		self:updateNotes()
-
-		self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
-	elseif setting == 'controls' then
+	elseif category == "controls" then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
 
@@ -1000,7 +1014,7 @@ function PlayState:onSettingChange(setting)
 		controls:bindRelease(self.bindedKeyRelease)
 	end
 
-	self.scripts:call("onSettingChange", setting)
+	self.scripts:call("onSettingChange", category, setting)
 end
 
 function PlayState:getKeyFromEvent(controls)
