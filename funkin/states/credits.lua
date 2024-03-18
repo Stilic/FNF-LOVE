@@ -353,12 +353,14 @@ function CreditsState:reloadSocials()
 	local function makeThing(name, icon, i)
 		local img = Sprite(u.infoBox.x + 10, 0, paths.getImage("menus/credits/social/" .. icon))
 		img.y = u.infoBox.y + u.infoBox.height - (img.height * i) - (10 * i)
+		img:setGraphicSize(img.width, 42)
 		img:updateHitbox()
 		img:setScrollFactor()
 		u.socials:add(img)
 
 		local txt = Text(img.x + img.width + 10, img.y,
-			name, paths.getFont("vcr.ttf", 34))
+			name or "Missing", paths.getFont("vcr.ttf", 34))
+		txt.y = img.y + (img.height - txt:getHeight()) / 2
 		txt:setOutline("normal", 4)
 		txt.antialiasing = false
 		txt:setScrollFactor()
@@ -367,9 +369,9 @@ function CreditsState:reloadSocials()
 
 	local person = self.data[self.curTab].credits[self.curSelected]
 	if person.social then
-		for i = 1, #person.social do
+		for i = #person.social, 1, -1 do
 			local social = person.social[i]
-			makeThing(social.text, social.name:lower(), i)
+			makeThing(social.text, social.name:lower(), #person.social - i + 1)
 		end
 	end
 end
