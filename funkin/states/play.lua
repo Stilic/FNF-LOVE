@@ -154,7 +154,7 @@ function PlayState:enter()
 
 	self.stage = Stage(PlayState.SONG.stage)
 	self:add(self.stage)
-	table.insert(self.scripts.scripts, self.stage.script)
+	self.scripts:add(self.stage.script)
 
 	for _, s in ipairs(PlayState.SONG.notes) do
 		if s and s.sectionNotes then
@@ -273,16 +273,16 @@ function PlayState:enter()
 	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
 		self.SONG.gfVersion, false)
 	self.gf:setScrollFactor(0.95, 0.95)
-	table.insert(self.scripts.scripts, self.gf.script)
+	self.scripts:add(self.gf.script)
 
 	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
 		self.SONG.player2, false)
-	table.insert(self.scripts.scripts, self.dad.script)
+	self.scripts:add(self.dad.script)
 
 	self.boyfriend = Character(self.stage.boyfriendPos.x,
 		self.stage.boyfriendPos.y, self.SONG.player1,
 		true)
-	table.insert(self.scripts.scripts, self.boyfriend.script)
+	self.scripts:add(self.boyfriend.script)
 
 	self:add(self.gf)
 	self:add(self.dad)
@@ -447,7 +447,7 @@ function PlayState:enter()
 					local cutsceneScript = Script('data/cutscenes/' .. songName)
 
 					cutsceneScript:call("create")
-					table.insert(self.scripts.scripts, cutsceneScript)
+					self.scripts:add(cutsceneScript)
 				end,
 				["data"] = function()
 					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName)
@@ -692,41 +692,51 @@ function PlayState:update(dt)
 	end
 
 	if self.health <= 0 and not self.isDead then
-		self.paused = true
+		local event = self.scripts:event("onGameOver", Events.GameOver())
+		if not event.cancelled then
+			self.paused = event.pauseGame
 
-		game.sound.music:pause()
-		if self.vocals then self.vocals:pause() end
-
-		if Discord then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+			if event.pauseSong then
+				game.sound.music:pause()
+				if self.vocals then self.vocals:pause() end
 			end
 
-			Discord.changePresence({
-				details = "Game Over - " .. detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']'
-			})
+			if Discord then
+				local detailsText = "Freeplay"
+				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+				local diff = PlayState.defaultDifficulty
+				if PlayState.songDifficulty ~= "" then
+					diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+				end
+
+				Discord.changePresence({
+					details = "Game Over - " .. detailsText,
+					state = self.SONG.meta.name .. ' - [' .. diff .. ']'
+				})
+			end
+
+			fadeGroupSprites(self.stage)
+			fadeGroupSprites(self.gf)
+			fadeGroupSprites(self.dad)
+			fadeGroupSprites(self.stage.foreground)
+
+			self.camHUD.visible = false
+			self.boyfriend.visible = false
+
+			if self.buttons then
+				self.buttons:disable()
+			end
+
+			GameOverSubstate.characterName = event.characterName
+			GameOverSubstate.deathSoundName = event.deathSoundName
+			GameOverSubstate.loopSoundName = event.loopSoundName
+			GameOverSubstate.endSoundName = event.endSoundName
+
+			self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
+				self.stage.boyfriendPos.y))
+			self.isDead = true
 		end
-
-		fadeGroupSprites(self.stage)
-		fadeGroupSprites(self.gf)
-		fadeGroupSprites(self.dad)
-		fadeGroupSprites(self.stage.foreground)
-
-		self.camHUD.visible = false
-		self.boyfriend.visible = false
-
-		if self.buttons then
-			self.buttons:disable()
-		end
-
-		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
-			self.stage.boyfriendPos.y))
-		self.isDead = true
 	end
 
 	if self.unspawnNotes[1] then
@@ -1241,7 +1251,7 @@ function PlayState:endSong(skip)
 				["script"] = function()
 					local cutsceneScript = Script('data/cutscenes/' .. songName .. '-end')
 					cutsceneScript:call("create")
-					table.insert(self.scripts.scripts, cutsceneScript)
+					self.scripts:add(cutsceneScript)
 					cutsceneScript:call("postCreate")
 				end,
 				["data"] = function()

@@ -118,14 +118,18 @@ function Character:update(dt)
 			nil then
 			self:playAnim(self.curAnim.name .. '-loop')
 		end
+		local offset = self.animOffsets[self.curAnim.name]
+		if offset then
+			local rot = math.pi * self.angle / 180
+			local offX, offY = self.__reverseDraw and -offset.x or offset.x, offset.y
+			local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
+			local rotOffY = offX * math.sin(rot) + offY * math.cos(rot)
+			self.offset.x, self.offset.y = rotOffX, rotOffY
+		else
+			self.offset.x, self.offset.y = 0, 0
+		end
 	end
 	Character.super.update(self, dt)
-end
-
-function Character:__render(camera)
-	if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
-	Character.super.__render(self, camera)
-	if self.__reverseDraw then self.offset.x = self.offset.x * -1 end
 end
 
 function Character:beat(b)
@@ -144,11 +148,15 @@ function Character:playAnim(anim, force, frame)
 	Character.super.play(self, anim, force, frame)
 
 	local offset = self.animOffsets[anim]
-	if offset then
-		self.offset.x, self.offset.y = offset.x, offset.y
-	else
-		self.offset.x, self.offset.y = 0, 0
-	end
+    if offset then
+		local rot = math.pi * self.angle / 180
+		local offX, offY = self.__reverseDraw and -offset.x or offset.x, offset.y
+        local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
+		local rotOffY = offX * math.sin(rot) + offY * math.cos(rot)
+		self.offset.x, self.offset.y = rotOffX, rotOffY
+    else
+        self.offset.x, self.offset.y = 0, 0
+    end
 end
 
 function Character:sing(dir, type)
