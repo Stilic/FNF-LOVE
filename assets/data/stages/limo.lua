@@ -42,6 +42,15 @@ function create()
 	fastCar.moves = true
 	self:add(fastCar, true)
 	resetFastCar()
+
+	local skyOverlay = Sprite(-398, -304)
+	skyOverlay:loadTexture(paths.getImage(SCRIPT_PATH .. "limoOverlay"))
+	skyOverlay.blend = "add"
+	skyOverlay:setGraphicSize(skyOverlay.width * 0.76)
+	skyOverlay:updateHitbox()
+	skyOverlay.alpha = 0.155
+	skyOverlay:setScrollFactor(0.2, 0.2)
+	self:add(skyOverlay, true)
 end
 
 function postCreate()
