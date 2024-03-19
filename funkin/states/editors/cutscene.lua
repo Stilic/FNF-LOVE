@@ -19,7 +19,7 @@ function CutsceneState:enter()
 	self:add(self.stage)
 
     self.camFollow = {x = game.width / 2, y = game.height / 2}
-    game.camera.target = {x = self.camFollow.x, y = self.camFollow.y}
+    game.camera:follow(self.camFollow, nil, 12)
     game.camera.zoom = self.stage.camZoom
 
     self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
@@ -67,10 +67,6 @@ function CutsceneState:update(dt)
         game.sound.playMusic(paths.getMusic("freakyMenu"))
         game.switchState(MainMenuState())
     end
-
-	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x, 12, dt),
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 12, dt)
 end
 
 function CutsceneState:leave()

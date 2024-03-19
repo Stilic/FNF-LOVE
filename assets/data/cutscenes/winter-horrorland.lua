@@ -1,11 +1,11 @@
 function create()
 	state.camHUD.visible = false
 
-	state.camFollow = {x = 400, y = -2050}
+	state.camFollow:set(400, -2050)
+	game.camera:snapToTarget()
 
 	game.sound.play(paths.getSound('gameplay/Lights_Turn_On'))
 	game.camera.zoom = 1.5
-	game.camera.target = {x = state.camFollow.x, y = state.camFollow.y}
 
 	local blackScreen = Sprite()
 	blackScreen:make(math.floor(game.width * 2), math.floor(game.height * 2),

@@ -96,6 +96,18 @@ function Color.convert(rgb)
 		rgb[3] / 255}
 end
 
+function Color.lerp(x, y, i)
+	return {math.lerp(x[1], y[1], i),
+			math.lerp(x[2], y[2], i),
+			math.lerp(x[3], y[3], i)}
+end
+
+function Color.lerpDelta(x, y, i, delta)
+	return {math.lerp(y[1], x[1], math.exp(-(delta or game.dt) * i)),
+			math.lerp(y[2], x[2], math.exp(-(delta or game.dt) * i)),
+			math.lerp(y[3], x[3], math.exp(-(delta or game.dt) * i))}
+end
+
 setmetatable(Color, {
     __index = function(tbl, key)
         if colorTable[key] then return table.clone(colorTable[key]) end

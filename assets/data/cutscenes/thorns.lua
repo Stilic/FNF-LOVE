@@ -39,9 +39,6 @@ function create()
 
 	for delay = 1, 7 do
 		Timer.after(0.3 * delay, function()
-			if black.alpha == 1 then
-				game.camera.target.y = game.camera.target.y - 64
-			end
 			black.alpha = black.alpha - 0.15
 			if black.alpha < 0 then
 				state:remove(black)

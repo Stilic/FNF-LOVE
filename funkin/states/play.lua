@@ -297,15 +297,18 @@ function PlayState:enter()
 	self.judgement = Judgement(self.stage.ratingPos.x, self.stage.ratingPos.y)
 	self:add(self.judgement)
 
-	self.camFollow = {x = 0, y = 0}
+	self.camFollow = {x = 0, y = 0, set = function(this, x, y)
+		this.x = x
+		this.y = y
+	end}
 	self:cameraMovement()
 
 	if PlayState.prevCamFollow ~= nil then
-		game.camera.target = PlayState.prevCamFollow
+		self.camFollow:set(PlayState.prevCamFollow.x, PlayState.prevCamFollow.y)
 		PlayState.prevCamFollow = nil
-	else
-		game.camera.target = {x = self.camFollow.x, y = self.camFollow.y}
 	end
+	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+	game.camera:snapToTarget()
 
 	self.camZooming = false
 	game.camera.zoom = self.stage.camZoom
@@ -504,6 +507,7 @@ function PlayState:startCountdown()
 	end
 
 	self.startedCountdown = true
+	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 
 	local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
 	local countdownData, crotchet = {
@@ -551,17 +555,6 @@ function PlayState:startCountdown()
 	end
 end
 
-local function fadeGroupSprites(obj)
-	if obj then
-		if obj:is(Group) then
-			for _, o in ipairs(obj.members) do fadeGroupSprites(o) end
-		elseif obj.alpha then
-			return Timer.tween(2, obj, {alpha = 0}, 'in-out-sine')
-		end
-	end
-	return false
-end
-
 function PlayState:update(dt)
 	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
@@ -597,10 +590,6 @@ function PlayState:update(dt)
 	end
 
 	PlayState.super.update(self, dt)
-
-	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4 * self.stage.camSpeed, dt),
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4 * self.stage.camSpeed, dt)
 
 	if self.startedCountdown then
 		self:cameraMovement()
@@ -648,6 +637,8 @@ function PlayState:update(dt)
 		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
 			local event = self.scripts:call("paused")
 			if event ~= Script.Event_Cancel then
+				game.camera:unfollow()
+
 				game.sound.music:pause()
 				if self.vocals then self.vocals:pause() end
 
@@ -678,6 +669,7 @@ function PlayState:update(dt)
 			end
 		end
 		if controls:pressed("debug_1") then
+			game.camera:unfollow()
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 			game.switchState(ChartingState())
@@ -715,11 +707,6 @@ function PlayState:update(dt)
 					state = self.SONG.meta.name .. ' - [' .. diff .. ']'
 				})
 			end
-
-			fadeGroupSprites(self.stage)
-			fadeGroupSprites(self.gf)
-			fadeGroupSprites(self.dad)
-			fadeGroupSprites(self.stage.foreground)
 
 			self.camHUD.visible = false
 			self.boyfriend.visible = false
@@ -875,7 +862,7 @@ function PlayState:cameraMovement()
 
 		local event = self.scripts:event("onCameraMove", Events.CameraMove(target))
 		if not event.cancelled then
-			self.camFollow = {x = camX - event.offset.x, y = camY - event.offset.y}
+			self.camFollow:set(camX - event.offset.x, camY - event.offset.y)
 		end
 	end
 end
@@ -889,6 +876,8 @@ end
 function PlayState:closeSubstate()
 	PlayState.super.closeSubstate(self)
 	if not self.startingSong then
+		game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+
 		if self.vocals and not self.startingSong then
 			self.vocals:seek(game.sound.music:tell())
 		end
@@ -1231,10 +1220,10 @@ function PlayState:endSong(skip)
 		PlayState.seenCutscene = true
 
 		local songName = paths.formatToSongPath(PlayState.SONG.song)
-		local cutscenePaths = {paths.getMods('data/cutscenes/' .. songName .. '.lua'),
-			paths.getMods('data/cutscenes/' .. songName .. '.json'),
-			paths.getPath('data/cutscenes/' .. songName .. '.lua'),
-			paths.getPath('data/cutscenes/' .. songName .. '.json')}
+		local cutscenePaths = {paths.getMods('data/cutscenes/' .. songName .. '-end.lua'),
+			paths.getMods('data/cutscenes/' .. songName .. '-end.json'),
+			paths.getPath('data/cutscenes/' .. songName .. '-end.lua'),
+			paths.getPath('data/cutscenes/' .. songName .. '-end.json')}
 
 		local fileExist, cutsceneType
 		for i, path in ipairs(cutscenePaths) do
@@ -1313,6 +1302,7 @@ function PlayState:endSong(skip)
 			game.sound.playMusic(paths.getMusic("freakyMenu"))
 		end
 	else
+		game.camera:unfollow()
 		game.switchState(FreeplayState())
 		game.sound.music:setPitch(1)
 		game.sound.playMusic(paths.getMusic("freakyMenu"))
@@ -1448,10 +1438,11 @@ function PlayState:executeCutsceneEvent(event, isEnd)
 			local time = event.params[4]
 			local ease = event.params[6] .. '-' .. event.params[5]
 			if isTweening then
-				self.timer:tween(time, game.camera.target, {x = xCam, y = yCam}, ease)
+				game.camera:follow(self.camFollow, nil)
 				self.timer:tween(time, self.camFollow, {x = xCam, y = yCam}, ease)
 			else
-				self.camFollow = {x = xCam, y = yCam}
+				self.camFollow:set(xCam, yCam)
+				game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 			end
 		end,
 		['Camera Zoom'] = function()

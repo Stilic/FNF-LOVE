@@ -41,8 +41,7 @@ function FreeplayState:enter()
 	self.bg:updateHitbox()
 	self.bg:screenCenter()
 	if #self.songsData > 0 then
-		self.bg.color = Color.fromString(
-			self.songsData[FreeplayState.curSelected].color)
+		self.bg.color = Color.fromString(self.songsData[FreeplayState.curSelected].color)
 	end
 
 	self.grpSongs = Group()
@@ -178,10 +177,7 @@ function FreeplayState:update(dt)
 
 	if #self.songsData > 0 then
 		local colorBG = Color.fromString(self.songsData[FreeplayState.curSelected].color)
-		self.bg.color[1], self.bg.color[2], self.bg.color[3] =
-			util.coolLerp(self.bg.color[1], colorBG[1], 3, dt),
-			util.coolLerp(self.bg.color[2], colorBG[2], 3, dt),
-			util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
+		self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
 	end
 	FreeplayState.super.update(self, dt)
 

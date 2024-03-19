@@ -104,8 +104,9 @@ function CreditsState:enter()
 	self.curSelected = 1
 	self.curTab = 1
 
-	self.camFollow = {y = game.height / 2}
-	game.camera.target = {x = 0, y = game.height / 2}
+	self.camFollow = {x = game.width / 2, y = game.height / 2}
+	game.camera:follow(self.camFollow, nil, 8)
+	game.camera:snapToTarget()
 
 	self.bg = Sprite(0, 0, paths.getImage('menus/menuDesat'))
 	self.bg:setGraphicSize(math.floor(self.bg.width * (game.width / self.bg.width)))
@@ -240,23 +241,14 @@ function CreditsState:update(dt)
 		self.camFollow.y = u.selectBar.y + game.height / 2 - 94
 	end
 
-	game.camera.target.y =
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 8, dt)
-
 	local colorBG = Color.fromString(self.data[self.curTab].credits[self.curSelected].color or "#DF7B29")
-	self.bg.color[1], self.bg.color[2], self.bg.color[3] =
-		util.coolLerp(self.bg.color[1], colorBG[1], 3, dt),
-		util.coolLerp(self.bg.color[2], colorBG[2], 3, dt),
-		util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
+	self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
 
 	local color = {Color.RGBtoHSL(colorBG[1], colorBG[2], colorBG[3])}
 	color[2] = color[2] + 0.4
 	colorBG = {Color.HSLtoRGB(color[1], color[2], color[3])}
 
-	self.bd.color[1], self.bd.color[2], self.bd.color[3] =
-		util.coolLerp(self.bd.color[1], colorBG[1], 3, dt),
-		util.coolLerp(self.bd.color[2], colorBG[2], 3, dt),
-		util.coolLerp(self.bd.color[3], colorBG[3], 3, dt)
+	self.bd.color = Color.lerpDelta(self.bd.color, colorBG, 3, dt)
 end
 
 function CreditsState:changeSelection(n)

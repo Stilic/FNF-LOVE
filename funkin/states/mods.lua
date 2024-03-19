@@ -36,7 +36,7 @@ function ModsState:enter()
 	self:add(self.noModsTxt)
 	self.noModsTxt.visible = (#Mods.mods == 0)
 
-	game.camera.target = {x = game.width / 2, y = game.height / 2}
+	self.camFollow = {x = game.width / 2, y = game.height / 2}
 
 	if #Mods.mods > 0 then
 		for i = 1, #Mods.mods do
@@ -45,11 +45,10 @@ function ModsState:enter()
 			self.cardGroup:add(card)
 		end
 
-		local cardMidPointX = self.cardGroup.members[self.curSelected].x + 210
-		self.camFollow = {x = cardMidPointX, y = game.height / 2}
-	else
-		self.camFollow = {x = game.width / 2, y = game.height / 2}
+		self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
 	end
+	game.camera:follow(self.camFollow, nil, 12)
+	game.camera:snapToTarget()
 
 	self.infoTxt = Text(6, game.height * 0.96, 'Select the current mod to disable it',
 		paths.getFont('phantommuff.ttf', 24))
@@ -89,10 +88,6 @@ end
 function ModsState:update(dt)
 	ModsState.super.update(self, dt)
 
-	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x, 12, dt),
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 12, dt)
-
 	for _, mod in pairs(self.cardGroup.members) do
 		local yPos = self.curSelected == mod.ID and 50 or 502
 		mod.y = util.coolLerp(mod.y, yPos, 12, dt)
@@ -112,19 +107,13 @@ function ModsState:update(dt)
 	end
 
 	local colorBG = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color or "#101010")
-	self.bg.color[1], self.bg.color[2], self.bg.color[3] =
-		util.coolLerp(self.bg.color[1], colorBG[1], 3, dt),
-		util.coolLerp(self.bg.color[2], colorBG[2], 3, dt),
-		util.coolLerp(self.bg.color[3], colorBG[3], 3, dt)
+	self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
 
 	local color = {Color.RGBtoHSL(colorBG[1], colorBG[2], colorBG[3])}
 	color[2] = color[2] + 0.4
 	colorBG = {Color.HSLtoRGB(color[1], color[2], color[3])}
 
-	self.bd.color[1], self.bd.color[2], self.bd.color[3] =
-		util.coolLerp(self.bd.color[1], colorBG[1], 3, dt),
-		util.coolLerp(self.bd.color[2], colorBG[2], 3, dt),
-		util.coolLerp(self.bd.color[3], colorBG[3], 3, dt)
+	self.bd.color = Color.lerpDelta(self.bd.color, colorBG, 3, dt)
 end
 
 function ModsState:selectMods()
@@ -173,8 +162,7 @@ function ModsState:changeSelection(change)
 	self.curSelected = self.curSelected + change
 	self.curSelected = (self.curSelected - 1) % #Mods.mods + 1
 
-	local cardMidPointX = self.cardGroup.members[self.curSelected].x + 210
-	self.camFollow = {x = cardMidPointX, y = game.height / 2}
+	self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
 
 	if #Mods.mods > 1 then
 		game.sound.play(paths.getSound('scrollMenu'))

@@ -14,12 +14,16 @@ function GameOverSubstate:new(x, y)
 
 	Timer.setSpeed(1)
 
-	self.updateCam = false
 	self.isFollowing = false
 
 	self.playingDeathSound = false
 	self.startedDeath = false
 	self.isEnding = false
+
+	self.bg = Graphic(-game.width/2, -game.height/2, game.width * 2, game.height * 2, {0, 0, 0})
+	self.bg.alpha = 0
+	self.bg:setScrollFactor()
+	self:add(self.bg)
 
 	self.boyfriend = Character(x, y, GameOverSubstate.characterName, true)
 	self:add(self.boyfriend)
@@ -80,6 +84,7 @@ function GameOverSubstate:update(dt)
 						end
 					end)
 			end)
+			Timer.tween(2, self.bg, {alpha = 1}, 'out-sine')
 			Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
 		end
 	end
@@ -92,8 +97,9 @@ function GameOverSubstate:update(dt)
 
 		if self.boyfriend.curAnim.name == 'firstDeath' then
 			if self.boyfriend.curFrame >= 12 and not self.isFollowing then
-				self.updateCam = true
+				game.camera:follow(self.camFollow, nil, 2.4)
 				self.isFollowing = true
+				Timer.tween(1, self.bg, {alpha = 0.7}, 'in-out-sine')
 				Timer.tween(1, game.camera, {zoom = 1.1}, "in-out-cubic")
 			end
 
@@ -118,12 +124,6 @@ function GameOverSubstate:update(dt)
 				end
 			end
 		end
-	end
-
-	if self.updateCam then
-		game.camera.target.x, game.camera.target.y =
-			util.coolLerp(game.camera.target.x, self.camFollow.x, 2.4, dt),
-			util.coolLerp(game.camera.target.y, self.camFollow.y, 2.4, dt)
 	end
 end
 

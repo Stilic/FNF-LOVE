@@ -41,8 +41,12 @@ function Camera:new(x, y, width, height)
 	self.scroll = {x = 0, y = 0}
 	self.rotation = 0
 	self.angle = 0
-	self.target = nil
 	self.zoom = 1
+
+	self.target = nil
+	self.followType = nil
+	self.followLerp = 0
+	self.__lerp = nil
 
 	self.bgColor = {0, 0, 0, 0}
 
@@ -99,14 +103,45 @@ function Camera:fade(color, duration, fadeIn, onComplete, force)
 	self.__fadeAlpha = fadeIn == true and 0.999999 or 0.000001
 end
 
+function Camera:follow(target, type, lerp)
+	if target == nil then return end
+
+	self.target = target
+	self.followType = type --soon
+	self.__lerp = lerp
+end
+
+function Camera:unfollow()
+	if self.target == nil then return end
+
+	self.target = nil
+	self.followType = nil
+	self.__lerp = nil
+end
+
+function Camera:snapToTarget()
+	if self.target == nil then return end
+
+	self.scroll.x = self.target.x - self.width / 2
+	self.scroll.y = self.target.y - self.height / 2
+end
+
 function Camera:update(dt)
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
 	self.__zoom.y = isnum and self.zoom or self.zoom.y
 
 	if self.target then
-		self.scroll.x = self.target.x - self.width / 2
-		self.scroll.y = self.target.y - self.height / 2
+		self.followLerp = self.__lerp and 1 - math.exp(-dt * self.__lerp) or 0
+		local targetX = self.target.x - self.width / 2
+		local targetY = self.target.y - self.height / 2
+		if self.__lerp then
+			targetX = math.lerp(self.scroll.x, self.target.x - self.width / 2, self.followLerp)
+			targetY = math.lerp(self.scroll.y, self.target.y - self.height / 2, self.followLerp)
+		end
+		-- TODO: follow type
+		self.scroll.x = targetX
+		self.scroll.y = targetY
 	end
 
 	if self.__flashAlpha > 0 then

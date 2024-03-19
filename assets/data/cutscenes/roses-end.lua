@@ -5,7 +5,7 @@ function create()
 	state:add(black)
 
 	Timer.after(0.5, function()
-        state.camFollow = {x = state.dad.x + 140, y = state.dad.y + 40}
+        state.camFollow:set(state.dad.x + 140, state.dad.y + 40)
         state.camZooming = false
         Timer.tween(1.5, game.camera, {zoom = 1.5}, 'in-out-quad')
 		state.camHUD.visible = false

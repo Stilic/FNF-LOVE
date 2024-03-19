@@ -65,6 +65,7 @@ function MainMenuState:enter()
 	end
 
 	self.camFollow = {x = 0, y = 0}
+	game.camera:follow(self.camFollow, nil, 10)
 
 	self.engineVersion = Text(12, game.height - 42,
 		"FNF LÖVE v" .. Project.version,
@@ -145,10 +146,6 @@ function MainMenuState:update(dt)
 			game.switchState(CreditsState())
 		end
 	end
-
-	game.camera.target.x, game.camera.target.y =
-		util.coolLerp(game.camera.target.x, self.camFollow.x, 10, dt),
-		util.coolLerp(game.camera.target.y, self.camFollow.y, 10, dt)
 
 	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
 

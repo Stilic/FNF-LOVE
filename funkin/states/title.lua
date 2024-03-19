@@ -135,17 +135,11 @@ function TitleState:updateEnterColor()
 	local alpha = 0.8
 	if t <= 0.5 then
 		t = t * 2
-		self.titleText.color = Color.fromRGB(
-			math.lerp(color[2][1], color[1][1], t),
-			math.lerp(color[2][2], color[1][2], t),
-			math.lerp(color[2][3], color[1][3], t))
+		self.titleText.color = Color.convert(Color.lerp(color[2], color[1], t))
 		self.titleText.alpha = math.lerp(alpha, 0.5, t)
 	else
 		t = (t - 0.5) * 2
-		self.titleText.color = Color.fromRGB(
-			math.lerp(color[1][1], color[2][1], t),
-			math.lerp(color[1][2], color[2][2], t),
-			math.lerp(color[1][3], color[2][3], t))
+		self.titleText.color = Color.convert(Color.lerp(color[1], color[2], t))
 		self.titleText.alpha = math.lerp(0.5, alpha, t)
 	end
 
