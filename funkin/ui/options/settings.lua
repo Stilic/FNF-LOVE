@@ -69,6 +69,11 @@ end
 
 function Settings:enterOption(id, optionsUI)
 	local bind = self.curBind
+
+	if type(self.settings[id][3]) == "function" then
+		return self.settings[id][3](optionsUI)
+	end
+
 	if self.tab then
 		local selectedStr = "< " .. self:getOptionString(id, bind) .. " >"
 		self.tab.items[id].texts[bind].content = selectedStr
@@ -106,17 +111,17 @@ function Settings:changeOption(id, add, optionsUI)
 	local prev = value
 
 	local optiontype, func = option[3], option[4]
-	local functype, ret = type(func)
+	local functype, ret, dont = type(func)
 	if optiontype == "boolean" then
 		if functype == "function" then
-			ret = func(add)
+			ret, dont = func(add, optionsUI)
 			value = self:getOption(id)
 		else
 			value = not value
 		end
 	elseif optiontype == "string" then
 		if functype == "function" then
-			ret = func(add)
+			ret, dont = func(add, optionsUI)
 			value = self:getOption(id)
 		elseif functype == "table" then
 			value = func[math.wrap(table.find(func, value) + add, 1, #func + 1)]
@@ -125,7 +130,7 @@ function Settings:changeOption(id, add, optionsUI)
 		end
 	elseif optiontype == "number" then
 		if functype == "function" then
-			ret = func(add)
+			ret, dont = func(add, optionsUI)
 			value = self:getOption(id)
 		elseif functype == "table" then
 			value = func[math.wrap(value + add, 1, #func + 1)]
@@ -134,7 +139,7 @@ function Settings:changeOption(id, add, optionsUI)
 		end
 	elseif type(optiontype) == "table" or bind then
 		if not bind then return false end
-		ret = option[3][bind][1](add, value, optionsUI)
+		ret, dont = option[3][bind][1](add, value, optionsUI)
 		value = self:getOption(id, bind)
 	end
 
@@ -144,11 +149,12 @@ function Settings:changeOption(id, add, optionsUI)
 		if self.selected then selectedStr = "< " .. selectedStr .. " >" end
 		self.tab.items[id].texts[bind].content = selectedStr
 	end
+	if dont then optionsUI.dontPlaySound = true end
 	if ret ~= nil then return ret end
 	return value ~= prev
 end
 
-function Settings:acceptOption(id, cancel, optionsUI)
+function Settings:acceptOption(id, optionsUI)
 	local option = self.settings[id]
 	local bind = self.curBind
 	local optiontype = option[3]
@@ -164,10 +170,6 @@ function Settings:acceptOption(id, cancel, optionsUI)
 		optionsUI.blockInput = true
 		self.curBind = 1
 		self.onBinding = true
-		self.dontOverrideUpdate = self.update ~= nil
-		if not self.dontOverrideUpdate then
-			self.update = self.updateInternal
-		end
 	end
 	return false
 end
@@ -175,15 +177,21 @@ end
 function Settings:makeOption(group, i, font, tabWidth, titleWidth, binds)
 	local margin, option = self.margin, self.settings[i]
 	local optiontype = type(option[3])
+	local align = "left"
+
 	if optiontype == "table" then
 		binds = #option[3]
 	elseif optiontype == "number" then
 		binds = options[3]
 	elseif optiontype == "string" then
 		binds = 1
+	elseif optiontype == "function" then
+		binds = 0
+		titleWidth = tabWidth - margin
+		align = "center"
 	end
 
-	group:add(Text(margin, margin / 2, option[2], font, Color.WHITE, "left", titleWidth - margin))
+	group:add(Text(margin, margin / 2, option[2], font, Color.WHITE, align, titleWidth - margin))
 	group.texts = {}
 
 	local width = tabWidth - titleWidth
@@ -207,20 +215,6 @@ function Settings:changeBind(id, add, dont)
 
 		prevTxt.content = self:getOptionString(id, prevBind)
 		newTxt.content = "> " .. self:getOptionString(id, self.curBind) .. " <"
-	end
-
-	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
-end
-
-function Settings:updateInternal(dt, optionsUI)
-	if not self.onBinding then return end
-	if controls:pressed("back") then
-		optionsUI.blockInput = false
-		self.onBinding = false
-		if not self.dontOverrideUpdate then
-			self.update = nil
-		end
-		return
 	end
 end
 
@@ -258,11 +252,11 @@ function Settings:make(optionsUI)
 			lastbinds, lastwidth = binds, titlewidth
 		else
 			local v = self:makeOption(group, i, font, tabWidth, titlewidth, binds)
-			local change = titlewidth ~= lastwidth
+			local change = titlewidth ~= lastwidth or v == 0 or lastbinds == 0
 			if not v and lastbinds ~= binds then v = binds end
 			if (v and v ~= lastbinds) or change then
 				if change then
-					self:makeLine(lastwidth, lastcategoryi + 1, i - 1)
+					if lastbinds ~= 0 then self:makeLine(lastwidth, lastcategoryi + 1, i - 1) end
 					lastcategoryi = i - 1
 				end
 				self:makeLines(tabWidth - lastwidth, lastwidth, lastbinds - 1, lastlinesi + 1, i - 1)
@@ -277,7 +271,7 @@ function Settings:make(optionsUI)
 
 	local i = #self.settings
 	titlewidth = tabWidth * (self.settings[i][6] or self.titleWidth)
-	self:makeLine(titlewidth, lastcategoryi + 1, i)
+	if lastbinds ~= 0 then self:makeLine(titlewidth, lastcategoryi + 1, i) end
 	self:makeLines(tabWidth - titlewidth, titlewidth, lastbinds - 1, lastlinesi + 1, i)
 
 	tab:add(tab.linesGroup)

@@ -177,7 +177,6 @@ local triggerChoices = {
 		end)
 		self.optionsUI:setScrollFactor()
 		self.optionsUI:screenCenter()
-		self.optionsUI.dontResetTab = true
 		self:add(self.optionsUI)
 		return false
 	end},

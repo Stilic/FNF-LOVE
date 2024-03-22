@@ -126,9 +126,8 @@ function love.run()
 			while a do
 				clock, b = channel_event:demand(), channel_event:demand()
 				for i = 1, b do t[i] = channel_event:demand() end
-				for i = b + 1, n do t[i] = nil end
-				n, a, b = b, event(a, unpack(t))
-				if a then return a, b end
+				n, a, b = b, event(a, unpack(t, 1, b))
+				if a then pump(); return a, b end
 				a = channel_event:pop()
 			end
 		elseif a then

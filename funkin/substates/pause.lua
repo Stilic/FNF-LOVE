@@ -10,7 +10,7 @@ function PauseSubstate:new()
 
 	self.blockInput = false
 
-	self.music = game.sound.load(paths.getMusic('pause/' .. ClientPrefs.data.pauseMusic))
+	self:loadMusic()
 
 	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
 	self.bg.alpha = 0
@@ -28,8 +28,14 @@ function PauseSubstate:new()
 	end
 end
 
+function PauseSubstate:loadMusic()
+	self.curPauseMusic = ClientPrefs.data.pauseMusic
+	self.music = game.sound.load(paths.getMusic('pause/' .. self.curPauseMusic))
+end
+
 function PauseSubstate:enter()
 	self.music:play(0, true)
+	self.music:fade(6, 0, 0.7)
 
 	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 
@@ -57,9 +63,6 @@ function PauseSubstate:enter()
 end
 
 function PauseSubstate:update(dt)
-	if self.music:getVolume() < 0.5 then
-		self.music:setVolume(self.music:getVolume() + 0.01 * dt)
-	end
 	PauseSubstate.super.update(self, dt)
 
 	if self.blockInput then return end
@@ -99,12 +102,9 @@ function PauseSubstate:update(dt)
 						if item.targetY == 0 then item.alpha = 1 end
 					end
 				end)
-				self.optionsUI.applySettings = function(setting, option)
-					self.parent:onSettingChange(setting, option)
-				end
+				self.optionsUI.applySettings = bind(self, self.onSettingChange)
 				self.optionsUI:setScrollFactor()
 				self.optionsUI:screenCenter()
-				self.optionsUI.dontResetTab = true
 				self:add(self.optionsUI)
 
 				self.blockInput = true
@@ -125,6 +125,26 @@ function PauseSubstate:update(dt)
 				end
 			end
 		})
+	end
+end
+
+function PauseSubstate:onSettingChange(setting, option)
+	if self.parent and self.parent.onSettingChange then
+		self.parent:onSettingChange(setting, option)
+	end
+
+	if setting == "gameplay" and option == "pauseMusic" then
+		Timer.after(1, function()
+			if not self.parent or ClientPrefs.data.pauseMusic == self.curPauseMusic then return end
+			self.music:fade(0.7, self.music:getVolume(), 0)
+			Timer.after(0.8, function()
+				self.music:stop()
+				if not self.parent then return end
+				self:loadMusic()
+				self.musicVolume = 0.7
+				self.music:play(0, true)
+			end)
+		end)
 	end
 end
 

@@ -94,7 +94,7 @@ local data = {
 		ClientPrefs.data.showMemory = value
 		game.statsCounter.showMemory = value
 	end},
-	{"showRender", "Show Render", "boolean", function()
+	{"showRender", "Show Renderer", "boolean", function()
 		local value = not ClientPrefs.data.showRender
 		ClientPrefs.data.showRender = value
 		game.statsCounter.showRender = value

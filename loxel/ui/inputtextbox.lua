@@ -126,15 +126,20 @@ function InputTextBox:update(dt)
 	end
 
 	if self.focused and game.keys.justPressed.ANY then
-		if not self.__removePressed and game.keys.input then
-			self.__insertPressed = true
-			local newText =
-				self.text:sub(1, self.__cursorPos) .. game.keys.input ..
-				self.text:sub(self.__cursorPos + 1)
-			self.text = newText
-			self.__lastInput = game.keys.input
-			self.__cursorPos = self.__cursorPos + utf8.len(game.keys.input)
-			if self.onChanged then self.onChanged(self.text) end
+		if not self.__removePressed and #game.keys.input.justPressed > 0 then
+			for key in pairs(game.keys.input.justPressed) do
+				if isNumber(key) then
+					self.__insertPressed = true
+					self.__lastInput = key
+					local newText =
+						self.value:sub(1, self.__cursorPos) .. key ..
+						self.value:sub(self.__cursorPos + 1)
+					self.value = newText
+
+					self.__cursorPos = self.__cursorPos + utf8.len(key)
+					if self.onChanged then self.onChanged(self.value) end
+				end
+			end
 		end
 
 		if game.keys.justPressed.BACKSPACE then

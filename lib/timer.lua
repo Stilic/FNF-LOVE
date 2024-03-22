@@ -28,9 +28,6 @@ THE SOFTWARE.
 local Timer = {}
 Timer.__index = Timer
 
-local function _nothing_() end
-local unpack = unpack or table.unpack
-
 function Timer:setSpeed(speed) self.speed = speed end
 
 function Timer:updateHandle(handle, dt)
@@ -73,7 +70,7 @@ function Timer:during(delay, during, after)
 	local handle = {
 		time = 0,
 		during = during,
-		after = after or _nothing_,
+		after = after or __NULL__,
 		limit = delay,
 		count = 1
 	}
@@ -81,13 +78,13 @@ function Timer:during(delay, during, after)
 	return handle
 end
 
-function Timer:after(delay, func) return self:during(delay, _nothing_, func) end
+function Timer:after(delay, func) return self:during(delay, __NULL__, func) end
 
 function Timer:every(delay, after, count)
 	local count = count or math.huge -- exploit below: math.huge - 1 = math.huge
 	local handle = {
 		time = 0,
-		during = _nothing_,
+		during = __NULL__,
 		after = after,
 		limit = delay,
 		count = count
