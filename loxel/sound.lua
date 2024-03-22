@@ -8,7 +8,6 @@ function Sound:new(x, y)
 end
 
 function Sound:revive()
-	Sound.super.revive(self)
 	self:reset(true)
 
 	self.__volume = 1
@@ -16,6 +15,7 @@ function Sound:revive()
 	self.__duration = 0
 	self.__time = 0
 	self.__wasPlaying = nil
+	Sound.super.revive(self)
 end
 
 function Sound:reset(cleanup, x, y)
@@ -42,6 +42,10 @@ function Sound:fade(duration, startVolume, endVolume)
 	self.__fadeDuration = duration
 	self.__startVolume = startVolume
 	self.__endVolume = endVolume
+end
+
+function Sound:cancelFade()
+	self.__fadeStartTime = nil
 end
 
 function Sound:cleanup()

@@ -1,5 +1,6 @@
 local CreditsState = State:extend()
 
+-- would it be funny if the x renamed to twitter instead to mock elon musk
 local defaultData = {
     {
         header = "Engine Team",

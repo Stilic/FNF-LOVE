@@ -1,8 +1,9 @@
 ---@class TransitionData:Classic
 local TransitionData = Classic:extend("TransitionData")
 
-function TransitionData:new(duration)
+function TransitionData:new(duration, color)
 	self.duration = duration
+	self.color = color or {0, 0, 0}
 end
 
 function TransitionData:start()
@@ -21,9 +22,9 @@ function TransitionData:update(dt)
 end
 
 function TransitionData:draw()
-	local a = self.timer / self.duration
+	local a, color = self.timer / self.duration, self.color
 	if self.status == "in" then a = -a + 1 end
-	love.graphics.setColor(0, 0, 0, a)
+	love.graphics.setColor(color[1], color[2], color[3], a)
 	love.graphics.rectangle("fill", 0, 0, self.width, self.height)
 end
 

@@ -1,6 +1,8 @@
 ---@diagnostic disable: duplicate-set-field, discard-returns
 -- LUA 5.2-LUA 5.3 and LUA 5.0 BELOW REIMPLEMENTATIONS
-bit32, iter, utf8 = bit, ipairs(math), require "utf8"
+bit32, utf8 = bit32 or bit, utf8 or require "utf8"
+bit = bit or bit32
+
 local __string__, __number__, __table__ = "string", "number", "table"
 local __integer__, __float__ = "integer", "float"
 local table_insert = table.insert
@@ -108,6 +110,8 @@ end
 
 local regex_ext = "%.([^%.]+)$"
 local regex_withoutExt = "(.+)%..+$"
+
+function string:hasExt() return self:match(regex_ext) ~= nil end
 
 function string:ext() return self:match(regex_ext) or self end
 

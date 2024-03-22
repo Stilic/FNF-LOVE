@@ -53,6 +53,7 @@ Options = require "funkin.ui.options"
 StatsCounter = require "funkin.ui.statscounter"
 SoundTray = require "funkin.ui.soundtray"
 
+CalibrationState = require 'funkin.states.calibration'
 CreditsState = require "funkin.states.credits"
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
@@ -83,10 +84,11 @@ function love.load()
 		love.FPScap = ClientPrefs.data.fps
 		love.parallelUpdate = ClientPrefs.data.parallelUpdate
 		love.asyncInput = ClientPrefs.data.asyncInput
+		love.autoPause = ClientPrefs.data.autoPause
 	else
 		ClientPrefs.data.fps = love.FPScap
 		ClientPrefs.data.parallelUpdate = love.parallelUpdate
-		ClientPrefs.data.resolution = love.graphics.getFixedScale()
+		ClientPrefs.data.resolution = -1
 	end
 
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
@@ -100,7 +102,7 @@ function love.load()
 		controls:reset(config)
 	end
 
-	local res, isMobile = ClientPrefs.data.resolution, love.system.getDevice() == "Mobile"
+	local res, isMobile = math.abs(ClientPrefs.data.resolution), love.system.getDevice() == "Mobile"
 	love.window.setTitle(Project.title)
 	love.window.setIcon(love.image.newImageData(Project.icon))
 	love.window.setMode(Project.width * res, Project.height * res, {
@@ -132,6 +134,10 @@ function love.load()
 	SoundTray.new()
 
 	game.init(Project, SplashScreen)
+
+	if ClientPrefs.data.resolution == -1 then
+		ClientPrefs.data.resolution = love.graphics.getFixedScale()
+	end
 
 	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
 		love.graphics.newFont('assets/fonts/consolas.ttf', 18))
@@ -314,11 +320,11 @@ function love.errorhandler(msg)
 		funkinLogoW, funkinLogoH = funkinLogo:getWidth(), funkinLogo:getHeight()
 
 		scale1 = math.max(gameW / menuDesatW, gameH / menuDesatH)
-		scale2 = math.max(math.min(gameW, 1600) / funkinLogoW, math.min(gameH, 900) / funkinLogoH) * 0.7
+		scale2 = math.max(math.min(gameW, 1600) / funkinLogoW, math.min(gameH, 900) / funkinLogoH) * 0.525
 
 		love.graphics.setColor(0.2, 0.2, 0.2)
 		love.graphics.draw(menuDesat, hgameW, hgameH, 0, scale1, scale1, menuDesatW / 2, menuDesatH / 2)
-		love.graphics.draw(funkinLogo, (hgameW * 2) - (450 / scale2), hgameH, 0, scale2 / 1.5, scale2 / 1.5, funkinLogoW / 2, funkinLogoH / 2)
+		love.graphics.draw(funkinLogo, (hgameW * 2) - (scale2 * funkinLogoW / 1.8) - 64, hgameH, 0, scale2, scale2, funkinLogoW / 2, funkinLogoH / 2)
 
 		love.graphics.setColor(1, 1, 1)
 

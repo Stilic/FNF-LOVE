@@ -36,7 +36,7 @@ if Project.DEBUG_MODE then
 end
 
 local Controls = Settings:base("Controls", data)
-Controls.binds = 2
+Controls.binds = 2--3
 Controls.titleWidth = 1 / 3
 
 function Controls:onLeaveTab(id)
@@ -81,6 +81,7 @@ function Controls:enterOption(id, optionsUI)
 	optionsUI.blockInput = true
 	optionsUI.changingOption = false
 	self.onBinding = true
+	self.dontAcceptYet, self.dontBackYet = true, true
 
 	if not self.bg then
 		self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
@@ -104,13 +105,67 @@ end
 
 function Controls:changeBind(id, add, dont)
 	local option = self.settings[id]
-	if option[1] ~= "asyncInput" then return Settings.changeBind(self, id, add) end
+	if option[1] ~= "asyncInput" then return Settings.changeBind(self, id, add, dont) end
+end
+
+function Controls:setNewBind(key, optionsUI)
+	game.sound.play(paths.getSound('confirmMenu'))
+	optionsUI:remove(self.bg)
+	optionsUI:remove(self.waitInputTxt)
+	self.onBinding = false
+
+	local controlsTable = table.clone(ClientPrefs.controls)
+
+	local id = self.curSelect
+	local option = self.settings[id]
+	local keyName = option[1]
+
+	local secBind = self.curBind == 1 and 2 or 1
+	local oldBind = controlsTable[keyName][self.curBind]
+
+	controlsTable[keyName][self.curBind] = key and ("key:" .. key:lower()) or nil
+
+	if controlsTable[keyName][self.curBind] == controlsTable[keyName][secBind] then
+		controlsTable[keyName][secBind] = oldBind
+	end
+
+	ClientPrefs.controls = controlsTable
+
+	local config = {controls = table.clone(ClientPrefs.controls)}
+	controls:reset(config)
+
+	if self.binds > 1 then
+		for bind = 1, self.binds do
+			local item = self.tab.items[id]
+			if item and item.texts then
+				local obj = item.texts[bind]
+				if obj then obj.content = self:getOptionString(id, bind) end
+			end
+		end
+	end
+	self:changeBind(id, 0)
+
+	return true
 end
 
 function Controls:update(dt, optionsUI)
-	if not self.onBinding then return end
+	if not self.onBinding then
+		if optionsUI.blockInput then
+			optionsUI.blockInput = false
+			return true
+		end
+		return
+	end
 
-	if controls:pressed("back") then
+	local key = next(game.keys.loveInput.justReleased)
+	local apprKey = key and "key:" .. key:lower() or nil
+
+	if controls:released("back") then
+		if table.find(controls.config.controls.back, apprKey) and self.dontBackYet then
+			self.dontBackYet = nil
+			return
+		end
+
 		optionsUI:remove(self.bg)
 		optionsUI:remove(self.waitInputTxt)
 		optionsUI.blockInput = false
@@ -119,46 +174,21 @@ function Controls:update(dt, optionsUI)
 		return true
 	end
 
-	if self.onBinding and game.keys.loveInput then
-		game.sound.play(paths.getSound('confirmMenu'))
-		optionsUI:remove(self.bg)
-		optionsUI:remove(self.waitInputTxt)
-		optionsUI.blockInput = false
-		self.onBinding = false
+	self.debounceEscape = math.max((self.debounceEscape or 0) - dt, 0) + (game.keys.justPressed.ESCAPE and 1 or 0)
+	if self.debounceEscape >= 1.5 then return self:setNewBind("escape", optionsUI) end
 
-		local controlsTable = table.clone(ClientPrefs.controls)
+	local BACKKEY = game.keys.pressed.ESCAPE
+	if #controls.config.controls.back > 0 then BACKKEY = controls:down("back") end
+	self.holdingBackKey = BACKKEY and (self.holdingBackKey or 0) + dt or 0
+	if self.holdingBackKey >= 1 then return self:setNewBind(nil, optionsUI) end
 
-		local id = self.curSelect
-		local option = self.settings[id]
-		local keyName = option[1]
-
-		local newBind = "key:" .. game.keys.loveInput:lower()
-		local secBind = self.curBind == 1 and 2 or 1
-		local oldBind = controlsTable[keyName][self.curBind]
-
-		controlsTable[keyName][self.curBind] = newBind
-
-		if controlsTable[keyName][self.curBind] == controlsTable[keyName][secBind] then
-			controlsTable[keyName][secBind] = oldBind
-		end
-
-		ClientPrefs.controls = table.clone(controlsTable)
-		local config = {controls = table.clone(ClientPrefs.controls)}
-		controls:reset(config)
-
-		if self.binds > 1 then
-			for bind = 1, self.binds do
-				local item = self.tab.items[id]
-				if item and item.texts then
-					local obj = item.texts[bind]
-					if obj then obj.content = self:getOptionString(id, bind) end
-				end
-			end
-		end
-		self:changeBind(id, 0)
-
-		return true
+	-- keybind softlock prevention
+	if table.find(controls.config.controls.accept, apprKey) and self.dontAcceptYet then
+		self.dontAcceptYet = nil
+		return
 	end
+
+	if apprKey then return self:setNewBind(key, optionsUI) end
 end
 
 return Controls

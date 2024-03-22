@@ -115,25 +115,36 @@ local Keyboard = {
 	---@class released:Keys
 	released = {},
 
-	---@type string
-	input = nil,
+	---@type {}
+	input = {
+		---@class {string}
+		justPressed = {},
 
-	---@type string
-	loveInput = nil
+		---@class {string}
+		pressed = {},
+
+		---@class {string}
+		justReleased = {},
+
+		---@class {string}
+		released = {},
+	},
+
+	---@type {}
+	loveInput = {
+		---@class {string}
+		justPressed = {},
+
+		---@class {string}
+		pressed = {},
+
+		---@class {string}
+		justReleased = {},
+
+		---@class {string}
+		released = {},
+	}
 }
-
-for key in pairs(Keyboard.keys) do Keyboard.released[key] = true end
-
-function Keyboard.reset()
-	for key in pairs(Keyboard.keys) do
-		if Keyboard.justPressed[key] then Keyboard.justPressed[key] = nil end
-		if Keyboard.justReleased[key] then
-			Keyboard.justReleased[key] = nil
-		end
-	end
-	Keyboard.input = nil
-	Keyboard.loveInput = nil
-end
 
 local invalidKeys = {
 	'escape', 'shift', 'windows', 'alt', 'ctrl', 'pageup', 'pagedown',
@@ -166,8 +177,35 @@ local shiftKeys = {
 	["\""] = "|"
 }
 
+for key in pairs(Keyboard.keys) do Keyboard.released[key] = true end
+
+function Keyboard.reset()
+	table.clear(Keyboard.justPressed)
+	table.clear(Keyboard.justReleased)
+	table.clear(Keyboard.input.justPressed)
+	table.clear(Keyboard.input.justReleased)
+	table.clear(Keyboard.loveInput.justPressed)
+	table.clear(Keyboard.loveInput.justReleased)
+end
+
 function Keyboard.onPressed(key)
-	Keyboard.loveInput = key
+	Keyboard.loveInput.justPressed[key] = true
+	Keyboard.loveInput.pressed[key] = true
+	Keyboard.loveInput.justReleased[key] = nil
+	Keyboard.loveInput.released[key] = nil
+
+	if not table.find(invalidKeys, key) then
+		if key == 'space' then key = ' ' end
+		if key:startsWith('kp') then key = key:gsub('kp', '') end
+		if Keyboard.pressed.SHIFT and shiftKeys[key] then
+			key = shiftKeys[key]
+		end
+
+		Keyboard.input.justPressed[key] = true
+		Keyboard.input.pressed[key] = true
+		Keyboard.input.justReleased[key] = nil
+		Keyboard.input.released[key] = nil
+	end
 
 	for k, value in pairs(Keyboard.keys) do
 		if key == 'kpenter' then key = "return" end
@@ -183,10 +221,18 @@ function Keyboard.onPressed(key)
 			Keyboard.released[k] = nil
 		end
 	end
+
 	Keyboard.justPressed.ANY = true
 	Keyboard.pressed.ANY = true
 	Keyboard.justReleased.ANY = nil
 	Keyboard.released.ANY = nil
+end
+
+function Keyboard.onReleased(key)
+	Keyboard.loveInput.justReleased[key] = true
+	Keyboard.loveInput.released[key] = true
+	Keyboard.loveInput.justPressed[key] = nil
+	Keyboard.loveInput.pressed[key] = nil
 
 	if not table.find(invalidKeys, key) then
 		if key == 'space' then key = ' ' end
@@ -194,11 +240,13 @@ function Keyboard.onPressed(key)
 		if Keyboard.pressed.SHIFT and shiftKeys[key] then
 			key = shiftKeys[key]
 		end
-		Keyboard.input = key
-	end
-end
 
-function Keyboard.onReleased(key)
+		Keyboard.input.justReleased[key] = true
+		Keyboard.input.released[key] = true
+		Keyboard.input.justPressed[key] = nil
+		Keyboard.input.pressed[key] = nil
+	end
+
 	for k, value in pairs(Keyboard.keys) do
 		if key == 'lshift' or key == 'rshift' then key = 'shift' end
 		if key == 'lgui' or key == 'rgui' then key = 'windows' end
@@ -212,6 +260,7 @@ function Keyboard.onReleased(key)
 			Keyboard.released[k] = true
 		end
 	end
+
 	Keyboard.justPressed.ANY = nil
 	Keyboard.pressed.ANY = nil
 	Keyboard.justReleased.ANY = true

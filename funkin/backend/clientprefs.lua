@@ -2,19 +2,26 @@ local ClientPrefs = {}
 
 ClientPrefs.data = {
 	-- controls
-	asyncInput = true,
+	asyncInput = false,
 
 	-- gameplay
+	autoPause = true,
 	downScroll = false,
 	middleScroll = false,
 	noteSplash = true,
 	backgroundDim = 0,
-	hitSound = 0,
-	pauseMusic = 'railways',
 	botplayMode = false,
 	timeType = 'left',
-	songOffset = 0,
 	playback = 1,
+
+	-- audio
+	pauseMusic = 'railways',
+	hitSound = 0,
+	songOffset = 0,
+	menuMusicVolume = 0.8,
+	musicVolume = 1,
+	vocalVolume = 1,
+	sfxVolume = 0.6,
 
 	-- display
 	fps = 0,

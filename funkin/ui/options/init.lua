@@ -20,6 +20,7 @@ function Options:new(showBG, completionCallback)
 	self.changingOption = false
 	self.blockInput = false
 	self.prevVal = nil
+	self.dontPlaySound = false
 
 	self.focus = 0
 
@@ -50,20 +51,8 @@ function Options:new(showBG, completionCallback)
 
 	self.titleTxt = Text(0, 30, "", paths.getFont("phantommuff.ttf", 40), {1, 1, 1}, "center", game.width)
 	self:add(self.titleTxt)
-end
-
-function Options:enter(parent)
-	self.parent = parent
 
 	self.throttles = {}
-	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
-	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
-	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
-	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
-
-	if Discord then
-		Discord.changePresence({details = "In the Menus", state = "Options Menu"})
-	end
 
 	if love.system.getDevice() == "Mobile" then
 		local camButtons = Camera()
@@ -94,11 +83,26 @@ function Options:enter(parent)
 		self:add(self.buttons)
 	end
 
-	self:revive()
-	if self.dontResetTab then
-		self:resetTabs()
-		self.dontResetTab = nil
+	self:resetTabs()
+end
+
+function Options:enter(parent)
+	self.parent = parent
+
+	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
+	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
+	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
+	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
+
+	if Discord then
+		Discord.changePresence({details = "In the Menus", state = "Options Menu"})
 	end
+
+	if self.buttons then
+		self.buttons:enable()
+	end
+
+	self:revive()
 	self:changeTab()
 	self.visible = true
 
@@ -106,7 +110,8 @@ function Options:enter(parent)
 end
 
 function Options:resetTabs()
-	self.tabGroup:clear()
+	self.tabGroup:destroy()
+	self.tabGroup:revive()
 	self.curTab = 1
 
 	for _, name in ipairs(self.settingsNames) do
@@ -126,7 +131,7 @@ function Options:enterTab()
 	self.optionsCursor.visible = true
 
 	if self.selectedTab.data.binds > 1 then
-		self:changeBind(self.curSelect, 0)
+		self:changeBind(1 - self.selectedTab.data.curBind, true)
 	end
 end
 
@@ -142,6 +147,7 @@ function Options:exitTab()
 
 	self:changeTab(0, true)
 	game.sound.play(paths.getSound("cancelMenu"))
+	self.dontPlaySound = false
 end
 
 function Options:changeTab(add, dont)
@@ -152,7 +158,7 @@ function Options:changeTab(add, dont)
 	local name = self.settingsNames[self.curTab]
 	self.titleTxt.content = "< " .. name .. " >"
 
-	local height = self.tabGroup.members[self.curTab].height
+	local height = self.tabGroup.members[self.curTab]:getHeight()
 	self.tabBG.height = height > self.tabBGHeight and height or self.tabBGHeight
 
 	for _, tab in ipairs(self.tabGroup.members) do
@@ -165,10 +171,11 @@ function Options:changeSelection(add, dont)
 	local prev = self.curSelect
 	self.curSelect = math.wrap(self.curSelect + (add or 0), 1, #tab.items + 1)
 	while tab.items[self.curSelect].isTitle do
-		self.curSelect = math.wrap(self.curSelect + (add and add < 0 and -1 or 1), 1, #tab.items + 1)
+		self.curSelect = math.wrap(self.curSelect + ((add and add < 0) and -1 or 1), 1, #tab.items + 1)
 	end
 
 	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
+	self.dontPlaySound = false
 
 	self.optionsCursor.x = self.tabBG.x
 	self.optionsCursor.width = self.tabBG.width
@@ -191,7 +198,8 @@ function Options:changeOption(add, dont)
 		self.applySettings(self.settingsNames[self.curTab]:lower(),
 			self.selectedTab.data.settings[self.curSelect][1])
 	end
-	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont and not self.dontPlaySound then game.sound.play(paths.getSound("scrollMenu")) end
+	self.dontPlaySound = false
 end
 
 function Options:acceptOption(dont)
@@ -203,7 +211,8 @@ function Options:acceptOption(dont)
 	self.prevVal = nil
 	self.changingOption = false
 
-	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont and not self.dontPlaySound then game.sound.play(paths.getSound("scrollMenu")) end
+	self.dontPlaySound = false
 end
 
 function Options:cancelChanges()
@@ -216,42 +225,42 @@ function Options:cancelChanges()
 	self.changingOption = false
 	self.prevVal = nil
 
-	game.sound.play(paths.getSound("cancelMenu"))
+	if not self.dontPlaySound then game.sound.play(paths.getSound("cancelMenu")) end
+	self.dontPlaySound = false
 end
 
 function Options:changeBind(add, dont)
 	self.selectedTab.data:changeBind(self.curSelect, add, dont)
+	if not dont and not self.dontPlaySound then game.sound.play(paths.getSound("scrollMenu")) end
+	self.dontPlaySound = false
 end
 
 function Options:update(dt)
 	Options.super.update(self, dt)
 
-	local shift = self.blockInput and game.keys.pressed.SHIFT or controls:down("reset")
+	local shift = game.keys.pressed.SHIFT or controls:down("reset")
 	local selecty = 0
 	if self.onTab then
-		local dont = false
-		if self.selectedTab.data.update then
-			dont = self.selectedTab.data:update(dt, self)
+		if self.selectedTab.data.update and self.selectedTab.data:update(dt, self) then
+			return
 		end
-		if dont then return end
 		if not self.blockInput then
 			if not self.changingOption then
-				local binds = self.selectedTab.data.binds
-				if binds > 1 then
+				if self.selectedTab.data.binds > 1 then
 					if self.throttles.left:check() then self:changeBind(shift and -2 or -1) end
 					if self.throttles.right:check() then self:changeBind(shift and 2 or 1) end
 				end
 				if self.throttles.up:check() then self:changeSelection(shift and -2 or -1) end
 				if self.throttles.down:check() then self:changeSelection(shift and 2 or 1) end
 				if controls:pressed("accept") then self:enterOption() end
-				if controls:pressed("back") then return self:exitTab() end
+				if controls:pressed("back") and not self.blockInput then return self:exitTab() end
 			else
 				self.throttles.left.step = 0.02
 				self.throttles.right.step = 0.02
 				if self.throttles.left:check() then self:changeOption(shift and -2 or -1) end
 				if self.throttles.right:check() then self:changeOption(shift and 2 or 1) end
 				if controls:pressed("accept") then self:acceptOption() end
-				if controls:pressed("back") then return self:cancelChanges() end
+				if controls:pressed("back") and not self.blockInput then return self:cancelChanges() end
 			end
 		end
 
@@ -271,7 +280,10 @@ function Options:update(dt)
 		if self.throttles.left:check() then self:changeTab(-1) end
 		if self.throttles.right:check() then self:changeTab(1) end
 		if controls:pressed("accept") then self:enterTab() end
-		if controls:pressed("back") then return self.parent:remove(self) end
+		if controls:pressed("back") then
+			game.sound.play(paths.getSound("cancelMenu"))
+			return self.parent:remove(self)
+		end
 	end
 
 	self.tabGroup.y = util.coolLerp(self.tabGroup.y, self.taby - self.focus, 12, dt)
@@ -280,17 +292,11 @@ function Options:update(dt)
 end
 
 function Options:leave()
-	game.sound.play(paths.getSound("cancelMenu"))
-
-	if self.buttons then
-		self.buttons:destroy()
-		self:remove(self.buttons)
+	if self.buttions then
+		self.buttons:disable()
 	end
-	self.buttons = nil
-	self.applySettings = nil
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
-	self.throttles = nil
 
 	self:kill()
 	self.visible = false
@@ -300,6 +306,22 @@ function Options:leave()
 		self.completionCallback()
 	end
 	ClientPrefs.saveData()
+end
+
+function Options:destroy()
+	Options.super.destroy(self)
+
+	if self.tabGroup then
+		self.tabGroup:destroy()
+	end
+	self.tabGroup = nil
+
+	if self.buttons then
+		self.buttons:destroy()
+		self:remove(self.buttons)
+	end
+	self.buttons = nil
+	self.applySettings = nil
 end
 
 function Options:getWidth()
