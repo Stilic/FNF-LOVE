@@ -11,11 +11,6 @@ function create()
 
 	self.ratingPos = {x = -180, y = 260}
 
-	GameOverSubstate.characterName = 'bf-pixel-dead'
-	GameOverSubstate.deathSoundName = 'gameplay/fnf_loss_sfx-pixel'
-	GameOverSubstate.loopSoundName = 'gameOver-pixel'
-	GameOverSubstate.endSoundName = 'gameOverend-pixel'
-
 	local bgSky = Sprite()
 	bgSky:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebSky'))
 	bgSky:setScrollFactor(0.1, 0.1)
@@ -84,3 +79,10 @@ function create()
 end
 
 function beat(b) if state.SONG.song:lower() ~= 'thorns' then bgGirls:dance() end end
+
+function onGameOver(event)
+	event.characterName = 'bf-pixel-dead'
+	event.deathSoundName = 'gameplay/fnf_loss_sfx-pixel'
+	event.loopSoundName = 'gameOver-pixel'
+	event.endSoundName = 'gameOverend-pixel'
+end

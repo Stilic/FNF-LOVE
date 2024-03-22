@@ -8,11 +8,6 @@ function create()
 
 	self.ratingPos = {x = -180, y = 260}
 
-	GameOverSubstate.characterName = 'bf-pixel-dead'
-	GameOverSubstate.deathSoundName = 'gameplay/fnf_loss_sfx-pixel'
-	GameOverSubstate.loopSoundName = 'gameOver-pixel'
-	GameOverSubstate.endSoundName = 'gameOverend-pixel'
-
 	local posX = 400
 	local posY = 200
 
@@ -29,4 +24,11 @@ end
 function postCreate()
 	local trailFx = Trail(state.dad, 4, 24, 0.3, 0.069)
 	state:insert(state:indexOf(state.dad), trailFx)
+end
+
+function onGameOver(event)
+	event.characterName = 'bf-pixel-dead'
+	event.deathSoundName = 'gameplay/fnf_loss_sfx-pixel'
+	event.loopSoundName = 'gameOver-pixel'
+	event.endSoundName = 'gameOverend-pixel'
 end

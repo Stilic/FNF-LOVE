@@ -20,7 +20,7 @@ function GameOverSubstate:new(x, y)
 	self.startedDeath = false
 	self.isEnding = false
 
-	self.bg = Graphic(-game.width/2, -game.height/2, game.width * 2, game.height * 2, {0, 0, 0})
+	self.bg = Graphic(-game.width, -game.height, game.width * 3, game.height * 3, {0, 0, 0})
 	self.bg.alpha = 0
 	self.bg:setScrollFactor()
 	self:add(self.bg)
