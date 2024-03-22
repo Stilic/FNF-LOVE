@@ -221,7 +221,6 @@ end
 
 function love.graphics.getFixedScale()
 	local winW, winH = love.graphics.getPixelDimensions()
-	print(winW, game.width)
 	return math_min(winW / (game.width or 800), winH / (game.height or 600))
 end
 

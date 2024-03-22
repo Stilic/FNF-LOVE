@@ -3,6 +3,11 @@ local Settings = require "funkin.ui.options.settings"
 local function percentvalue(value) return value .. "%" end
 local data = {
 	{"GENERAL"},
+	{"autoPause", "Auto Pause On Lost Focus", "boolean", function()
+		local value = not ClientPrefs.data.autoPause
+		ClientPrefs.data.autoPause = value
+		love.autoPause = value
+	end},
 	{"backgroundDim", "Background Dim", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.backgroundDim + add, 0, 100)
 		ClientPrefs.data.backgroundDim = value

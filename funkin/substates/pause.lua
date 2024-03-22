@@ -139,10 +139,10 @@ function PauseSubstate:onSettingChange(setting, option)
 			self.music:fade(0.7, self.music:getVolume(), 0)
 			Timer.after(0.8, function()
 				self.music:stop()
+				self.music:cancelFade()
 				if not self.parent then return end
 				self:loadMusic()
-				self.musicVolume = 0.7
-				self.music:play(0, true)
+				self.music:play(0.7, true)
 			end)
 		end)
 	end

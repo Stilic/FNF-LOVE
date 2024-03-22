@@ -84,6 +84,7 @@ function love.load()
 		love.FPScap = ClientPrefs.data.fps
 		love.parallelUpdate = ClientPrefs.data.parallelUpdate
 		love.asyncInput = ClientPrefs.data.asyncInput
+		love.autoPause = ClientPrefs.data.autoPause
 	else
 		ClientPrefs.data.fps = love.FPScap
 		ClientPrefs.data.parallelUpdate = love.parallelUpdate

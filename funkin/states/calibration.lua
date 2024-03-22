@@ -26,6 +26,7 @@ function CalibrationState:enter()
 	CalibrationState.super.enter(self)
 	game.discardTransition()
 
+	if game.sound.music then game.sound.music:cancelFade() end
 	game.sound.playMusic(paths.getMusic("chart_loop"), ClientPrefs.data.musicVolume)
 end
 

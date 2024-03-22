@@ -5,6 +5,7 @@ ClientPrefs.data = {
 	asyncInput = false,
 
 	-- gameplay
+	autoPause = true,
 	downScroll = false,
 	middleScroll = false,
 	noteSplash = true,

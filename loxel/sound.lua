@@ -44,6 +44,10 @@ function Sound:fade(duration, startVolume, endVolume)
 	self.__endVolume = endVolume
 end
 
+function Sound:cancelFade()
+	self.__fadeStartTime = nil
+end
+
 function Sound:cleanup()
 	self.active = false
 	self.target = nil
