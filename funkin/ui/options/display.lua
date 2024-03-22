@@ -39,8 +39,7 @@ local data = {
 		if Project.height * value >= ymax then value = ymax / Project.height end
 
 		ClientPrefs.data.resolution = value
-		---@diagnostic disable-next-line: missing-parameter
-		love.window.setMode(Project.width * value, Project.height * value)
+		love.window.updateMode(Project.width * value, Project.height * value)
 	end, function(value)
 		local _, ymax = love.window.getMaxDesktopDimensions()
 		local height = Project.height * value
