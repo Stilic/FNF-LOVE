@@ -44,13 +44,12 @@ function PlayState.loadSong(song, diff)
 
 	local path = "songs/" .. song .. "/charts/" .. diff
 	local data = paths.getJSON(path)
+	local metadata = paths.getJSON('songs/' .. song .. '/meta')
 
 	if data then
-		local metadata = paths.getJSON('songs/' .. song .. '/meta')
 		PlayState.SONG = data.song
 		if metadata then PlayState.SONG.meta = metadata end
 	else
-		local metadata = paths.getJSON('songs/' .. song .. '/meta')
 		if metadata == nil then return false end
 		PlayState.SONG = {
 			song = song,
@@ -66,6 +65,10 @@ function PlayState.loadSong(song, diff)
 		}
 	end
 	return true
+end
+
+function PlayState.getSongName()
+	return PlayState.SONG.meta and PlayState.SONG.meta.name or PlayState.SONG.song
 end
 
 function PlayState.getFieldPosition(fieldCount, keyCount, downScroll)
@@ -479,7 +482,7 @@ function PlayState:enter()
 
 		Discord.changePresence({
 			details = detailsText,
-			state = self.SONG.meta.name .. ' - [' .. diff .. ']'
+			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
 		})
 	end
 
@@ -655,7 +658,7 @@ function PlayState:update(dt)
 
 					Discord.changePresence({
 						details = "Paused - " .. detailsText,
-						state = self.SONG.meta.name .. ' - [' .. diff .. ']'
+						state = PlayState.getSongName() .. ' - [' .. diff .. ']'
 					})
 				end
 
@@ -704,7 +707,7 @@ function PlayState:update(dt)
 
 				Discord.changePresence({
 					details = "Game Over - " .. detailsText,
-					state = self.SONG.meta.name .. ' - [' .. diff .. ']'
+					state = PlayState.getSongName() .. ' - [' .. diff .. ']'
 				})
 			end
 
@@ -900,7 +903,7 @@ function PlayState:closeSubstate()
 
 			Discord.changePresence({
 				details = detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']',
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
 				startTimestamp = math.floor(startTimestamp),
 				endTimestamp = math.floor(endTimestamp)
 			})
@@ -1346,7 +1349,7 @@ function PlayState:step(s)
 
 			Discord.changePresence({
 				details = detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']',
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
 				startTimestamp = math.floor(startTimestamp),
 				endTimestamp = math.floor(endTimestamp)
 			})
@@ -1408,7 +1411,7 @@ function PlayState:focus(f)
 
 			Discord.changePresence({
 				details = detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']',
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
 				startTimestamp = math.floor(startTimestamp),
 				endTimestamp = math.floor(endTimestamp)
 			})
@@ -1423,7 +1426,7 @@ function PlayState:focus(f)
 
 			Discord.changePresence({
 				details = "Paused - " .. detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']'
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']'
 			})
 		end
 	end
