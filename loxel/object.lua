@@ -1,12 +1,11 @@
 local abs, rad, cos, sin = math.abs, math.rad, math.fastcos, math.fastsin
-local function checkCollisionFast(x1, y1, w1, h1, a1, x2, y2, w2, h2, a2)
+local function checkCollisionFast(x1, y1, w1, h1, ox1, oy1, a1, x2, y2, w2, h2, ox2, oy2, a2)
 	local hw1, hw2, hh1, hh2 = w1 / 2, w2 / 2, h1 / 2, h2 / 2
 	local rad1, rad2 = rad(a1), rad(a2)
 	local sin1, cos1 = abs(sin(rad1)), abs(cos(rad1))
 	local sin2, cos2 = abs(sin(rad2)), abs(cos(rad2))
-
-	return abs(x2 + hw2 - x1 - hw1) - hw1 * cos1 - hh1 * sin1 - hw2 * cos2 - hh2 * sin2 < 0
-		and abs(y2 + hh2 - y1 - hh1) - hh1 * cos1 - hw1 * sin1 - hh2 * cos2 - hw2 * sin2 < 0
+	return abs(x2 + ox2 - x1 - ox1) - hw1 * cos1 - hh1 * sin1 - hw2 * cos2 - hh2 * sin2 < 0
+		and abs(y2 + oy2 - y1 - oy1) - hh1 * cos1 - hw1 * sin1 - hh2 * cos2 - hw2 * sin2 < 0
 end
 
 ---@class Object:Basic
@@ -102,18 +101,18 @@ function Object:update(dt)
 	end
 end
 
-function Object:_collides(x, y, w, h, ...)
+function Object:_collides(x, y, w, h, ox, oy, ...)
 	local o = (...)
 	if not o then return false end
 
-	local x2, y2, w2, h2 = o:_getXYWH()
-	return checkCollisionFast(x, y, w, h, self.angle, x2, y2, w2, h2, o.angle)
-		or self:_collides(x, y, w, h, select(2, ...))
+	local x2, y2, w2, h2, ox2, oy2 = o:_getXYWHO()
+	return checkCollisionFast(x, y, w, h, ox, oy, self.angle, x2, y2, w2, h2, ox2, oy2, o.angle)
+		or self:_collides(x, y, w, h, ox, oy, select(2, ...))
 end
 
 function Object:collides(...)
-	local x, y, w, h = self:_getXYWH()
-	return self:_collides(x, y, w, h, ...)
+	local x, y, w, h, ox, oy = self:_getXYWHO()
+	return self:_collides(x, y, w, h, ox, oy, ...)
 end
 
 local tempCameras = table.new(1, 0)
@@ -123,7 +122,7 @@ function Object:isOnScreen(cameras)
 		return self:isOnScreen(tempCameras)
 	end
 
-	local sf, x, y, w, h, x2, y2 = self.scrollFactor, self:_getXYWH()
+	local sf, x, y, w, h, ox, oy, x2, y2 = self.scrollFactor, self:_getXYWHO()
 	for _, c in pairs(cameras) do
 		if sf then
 			x2, y2 = x - c.scroll.x * sf.x, y - c.scroll.y * sf.y
@@ -131,9 +130,9 @@ function Object:isOnScreen(cameras)
 			x2, y2 = x - c.scroll.x, y - c.scroll.y
 		end
 
-		local zx, zy = c:getZoomXY()
-		if checkCollisionFast(x2, y2, w, h, self.angle or 0,
-				c.x, c.y, c.width * zx, c.height * zy, c.angle)
+		local x2, y2, w2, h2, ox2, oy2 = c:_getXYWHO()
+		if checkCollisionFast(x2, y2, w, h, ox, oy, self.angle or 0,
+			x2, y2, w2, h2, ox2, oy2, c.angle)
 		then
 			return true
 		end
@@ -147,7 +146,7 @@ function Object:_canDraw()
 		self.scale.y * self.zoom.y ~= 0) and Object.super._canDraw(self)
 end
 
-function Object:_getXYWH()
+function Object:_getXYWHO()
 	local x, y = self.x or 0, self.y or 0
 	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
 	if self.getCurrentFrame then
@@ -163,7 +162,7 @@ function Object:_getXYWH()
 			(self.getFrameHeight and self:getFrameHeight() or self.height or 0) * h
 	end
 
-	return x, y, w, h
+	return x, y, w, h, self.origin.x, self.origin.y
 end
 
 return Object

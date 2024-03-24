@@ -193,10 +193,15 @@ function Camera:update(dt)
 	end
 end
 
-function Camera:_getXYWH()
+function Camera:_getXYWHO()
 	self:getZoomXY()
+	local w, h = math.abs(self.scale.x * self.__zoom.x) * self.width,
+		math.abs(self.scale.y * self.__zoom.y) * self.height
 	return self.x - self.offset.x, self.y - self.offset.y,
-		math.abs(self.scale.x * self.__zoom.x) * w, math.abs(self.scale.y * self.__zoom.y) * h
+		w, h,
+		-- atm camera have its origin fixed
+		w / 2, h / 2
+		--self.origin.x, self.origin.y
 end
 
 function Camera:getZoomXY()

@@ -64,11 +64,11 @@ function SpriteGroup:centerOrigin(__width, __height)
 end
 
 local checkCollisionFast = Object.checkCollisionFast
-function SpriteGroup:__drawNestGroup(members, camera, list, cx, cy, sf, zoomx, zoomy)
+function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, zoomy)
 	for _, member in ipairs(members) do
 		local sf2, sfx, sfy = member.scrollFactor
 		if member.x then
-			member.x, member.y = member.x + cx, member.y + cy
+			member.x, member.y = member.x + x2, member.y + y2
 			if sf2 then
 				sfx, sfy = sf2.x, sf2.y
 				sf2.x, sf2.y = sf2.x * sf.x, sf2.y * sf.y
@@ -76,25 +76,26 @@ function SpriteGroup:__drawNestGroup(members, camera, list, cx, cy, sf, zoomx, z
 		end
 		if member:_canDraw() then
 			if member.__render then
-				local x, y, w, h = member:_getXYWH()
+				local x, y, w, h, ox, oy = member:_getXYWHO()
 				if sf2 then
 					x, y = x - camera.scroll.x * sf2.x, y - camera.scroll.y * sf2.y
 				else
 					x, y = x - camera.scroll.x, y - camera.scroll.y
 				end
 
-				if checkCollisionFast(x, y, w, h, member.angle or 0, camera.x, camera.y,
-					camera.width * zoomx, camera.height * zoomy, camera.angle)
+				local x2, y2, w2, h2, ox2, oy2 = camera:_getXYWHO()
+				if checkCollisionFast(x, y, w, h, ox, oy, member.angle or 0,
+					x2, y2, w2, h2, ox2, oy2, camera.angle)
 				then
 					table.insert(list, member)
 				end
 			elseif member.members then
 				self:__drawNestGroup(member.members, camera, list,
-					(member.x or 0), (member.y or 0), sf, zoomx, zoomy)
+					(member.x or x2), (member.y or y2), sf, zoomx, zoomy)
 			end
 		end
 		if member.x then
-			member.x, member.y = member.x - cx, member.y - cy
+			member.x, member.y = member.x - x2, member.y - y2
 			if sf2 then
 				sf2.x, sf2.y = sfx, sfy
 			end
@@ -169,13 +170,14 @@ function SpriteGroup:__render(camera)
 	self.__ogSetColor(cr, cg, cb, ca)
 end
 
-function SpriteGroup:_getXYWH()
+function SpriteGroup:_getXYWHO()
 	local x, y = self.x or 0, self.y or 0
 	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
 
 	self:getWidth()
 	return x, y, (self.width or 0) * math.abs(self.scale.x * self.zoom.x),
-		(self.height or 0) * math.abs(self.scale.y * self.zoom.y)
+		(self.height or 0) * math.abs(self.scale.y * self.zoom.y),
+		self.origin.x, self.origin.y
 end
 
 function SpriteGroup:__initializeDrawFunctions()
