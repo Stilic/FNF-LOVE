@@ -136,7 +136,7 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
-	game.init(Project, require 'funkin.states.test')--require 'funkin.states.newplay'--[[SplashScreen]])
+	game.init(Project, require 'funkin.states.newplay'--[[SplashScreen]])
 
 	if ClientPrefs.data.resolution == -1 then
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()

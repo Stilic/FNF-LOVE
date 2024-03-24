@@ -194,14 +194,20 @@ function Camera:update(dt)
 end
 
 function Camera:_getXYWH()
+	self:getZoomXY()
 	return self.x - self.offset.x, self.y - self.offset.y,
-		math.abs(self.scale.x * self.zoom.x) * w, math.abs(self.scale.y * self.zoom.y) * h
+		math.abs(self.scale.x * self.__zoom.x) * w, math.abs(self.scale.y * self.__zoom.y) * h
 end
 
-function Camera:canDraw()
+function Camera:getZoomXY()
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
 	self.__zoom.y = isnum and self.zoom or self.zoom.y
+	return self.__zoom.x, self.__zoom.y
+end
+
+function Camera:canDraw()
+	self:getZoomXY()
 
 	return self.visible and self.exists and next(self.__renderQueue) and
 		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and

@@ -175,6 +175,16 @@ function table.splice(list, start, count, ...)
 	return removed
 end
 
+local math_pi = math.pi
+function math.fastsin(v)
+	v = (v / math_pi) % 2
+    return v <= 1 and -4 * v * (v - 1) or 4 * (v - 1) * (v - 2)
+end
+function math.fastcos(v)
+	v = (v / math_pi + .5) % 2
+    return v <= 1 and -4 * v * (v - 1) or 4 * (v - 1) * (v - 2)
+end
+
 function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
 
 function math.even(x) return x % 2 < 1 end -- 2, 4, etc

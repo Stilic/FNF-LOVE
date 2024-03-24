@@ -1,16 +1,17 @@
+local abs, rad, cos, sin = math.abs, math.rad, math.fastcos, math.fastsin
 local function checkCollisionFast(x1, y1, w1, h1, a1, x2, y2, w2, h2, a2)
 	local hw1, hw2, hh1, hh2 = w1 / 2, w2 / 2, h1 / 2, h2 / 2
-	local rad1, rad2 = math.rad(a1), math.rad(a2)
-	local sin1, cos1 = math.abs(math.sin(rad1)), math.abs(math.cos(rad1))
-	local sin2, cos2 = math.abs(math.sin(rad2)), math.abs(math.cos(rad2))
+	local rad1, rad2 = rad(a1), rad(a2)
+	local sin1, cos1 = abs(sin(rad1)), abs(cos(rad1))
+	local sin2, cos2 = abs(sin(rad2)), abs(cos(rad2))
 
-	return math.abs(x2 + hw2 - x1 - hw1) - hw1 * cos1 - hh1 * sin1 - hw2 * cos2 - hh2 * sin2 < 0
-		and math.abs(y2 + hh2 - y1 - hh1) - hh1 * cos1 - hw1 * sin1 - hh2 * cos2 - hw2 * sin2 < 0
+	return abs(x2 + hw2 - x1 - hw1) - hw1 * cos1 - hh1 * sin1 - hw2 * cos2 - hh2 * sin2 < 0
+		and abs(y2 + hh2 - y1 - hh1) - hh1 * cos1 - hw1 * sin1 - hh2 * cos2 - hw2 * sin2 < 0
 end
 
 ---@class Object:Basic
 local Object = Basic:extend("Object")
-
+Object.checkCollisionFast = checkCollisionFast
 Object.defaultAntialiasing = false
 
 function Object:new(x, y)
@@ -115,20 +116,24 @@ function Object:collides(...)
 	return self:_collides(x, y, w, h, ...)
 end
 
-local tempCameras, tempSf = table.new(1, 0), {x = 1, y = 1}
+local tempCameras = table.new(1, 0)
 function Object:isOnScreen(cameras)
 	if cameras.x then
 		tempCameras[1] = cameras
 		return self:isOnScreen(tempCameras)
 	end
 
-	local sf, x, y, w, h, x2, y2 = self.scrollFactor or tempSf, self:_getXYWH()
+	local sf, x, y, w, h, x2, y2 = self.scrollFactor, self:_getXYWH()
 	for _, c in pairs(cameras) do
-		x2, y2 = x - c.scroll.x * self.scrollFactor.x,
-			y - c.scroll.y * self.scrollFactor.y
+		if sf then
+			x2, y2 = x - c.scroll.x * sf.x, y - c.scroll.y * sf.y
+		else
+			x2, y2 = x - c.scroll.x, y - c.scroll.y
+		end
 
+		local zx, zy = c:getZoomXY()
 		if checkCollisionFast(x2, y2, w, h, self.angle or 0,
-				c.x, c.y, c.width, c.height, c.angle)
+				c.x, c.y, c.width * zx, c.height * zy, c.angle)
 		then
 			return true
 		end
@@ -150,7 +155,7 @@ function Object:_getXYWH()
 		if f then x, y = x + f.offset.x, y + f.offset.y end
 	end
 
-	local w, h = math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y)
+	local w, h = abs(self.scale.x * self.zoom.x), abs(self.scale.y * self.zoom.y)
 	if self.getWidth then
 		w, h = self:getWidth() * w, self:getHeight() * h
 	else
