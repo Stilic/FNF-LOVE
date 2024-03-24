@@ -195,7 +195,7 @@ function math.truncate(x, precision, round)
 	; return (round and math_round or math_floor)(precision * x) / precision
 end
 
-local intervals, countbytesf = {"B", "KB", "MB", "GB" --[[, "TB"]]}, "%.2f %s"
+local intervals, countbytesf = {"B", "KB", "MB", "GB"}, "%.2f %s"
 function math.countbytes(x, i)
 	i = i or 1
 	while x >= 1024 and i < 4 do x, i = x / 1024, i + 1 end

@@ -1,3 +1,3 @@
-local NoteField = SpriteGroup:extend("NoteField")
+local Notefield = SpriteGroup:extend("Notefield")
 
-return NoteField
+return Notefield

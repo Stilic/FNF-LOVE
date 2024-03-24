@@ -93,7 +93,6 @@ function Sound:init(autoDestroy, onComplete)
 	if onComplete ~= nil then self.onComplete = onComplete end
 
 	self.active = true
-	self.__isFinished = false
 
 	if self.__source then
 		self.__duration = self.__source:getDuration()
