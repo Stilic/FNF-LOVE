@@ -32,6 +32,8 @@ if love.system.getDevice() == "Desktop" then
 end
 
 Notefield = require "funkin.gameplay.notefield"
+Countdown = require "funkin.gameplay.ui.Countdown"
+
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 Note = require "funkin.gameplay.ui.note"
 NoteSplash = require "funkin.gameplay.ui.notesplash"
@@ -134,7 +136,7 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
-	game.init(Project, require 'funkin.states.newplay'--[[SplashScreen]])
+	game.init(Project, require 'funkin.states.test')--require 'funkin.states.newplay'--[[SplashScreen]])
 
 	if ClientPrefs.data.resolution == -1 then
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()

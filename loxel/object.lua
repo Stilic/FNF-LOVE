@@ -1,3 +1,15 @@
+local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2, a2)
+	local rad = math.rad(a1)
+	local cos, sin = math.cos(rad), math.sin(rad)
+
+	local relativeX = (x2 + w2 / 2) - (x1 + w1 / 2)
+	local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
+
+	return
+		math.abs(relativeX * cos + relativeY * sin) - (w1 + w2) / 2 < 0 and
+		math.abs(-relativeX * sin + relativeY * cos) - (h1 + h2) / 2 < 0
+end
+
 ---@class Object:Basic
 local Object = Basic:extend("Object")
 
@@ -91,9 +103,64 @@ function Object:update(dt)
 	end
 end
 
+function Object:_collides(x, y, w, h, ...)
+	local o = (...)
+	if not o then return false end
+
+	local x2, y2, w2, h2 = o:_getXYWH()
+	return checkCollision(x, y, w, h, self.angle, x2, y2, w2, h2, o.angle)
+		or self:_collides(x, y, w, h, select(2, ...))
+end
+
+function Object:collides(...)
+	local x, y, w, h = self:_getXYWH()
+	return self:_collides(x, y, w, h, ...)
+end
+
+local tempCameras, tempSf = table.new(1, 0), {x = 1, y = 1}
+function Object:isOnScreen(cameras)
+	if cameras.x then
+		tempCameras[1] = cameras
+		return self:isOnScreen(tempCameras)
+	end
+
+	local sf, x, y, w, h, x2, y2 = self.scrollFactor or tempSf, self:_getXYWH()
+	for _, c in pairs(cameras) do
+		x2, y2 = x - c.scroll.x * self.scrollFactor.x,
+			y - c.scroll.y * self.scrollFactor.y
+
+		if checkCollision(x2, y2, w, h, self.angle or 0,
+				c.x, c.y, c.width, c.height, c.angle)
+		then
+			return true
+		end
+	end
+
+	return false
+end
+
 function Object:_canDraw()
 	return self.alpha > 0 and (self.scale.x * self.zoom.x ~= 0 or
 		self.scale.y * self.zoom.y ~= 0) and Object.super._canDraw(self)
+end
+
+function Object:_getXYWH()
+	local x, y = self.x or 0, self.y or 0
+	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
+	if self.getCurrentFrame then
+		local f = self:getCurrentFrame()
+		if f then x, y = x + f.offset.x, y + f.offset.y end
+	end
+
+	local w, h = math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y)
+	if self.getWidth then
+		w, h = self:getWidth() * w, self:getHeight() * h
+	else
+		w, h = (self.getFrameWidth and self:getFrameWidth() or self.width or 0) * w,
+			(self.getFrameHeight and self:getFrameHeight() or self.height or 0) * h
+	end
+
+	return x, y, w, h
 end
 
 return Object

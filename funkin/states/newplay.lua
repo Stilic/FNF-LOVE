@@ -310,7 +310,9 @@ function PlayState:enter()
 	end
 
 	PlayState.super.enter(self)
-	self.scripts:call("postCreate")
+	collectgarbage()
+
+	self.scripts:call("postCreate")	
 end
 
 function PlayState:generateNotes()

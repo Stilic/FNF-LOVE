@@ -190,8 +190,7 @@ function love.timer.getFPS() return fps end
 function love.timer.getInputs()
 	if not love.asyncInput then return dt end
 	local ips = channel_event_tick:peek()
-	if not ips or ips > dt then return dt end
-	return ips
+	return ips and ips > dt and ips or dt
 end
 
 -- fix a bug where love.window.hasFocus doesnt return the actual focus in Mobiles
