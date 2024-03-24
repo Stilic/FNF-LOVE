@@ -1,13 +1,11 @@
-local function checkCollision(x1, y1, w1, h1, a1, x2, y2, w2, h2, a2)
-	local rad = math.rad(a1)
-	local cos, sin = math.cos(rad), math.sin(rad)
+local function checkCollisionFast(x1, y1, w1, h1, a1, x2, y2, w2, h2, a2)
+	local hw1, hw2, hh1, hh2 = w1 / 2, w2 / 2, h1 / 2, h2 / 2
+	local rad1, rad2 = math.rad(a1), math.rad(a2)
+	local sin1, cos1 = math.abs(math.sin(rad1)), math.abs(math.cos(rad1))
+	local sin2, cos2 = math.abs(math.sin(rad2)), math.abs(math.cos(rad2))
 
-	local relativeX = (x2 + w2 / 2) - (x1 + w1 / 2)
-	local relativeY = (y2 + h2 / 2) - (y1 + h1 / 2)
-
-	return
-		math.abs(relativeX * cos + relativeY * sin) - (w1 + w2) / 2 < 0 and
-		math.abs(-relativeX * sin + relativeY * cos) - (h1 + h2) / 2 < 0
+	return math.abs(x2 + hw2 - x1 - hw1) - hw1 * cos1 - hh1 * sin1 - hw2 * cos2 - hh2 * sin2 < 0
+		and math.abs(y2 + hh2 - y1 - hh1) - hh1 * cos1 - hw1 * sin1 - hh2 * cos2 - hw2 * sin2 < 0
 end
 
 ---@class Object:Basic
@@ -108,7 +106,7 @@ function Object:_collides(x, y, w, h, ...)
 	if not o then return false end
 
 	local x2, y2, w2, h2 = o:_getXYWH()
-	return checkCollision(x, y, w, h, self.angle, x2, y2, w2, h2, o.angle)
+	return checkCollisionFast(x, y, w, h, self.angle, x2, y2, w2, h2, o.angle)
 		or self:_collides(x, y, w, h, select(2, ...))
 end
 
@@ -129,7 +127,7 @@ function Object:isOnScreen(cameras)
 		x2, y2 = x - c.scroll.x * self.scrollFactor.x,
 			y - c.scroll.y * self.scrollFactor.y
 
-		if checkCollision(x2, y2, w, h, self.angle or 0,
+		if checkCollisionFast(x2, y2, w, h, self.angle or 0,
 				c.x, c.y, c.width, c.height, c.angle)
 		then
 			return true
