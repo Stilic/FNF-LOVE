@@ -294,21 +294,6 @@ function PlayState:enter()
 		self:startCountdown()
 	end
 
-	if Discord then
-		local detailsText = "Freeplay"
-		if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-		local diff = PlayState.defaultDifficulty
-		if PlayState.songDifficulty ~= "" then
-			diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-		end
-
-		Discord.changePresence({
-			details = detailsText,
-			state = self.SONG.meta.name .. ' - [' .. diff .. ']'
-		})
-	end
-
 	PlayState.super.enter(self)
 	collectgarbage()
 
@@ -396,8 +381,8 @@ function PlayState:startCountdown()
 end
 
 -- this function is fatal, that i mean its using alot of processing times!!!
-function PlayState:cameraMovement()
-	local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
+function PlayState:cameraMovement(s)
+	local section = PlayState.SONG.notes[math.max((s or PlayState.conductor.currentSection + 1), 1)]
 	if section ~= nil then
 		local target, camX, camY
 		if section.gfSection then
@@ -440,28 +425,6 @@ function PlayState:step(s)
 		if math.abs(time - PlayState.conductor.time) > 13 then
 			PlayState.conductor.time = time
 		end
-
-		if Discord then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local startTimestamp = os.time(os.date("*t"))
-			local endTimestamp = startTimestamp +
-				game.sound.music:getDuration()
-			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']',
-				startTimestamp = math.floor(startTimestamp),
-				endTimestamp = math.floor(endTimestamp)
-			})
-		end
 	end
 	self.scripts:set("curStep", s)
 	self.scripts:call("step")
@@ -490,7 +453,7 @@ function PlayState:section(s)
 	end
 
 	if self.startedCountdown then
-		self:cameraMovement()
+		self:cameraMovement(s + 1)
 	end
 
 	if self.camZooming and game.camera.zoom < 1.35 then
@@ -584,39 +547,7 @@ function PlayState:update(dt)
 end
 
 function PlayState:focus(f)
-	if Discord then
-		local detailsText = "Freeplay"
-		if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-		if f then
-			local startTimestamp = os.time(os.date("*t"))
-			local endTimestamp = startTimestamp +
-				game.sound.music:getDuration()
-			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']',
-				startTimestamp = math.floor(startTimestamp),
-				endTimestamp = math.floor(endTimestamp)
-			})
-		else
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = "Paused - " .. detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']'
-			})
-		end
-	end
+	
 end
 
 function PlayState:tryPause()
@@ -628,21 +559,6 @@ function PlayState:tryPause()
 		if self.vocals then self.vocals:pause() end
 
 		self.paused = true
-
-		if Discord then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = "Paused - " .. detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']'
-			})
-		end
 
 		if self.buttons then
 			self.buttons:disable()
@@ -662,21 +578,6 @@ function PlayState:tryGameOver()
 		if event.pauseSong then
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
-		end
-
-		if Discord then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = "Game Over - " .. detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']'
-			})
 		end
 
 		self.camHUD.visible = false
@@ -738,35 +639,14 @@ end
 
 function PlayState:closeSubstate()
 	PlayState.super.closeSubstate(self)
+
+	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 	if not self.startingSong then
-		game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
-
-		if self.vocals and not self.startingSong then
-			self.vocals:seek(game.sound.music:tell())
-		end
 		game.sound.music:play()
-		if self.vocals then self.vocals:play() end
 
-		if Discord then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local startTimestamp = os.time(os.date("*t"))
-			local endTimestamp = startTimestamp +
-				game.sound.music:getDuration()
-			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = detailsText,
-				state = self.SONG.meta.name .. ' - [' .. diff .. ']',
-				startTimestamp = math.floor(startTimestamp),
-				endTimestamp = math.floor(endTimestamp)
-			})
+		if self.vocals then
+			self.vocals:seek(game.sound.music:tell())
+			self.vocals:play()
 		end
 	end
 

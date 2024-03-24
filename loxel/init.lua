@@ -408,7 +408,7 @@ function game.update(real_dt)
 	game.dt = dt
 
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
-	game.sound.update()
+	game.sound.update(dt)
 
 	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end
 	for _, o in ipairs(game.members) do triggerCallback(o.update, o, dt) end
