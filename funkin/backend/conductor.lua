@@ -4,6 +4,7 @@ local Conductor = Classic:extend("Conductor")
 -- ITS NOT CROCHET
 -- ITS CROTCHET!!!!
 -- DONT LET FNF BRAINROTS YOU
+-- TODO: make conductor on normal second instead of ms
 
 function Conductor.calculateCrotchet(bpm) return (60 / bpm) * 1000 end
 

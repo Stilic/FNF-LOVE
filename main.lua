@@ -31,6 +31,7 @@ if love.system.getDevice() == "Desktop" then
 	Discord = require "funkin.backend.discord"
 end
 
+Notefield = require "funkin.gameplay.notefield"
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 Note = require "funkin.gameplay.ui.note"
 NoteSplash = require "funkin.gameplay.ui.notesplash"
@@ -133,7 +134,7 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
-	game.init(Project, SplashScreen)
+	game.init(Project, require 'funkin.states.newplay'--[[SplashScreen]])
 
 	if ClientPrefs.data.resolution == -1 then
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()
@@ -216,7 +217,7 @@ local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1 + (layer or 1)):gsub("\n[^\n]+$", "")))
 end
 function love.errorhandler(msg)
-	love.errorhandler_quit()
+	pcall(love.errorhandler_quit)
 
 	msg = tostring(msg)
 	error_printer(msg, 2)
