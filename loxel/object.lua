@@ -10,7 +10,6 @@ end
 
 ---@class Object:Basic
 local Object = Basic:extend("Object")
-Object.checkCollisionFast = checkCollisionFast
 Object.defaultAntialiasing = false
 
 function Object:new(x, y)
@@ -101,43 +100,26 @@ function Object:update(dt)
 	end
 end
 
-function Object:_collides(x, y, w, h, ox, oy, ...)
-	local o = (...)
-	if not o then return false end
+function Object:_isOnScreen(x, y, w, h, ox, oy, c)
+	local sf = self.scrollFactor
+	if sf then
+		x, y = x - c.scroll.x * sf.x, y - c.scroll.y * sf.y
+	else
+		x, y = x - c.scroll.x, y - c.scroll.y
+	end
 
-	local x2, y2, w2, h2, ox2, oy2 = o:_getXYWHO()
-	return checkCollisionFast(x, y, w, h, ox, oy, self.angle, x2, y2, w2, h2, ox2, oy2, o.angle)
-		or self:_collides(x, y, w, h, ox, oy, select(2, ...))
+	local x2, y2, w2, h2, ox2, oy2 = c:_getXYWHO()
+	return checkCollisionFast(x, y, w, h, ox, oy, self.angle or 0,
+		x2, y2, w2, h2, ox2, oy2, c.angle)
 end
 
-function Object:collides(...)
-	local x, y, w, h, ox, oy = self:_getXYWHO()
-	return self:_collides(x, y, w, h, ox, oy, ...)
-end
-
-local tempCameras = table.new(1, 0)
 function Object:isOnScreen(cameras)
-	if cameras.x then
-		tempCameras[1] = cameras
-		return self:isOnScreen(tempCameras)
-	end
+	local x, y, w, h, ox, oy = self:_getXYWHO()
+	if cameras.x then return self:_isOnScreen(x, y, w, h, ox, oy, cameras) end
 
-	local sf, x, y, w, h, ox, oy, x2, y2 = self.scrollFactor, self:_getXYWHO()
 	for _, c in pairs(cameras) do
-		if sf then
-			x2, y2 = x - c.scroll.x * sf.x, y - c.scroll.y * sf.y
-		else
-			x2, y2 = x - c.scroll.x, y - c.scroll.y
-		end
-
-		local x2, y2, w2, h2, ox2, oy2 = c:_getXYWHO()
-		if checkCollisionFast(x2, y2, w, h, ox, oy, self.angle or 0,
-			x2, y2, w2, h2, ox2, oy2, c.angle)
-		then
-			return true
-		end
+		if self:_isOnScreen(x, y, w, h, ox, oy, c) then return true end
 	end
-
 	return false
 end
 

@@ -63,30 +63,21 @@ function SpriteGroup:centerOrigin(__width, __height)
 	self.origin.y = (__height or self.height) / 2
 end
 
-local checkCollisionFast = Object.checkCollisionFast
 function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, zoomy)
 	for _, member in ipairs(members) do
-		local sf2, sfx, sfy = member.scrollFactor
-		if member.x then
-			member.x, member.y = member.x + x2, member.y + y2
+		local sf2, px, py, sfx, sfy = member.scrollFactor, member.x, member.y
+		if px then
+			member.x, member.y = px + x2, py + y2
 			if sf2 then
 				sfx, sfy = sf2.x, sf2.y
 				sf2.x, sf2.y = sf2.x * sf.x, sf2.y * sf.y
 			end
 		end
+
 		if member:_canDraw() then
 			if member.__render then
 				local x, y, w, h, ox, oy = member:_getXYWHO()
-				if sf2 then
-					x, y = x - camera.scroll.x * sf2.x, y - camera.scroll.y * sf2.y
-				else
-					x, y = x - camera.scroll.x, y - camera.scroll.y
-				end
-
-				local x2, y2, w2, h2, ox2, oy2 = camera:_getXYWHO()
-				if checkCollisionFast(x, y, w, h, ox, oy, member.angle or 0,
-					x2, y2, w2, h2, ox2, oy2, camera.angle)
-				then
+				if self:_isOnScreen(x, y, w, h, ox, oy, camera) then
 					table.insert(list, member)
 				end
 			elseif member.members then
@@ -94,11 +85,10 @@ function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, z
 					(member.x or x2), (member.y or y2), sf, zoomx, zoomy)
 			end
 		end
-		if member.x then
-			member.x, member.y = member.x - x2, member.y - y2
-			if sf2 then
-				sf2.x, sf2.y = sfx, sfy
-			end
+
+		member.x, member.y = px, py
+		if sf2 then
+			sf2.x, sf2.y = sfx, sfy
 		end
 	end
 end
@@ -114,9 +104,8 @@ function SpriteGroup:_canDraw()
 	if Sprite.super._canDraw(self) then
 		local yeah = false
 		for _, c in pairs(self.cameras or Camera.__defaultCameras) do
-			local list = self.__cameraRenderQueue[c]
-			if not list then
-				list = table.remove(self.__unusedCameraRenderQueue) or {}
+			if not self.__cameraRenderQueue[c] then
+				local list = table.remove(self.__unusedCameraRenderQueue) or {}
 				self:__drawNestGroup(self.members, c, list, self.x, self.y, self.scrollFactor, c:getZoomXY())
 				self.__cameraRenderQueue[c] = list
 				yeah = yeah or #list > 0
@@ -131,12 +120,15 @@ end
 
 function SpriteGroup:isOnScreen()
 	for _, list in pairs(self.__cameraRenderQueue) do
-		if next(list) ~= nil then return true end
+		if next(list) then return true end
 	end
 	return false
 end
 
 function SpriteGroup:__render(camera)
+	local list = self.__cameraRenderQueue[camera]
+	if not list then return end
+
 	local cr, cg, cb, ca = love.graphics.getColor()
 
 	love.graphics.push()
@@ -148,7 +140,7 @@ function SpriteGroup:__render(camera)
 	love.graphics.rotate(math.rad(self.angle))
 	love.graphics.translate(-self.origin.x, -self.origin.y)
 
-	local list, a, b = self.__cameraRenderQueue[camera], camera.scroll, self.scrollFactor
+	local a, b = camera.scroll, self.scrollFactor
 	for i, member in ipairs(list) do
 		if member.x then
 			love.graphics.push()
