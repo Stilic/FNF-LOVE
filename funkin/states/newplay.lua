@@ -122,11 +122,14 @@ function PlayState:enter()
 	self.playback = 1
 	Timer.setSpeed(1)
 
+	self.camNotes = Camera()
 	self.camHUD = Camera()
-	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 	self.camOther = Camera()
+	game.cameras.add(self.camNotes, false)
 	game.cameras.add(self.camHUD, false)
 	game.cameras.add(self.camOther, false)
+
+	self.camNotes.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 
 	if game.sound.music then game.sound.music:reset(true) end
 	game.sound.loadMusic(paths.getInst(songName))
@@ -198,7 +201,18 @@ function PlayState:enter()
 
 	self.notefields = {Notefield(), Notefield()}
 	self.playerNotefield, self.enemyNotefield = unpack(self.notefields)
+	self.playerNotefield.cameras = {self.camNotes}
+	self.enemyNotefield.cameras = {self.camNotes}
 	self:generateNotes()
+
+	for _, o in ipairs({
+		self.botplayTxt
+	}) do o.cameras = {self.camHUD} end
+
+	self:add(self.playerNotefield)
+	self:add(self.enemyNotefield)
+
+	self:add(self.botplayTxt)
 
 	self.score = 0
 	self.combo = 0

@@ -1,4 +1,4 @@
-local COuntdown = SpriteGroup:extend("Countdown")
+local Countdown = SpriteGroup:extend("Countdown")
 
 
 

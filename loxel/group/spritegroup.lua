@@ -75,9 +75,11 @@ function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, z
 		end
 
 		if member:_canDraw() then
-			if member.__render then
+			if member.__cameraRenderQueue then
+				table.insert(list, member)
+			elseif member.__render then
 				local x, y, w, h, ox, oy = member:_getXYWHO()
-				if self:_isOnScreen(x, y, w, h, ox, oy, camera) then
+				if member:_isOnScreen(x, y, w, h, ox, oy, camera) then
 					table.insert(list, member)
 				end
 			elseif member.members then
@@ -93,6 +95,20 @@ function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, z
 	end
 end
 
+function SpriteGroup:_prepareCameraDraw(c, force)
+	local list = self.__cameraRenderQueue[c]
+	if list then
+		if force then table.clear(list)
+		else return list end
+	else
+		list = table.remove(self.__unusedCameraRenderQueue) or {}
+		self.__cameraRenderQueue[c] = list
+	end
+	self:__drawNestGroup(self.members, c, list, self.x, self.y, self.scrollFactor, c:getZoomXY())
+
+	return list
+end
+
 function SpriteGroup:_canDraw()
 	for c, list in pairs(self.__cameraRenderQueue) do
 		self.__cameraRenderQueue[c] = nil
@@ -104,12 +120,8 @@ function SpriteGroup:_canDraw()
 	if Sprite.super._canDraw(self) then
 		local yeah = false
 		for _, c in pairs(self.cameras or Camera.__defaultCameras) do
-			if not self.__cameraRenderQueue[c] then
-				local list = table.remove(self.__unusedCameraRenderQueue) or {}
-				self:__drawNestGroup(self.members, c, list, self.x, self.y, self.scrollFactor, c:getZoomXY())
-				self.__cameraRenderQueue[c] = list
-				yeah = yeah or #list > 0
-			end
+			local list = self:_prepareCameraDraw(c, true)
+			yeah = yeah or next(list) ~= nil
 		end
 
 		return yeah
@@ -118,9 +130,14 @@ function SpriteGroup:_canDraw()
 	return false
 end
 
-function SpriteGroup:isOnScreen()
-	for _, list in pairs(self.__cameraRenderQueue) do
-		if next(list) then return true end
+function SpriteGroup:_isOnScreen(x, y, w, h, ox, oy, camera)
+	return next(self:_prepareCameraDraw(camera)) ~= nil
+end
+
+function SpriteGroup:isOnScreen(cameras, force)
+	if cameras.x then return next(self:_prepareCameraDraw(cameras)) ~= nil end
+	for _, c in pairs(cameras) do
+		if next(self:_prepareCameraDraw(c, force)) then return true end
 	end
 	return false
 end
