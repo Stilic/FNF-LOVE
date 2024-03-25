@@ -528,6 +528,8 @@ function PlayState:update(dt)
 				self.vocals:play()
 			end
 
+			PlayState.conductor.time = game.sound.music:tell()
+
 			self.scripts:call("songStart")
 		end
 

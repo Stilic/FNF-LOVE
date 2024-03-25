@@ -364,9 +364,9 @@ function Conductor:__step()
 		self.currentStep, self.currentBPMChange.id, #self.bpmChanges,
 		(self.bpmChanges[self.currentBPMChange.id + 1] or self.currentBPMChange).step
 	)]]
+
 	if self.onStep then self.onStep(self.currentStep) end
-	if self.onBeat and self.currentStep % 4 == 0 then
-		--print("BEAT HIT!!!", self.currentBeat)
+	if self.onBeat and self.lastBeat ~= self.currentBeat then
 		self.onBeat(self.currentBeat)
 	end
 end
