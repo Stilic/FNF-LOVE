@@ -28,7 +28,7 @@ function RGBShader.create(r, g, b)
 		RGBShader.cache[key] = love.graphics.newShader(RGBShader.code)
 		RGBShader.cache[key]:send("r", r)
 		RGBShader.cache[key]:send("g", g)
-		RGBShader.cache[key]:send("b", b)RGBShader.cache
+		RGBShader.cache[key]:send("b", b)
 	end
 
 	return RGBShader.cache[key]
