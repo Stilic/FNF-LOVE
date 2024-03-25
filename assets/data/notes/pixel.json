@@ -1,0 +1,72 @@
+{
+	"texture": "NOTE_assets",
+
+	"isPixel": true,
+	"sustainSuffix": "ENDS",
+	"columnsNote": 1,
+	"rowsNote": 4,
+	"columnsSustain": 1,
+	"rowsSustain": 2,
+
+	"scale": 6,
+	"antialiasing": false,
+
+	"receptors": [
+		{
+			"staticAnim": [0],
+			"hitAnim": [2, 3],
+			"pressedAnim": [0, 1],
+			"color": ["#A2BAC8", "#FFF5FC", "#404047"]
+		},
+		{
+			"staticAnim": [0],
+			"hitAnim": [2, 3],
+			"pressedAnim": [0, 1],
+
+			"color": ["#A2BAC8", "#FFF5FC", "#404047"],
+			"props": {"angle": -90}
+		},
+		{
+			"staticAnim": [0],
+			"hitAnim": [2, 3],
+			"pressedAnim": [0, 1],
+
+			"color": ["#A2BAC8", "#FFF5FC", "#404047"],
+			"props": {"angle": 90}
+		},
+		{
+			"staticAnim": [0],
+			"hitAnim": [2, 3],
+			"pressedAnim": [0, 1],
+
+			"color": ["#A2BAC8", "#FFF5FC", "#404047"],
+			"props": {"angle": 180}
+		}
+	],
+
+	"notes": [
+		{
+			"anim": [0],
+			"color": ["#E276FF", "#FFF9FF", "#60008D"],
+			"sustainAnims": [[1], [0]]
+		},
+		{
+			"anim": [0],
+			"color": ["#3DCAFF", "#FFF9FF", "#003060"],
+			"sustainAnims": [[1], [0]],
+			"props": {"angle": -90}
+		},
+		{
+			"anim": [0],
+			"color": ["#71E300", "#FFF9FF", "#003100"],
+			"sustainAnims": [[1], [0]],
+			"props": {"angle": 90}
+		},
+		{
+			"anim": [0],
+			"color": ["#FF884E", "#FFF9FF", "#6C0000"],
+			"sustainAnims": [[1], [0]],
+			"props": {"angle": 180}
+		}
+	]
+}

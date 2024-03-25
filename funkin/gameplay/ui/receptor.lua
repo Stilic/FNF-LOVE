@@ -1,43 +1,71 @@
-local Receptor = Sprite:extend("Receptor")
-
-Receptor.pixelAnim = { -- {static, pressed, confirm}
-	{{0}, {4, 8},  {12, 16}}, {{1}, {5, 9}, {13, 17}}, {{2}, {6, 10}, {14, 18}},
-	{{3}, {7, 11}, {15, 19}}
-}
+local Receptor = Sprite:extend('Receptor')
 
 function Receptor:new(x, y, data, player)
 	Receptor.super.new(self, x, y)
+	local style = PlayState.SONG.noteStyle or (PlayState.pixelStage and 'pixel' or 'default')
 
 	self.data = data
 	self.player = player
-
 	self.holdTime = 0
 
-	if PlayState.pixelStage then
-		self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
-		self.width = self.width / 4
-		self.height = self.height / 5
-		self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true,
-			math.floor(self.width), math.floor(self.height))
+	self:setStyle(self, style)
+end
 
-		self.antialiasing = false
-		self:setGraphicSize(math.floor(self.width * 6))
+function Receptor:setStyle(data, style)
+	local json = paths.getJSON('data/notes/' .. style)
 
-		self:addAnim('static', Receptor.pixelAnim[data + 1][1])
-		self:addAnim('pressed', Receptor.pixelAnim[data + 1][2], 12, false)
-		self:addAnim('confirm', Receptor.pixelAnim[data + 1][3], 24, false)
-	else
-		self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
-		self:setGraphicSize(math.floor(self.width * 0.7))
-
-		local dir = Note.directions[data + 1]
-		self:addAnimByPrefix("static", "arrow" .. string.upper(dir), 24, false)
-		self:addAnimByPrefix("pressed", dir .. " press", 24, false)
-		self:addAnimByPrefix("confirm", dir .. " confirm", 24, false)
+	local repData = json.receptors[data.data + 1]
+	local function setShader(anim, color)
+		if json.noShader then return end
+		anim.shader = RGBShader.create(
+			Color.fromString(color[1]),
+			Color.fromString(color[2]),
+			Color.fromString(color[3]))
 	end
 
-	self:updateHitbox()
-	self:play("static")
+	if json.isPixel then
+		local texture = 'skins/pixel/' .. json.texture
+		data:loadTexture(paths.getImage(texture))
+
+		data.width = data.width / json.columnsNote
+		data.height = data.height / json.rowsNote
+		data:loadTexture(paths.getImage(texture), true, math.floor(data.width), math.floor(data.height))
+
+		data:addAnim('static', repData.staticAnim)
+		data:addAnim('pressed', repData.pressedAnim, 12, false)
+		data:addAnim('confirm', repData.hitAnim, 24, false)
+
+		setShader(data.__animations['static'], repData.color)
+		setShader(data.__animations['pressed'], repData.pressedColor and
+				repData.pressedColor or json.notes[data.data + 1].color)
+		setShader(data.__animations['confirm'], repData.hitColor and
+				repData.hitColor or json.notes[data.data + 1].color)
+	else
+		local texture = 'skins/normal/' .. json.texture
+		data:setFrames(paths.getAtlas(texture))
+		data:setGraphicSize(math.floor(data.width * 0.7))
+
+		data:addAnimByPrefix('static', repData.staticAnim, 24, false)
+		data:addAnimByPrefix('pressed', repData.pressedAnim, 24, false)
+		data:addAnimByPrefix('confirm', repData.hitAnim, 24, false)
+
+		setShader(data.__animations['static'], repData.color)
+		setShader(data.__animations['pressed'], repData.pressedColor and
+				repData.pressedColor or json.notes[data.data + 1].color)
+		setShader(data.__animations['confirm'], repData.hitColor and
+				repData.hitColor or json.notes[data.data + 1].color)
+	end
+	if repData.props then
+		for prop, val in pairs(repData.props) do
+			data[prop] = val
+		end
+	end
+
+	data.antialiasing = (json.antialiasing ~= nil and json.antialiasing or true)
+	data:setGraphicSize(math.floor(data.width * (json.scale or 0.7)))
+	data:updateHitbox()
+
+	data:play('static')
 end
 
 function Receptor:update(dt)
@@ -48,6 +76,7 @@ function Receptor:update(dt)
 			self:play("static")
 		end
 	end
+
 	Receptor.super.update(self, dt)
 end
 
@@ -56,6 +85,7 @@ function Receptor:play(anim, force, frame)
 
 	self:centerOffsets()
 	self:centerOrigin()
+	self.shader = self.curAnim.shader
 end
 
 return Receptor

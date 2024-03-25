@@ -1,4 +1,5 @@
 local ogNotePos = {}
+local ogNoteAngle = {}
 
 function postCreate()
 	for i = 1, #state.receptors.members do
@@ -6,6 +7,7 @@ function postCreate()
 			x = state.receptors.members[i].x,
 			y = state.receptors.members[i].y
 		}
+		ogNoteAngle[i] = state.receptors.members[i].angle
 	end
 end
 
@@ -116,10 +118,10 @@ function randomMoveArrow()
 	for i, n in ipairs(state.receptors.members) do
 		local randomX = ogNotePos[i].x + love.math.random(-20, 20)
 		local randomY = ogNotePos[i].y + love.math.random(-20, 20)
-		local randomAngle = love.math.random(-20, 20)
+		local randomAngle = love.math.random(ogNoteAngle[i] - 20, ogNoteAngle[i] + 20)
 		n:setPosition(randomX, randomY)
 		n.angle = randomAngle
 		Timer.cancelTweensOf(n)
-		Timer.tween(0.4, n, {x = ogNotePos[i].x, y = ogNotePos[i].y, angle = 0}, 'out-circ')
+		Timer.tween(0.4, n, {x = ogNotePos[i].x, y = ogNotePos[i].y, angle = ogNoteAngle[i]}, 'out-circ')
 	end
 end

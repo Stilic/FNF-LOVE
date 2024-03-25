@@ -1,0 +1,63 @@
+{
+	"texture": "NOTE_assets",
+	"isPixel": false,
+
+	"receptors": [
+		{
+			"staticAnim": "note",
+			"hitAnim": "glow",
+			"pressedAnim": "press",
+			"color": ["#87A3AD", "#FFFFFF", "#000000"]
+		},
+		{
+			"staticAnim": "note",
+			"hitAnim": "glow",
+			"pressedAnim": "press",
+
+			"color": ["#87A3AD", "#FFFFFF", "#000000"],
+			"props": {"angle": -90}
+		},
+		{
+			"staticAnim": "note",
+			"hitAnim": "glow",
+			"pressedAnim": "press",
+
+			"color": ["#87A3AD", "#FFFFFF", "#000000"],
+			"props": {"angle": 90}
+		},
+		{
+			"staticAnim": "note",
+			"hitAnim": "glow",
+			"pressedAnim": "press",
+
+			"color": ["#87A3AD", "#FFFFFF", "#000000"],
+			"props": {"angle": 180}
+		}
+	],
+
+	"notes": [
+		{
+			"anim": "note",
+			"color": ["#C24B99", "#FFFFFF", "#3C1F56"],
+			"sustainAnims": ["hold", "end hold"]
+		},
+		{
+			"anim": "note",
+			"color": ["#00FFFF", "#FFFFFF", "#1542B7"],
+			"sustainAnims": ["hold", "end hold"],
+			"props": {"angle": -90}
+		},
+		{
+			"anim": "note",
+			"color": ["#12FA05", "#FFFFFF", "#0A4447"],
+			"sustainAnims": ["hold", "end hold"],
+			"props": {"angle": 90}
+		},
+		{
+			"anim": "note",
+			"color": ["#F9393F", "#FFFFFF", "#651038"],
+			"sustainAnims": ["hold", "end hold"],
+			"props": {"angle": 180}
+		}
+	]
+}

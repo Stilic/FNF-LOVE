@@ -71,6 +71,8 @@ CutsceneState = require "funkin.states.editors.cutscene"
 CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 
+RGBShader = require "funkin.shaders.rgb"
+
 local TransitionFade = require "loxel.transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
 
