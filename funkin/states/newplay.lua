@@ -118,6 +118,7 @@ function PlayState:enter()
 
 	self.startingSong = true
 	self.startedCountdown = false
+	self.doCountdownAtBeats = nil
 
 	self.playback = 1
 	Timer.setSpeed(1)
@@ -193,26 +194,29 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = false
 
-	self.botplayTxt = Text(604, game.height - 200, 'BOTPLAY MODE',
-		fontTime, {1, 1, 1}, "right", game.width / 2)
-	self.botplayTxt.outline.width = 2
-	self.botplayTxt.antialiasing = false
-	self.botplayTxt.visible = self.botPlay
-
 	self.notefields = {Notefield(), Notefield()}
 	self.playerNotefield, self.enemyNotefield = unpack(self.notefields)
 	self.playerNotefield.cameras = {self.camNotes}
 	self.enemyNotefield.cameras = {self.camNotes}
 	self:generateNotes()
 
-	for _, o in ipairs({
-		self.botplayTxt
-	}) do o.cameras = {self.camHUD} end
-
 	self:add(self.playerNotefield)
 	self:add(self.enemyNotefield)
 
+	self.countdown = Countdown()
+	self.countdown:screenCenter()
+	self:add(self.countdown)
+
+	self.botplayTxt = Text(604, game.height - 200, 'BOTPLAY MODE',
+		fontTime, {1, 1, 1}, "right", game.width / 2)
+	self.botplayTxt.outline.width = 2
+	self.botplayTxt.antialiasing = false
+	self.botplayTxt.visible = self.botPlay
 	self:add(self.botplayTxt)
+
+	for _, o in ipairs({
+		self.botplayTxt, self.countdown
+	}) do o.cameras = {self.camHUD} end
 
 	self.score = 0
 	self.combo = 0
@@ -388,10 +392,21 @@ function PlayState:startCountdown()
 	end
 
 	self.startedCountdown = true
-	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+	self.doCountdownAtBeats = -4
+	self.countdown.duration = PlayState.conductor.crotchet / 1000
+	self.countdown.playback = 1
+	if PlayState.pixelStage then
+		self.countdown.data = {
+			{sound = "skins/pixel/intro3",  image = nil},
+			{sound = "skins/pixel/intro2",  image = "skins/pixel/ready"},
+			{sound = "skins/pixel/intro1",  image = "skins/pixel/set"},
+			{sound = "skins/pixel/introGo", image = "skins/pixel/go"}
+		}
+		self.countdown.scale = {x = 7, y = 7}
+		self.countdown.antialiasing = false
+	end
 
-	--local basePath = "skins/" .. (PlayState.pixelStage and "pixel" or "normal")
-	--local crotchet = PlayState.conductor.crotchet / 1000
+	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 end
 
 -- this function is fatal, that i mean its using alot of processing times!!!
@@ -448,6 +463,15 @@ end
 function PlayState:beat(b)
 	self.scripts:set("curBeat", b)
 	self.scripts:call("beat")
+
+	if self.doCountdownAtBeats then
+		local beat = b - self.doCountdownAtBeats + 1
+		self.countdown:doCountdown(beat)
+
+		if beat >= #self.countdown.data then
+			self.doCountdownAtBeats = nil
+		end
+	end
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
