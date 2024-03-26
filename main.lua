@@ -35,9 +35,6 @@ Notefield = require "funkin.gameplay.notefield"
 Countdown = require "funkin.gameplay.ui.Countdown"
 
 HealthIcon = require "funkin.gameplay.ui.healthicon"
-Note = require "funkin.gameplay.ui.note"
-NoteSplash = require "funkin.gameplay.ui.notesplash"
-Receptor = require "funkin.gameplay.ui.receptor"
 ProgressArc = require "funkin.gameplay.ui.progressarc"
 
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
@@ -136,7 +133,7 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
-	game.init(Project, require 'funkin.states.newplay'--[[SplashScreen]])
+	game.init(Project, PlayState--[[SplashScreen]])
 
 	if ClientPrefs.data.resolution == -1 then
 		ClientPrefs.data.resolution = love.graphics.getFixedScale()
