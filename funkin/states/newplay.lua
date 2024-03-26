@@ -3,6 +3,7 @@ local PauseSubstate = require "funkin.substates.pause"
 
 --[[ LIST TODO OR NOTES
 	maybe make scripts vars just include conductor itself instead of the properties of conductor
+	rewrite timers. to just be dependancy to loxel,. just rewrite timers with new codes.
 ]]
 
 ---@class PlayState:State
@@ -446,15 +447,6 @@ function PlayState:cameraMovement(s)
 end
 
 function PlayState:step(s)
-	if self.startedCountdown and not self.startingSong and game.sound.music:isPlaying() then
-		local time = game.sound.music:tell() * 1000
-		if self.vocals and math.abs((self.vocals:tell() * 1000) - time) > 13 then
-			self.vocals:seek(time / 1000)
-		end
-		if math.abs(time - PlayState.conductor.time) > 13 then
-			PlayState.conductor.time = time
-		end
-	end
 	self.scripts:set("curStep", s)
 	self.scripts:call("step")
 	self.scripts:call("postStep")
@@ -531,6 +523,20 @@ function PlayState:update(dt)
 			PlayState.conductor.time = game.sound.music:tell()
 
 			self.scripts:call("songStart")
+		elseif game.sound.music:isPlaying() then
+			local rate = math.max(self.playback, 1)
+			local time = game.sound.music:tell()
+			if self.vocals and self.vocals:isPlaying()
+				and PlayState.conductor.lastStep ~= PlayState.conductor.currentStep
+				and math.abs(time - self.vocals:tell()) > 0.015 * rate
+			then
+				self.vocals:seek(time)
+			end
+
+			local contime = PlayState.conductor.time / 1000
+			if math.abs(time - contime) > 0.015 * rate then
+				PlayState.conductor.time = util.coolLerp(math.clamp(contime, time - rate, time + rate), time, 14, dt) * 1000
+			end
 		end
 
 		PlayState.conductor:update()
@@ -541,13 +547,6 @@ function PlayState:update(dt)
 	if self.camZooming then
 		game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom, 3, dt)
 		self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 3, dt)
-	end
-
-	-- time ui
-	local songTime = PlayState.conductor.time / 1000
-
-	if ClientPrefs.data.timeType == "left" then
-		songTime = game.sound.music:getDuration() - songTime
 	end
 
 	if self.startedCountdown then
