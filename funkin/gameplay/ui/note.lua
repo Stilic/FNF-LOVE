@@ -80,7 +80,8 @@ function Note:setStyle(data, style)
 		)
 	end
 
-	data.antialiasing = (json.antialiasing ~= nil and json.antialiasing or true)
+	data.antialiasing = json.antialiasing
+	if data.antialiasing == nil then data.antialiasing = true end
 	data:setGraphicSize(math.floor(data.width * (json.scale or 0.7)))
 	data:updateHitbox()
 
