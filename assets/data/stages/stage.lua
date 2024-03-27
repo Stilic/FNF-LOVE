@@ -7,6 +7,7 @@ function create()
 		paths.getImage(SCRIPT_PATH .. "stageback"))
 	bg.antialiasing = true
 	bg:setScrollFactor(0.9, 0.9)
+	bg:updateHitbox()
 	self:add(bg)
 
 	local stageFront = Sprite(-650, 600):loadTexture(paths.getImage(

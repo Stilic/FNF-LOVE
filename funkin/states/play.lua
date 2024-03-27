@@ -195,10 +195,16 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = false
 
-	self.notefields = {Notefield(), Notefield()}
-	self.playerNotefield, self.enemyNotefield = unpack(self.notefields)
+	self.playerNotefield = Notefield(game.width / 2, game.height / 2, 4)
+	self.enemyNotefield = Notefield(game.width / 2, game.height / 2, 4)
+
+	self.playerNotefield.x = self.playerNotefield.x + self.playerNotefield:getWidth() / 1.5
+	self.enemyNotefield.x = self.enemyNotefield.x - self.enemyNotefield:getWidth() / 1.5
+
 	self.playerNotefield.cameras = {self.camNotes}
 	self.enemyNotefield.cameras = {self.camNotes}
+
+	self.notefields = {self.playerNotefield, self.enemyNotefield}
 	self:generateNotes()
 
 	self:add(self.playerNotefield)
@@ -545,6 +551,10 @@ function PlayState:update(dt)
 
 		PlayState.conductor:update()
 	end
+
+	self.playerNotefield.scale.x = math.sin(PlayState.conductor.time * math.pi / PlayState.conductor.crotchet / 2)
+	self.enemyNotefield.scale.y = math.sin(PlayState.conductor.time * math.pi / PlayState.conductor.crotchet / 2)
+	self.playerNotefield.angle = PlayState.conductor.time * 90 / 1000
 
 	PlayState.super.update(self, dt)
 

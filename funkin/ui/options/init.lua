@@ -52,8 +52,6 @@ function Options:new(showBG, completionCallback)
 	self.titleTxt = Text(0, 30, "", paths.getFont("phantommuff.ttf", 40), {1, 1, 1}, "center", game.width)
 	self:add(self.titleTxt)
 
-	self.throttles = {}
-
 	if love.system.getDevice() == "Mobile" then
 		local camButtons = Camera()
 		game.cameras.add(camButtons, false)
@@ -90,6 +88,7 @@ end
 function Options:enter(parent)
 	self.parent = parent
 
+	self.throttles = self.throttles or {}
 	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
 	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
@@ -298,6 +297,7 @@ function Options:leave()
 	end
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
+	table.clear(self.throttles)
 
 	self:kill()
 	self.visible = false
@@ -311,6 +311,9 @@ end
 
 function Options:destroy()
 	Options.super.destroy(self)
+
+	for _, v in ipairs(self.throttles) do v:destroy() end
+	self.throttles = nil
 
 	if self.tabGroup then
 		self.tabGroup:destroy()

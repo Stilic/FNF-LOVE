@@ -57,6 +57,12 @@ function HealthIcon:centerOffsets(...)
 	self.offset.y = self.offset.y + self.iconOffset.y
 end
 
+function HealthIcon:fixOffsets(...)
+	HealthIcon.super.fixOffsets(self, ...)
+	self.offset.x = self.offset.x + self.iconOffset.x
+	self.offset.y = self.offset.y + self.iconOffset.y
+end
+
 function HealthIcon:update(dt)
 	HealthIcon.super.update(self, dt)
 

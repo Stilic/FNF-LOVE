@@ -233,7 +233,7 @@ function MainMenuState:changeSelection(huh)
 			if #self.menuItems > 4 then add = #self.menuItems * 8 end
 			local x, y = spr:getGraphicMidpoint()
 			self.camFollow.x, self.camFollow.y = x, y - add
-			spr:centerOffsets()
+			spr:fixOffsets()
 		end
 	end
 end

@@ -26,7 +26,7 @@ function Countdown:doCountdown(beat)
 		countdownSprite:updateHitbox()
 
 		countdownSprite.antialiasing = self.antialiasing
-		countdownSprite.offset = {x = countdownSprite.width / 2, y = countdownSprite.height / 2}
+		countdownSprite:centerOffsets()
 
 		Timer.tween(self.duration, countdownSprite, {alpha = 0}, "in-out-cubic", function()
 			self:remove(countdownSprite)

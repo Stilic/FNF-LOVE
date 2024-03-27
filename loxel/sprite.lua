@@ -423,11 +423,16 @@ function Sprite:updateHitbox()
 	self.height = math.abs(self.scale.y * self.zoom.y) * height
 	self.__width, self.__height = self.width, self.height
 
-	self:centerOffsets(width, height)
+	self:fixOffsets(width, height)
 	self:centerOrigin(width, height)
 end
 
 function Sprite:centerOffsets(__width, __height)
+	self.offset.x = (__width or self:getFrameWidth()) / 2
+	self.offset.y = (__height or self:getFrameHeight()) / 2
+end
+
+function Sprite:fixOffsets(__width, __height)
 	self.offset.x = ((__width or self:getFrameWidth()) - self.width) / 2
 	self.offset.y = ((__height or self:getFrameHeight()) - self.height) / 2
 end

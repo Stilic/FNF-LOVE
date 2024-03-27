@@ -31,6 +31,8 @@ if love.system.getDevice() == "Desktop" then
 	Discord = require "funkin.backend.discord"
 end
 
+Receptor = require "funkin.gameplay.receptor"
+Note = require "funkin.gameplay.note"
 Notefield = require "funkin.gameplay.notefield"
 Countdown = require "funkin.gameplay.ui.Countdown"
 
@@ -133,6 +135,7 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
+	--game.init(Project, require 'funkin.states.test')
 	game.init(Project, PlayState--[[SplashScreen]])
 
 	if ClientPrefs.data.resolution == -1 then

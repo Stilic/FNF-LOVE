@@ -193,15 +193,10 @@ function Camera:update(dt)
 	end
 end
 
-function Camera:_getXYWHO()
+function Camera:_getCameraBoundary()
 	self:getZoomXY()
-	local w, h = math.abs(self.scale.x * self.__zoom.x) * self.width,
-		math.abs(self.scale.y * self.__zoom.y) * self.height
-	return self.x - self.offset.x, self.y - self.offset.y,
-		w, h,
-		-- atm camera have its origin fixed
-		w / 2, h / 2
-		--self.origin.x, self.origin.y
+	local w, h = self.width, self.height
+	return 0, 0, w, h, -self.__zoom.x + 2, -self.__zoom.y + 2, w / 2, h / 2
 end
 
 function Camera:getZoomXY()
@@ -214,7 +209,9 @@ end
 function Camera:canDraw()
 	self:getZoomXY()
 
-	return self.visible and self.exists and next(self.__renderQueue) and
+	return self.visible and self.exists and (
+			next(self.__renderQueue) or self.__flashAlpha > 0 or self.__fadeDuration > 0
+		) and
 		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and
 		(self.scale.y * self.__zoom.y) ~= 0
 end

@@ -75,11 +75,15 @@ function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, z
 		end
 
 		if member:_canDraw() then
-			if member.__cameraRenderQueue then
+			if member.__cameraRenderQueue and next(member:_prepareCameraDraw(camera)) then
 				table.insert(list, member)
 			elseif member.__render then
-				local x, y, w, h, ox, oy = member:_getXYWHO()
-				if member:_isOnScreen(x, y, w, h, ox, oy, camera) then
+				local sf = self.scrollFactor
+				local x, y, w, h, sx, sy, ox, oy = self:_getBoundary()
+
+				if member:_isOnScreen(x, y, w, h, sx, sy, ox, oy,
+					sf and sf.x or 1, sf and sf.y or 1, camera)
+				then
 					table.insert(list, member)
 				end
 			elseif member.members then
@@ -130,7 +134,7 @@ function SpriteGroup:_canDraw()
 	return false
 end
 
-function SpriteGroup:_isOnScreen(x, y, w, h, ox, oy, camera)
+function SpriteGroup:_isOnScreen(x, y, w, h, sx, sy, ox, oy, sfx, sfy, camera)
 	return next(self:_prepareCameraDraw(camera)) ~= nil
 end
 
@@ -179,13 +183,13 @@ function SpriteGroup:__render(camera)
 	self.__ogSetColor(cr, cg, cb, ca)
 end
 
-function SpriteGroup:_getXYWHO()
+function SpriteGroup:_getBoundary()
 	local x, y = self.x or 0, self.y or 0
-	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
+	if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
 
 	self:getWidth()
-	return x, y, (self.width or 0) * math.abs(self.scale.x * self.zoom.x),
-		(self.height or 0) * math.abs(self.scale.y * self.zoom.y),
+	return x, y, self.width, self.height,
+		math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y),
 		self.origin.x, self.origin.y
 end
 

@@ -67,7 +67,7 @@ function Text:screenCenter(axes)
 	return self
 end
 
-function Text:centerOffsets(__width, __height)
+function Text:fixOffsets(__width, __height)
 	self.offset.x = ((__width or self:getWidth()) - self.width) / 2
 	self.offset.y = ((__height or self:getHeight()) - self.height) / 2
 end

@@ -1,6 +1,5 @@
 local Note = Sprite:extend("Note")
 
-Note.swagWidth = 160 * 0.7
 Note.colors = {"purple", "blue", "green", "red"}
 Note.directions = {"left", "down", "up", "right"}
 Note.pixelAnim = {{{4}, {0}}, {{5}, {1}}, {{6}, {2}}, {{7}, {3}}}
