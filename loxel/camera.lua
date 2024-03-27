@@ -193,10 +193,26 @@ function Camera:update(dt)
 	end
 end
 
-function Camera:canDraw()
+function Camera:_getXYWHO()
+	self:getZoomXY()
+	local w, h = math.abs(self.scale.x * self.__zoom.x) * self.width,
+		math.abs(self.scale.y * self.__zoom.y) * self.height
+	return self.x - self.offset.x, self.y - self.offset.y,
+		w, h,
+		-- atm camera have its origin fixed
+		w / 2, h / 2
+		--self.origin.x, self.origin.y
+end
+
+function Camera:getZoomXY()
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
 	self.__zoom.y = isnum and self.zoom or self.zoom.y
+	return self.__zoom.x, self.__zoom.y
+end
+
+function Camera:canDraw()
+	self:getZoomXY()
 
 	return self.visible and self.exists and next(self.__renderQueue) and
 		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and
@@ -216,6 +232,7 @@ function Camera:draw()
 		self:drawSimple(true)
 	end
 end
+
 
 -- Simple Render
 local _simpleCamera, _ogSetColor

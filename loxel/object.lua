@@ -1,6 +1,15 @@
+local abs, rad, cos, sin = math.abs, math.rad, math.fastcos, math.fastsin
+local function checkCollisionFast(x1, y1, w1, h1, ox1, oy1, a1, x2, y2, w2, h2, ox2, oy2, a2)
+	local hw1, hw2, hh1, hh2 = w1 / 2, w2 / 2, h1 / 2, h2 / 2
+	local rad1, rad2 = rad(a1), rad(a2)
+	local sin1, cos1 = abs(sin(rad1)), abs(cos(rad1))
+	local sin2, cos2 = abs(sin(rad2)), abs(cos(rad2))
+	return abs(x2 + ox2 - x1 - ox1) - hw1 * cos1 - hh1 * sin1 - hw2 * cos2 - hh2 * sin2 < 0
+		and abs(y2 + oy2 - y1 - oy1) - hh1 * cos1 - hw1 * sin1 - hh2 * cos2 - hw2 * sin2 < 0
+end
+
 ---@class Object:Basic
 local Object = Basic:extend("Object")
-
 Object.defaultAntialiasing = false
 
 function Object:new(x, y)
@@ -91,9 +100,51 @@ function Object:update(dt)
 	end
 end
 
+function Object:_isOnScreen(x, y, w, h, ox, oy, c)
+	local sf = self.scrollFactor
+	if sf then
+		x, y = x - c.scroll.x * sf.x, y - c.scroll.y * sf.y
+	else
+		x, y = x - c.scroll.x, y - c.scroll.y
+	end
+
+	local x2, y2, w2, h2, ox2, oy2 = c:_getXYWHO()
+	return checkCollisionFast(x, y, w, h, ox, oy, self.angle or 0,
+		x2, y2, w2, h2, ox2, oy2, c.angle)
+end
+
+function Object:isOnScreen(cameras)
+	local x, y, w, h, ox, oy = self:_getXYWHO()
+	if cameras.x then return self:_isOnScreen(x, y, w, h, ox, oy, cameras) end
+
+	for _, c in pairs(cameras) do
+		if self:_isOnScreen(x, y, w, h, ox, oy, c) then return true end
+	end
+	return false
+end
+
 function Object:_canDraw()
 	return self.alpha > 0 and (self.scale.x * self.zoom.x ~= 0 or
 		self.scale.y * self.zoom.y ~= 0) and Object.super._canDraw(self)
+end
+
+function Object:_getXYWHO()
+	local x, y = self.x or 0, self.y or 0
+	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
+	if self.getCurrentFrame then
+		local f = self:getCurrentFrame()
+		if f then x, y = x + f.offset.x, y + f.offset.y end
+	end
+
+	local w, h = abs(self.scale.x * self.zoom.x), abs(self.scale.y * self.zoom.y)
+	if self.getWidth then
+		w, h = self:getWidth() * w, self:getHeight() * h
+	else
+		w, h = (self.getFrameWidth and self:getFrameWidth() or self.width or 0) * w,
+			(self.getFrameHeight and self:getFrameHeight() or self.height or 0) * h
+	end
+
+	return x, y, w, h, self.origin.x, self.origin.y
 end
 
 return Object

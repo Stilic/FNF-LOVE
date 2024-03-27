@@ -83,6 +83,7 @@ function Options:new(showBG, completionCallback)
 		self:add(self.buttons)
 	end
 
+	self:getWidth()
 	self:resetTabs()
 end
 

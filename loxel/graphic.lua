@@ -46,22 +46,24 @@ function Graphic:__render(camera)
 	love.graphics.setLineWidth(linesize)
 	love.graphics.setLineJoin(line.join)
 
-	local x, y, w, h = self.x, self.y, self.width or 0, self.height or 0
-	local sx, sy = self.scale.x * self.zoom.x, self.scale.y * self.zoom.y
+	local x, y, w, h, sx, sy, ox, oy = self.x, self.y, self.width or 0, self.height or 0,
+		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
+		self.origin.x, self.origin.y
+
 	if self.flipX then sx = -sx end
 	if self.flipY then sy = -sy end
 
-	x, y = x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
-		y - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
-	local type, fill, config, pi180 = self.type, self.fill, self.config, math.pi / 180
-	local seg, rnd = config.segments, config.round
-	local verts, contype = config.vertices, config.type
-	local ang1, ang2 = 0, 0
+	x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+		y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
+
+	local config = self.config
+	local rnd, ang1, ang2 = config.round, 0, 0
 	if config.angle then
+		local pi180 = math.pi / 180
 		ang1, ang2 = config.angle[1] * pi180, config.angle[2] * pi180
 	end
 
-	if fill == "line" then
+	if self.fill == "line" then
 		x, y = x + linesize / 2, y + linesize / 2
 		w, h = w - linesize, h - linesize
 	end
@@ -73,31 +75,34 @@ function Graphic:__render(camera)
 	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
 
 	love.graphics.push()
+	love.graphics.translate(x, y)
 	love.graphics.rotate(math.rad(self.angle))
 	love.graphics.scale(sx, sy)
 
-	local function drawShape()
-		local elp = w ~= h
+	local function drawShape(type, fill)
 		if type == "rectangle" then
-			love.graphics.rectangle(fill, x, y, w, h, config.round[1], config.round[2], config.segments)
+			love.graphics.rectangle(fill, -ox, -oy, w, h, config.round[1], config.round[2], config.segments)
 		elseif type == "polygon" and config.vertices then
-			love.graphics.translate(x, y)
+			love.graphics.translate(-ox, -oy)
 			love.graphics.polygon(fill, config.vertices)
 		elseif type == "circle" then
-			x, y = x + (elp and w / 2 or rad), y + (elp and h / 2 or rad)
-			love.graphics[elp and "ellipse" or "circle"](
-				fill, x, y, (elp and w / 2 or rad), (w ~= h and h / 2 or seg), seg)
+			if w == h then
+				love.graphics.circle(fill, rad - ox, rad - oy, rad, config.segments)
+			else
+				local x, y = w / 2, h / 2
+				love.graphics.ellipse(fill, x - ox, y - oy, x, y, config.segments)
+			end
 		elseif type == "arc" then
-			x, y, seg = x + rad, y + rad, math.ceil(seg * math.min((ang2 - ang1) / math.pi / 2, 1))
-			love.graphics.arc(fill, contype, x, y, rad, ang1, ang2, seg)
+			love.graphics.arc(fill, config.type, rad - ox, rad - oy, rad, ang1, ang2,
+				math.ceil(config.segments * math.min((ang2 - ang1) / math.pi / 2, 1)))
 		end
 	end
 
-	drawShape()
+	drawShape(self.type, self.fill)
 	if self.lined then
-		color, fill = line.color, "line"
+		color = line.color
 		love.graphics.setColor(color[1], color[2], color[3], (color[4] or 1) * self.alpha)
-		drawShape()
+		drawShape(self.type, "line")
 	end
 
 	love.graphics.pop()

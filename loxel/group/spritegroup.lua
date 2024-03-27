@@ -7,7 +7,8 @@ function SpriteGroup:new(x, y)
 	self.group = Group()
 	self.members = self.group.members
 
-	self.__renderQueue = {}
+	self.__unusedCameraRenderQueue = {}
+	self.__cameraRenderQueue = {}
 
 	self:__initializeDrawFunctions()
 end
@@ -62,29 +63,89 @@ function SpriteGroup:centerOrigin(__width, __height)
 	self.origin.y = (__height or self.height) / 2
 end
 
-function SpriteGroup:__drawNestGroup(members)
+function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, zoomy)
 	for _, member in ipairs(members) do
-		if member:_canDraw() then
-			if member.__render then
-				table.insert(self.__renderQueue, member)
-			elseif member.members then
-				self:__drawNestGroup(member.members)
+		local sf2, px, py, sfx, sfy = member.scrollFactor, member.x, member.y
+		if px then
+			member.x, member.y = px + x2, py + y2
+			if sf2 then
+				sfx, sfy = sf2.x, sf2.y
+				sf2.x, sf2.y = sf2.x * sf.x, sf2.y * sf.y
 			end
+		end
+
+		if member:_canDraw() then
+			if member.__cameraRenderQueue then
+				table.insert(list, member)
+			elseif member.__render then
+				local x, y, w, h, ox, oy = member:_getXYWHO()
+				if member:_isOnScreen(x, y, w, h, ox, oy, camera) then
+					table.insert(list, member)
+				end
+			elseif member.members then
+				self:__drawNestGroup(member.members, camera, list,
+					(member.x or x2), (member.y or y2), sf, zoomx, zoomy)
+			end
+		end
+
+		member.x, member.y = px, py
+		if sf2 then
+			sf2.x, sf2.y = sfx, sfy
 		end
 	end
 end
 
+function SpriteGroup:_prepareCameraDraw(c, force)
+	local list = self.__cameraRenderQueue[c]
+	if list then
+		if force then table.clear(list)
+		else return list end
+	else
+		list = table.remove(self.__unusedCameraRenderQueue) or {}
+		self.__cameraRenderQueue[c] = list
+	end
+	self:__drawNestGroup(self.members, c, list, self.x, self.y, self.scrollFactor, c:getZoomXY())
+
+	return list
+end
+
 function SpriteGroup:_canDraw()
-	table.clear(self.__renderQueue)
+	for c, list in pairs(self.__cameraRenderQueue) do
+		self.__cameraRenderQueue[c] = nil
+		table.insert(self.__unusedCameraRenderQueue, list)
+		table.clear(list)
+	end
 
 	-- skips the Sprite check
-	if Sprite.super._canDraw(self) and self:isOnScreen(self.cameras or Camera.__defaultCameras) then
-		self:__drawNestGroup(self.members)
-		return next(self.__renderQueue) ~= nil
+	if Sprite.super._canDraw(self) then
+		local yeah = false
+		for _, c in pairs(self.cameras or Camera.__defaultCameras) do
+			local list = self:_prepareCameraDraw(c, true)
+			yeah = yeah or next(list) ~= nil
+		end
+
+		return yeah
 	end
+
+	return false
+end
+
+function SpriteGroup:_isOnScreen(x, y, w, h, ox, oy, camera)
+	return next(self:_prepareCameraDraw(camera)) ~= nil
+end
+
+function SpriteGroup:isOnScreen(cameras, force)
+	if cameras.x then return next(self:_prepareCameraDraw(cameras)) ~= nil end
+	for _, c in pairs(cameras) do
+		if next(self:_prepareCameraDraw(c, force)) then return true end
+	end
+	return false
 end
 
 function SpriteGroup:__render(camera)
+	local list = self.__cameraRenderQueue[camera]
+	if not list then return end
+
 	local cr, cg, cb, ca = love.graphics.getColor()
 
 	love.graphics.push()
@@ -97,7 +158,7 @@ function SpriteGroup:__render(camera)
 	love.graphics.translate(-self.origin.x, -self.origin.y)
 
 	local a, b = camera.scroll, self.scrollFactor
-	for i, member in ipairs(self.__renderQueue) do
+	for i, member in ipairs(list) do
 		if member.x then
 			love.graphics.push()
 			love.graphics.translate(a.x * member.scrollFactor.x * (1 - b.x), a.y * member.scrollFactor.y * (1 - b.y))
@@ -106,14 +167,26 @@ function SpriteGroup:__render(camera)
 		else
 			member:__render(camera)
 		end
-		self.__renderQueue[i] = nil
+
+		list[i] = nil
 	end
+	self.__cameraRenderQueue[camera] = nil
+	table.insert(self.__unusedCameraRenderQueue, list)
 
 	love.graphics.pop()
 
 	love.graphics.setColor = self.__ogSetColor
+	self.__ogSetColor(cr, cg, cb, ca)
+end
 
-	love.graphics.setColor(cr, cg, cb, ca)
+function SpriteGroup:_getXYWHO()
+	local x, y = self.x or 0, self.y or 0
+	if self.offset ~= nil then x, y = x + self.offset.x, y + self.offset.y end
+
+	self:getWidth()
+	return x, y, (self.width or 0) * math.abs(self.scale.x * self.zoom.x),
+		(self.height or 0) * math.abs(self.scale.y * self.zoom.y),
+		self.origin.x, self.origin.y
 end
 
 function SpriteGroup:__initializeDrawFunctions()
