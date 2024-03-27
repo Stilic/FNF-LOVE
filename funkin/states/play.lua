@@ -552,10 +552,6 @@ function PlayState:update(dt)
 		PlayState.conductor:update()
 	end
 
-	self.playerNotefield.scale.x = math.sin(PlayState.conductor.time * math.pi / PlayState.conductor.crotchet / 2)
-	self.enemyNotefield.scale.y = math.sin(PlayState.conductor.time * math.pi / PlayState.conductor.crotchet / 2)
-	self.playerNotefield.angle = PlayState.conductor.time * 90 / 1000
-
 	PlayState.super.update(self, dt)
 
 	if self.camZooming then
