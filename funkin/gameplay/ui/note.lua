@@ -1,15 +1,10 @@
-local Note = Sprite:extend("Note")
-
-Note.swagWidth = 160 * 0.7
-Note.colors = {"purple", "blue", "green", "red"}
-Note.directions = {"left", "down", "up", "right"}
-
+local Note = Sprite:extend('Note')
 Note.chartingMode = false
+Note.swagWidth = 160 * 0.7
+Note.directions = {'left', 'down', 'up', 'right'}
 
 function Note:new(time, data, prevNote, sustain, parentNote)
 	Note.super.new(self, 0, -2000)
-	local style = PlayState.SONG.noteStyle or
-			(PlayState.pixelStage and "pixel" or "default")
 
 	self.time = time
 	self.data = data
@@ -21,106 +16,111 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 	self.earlyHitMult, self.lateHitMult = 1, 1
 	self.type = ''
 	self.ignoreNote = false
-
 	self.scrollOffset = {x = 0, y = 0}
-	self:setStyle(self, style)
+
+	self.__style = 'unknown'
+	self:setStyle(PlayState.SONG.noteStyle or
+		(PlayState.pixelStage and 'pixel' or 'default'))
 end
 
-function Note:setStyle(data, style)
-	self.scrollOffset = {x = 0, y = 0}
-	local json = paths.getJSON("data/notes/" .. style)
-	local noteData = json.notes[data.data + 1]
-	if json.isPixel then
-		local img = 'skins/pixel/' .. json.texture
-		if data.isSustain then
-			data:loadTexture(paths.getImage(img .. json.sustainSuffix))
-			data.width = data.width / json.columnsSustain
-			data.height = data.height / json.rowsSustain
-			data:loadTexture(paths.getImage(img .. json.sustainSuffix),
-				true, math.floor(data.width),
-				math.floor(data.height))
+function Note:_addAnim(...)
+	local args = {...}
+	if type(args[2]) == 'table' then
+		self:addAnim(...)
+	else
+		self:addAnimByPrefix(...)
+	end
+end
 
-			data:addAnim('holdend', noteData.sustainAnims[1])
-			data:addAnim('hold', noteData.sustainAnims[2])
+function Note:setStyle(style)
+	if style == self.__style then return end
+
+	if paths.getJSON('data/notes/' .. style) == nil then
+		print("Note Style with name " .. style .. " doesn't exists!")
+		style = self.__style
+	end
+	self.__style = style
+
+	local jsonData = paths.getJSON('data/notes/' .. style).notes
+	local texture, str = '', 'skins/%s/%s'
+	texture = str:format(jsonData.isPixel and 'pixel' or 'normal',
+		jsonData.sprite)
+
+	if jsonData.isPixel then
+		if self.isSustain then
+			local holdData = jsonData.sustains
+			self:loadTexture(paths.getImage(texture .. 'ENDS'), true,
+				holdData.frameWidth, holdData.frameHeight)
 		else
-			data:loadTexture(paths.getImage(img))
-			data.width = data.width / json.columnsNote
-			data.height = data.height / json.rowsNote
-			data:loadTexture(paths.getImage(img), true,
-				math.floor(data.width), math.floor(data.height))
-
-			data:addAnim('note', noteData.anim)
-			if noteData.props then
-				for prop, val in pairs(noteData.props) do
-					data[prop] = val
-				end
-			end
+			self:loadTexture(paths.getImage(texture), true,
+				jsonData.frameWidth, jsonData.frameHeight)
 		end
 	else
-		local texture = "normal/" .. json.texture
-		data:setFrames(paths.getAtlas("skins/" .. texture))
+		self:setFrames(paths.getAtlas(texture))
+	end
 
-		if data.isSustain then
-			data:addAnimByPrefix("hold", noteData.sustainAnims[1])
-			data:addAnimByPrefix("holdend", noteData.sustainAnims[2])
-		else
-			data:addAnimByPrefix("note", noteData.anim)
-			if noteData.props then
-				for prop, val in pairs(noteData.props) do
-					data[prop] = val
-				end
-			end
+	local animData = self.isSustain and jsonData.sustains or jsonData
+	for _, anim in ipairs(animData.animations) do
+		self:_addAnim(anim[1], anim[2], anim[3], anim[4])
+	end
+
+	if animData.properties then
+		local noteProps = animData.properties[self.data + 1]
+		for prop, val in pairs(noteProps) do
+			self[prop] = val
 		end
 	end
-	if not json.noShader then
-		data.shader = RGBShader.create(
-			Color.fromString(noteData.color[1]),
-			Color.fromString(noteData.color[2]),
-			Color.fromString(noteData.color[3])
+
+	if not jsonData.disableRgb then
+		local idx = math.min(self.data + 1, #jsonData.colors)
+		self.shader = RGBShader.create(
+			Color.fromString(jsonData.colors[idx][1]),
+			Color.fromString(jsonData.colors[idx][2]),
+			Color.fromString(jsonData.colors[idx][3])
 		)
 	end
 
-	data.antialiasing = json.antialiasing
-	if data.antialiasing == nil then data.antialiasing = true end
-	data:setGraphicSize(math.floor(data.width * (json.scale or 0.7)))
-	data:updateHitbox()
+	self.antialiasing = jsonData.antialiasing
+	if self.antialiasing == nil then self.antialiasing = true end
+	self:setGraphicSize(math.floor(self.width * (jsonData.scale or 0.7)))
+	self:updateHitbox()
 
-	data:play("note")
+	self:play('note')
 
-	if data.isSustain and data.prevNote then
-		table.insert(data.parentNote.children, data)
+	if self.isSustain and self.prevNote then
+		table.insert(self.parentNote.children, self)
 
-		data.alpha = 0.6
-		data.earlyHitMult = 0.5
-		data.scrollOffset.x = data.width / 2
+		self.alpha = 0.6
+		self.earlyHitMult = 0.5
+		self.scrollOffset.x = self.width / 2
 
-		data:play("holdend")
-		data.isSustainEnd = true
+		self:play('endhold')
+		self.isSustainEnd = true
 
-		data:updateHitbox()
+		self:updateHitbox()
 
-		data.scrollOffset.x = data.scrollOffset.x - data.width / 2
+		self.scrollOffset.x = self.scrollOffset.x - self.width / 2
 
-		if json.isPixel then
-			data.scrollOffset.x = data.scrollOffset.x + 30
+		if jsonData.isPixel then
+			self.scrollOffset.x = self.scrollOffset.x + 30
 		end
 
-		if data.prevNote.isSustain then
-			data.prevNote:play("hold")
-			data.prevNote.isSustainEnd = false
+		if self.prevNote.isSustain then
+			self.prevNote:play('hold')
+			self.prevNote.isSustainEnd = false
 
-			data.prevNote.scale.y = (data.prevNote.width / data.prevNote:getFrameWidth()) *
+			self.prevNote.scale.y = (self.prevNote.width / self.prevNote:getFrameWidth()) *
 				((PlayState.conductor.stepCrotchet / 100) *
 					(1.05 / 0.7)) * PlayState.SONG.speed
 
-			if json.isPixel then
-				data.prevNote.scale.y = data.prevNote.scale.y * 5
-				data.prevNote.scale.y = data.prevNote.scale.y * (6 / data.height)
+			if jsonData.isPixel then
+				self.prevNote.scale.y = self.prevNote.scale.y * 5
+				self.prevNote.scale.y = self.prevNote.scale.y * (6 / self.height)
 			end
-			data.prevNote:updateHitbox()
+			self.prevNote:updateHitbox()
 		end
 	else
-		data.children = {}
+		self.children = {}
 	end
 end
 
@@ -131,6 +131,12 @@ function Note:checkDiff()
 		(Note.chartingMode and ChartingState or PlayState).conductor.time
 	return self.time > instTime - safeZoneOffset * self.lateHitMult and
 		self.time < instTime + safeZoneOffset * self.earlyHitMult
+end
+
+function Note:play(anim, force, frame)
+	local toplay, _anim = anim .. '-note' .. tostring(self.data), self.__animations
+	local realAnim = (_anim[toplay] ~= nil) and toplay or anim
+	Note.super.play(self, realAnim, force, frame)
 end
 
 function Note:update(dt)

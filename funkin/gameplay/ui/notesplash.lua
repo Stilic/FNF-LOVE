@@ -2,42 +2,77 @@ local NoteSplash = Sprite:extend("NoteSplash")
 
 function NoteSplash:new(x, y)
 	NoteSplash.super.new(self, x, y)
+	self.__shaderTable = {}
+	self.__data = 0
 
-	if PlayState.pixelStage then
-		self:setFrames(paths.getSparrowAtlas("skins/pixel/noteSplashes"))
-		self:setGraphicSize(math.floor(self.width * 6))
-		self:updateHitbox()
-		self.antialiasing = false
-	else
-		self:setFrames(paths.getSparrowAtlas("skins/normal/noteSplashes"))
+	self.__style = "unknown"
+	self:setStyle(PlayState.SONG.noteStyle or
+		(PlayState.pixelStage and "pixel" or "default"))
+end
+
+function NoteSplash:setStyle(style)
+	if style == self.__style then return end
+
+	if paths.getJSON("data/notes/" .. style) == nil then
+		print("Note Style with name " .. style .. " doesn't exists!")
+		style = self.__style
+	end
+	self.__style = style
+
+	local jsonData = paths.getJSON("data/notes/" .. style).splashes
+	local texture, str = "", 'skins/%s/%s'
+	texture = str:format(jsonData.isPixel and 'pixel' or 'normal',
+		jsonData.sprite)
+	self:setFrames(paths.getAtlas(texture))
+
+	local function setShader(anim, color)
+		if json.disableRgb then return end
+		anim.shader = RGBShader.create(
+			Color.fromString(color[1]),
+			Color.fromString(color[2]),
+			Color.fromString(color[3]))
 	end
 
-	for i = 0, 1, 1 do
-		for j = 0, 3, 1 do
-			if j == 1 and i == 0 then
-				self:addAnimByPrefix('note1-0', 'note impact 1  blue', 24, false)
-			else
-				self:addAnimByPrefix(
-					'note' .. tostring(j) .. '-' .. tostring(i),
-					'note impact ' .. (i + 1) .. ' ' .. Note.colors[j + 1], 24,
-					false)
-			end
-		end
+	local colorData = jsonData.colors and jsonData.colors or
+		paths.getJSON("data/notes/" .. style).notes.colors
+
+	for i = 1, #colorData do
+		self.__shaderTable["splash" .. i] = RGBShader.create(
+			Color.fromString(colorData[i][1]),
+			Color.fromString(colorData[i][2]),
+			Color.fromString(colorData[i][3])
+		)
 	end
+
+	self.animationData = jsonData.animations
+	for _, anim in ipairs(self.animationData) do
+		self:addAnimByPrefix(anim[1], anim[2], anim[3], anim[4])
+	end
+
+	self.antialiasing = jsonData.antialiasing
+	if self.antialiasing == nil then self.antialiasing = true end
+	self:setGraphicSize(math.floor(self.width * (jsonData.scale or 0.7)))
+	self:updateHitbox()
 end
 
 function NoteSplash:setup(data)
+	self.__data = data
 	self.alpha = 0.6
 
-	self:play('note' .. data .. '-' .. tostring(math.random(0, 1)), true)
+	self:play("splash" .. tostring(math.random(0, 1)), true)
+
 	self.curAnim.framerate = 24 + math.random(-2, 2)
 	self:updateHitbox()
 
-	if PlayState.pixelStage then
-		self.offset.x, self.offset.y = self.width * -0.13, self.height * -0.07
-	else
-		self.offset.x, self.offset.y = self.width * 0.3, self.height * 0.3
-	end
+	self.shader = self.__shaderTable["splash" .. data + 1]
+
+	self.offset.x, self.offset.y = self.width * 0.3, self.height * 0.3
+end
+
+function NoteSplash:play(anim, force, frame)
+	local toplay, _anim = anim .. "-note" .. tostring(self.__data), self.__animations
+	local realAnim = (_anim[toplay] ~= nil) and toplay or anim
+	NoteSplash.super.play(self, realAnim, force, frame)
 end
 
 function NoteSplash:update(dt)

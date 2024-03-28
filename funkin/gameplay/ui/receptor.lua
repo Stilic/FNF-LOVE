@@ -2,71 +2,81 @@ local Receptor = Sprite:extend('Receptor')
 
 function Receptor:new(x, y, data, player)
 	Receptor.super.new(self, x, y)
-	local style = PlayState.SONG.noteStyle or (PlayState.pixelStage and 'pixel' or 'default')
 
 	self.data = data
 	self.player = player
 	self.holdTime = 0
 
-	self:setStyle(self, style)
+	self.__shaderTable = {}
+
+	self.__style = 'unknown'
+	self:setStyle(PlayState.SONG.noteStyle or
+		(PlayState.pixelStage and 'pixel' or 'default'))
 end
 
-function Receptor:setStyle(data, style)
-	local json = paths.getJSON('data/notes/' .. style)
-
-	local repData = json.receptors[data.data + 1]
-	local function setShader(anim, color)
-		if json.noShader then return end
-		anim.shader = RGBShader.create(
-			Color.fromString(color[1]),
-			Color.fromString(color[2]),
-			Color.fromString(color[3]))
-	end
-
-	if json.isPixel then
-		local texture = 'skins/pixel/' .. json.texture
-		data:loadTexture(paths.getImage(texture))
-
-		data.width = data.width / json.columnsNote
-		data.height = data.height / json.rowsNote
-		data:loadTexture(paths.getImage(texture), true, math.floor(data.width), math.floor(data.height))
-
-		data:addAnim('static', repData.staticAnim)
-		data:addAnim('pressed', repData.pressedAnim, 12, false)
-		data:addAnim('confirm', repData.hitAnim, 24, false)
-
-		setShader(data.__animations['static'], repData.color)
-		setShader(data.__animations['pressed'], repData.pressedColor and
-				repData.pressedColor or json.notes[data.data + 1].color)
-		setShader(data.__animations['confirm'], repData.hitColor and
-				repData.hitColor or json.notes[data.data + 1].color)
+function Receptor:_addAnim(...)
+	local args = {...}
+	if type(args[2]) == 'table' then
+		self:addAnim(...)
 	else
-		local texture = 'skins/normal/' .. json.texture
-		data:setFrames(paths.getAtlas(texture))
-		data:setGraphicSize(math.floor(data.width * 0.7))
-
-		data:addAnimByPrefix('static', repData.staticAnim, 24, false)
-		data:addAnimByPrefix('pressed', repData.pressedAnim, 24, false)
-		data:addAnimByPrefix('confirm', repData.hitAnim, 24, false)
-
-		setShader(data.__animations['static'], repData.color)
-		setShader(data.__animations['pressed'], repData.pressedColor and
-				repData.pressedColor or json.notes[data.data + 1].color)
-		setShader(data.__animations['confirm'], repData.hitColor and
-				repData.hitColor or json.notes[data.data + 1].color)
+		self:addAnimByPrefix(...)
 	end
-	if repData.props then
-		for prop, val in pairs(repData.props) do
-			data[prop] = val
+end
+
+function Receptor:setStyle(style)
+	if style == self.__style then return end
+
+	self.__shaderTable = {}
+	if paths.getJSON('data/notes/' .. style) == nil then
+		print("Note Style with name " .. style .. " doesn't exists!")
+		style = self.__style
+	end
+	self.__style = style
+
+	local json = paths.getJSON('data/notes/' .. style)
+	local jsonData = json.receptors
+	local texture, str = '', 'skins/%s/%s'
+	texture = str:format(jsonData.isPixel and 'pixel' or 'normal',
+		jsonData.sprite)
+
+	if jsonData.isPixel then
+		self:loadTexture(paths.getImage(texture), true,
+			jsonData.frameWidth, jsonData.frameHeight)
+	else
+		self:setFrames(paths.getAtlas(texture))
+	end
+
+	for _, anim in ipairs(jsonData.animations) do
+		self:_addAnim(anim[1], anim[2], anim[3], anim[4])
+	end
+
+	local idx = math.min(self.data + 1, #jsonData.colors)
+	self.__shaderTable['static'] = RGBShader.create(
+		Color.fromString(jsonData.colors[idx][1]),
+		Color.fromString(jsonData.colors[idx][2]),
+		Color.fromString(jsonData.colors[idx][3])
+	)
+	local noteColor = json.notes.colors
+	idx = math.min(self.data + 1, #noteColor)
+	self.__shaderTable['pressed'] = RGBShader.create(
+		Color.fromString(noteColor[idx][1]),
+		Color.fromString(noteColor[idx][2]),
+		Color.fromString(noteColor[idx][3])
+	)
+
+	if jsonData.properties then
+		local noteProps = jsonData.properties[self.data + 1]
+		for prop, val in pairs(noteProps) do
+			self[prop] = val
 		end
 	end
 
-	data.antialiasing = json.antialiasing
-	if data.antialiasing == nil then data.antialiasing = true end
-	data:setGraphicSize(math.floor(data.width * (json.scale or 0.7)))
-	data:updateHitbox()
+	self.antialiasing = jsonData.antialiasing
+	if self.antialiasing == nil then self.antialiasing = true end
+	self:setGraphicSize(math.floor(self.width * (jsonData.scale or 0.7)))
+	self:updateHitbox()
 
-	data:play('static')
+	self:play('static')
 end
 
 function Receptor:update(dt)
@@ -74,7 +84,7 @@ function Receptor:update(dt)
 		self.holdTime = self.holdTime - dt
 		if self.holdTime <= 0 then
 			self.holdTime = 0
-			self:play("static")
+			self:play('static')
 		end
 	end
 
@@ -82,11 +92,18 @@ function Receptor:update(dt)
 end
 
 function Receptor:play(anim, force, frame)
-	Receptor.super.play(self, anim, force, frame)
+	local toplay, _anim = anim .. '-note' .. tostring(self.data), self.__animations
+	local realAnim = (_anim[toplay] ~= nil) and toplay or anim
+	Receptor.super.play(self, realAnim, force, frame)
 
 	self:centerOffsets()
 	self:centerOrigin()
-	self.shader = self.curAnim.shader
+
+	if self.curAnim.name:find('static') then
+		self.shader = self.__shaderTable.static
+	else
+		self.shader = self.__shaderTable.pressed
+	end
 end
 
 return Receptor
