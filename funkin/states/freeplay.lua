@@ -83,7 +83,7 @@ function FreeplayState:enter()
 		{1, 1, 1}, "right")
 	self.scoreText.antialiasing = false
 
-	self.scoreBG = Sprite(self.scoreText.x - 6, 0):make(1, 66, {0, 0, 0})
+	self.scoreBG = Graphic(self.scoreText.x - 6, 0, 1, 66, {0, 0, 0})
 	self.scoreBG.alpha = 0.6
 	self:add(self.scoreBG)
 
@@ -238,8 +238,8 @@ end
 function FreeplayState:positionHighscore()
 	self.scoreText.x = game.width - self.scoreText:getWidth() - 6
 	self.scoreBG.width = self.scoreText:getWidth() + 12
-	self.scoreBG.x = self.scoreText.x + math.floor(self.scoreBG.width / 2) - 6
-	self.diffText.x = math.floor(self.scoreBG.x - self.diffText:getWidth() / 2)
+	self.scoreBG.x = self.scoreText.x - 6
+	self.diffText.x = math.floor(self.scoreBG.x + (self.scoreBG.width - self.diffText:getWidth()) / 2)
 end
 
 function FreeplayState:checkSongAssets(song, diff)
