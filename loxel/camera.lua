@@ -100,7 +100,7 @@ function Camera:fade(color, duration, fadeIn, onComplete, force)
 	if duration <= 0 then duration = 0.000001 end
 	self.__fadeDuration = duration
 	self.__fadeComplete = onComplete or nil
-	self.__fadeAlpha = fadeIn == true and 0.999999 or 0.000001
+	self.__fadeAlpha = fadeIn and 0.999999 or 0.000001
 end
 
 function Camera:follow(target, type, lerp)

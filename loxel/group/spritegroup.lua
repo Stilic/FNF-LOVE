@@ -74,10 +74,12 @@ function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, z
 			end
 		end
 
-		if member:_canDraw() then
-			if member.__cameraRenderQueue and next(member:_prepareCameraDraw(camera)) then
+		if member.__cameraRenderQueue then
+			if Sprite.super._canDraw(member) and next(member:_prepareCameraDraw(camera)) then
 				table.insert(list, member)
-			elseif member.__render then
+			end
+		elseif member:_canDraw() then
+			if member.__render then
 				local sf = self.scrollFactor
 				local x, y, w, h, sx, sy, ox, oy = self:_getBoundary()
 
@@ -108,7 +110,7 @@ function SpriteGroup:_prepareCameraDraw(c, force)
 		list = table.remove(self.__unusedCameraRenderQueue) or {}
 		self.__cameraRenderQueue[c] = list
 	end
-	self:__drawNestGroup(self.members, c, list, self.x, self.y, self.scrollFactor, c:getZoomXY())
+	self:__drawNestGroup(self.members, c, list, self.x + self.offset.x, self.y + self.offset.y, self.scrollFactor, c:getZoomXY())
 
 	return list
 end

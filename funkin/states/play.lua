@@ -195,11 +195,11 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = false
 
-	self.playerNotefield = Notefield(game.width / 2, game.height / 2, 4)
-	self.enemyNotefield = Notefield(game.width / 2, game.height / 2, 4)
-
-	self.playerNotefield.x = self.playerNotefield.x + self.playerNotefield:getWidth() / 1.5
-	self.enemyNotefield.x = self.enemyNotefield.x - self.enemyNotefield:getWidth() / 1.5
+	local center = game.width / 2
+	self.playerNotefield = Notefield(0, game.height / 2, 4)
+	self.enemyNotefield = Notefield(0, game.height / 2, 4)
+	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
+	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
 
 	self.playerNotefield.cameras = {self.camNotes}
 	self.enemyNotefield.cameras = {self.camNotes}
