@@ -247,6 +247,8 @@ BackDrop = require "loxel.effects.backdrop"
 Trail = require "loxel.effects.trail"
 ParallaxImage = require "loxel.effects.parallax"
 Color = require "loxel.util.color"
+Actor = require "loxel.actor"
+ActorSprite = require "loxel.actorsprite"
 
 VirtualPad = require "loxel.virtualpad"
 VirtualPadGroup = require "loxel.group.virtualpadgroup"
