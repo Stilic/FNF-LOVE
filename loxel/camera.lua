@@ -247,6 +247,12 @@ function Camera:draw()
 	end
 end
 
+function Camera:destroy()
+	Camera.super.destroy(self)
+	self.canvas:release()
+	self.canvas = nil
+end
+
 -- Simple Render
 local _simpleCamera, _ogSetColor
 local function setSimpleColor(r, g, b, a)

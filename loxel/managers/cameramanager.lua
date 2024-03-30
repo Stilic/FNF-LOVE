@@ -9,6 +9,7 @@ function CameraManager.add(camera, defaultDrawTarget)
 end
 
 function CameraManager.remove(camera)
+	camera:destroy()
 	if table.delete(CameraManager.list, camera) then
 		table.delete(defaults, camera)
 	end
@@ -16,6 +17,7 @@ end
 
 function CameraManager.reset(camera)
 	for i = #CameraManager.list, 1, -1 do
+		CameraManager.list[i]:destroy()
 		table.delete(defaults, CameraManager.list[i])
 		CameraManager.list[i] = nil
 	end
