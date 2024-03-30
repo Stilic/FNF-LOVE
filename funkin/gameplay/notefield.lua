@@ -1,13 +1,11 @@
 local Notefield = ActorGroup:extend("Notefield")
 
 function Notefield:new(x, y, keys, noteskin)
-	Notefield.super.new(self, x, y, 0)
+	Notefield.super.new(self, x, y)
 
 	self.noteWidth = math.floor(170 * 0.67)
 	self.height = 500
 	self.keys = keys
-
-	self.input = 0
 
 	self.hits = 0
 	self.sicks = 0
@@ -16,16 +14,17 @@ function Notefield:new(x, y, keys, noteskin)
 	self.shits = 0
 
 	local startx, y = -self.noteWidth / 2 - (self.noteWidth * keys / 2), -self.height / 2
-	self.receptors = ActorGroup(0, 0, 0, false)
-	self.notes = ActorGroup(0, 0, 0, false)
+	self.lanes = {}
+	self.receptors = {}
 
 	for i = 1, keys do
-		local receptor = Receptor(startx + self.noteWidth * i, y, i - 1, noteskin)
-		self.receptors:add(receptor)
-	end
+		local lane = ActorGroup(startx + self.noteWidth * i, 0, 0, false)
+		lane.receptor = Receptor(0, y, i - 1, noteskin)
+		lane:add(lane.receptor)
 
-	self:add(self.receptors)
-	self:add(self.notes)
+		self.receptors[i] = lane.receptor
+		self:add(lane)
+	end
 
 	self:getWidth()
 end

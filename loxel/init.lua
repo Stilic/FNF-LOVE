@@ -336,19 +336,16 @@ function game.init(app, state, ...)
 	end
 
 	Sprite.defaultTexture = love.graphics.newImage("loxel/assets/default.png")
-	Camera.__init(love.graphics.newCanvas(width, height, {
-		format = "normal",
-		dpiscale = 1
-	}))
+
+	Camera.__init()
+	game.cameras.reset()
+	game.bound:add(game.cameras)
+
 	Transition.__init(width, height, game.bound)
 
 	love.mouse.setVisible(false)
 
-	game.cameras.reset()
-	game.bound:add(game.cameras)
-
 	triggerCallback(game.onPreStateEnter, state)
-
 	Gamestate.switch(state(...))
 end
 

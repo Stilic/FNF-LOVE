@@ -5,6 +5,10 @@ ActorGroup:implement(SpriteGroup)
 function ActorGroup:new(x, y, z, affect)
 	ActorGroup.super.new(self, x, y, z)
 
+	self.memberScales = {x = 1, y = 1, z = 1}
+	self.memberRotations = {x = 0, y = 0, z = 0}
+	self.memberAngles = 0
+
 	self.group = Group()
 	self.members = self.group.members
 
@@ -18,34 +22,33 @@ function ActorGroup:new(x, y, z, affect)
 	self.affectScale = affect
 end
 
-function ActorGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, zoomy)
+function ActorGroup:__drawNestGroup(members, camera, list, x2, y2, sf, force, zoomx, zoomy)
 	for _, member in ipairs(members) do
 		local sf2, px, py, sfx, sfy = member.scrollFactor, member.x, member.y
 		if px then
 			member.x, member.y = px + x2, py + y2
-			if sf2 then
-				sfx, sfy = sf2.x, sf2.y
-				sf2.x, sf2.y = sf2.x * sf.x, sf2.y * sf.y
-			end
+		end
+		if sf2 then
+			sfx, sfy = sf2.x, sf2.y
+			sf2.x, sf2.y = sfx * sf.x, sfy * sf.y
 		end
 
 		if member.__cameraRenderQueue then
-			if Sprite.super._canDraw(member) and next(member:_prepareCameraDraw(camera)) then
+			if ActorSprite.super._canDraw(member) and next(member:_prepareCameraDraw(camera, force)) then
 				table.insert(list, member)
 			end
 		elseif member:_canDraw() then
 			if member.__render then
-				local sf = self.scrollFactor
-				local x, y, w, h, sx, sy, ox, oy = self:_getBoundary()
+				local x, y, w, h, sx, sy, ox, oy = member:_getBoundary()
 
 				if member:_isOnScreen(x, y, w, h, sx, sy, ox, oy,
-					sf and sf.x or 1, sf and sf.y or 1, camera)
+					sf2 and sf2.x or 1, sf2 and sf2.y or 1, camera)
 				then
 					table.insert(list, member)
 				end
 			elseif member.members then
 				self:__drawNestGroup(member.members, camera, list,
-					(member.x or x2), (member.y or y2), sf, zoomx, zoomy)
+					(member.x or x2), (member.y or y2), (sf2 or sf), force, zoomx, zoomy)
 			end
 		end
 
@@ -63,20 +66,24 @@ function ActorGroup:__render(camera)
 	local cr, cg, cb, ca = love.graphics.getColor()
 	self.__ogSetColor, love.graphics.setColor = love.graphics.setColor, self.__setColor
 
-	local x, y, z, ox, oy, oz, rx, ry, rz, angle, sx, sy, sz, affectAngle, affectScale =
+	local x, y, z, ox, oy, oz, rx, ry, rz, angle, sx, sy, sz, mmsx, mmsy, mmsz, mmrx, mmry, mmrz, mma,
+	affectAngle, affectScale =
 		self.x + self.offset.x,
 		self.y + self.offset.y,
 		self.z + self.offset.z,
 		self.origin.x, self.origin.y, self.origin.z,
 		self.rotation.x, self.rotation.y, self.rotation.z, self.angle,
 		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y, self.scale.z * self.zoom.z,
+		self.memberScales.x, self.memberScales.y, self.memberScales.z,
+		self.memberRotations.x, self.memberRotations.y, self.memberRotations.z, self.memberAngles,
 		self.affectAngle, self.affectScale
 
 	local a, b = camera.scroll, self.scrollFactor
 	for i, member in ipairs(list) do
 		if member.x then
 			local mrot, msc = member.rotation, member.scale
-			local px, py, pz, prx, pry, prz, pa, psx, psy, psz = member.x, member.y, member.z
+			local px, py, pz, pa, psx, psy, psz, prx, pry, prz = member.x, member.y, member.z,
+				member.angle, msc.x, msc.y, msc.z
 
 			local vx, vy, vz = Actor.worldSpin(px * sx, py * sy, pz * sz, rx, ry, rz, ox, oy, oz)
 			member.x, member.y, member.z =
@@ -84,17 +91,21 @@ function ActorGroup:__render(camera)
 				vy + y + (a.y * member.scrollFactor.y * (1 - b.y)),
 				vz + z
 
-			if affectAngle then
-				if mrot then
-					prx, pry, prz = mrot.x, mrot.y, mrot.z
-					mrot.x, mrot.y, mrot.z = prx + rx, pry + ry, prz + rz
-				end
-				pa = member.angle
-				member.angle = pa + angle
+			if mrot then
+				prx, pry, prz = mrot.x, mrot.y, mrot.z
+				mrot.x, mrot.y, mrot.z = prx + mmrx, pry + mmry, prz + mmrz
 			end
+			member.angle = pa + mma
+			if affectAngle then
+				if prx then
+					mrot.x, mrot.y, mrot.z = mrot.x + rx, mrot.y + ry, mrot.z + rz
+				end
+				member.angle = member.angle + angle
+			end
+
+			msc.x, msc.y, msc.z = psx * mmsx, psy * mmsy, psz * mmsz
 			if affectScale then
-				psx, psy, psz = msc.x, msc.y, msc.z
-				msc.x, msc.y, msc.z = psx * sx, psy * sy, psz * sz
+				msc.x, msc.y, msc.z = msc.x * sx, msc.y * sy, msc.z * sz
 			end
 
 			member:__render(camera)

@@ -4,6 +4,9 @@ local SpriteGroup = Sprite:extend("SpriteGroup")
 function SpriteGroup:new(x, y)
 	SpriteGroup.super.new(self, x, y)
 
+	self.memberScales = {x = 1, y = 1}
+	self.memberAngles = 0
+
 	self.group = Group()
 	self.members = self.group.members
 
@@ -63,34 +66,33 @@ function SpriteGroup:centerOrigin(__width, __height)
 	self.origin.y = (__height or self.height) / 2
 end
 
-function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, zoomx, zoomy)
+function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, force, zoomx, zoomy)
 	for _, member in ipairs(members) do
 		local sf2, px, py, sfx, sfy = member.scrollFactor, member.x, member.y
 		if px then
 			member.x, member.y = px + x2, py + y2
-			if sf2 then
-				sfx, sfy = sf2.x, sf2.y
-				sf2.x, sf2.y = sf2.x * sf.x, sf2.y * sf.y
-			end
+		end
+		if sf2 then
+			sfx, sfy = sf2.x, sf2.y
+			sf2.x, sf2.y = sfx * sf.x, sfy * sf.y
 		end
 
 		if member.__cameraRenderQueue then
-			if Sprite.super._canDraw(member) and next(member:_prepareCameraDraw(camera)) then
+			if Sprite.super._canDraw(member) and next(member:_prepareCameraDraw(camera, force)) then
 				table.insert(list, member)
 			end
 		elseif member:_canDraw() then
 			if member.__render then
-				local sf = self.scrollFactor
-				local x, y, w, h, sx, sy, ox, oy = self:_getBoundary()
+				local x, y, w, h, sx, sy, ox, oy = member:_getBoundary()
 
 				if member:_isOnScreen(x, y, w, h, sx, sy, ox, oy,
-					sf and sf.x or 1, sf and sf.y or 1, camera)
+					sf2 and sf2.x or 1, sf2 and sf2.y or 1, camera)
 				then
 					table.insert(list, member)
 				end
 			elseif member.members then
 				self:__drawNestGroup(member.members, camera, list,
-					(member.x or x2), (member.y or y2), sf, zoomx, zoomy)
+					(member.x or x2), (member.y or y2), (sf2 or sf), force, zoomx, zoomy)
 			end
 		end
 
@@ -110,7 +112,7 @@ function SpriteGroup:_prepareCameraDraw(c, force)
 		list = table.remove(self.__unusedCameraRenderQueue) or {}
 		self.__cameraRenderQueue[c] = list
 	end
-	self:__drawNestGroup(self.members, c, list, self.x + self.offset.x, self.y + self.offset.y, self.scrollFactor, c:getZoomXY())
+	self:__drawNestGroup(self.members, c, list, self.x + self.offset.x, self.y + self.offset.y, self.scrollFactor, force, c:getZoomXY())
 
 	return list
 end
@@ -158,6 +160,8 @@ function SpriteGroup:__render(camera)
 
 	self.__ogSetColor, love.graphics.setColor = love.graphics.setColor, self.__setColor
 
+	local angle, sx, sy = self.memberAngles, self.memberScales.x, self.memberScales.y
+
 	love.graphics.translate(self.x + self.origin.x + self.offset.x, self.y + self.origin.y + self.offset.y)
 	love.graphics.scale(self.scale.x * self.zoom.x, self.scale.y * self.zoom.y)
 	love.graphics.rotate(math.rad(self.angle))
@@ -166,9 +170,18 @@ function SpriteGroup:__render(camera)
 	local a, b = camera.scroll, self.scrollFactor
 	for i, member in ipairs(list) do
 		if member.x then
+			local msc = member.scale
+			local pa, psx, psy, psz = member.angle, msc.x, msc.y, msc.z
+
 			love.graphics.push()
 			love.graphics.translate(a.x * member.scrollFactor.x * (1 - b.x), a.y * member.scrollFactor.y * (1 - b.y))
+
+			member.angle, msc.x, msc.y = pa + angle, psx * sx, psy * sy
+
 			member:__render(camera)
+
+			member.angle, msc.x, msc.y = pa, psx, psy
+
 			love.graphics.pop()
 		else
 			member:__render(camera)

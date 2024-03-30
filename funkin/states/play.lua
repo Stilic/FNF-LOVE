@@ -40,7 +40,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 0
+PlayState.startPos = 12700
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -93,7 +93,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-	if PlayState.SONG == nil then PlayState.loadSong('fresh') end
+	if PlayState.SONG == nil then PlayState.loadSong('false-paradise', 'hard') end
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
 	local conductor = Conductor():setSong(PlayState.SONG)
@@ -120,6 +120,7 @@ function PlayState:enter()
 	self.startingSong = true
 	self.startedCountdown = false
 	self.doCountdownAtBeats = nil
+	self.lastCountdownBeats = nil
 
 	self.playback = 1
 	Timer.setSpeed(1)
@@ -399,7 +400,7 @@ function PlayState:startCountdown()
 	end
 
 	self.startedCountdown = true
-	self.doCountdownAtBeats = -4
+	self.doCountdownAtBeats = (PlayState.startPos / PlayState.conductor.crotchet) - 4
 
 	self.countdown.duration = PlayState.conductor.crotchet / 1000
 	self.countdown.playback = 1
@@ -463,15 +464,6 @@ function PlayState:beat(b)
 	self.scripts:set("curBeat", b)
 	self.scripts:call("beat")
 
-	if self.doCountdownAtBeats then
-		local beat = b - self.doCountdownAtBeats + 1
-		self.countdown:doCountdown(beat)
-
-		if beat >= #self.countdown.data then
-			self.doCountdownAtBeats = nil
-		end
-	end
-
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
@@ -501,6 +493,17 @@ function PlayState:section(s)
 	self.scripts:call("postSection")
 end
 
+function PlayState:doCountdown(beat)
+	if self.lastCountdownBeats == beat then return end
+	self.lastCountdownBeats = beat
+
+	if beat > #self.countdown.data then
+		self.doCountdownAtBeats = nil
+	else
+		self.countdown:doCountdown(beat)
+	end
+end
+
 function PlayState:update(dt)
 	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
@@ -509,8 +512,10 @@ function PlayState:update(dt)
 
 	if self.startedCountdown then
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
+
+		local justStarted = false
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
-			self.camZooming = true
+			justStarted = true
 			self.startingSong = false
 
 			-- reload playback for countdown skip
@@ -527,20 +532,17 @@ function PlayState:update(dt)
 				self.vocals:play()
 			end
 
-			PlayState.conductor.time = game.sound.music:tell()
+			PlayState.conductor.time = game.sound.music:tell() * 1000
 
 			self.scripts:call("songStart")
 		elseif game.sound.music:isPlaying() then
 			local rate = math.max(self.playback, 1)
-			local time = game.sound.music:tell()
-			if self.vocals then
-				local vocalsTime = self.vocals:tell() -- avoids stutter, vocals come first
-				if self.vocals:isPlaying()
-					and PlayState.conductor.lastStep ~= PlayState.conductor.currentStep
-					and math.abs(time - vocalsTime) > 0.03 * rate
-				then
-					self.vocals:seek(time)
-				end
+			local time, vocalsTime = game.sound.music:tell(), self.vocals and self.vocals:tell()
+			if vocalsTime and self.vocals:isPlaying()
+				and PlayState.conductor.lastStep ~= PlayState.conductor.currentStep
+				and math.abs(time - vocalsTime) > 0.03 * rate
+			then
+				self.vocals:seek(time)
 			end
 
 			local contime = PlayState.conductor.time / 1000
@@ -550,10 +552,16 @@ function PlayState:update(dt)
 		end
 
 		PlayState.conductor:update()
+
+		if justStarted then
+			self.camZooming = true
+		elseif self.startingSong and self.doCountdownAtBeats then
+			self:doCountdown(math.floor(PlayState.conductor.currentBeatFloat - self.doCountdownAtBeats + 1))
+		end
 	end
 
-	self.playerNotefield.scale.x = math.fastsin(PlayState.conductor.time / PlayState.conductor.crotchet)
-	self.playerNotefield.rotation.y = PlayState.conductor.time / 10
+	self.playerNotefield.rotation.y = PlayState.conductor.time / PlayState.conductor.crotchet * 90
+	self.playerNotefield.rotation.x = 180 + PlayState.conductor.time / PlayState.conductor.crotchet * 45
 
 	PlayState.super.update(self, dt)
 
@@ -606,6 +614,9 @@ function PlayState:tryPause()
 	local event = self.scripts:call("paused")
 	if event ~= Script.Event_Cancel then
 		game.camera:unfollow()
+		game.camera:freeze()
+		self.camNotes:freeze()
+		self.camHUD:freeze()
 	
 		game.sound.music:pause()
 		if self.vocals then self.vocals:pause() end
@@ -691,6 +702,10 @@ end
 
 function PlayState:closeSubstate()
 	PlayState.super.closeSubstate(self)
+
+	game.camera:unfreeze()
+	self.camNotes:unfreeze()
+	self.camHUD:unfreeze()
 
 	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 	if not self.startingSong then

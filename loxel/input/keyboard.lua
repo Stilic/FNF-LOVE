@@ -46,6 +46,7 @@ local Keyboard = {
 		ESCAPE = "escape",
 		MINUS = "-",
 		PLUS = "+",
+		EQUAL = "=",
 		DELETE = "delete",
 		BACKSPACE = "backspace",
 		LBRACKET = "[",
@@ -234,8 +235,10 @@ function Keyboard.onPressed(key)
 	if key == 'lgui' or key == 'rgui' then key = 'windows' end
 	if key == 'lalt' or key == 'ralt' then key = 'alt' end
 	if key == 'lctrl' or key == 'rctrl' then key = 'ctrl' end
+	if key == "=" then key = "+" end
 
 	local value = Keyboard.keyValues[key]
+	if not value then return end
 	Keyboard.justPressed[value] = true
 	Keyboard.pressed[value] = true
 	Keyboard.justReleased[value] = nil
@@ -272,8 +275,10 @@ function Keyboard.onReleased(key)
 	if key == 'lgui' or key == 'rgui' then key = 'windows' end
 	if key == 'lalt' or key == 'ralt' then key = 'alt' end
 	if key == 'lctrl' or key == 'rctrl' then key = 'ctrl' end
+	if key == "=" then key = "+" end
 
 	local value = Keyboard.keyValues[key]
+	if not value then return end
 	Keyboard.justPressed[value] = nil
 	Keyboard.pressed[value] = nil
 	Keyboard.justReleased[value] = true

@@ -47,7 +47,7 @@ end
 function Basic:draw()
 	if self:_canDraw() then
 		for _, c in pairs(self.cameras or Camera.__defaultCameras) do
-			if c.visible and c.exists and self:isOnScreen(c) then
+			if c.visible and c.exists and not c.freezed and self:isOnScreen(c) then
 				table.insert(c.__renderQueue, self)
 				table.insert(self.__cameraQueue, c)
 			end

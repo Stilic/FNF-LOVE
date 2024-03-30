@@ -4,16 +4,12 @@
 ---@class Camera:Object
 local Camera = Object:extend("Camera")
 
-local canvas
 local stencilSupport = false
 local canvasTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
 
-function Camera.__init(canv)
-	canvas = canv
-	canvasTable[1] = canv
-
+function Camera.__init()
 	if love.graphics.getTextureFormats then
 		stencilSupport = love.graphics.getTextureFormats({canvas = true})["stencil8"]
 	else
@@ -70,6 +66,14 @@ function Camera:new(x, y, width, height)
 	self.__shakeIntensity = 0
 	self.__shakeDuration = 0
 	self.__shakeComplete = nil
+
+	self.freezed = false
+	self.__freeze = false
+
+	self.canvas = love.graphics.newCanvas(self.width, self.height, {
+		format = "normal",
+		dpiscale = 1
+	})
 end
 
 function Camera:shake(intensity, duration, onComplete, force, axes)
@@ -210,14 +214,27 @@ function Camera:canDraw()
 	self:getZoomXY()
 
 	return self.visible and self.exists and (
-			next(self.__renderQueue) or self.__flashAlpha > 0 or self.__fadeDuration > 0
+			self.freezed or next(self.__renderQueue)
+			or self.__flashAlpha > 0 or self.__fadeDuration > 0
 		) and
 		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and
 		(self.scale.y * self.__zoom.y) ~= 0
 end
 
+function Camera:freeze()
+	self.__freeze = true
+	self.freezed = not self.isSimple
+end
+
+function Camera:unfreeze()
+	self.__freeze = false
+	self.freezed = false
+end
+
 function Camera:draw()
 	if not self:canDraw() then return end
+	if self.__freeze then return self:drawComplex(true) end
+
 	local winWidth, winHeight = love.graphics.getDimensions()
 	if not self.simple or self.shader or (self.antialiasing and
 			(self.x ~= math.floor(self.x) or self.y ~= math.floor(self.y) or
@@ -229,7 +246,6 @@ function Camera:draw()
 		self:drawSimple(true)
 	end
 end
-
 
 -- Simple Render
 local _simpleCamera, _ogSetColor
@@ -320,66 +336,76 @@ function Camera:drawComplex(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
 	self.isSimple = false
 
+	local canvas = self.canvas
 	local grap = love.graphics
 	local r, g, b, a = grap.getColor()
 	local shader = grap.getShader()
 	local blendMode, alphaMode = grap.getBlendMode()
 	local cv = grap.getCanvas()
-	local min, mag, anisotropy = canvas:getFilter()
-	local mode = self.antialiasing and "linear" or "nearest"
-	canvas:setFilter(mode, mode, anisotropy)
 
 	local x, y, w, h = self.x, self.y, self.width, self.height
 	local sx, sy = self.scale.x, self.scale.y
 	local w2, h2 = w / 2, h / 2
-	local color = self.bgColor
 
-	grap.setCanvas(canvasTable)
-	grap.clear(color[1], color[2], color[3], color[4])
-	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
+	if not self.freezed then
+		local _, _, anisotropy = canvas:getFilter()
+		local mode = self.antialiasing and "linear" or "nearest"
 
-	if self.clipCam then
-		grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-	else
-		grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
-	end
-	grap.rotate(math.rad(self.angle))
-	grap.scale(self.__zoom.x, self.__zoom.y)
-	grap.translate(-w2, -h2)
+		canvasTable[1] = canvas
+		canvas:setFilter(mode, mode, anisotropy)
 
-	grap.setBlendMode("alpha", "alphamultiply")
-	self:renderObjects()
+		local color = self.bgColor
+		grap.setCanvas(canvasTable)
+		grap.clear(color[1], color[2], color[3], color[4])
+		grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
 
-	color = self.__flashColor
-	if self.__flashAlpha > 0 then
 		if self.clipCam then
 			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
 		else
 			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
 		end
-		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+		grap.rotate(math.rad(self.angle))
+		grap.scale(self.__zoom.x, self.__zoom.y)
 		grap.translate(-w2, -h2)
-		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
-		grap.rectangle("fill", 0, 0, w, h)
-	end
 
-	color = self.__fadeColor
-	if self.__fadeDuration > 0 then
-		if self.clipCam then
-			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-		else
-			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+		grap.setBlendMode("alpha", "alphamultiply")
+		self:renderObjects()
+
+		color = self.__flashColor
+		if self.__flashAlpha > 0 then
+			if self.clipCam then
+				grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+			else
+				grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+			end
+			grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+			grap.translate(-w2, -h2)
+			grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
+			grap.rectangle("fill", 0, 0, w, h)
 		end
-		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
-		grap.translate(-w2, -h2)
-		grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)
-		grap.rectangle("fill", 0, 0, w, h)
+
+		color = self.__fadeColor
+		if self.__fadeDuration > 0 then
+			if self.clipCam then
+				grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+			else
+				grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+			end
+			grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+			grap.translate(-w2, -h2)
+			grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)
+			grap.rectangle("fill", 0, 0, w, h)
+		end
+
+		game.__popBoundScissor()
+		grap.pop()
+
+		if self.__freeze then
+			self.freezed = true
+		end
+
+		grap.setCanvas(cv)
 	end
-
-	game.__popBoundScissor()
-	grap.pop()
-
-	grap.setCanvas(cv)
 
 	local alpha = self.alpha; color = self.color
 	grap.setShader(self.shader)
@@ -392,7 +418,6 @@ function Camera:drawComplex(_skipCheck)
 		grap.draw(canvas, w2, h2, math.rad(self.rotation), sx, sy, w2, h2)
 	end
 
-	canvas:setFilter(min, mag, anisotropy)
 	grap.setColor(r, g, b, a)
 	grap.setBlendMode(blendMode, alphaMode)
 	if self.shader then grap.setShader(shader) end
