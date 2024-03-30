@@ -78,7 +78,7 @@ function ActorGroup:__render(camera)
 			local mrot, msc = member.rotation, member.scale
 			local px, py, pz, prx, pry, prz, pa, psx, psy, psz = member.x, member.y, member.z
 
-			local vx, vy, vz = Actor.worldSpin(px, py, pz, rx, ry, rz, ox, oy, oz)
+			local vx, vy, vz = Actor.worldSpin(px * sx, py * sy, pz * sz, rx, ry, rz, ox, oy, oz)
 			member.x, member.y, member.z =
 				vx + x + (a.x * member.scrollFactor.x * (1 - b.x)),
 				vy + y + (a.y * member.scrollFactor.y * (1 - b.y)),
