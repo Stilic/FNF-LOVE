@@ -10,21 +10,34 @@ Receptor.pixelAnim = { -- {static, pressed, confirm}
 
 -- noteskip wip
 function Receptor:new(x, y, column, noteskin)
-	Receptor.super.new(self, x, y, 0)
+	Receptor.super.new(self, x, y)
 
-	self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
 	self.scale.x, self.scale.y = 0.7, 0.7
-
 	self.holdTime = 0
+
+	self:setNoteskin(noteskin)
 	self:setColumn(column)
 
 	self:play("static")
 end
 
-function Receptor:setColumn(column)
-	self.column = column
-	local dir = Note.directions[column + 1]
+function Receptor:setNoteskin(noteskin)
+	if noteskin == self.noteskin then return end
+	self.noteskin = noteskin
 
+	local col = self.column
+	self.column = nil
+
+	self:setFrames(paths.getSparrowAtlas("skins/" .. noteskin .."/NOTE_assets"))
+
+	if col then self:setColumn(col) end
+end
+
+function Receptor:setColumn(column)
+	if column == self.column then return end
+	self.column = column
+
+	local dir = Note.directions[column + 1]
 	self:addAnimByPrefix("static", "arrow" .. dir:upper(), 24, false)
 	self:addAnimByPrefix("pressed", dir .. " press", 24, false)
 	self:addAnimByPrefix("confirm", dir .. " confirm", 24, false)

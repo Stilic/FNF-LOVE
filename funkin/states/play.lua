@@ -4,6 +4,7 @@ local PauseSubstate = require "funkin.substates.pause"
 --[[ LIST TODO OR NOTES
 	maybe make scripts vars just include conductor itself instead of the properties of conductor
 	rewrite timers. to just be dependancy to loxel,. just rewrite timers with new codes.
+	make pixelAnims array on Notes/Receptors to data assets
 ]]
 
 ---@class PlayState:State
@@ -40,7 +41,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 12700
+PlayState.startPos = 23300
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -326,8 +327,32 @@ function PlayState:enter()
 	self.scripts:call("postCreate")	
 end
 
-function PlayState:generateNotes()
+function PlayState:generateNote(n, s, prev)
+	local time, col = tonumber(n[1]), tonumber(n[2])
+	if time == nil or col == nil or time < self.startPos then return end
+	
+	local hit = s.mustHitSection
+	if col > 3 then hit = not hit end
+	col = col % 4
 
+	local notefield = hit and self.playerNotefield or self.enemyNotefield
+	local note = notefield:makeNote(time / 1000, col, (tonumber(n[3]) or 0) / 1000)
+	note.type = n[4]
+end
+
+function PlayState:generateNotes()
+	local last
+	for _, s in ipairs(PlayState.SONG.notes) do
+		if s and s.sectionNotes then
+			for _, n in ipairs(s.sectionNotes) do
+				last = self:generateNote(n, s, last)
+			end
+		end
+	end
+
+	local speed = PlayState.SONG.speed
+	self.playerNotefield.speed = speed
+	self.enemyNotefield.speed = speed
 end
 
 function PlayState:loadStageWithSongName(songName)
@@ -418,7 +443,6 @@ function PlayState:startCountdown()
 	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 end
 
--- this function is fatal, that i mean its using alot of processing times!!!
 function PlayState:cameraMovement(s)
 	local section = PlayState.SONG.notes[math.max((s or PlayState.conductor.currentSection + 1), 1)]
 	if section ~= nil then
@@ -532,8 +556,6 @@ function PlayState:update(dt)
 				self.vocals:play()
 			end
 
-			PlayState.conductor.time = game.sound.music:tell() * 1000
-
 			self.scripts:call("songStart")
 		elseif game.sound.music:isPlaying() then
 			local rate = math.max(self.playback, 1)
@@ -559,6 +581,9 @@ function PlayState:update(dt)
 			self:doCountdown(math.floor(PlayState.conductor.currentBeatFloat - self.doCountdownAtBeats + 1))
 		end
 	end
+
+	local noteTime = PlayState.conductor.time / 1000
+	self.playerNotefield.time, self.enemyNotefield.time = noteTime, noteTime
 
 	self.playerNotefield.rotation.y = PlayState.conductor.time / PlayState.conductor.crotchet * 90
 	self.playerNotefield.rotation.x = 180 + PlayState.conductor.time / PlayState.conductor.crotchet * 45
@@ -710,11 +735,14 @@ function PlayState:closeSubstate()
 	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 	if not self.startingSong then
 		game.sound.music:play()
+		local time = game.sound.music:tell()
 
 		if self.vocals then
-			self.vocals:seek(game.sound.music:tell())
+			self.vocals:seek(time)
 			self.vocals:play()
 		end
+
+		PlayState.conductor.time = time * 1000
 	end
 
 	if self.buttons then

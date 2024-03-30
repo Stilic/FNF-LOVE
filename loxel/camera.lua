@@ -42,7 +42,6 @@ function Camera:new(x, y, width, height)
 	self.target = nil
 	self.followType = nil
 	self.followLerp = 0
-	self.__lerp = nil
 
 	self.bgColor = {0, 0, 0, 0}
 
@@ -112,7 +111,7 @@ function Camera:follow(target, type, lerp)
 
 	self.target = target
 	self.followType = type --soon
-	self.__lerp = lerp
+	self.followLerp = lerp
 end
 
 function Camera:unfollow()
@@ -120,7 +119,7 @@ function Camera:unfollow()
 
 	self.target = nil
 	self.followType = nil
-	self.__lerp = nil
+	self.followLerp = nil
 end
 
 function Camera:snapToTarget()
@@ -136,16 +135,16 @@ function Camera:update(dt)
 	self.__zoom.y = isnum and self.zoom or self.zoom.y
 
 	if self.target then
-		self.followLerp = self.__lerp and 1 - math.exp(-dt * self.__lerp) or 0
-		local targetX = self.target.x - self.width / 2
-		local targetY = self.target.y - self.height / 2
-		if self.__lerp then
-			targetX = math.lerp(self.scroll.x, self.target.x - self.width / 2, self.followLerp)
-			targetY = math.lerp(self.scroll.y, self.target.y - self.height / 2, self.followLerp)
+		local targetX, targetY = self.target.x - self.width / 2, self.target.y - self.height / 2
+
+		if self.followLerp then
+			local lerp = 1 - math.exp(-dt * self.followLerp)
+			targetX, targetY = math.lerp(self.scroll.x, targetX, lerp),
+				math.lerp(self.scroll.y, targetY, lerp)
 		end
+
 		-- TODO: follow type
-		self.scroll.x = targetX
-		self.scroll.y = targetY
+		self.scroll.x, self.scroll.y = targetX, targetY
 	end
 
 	if self.__flashAlpha > 0 then
@@ -232,8 +231,8 @@ function Camera:unfreeze()
 end
 
 function Camera:draw()
-	if not self:canDraw() then return end
 	if self.__freeze then return self:drawComplex(true) end
+	if not self:canDraw() then return end
 
 	local winWidth, winHeight = love.graphics.getDimensions()
 	if not self.simple or self.shader or (self.antialiasing and
@@ -354,6 +353,11 @@ function Camera:drawComplex(_skipCheck)
 	local w2, h2 = w / 2, h / 2
 
 	if not self.freezed then
+		if self.__freeze then
+			self.freezed = next(self.__renderQueue) ~= nil
+			self.__freeze = self.freezed
+		end
+
 		local _, _, anisotropy = canvas:getFilter()
 		local mode = self.antialiasing and "linear" or "nearest"
 
@@ -405,10 +409,6 @@ function Camera:drawComplex(_skipCheck)
 
 		game.__popBoundScissor()
 		grap.pop()
-
-		if self.__freeze then
-			self.freezed = true
-		end
 
 		grap.setCanvas(cv)
 	end

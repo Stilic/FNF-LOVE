@@ -4,6 +4,129 @@ Note.colors = {"purple", "blue", "green", "red"}
 Note.directions = {"left", "down", "up", "right"}
 Note.pixelAnim = {{{4}, {0}}, {{5}, {1}}, {{6}, {2}}, {{7}, {3}}}
 
+local safeZoneOffset = (10 / 60) * 1000
+
+function Note.toPos(time, speed)
+	return time * 450 * speed
+end
+
+function Note:checkDiff(time)
+	return self.time > time - safeZoneOffset * self.lateHitMult and
+		self.time < time + safeZoneOffset * self.earlyHitMult
+end
+
+function Note:new(time, column, sustaintime, noteskin)
+	Note.super.new(self)
+
+	self.scale.x, self.scale.y = 0.7, 0.7
+	self.time = time
+
+	self.canBeHit, self.wasGoodHit, self.tooLate, self.ignoreNote = true, false, false, false
+	self.priority, self.earlyHitMult, self.lateHitMult = 0, 1, 1
+	self.showNote, self.showNoteOnHit = true, false
+	self.hit = false
+	self.type = ""
+	self.lane = nil
+
+	self:setNoteskin(noteskin)
+	self:setColumn(column)
+	self:setSustainTime(sustaintime)
+
+	self:play("static")
+end
+
+function Note:setNoteskin(noteskin)
+	if noteskin == self.noteskin then return end
+	self.noteskin = noteskin
+
+	local col, sus = self.column, self.sustainTime
+	self.column, self.sustainTime = nil
+
+	if noteskin == "pixel" then -- ?
+		self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
+		self.width = self.width / 4
+		self.height = self.height / 5
+		self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true, math.floor(self.width), math.floor(self.height))
+	else
+		self:setFrames(paths.getSparrowAtlas("skins/" .. noteskin .."/NOTE_assets"))
+	end
+
+	if col then self:setColumn(col) end
+	if sus then self:setSustainTime(sus) end
+end
+
+function Note:setColumn(column)
+	if column == self.column then return end
+	self.column = column
+
+	local color = Note.colors[column + 1]
+	self:addAnimByPrefix("static", color .. "0")
+end
+
+function Note:setSustainTime(sustaintime)
+	if sustaintime == self.sustainTime then return end
+	self.sustainTime = sustaintime
+
+	if sustaintime <= 100 then return end
+	local column, noteskin = self.column, self.noteskin
+	local color = Note.colors[column + 1]
+
+	local sustain, susend = self.sustain or ActorSprite(), self.sustainEnd or ActorSprite()
+	self.sustain, self.sustainEnd = sustain, susend
+
+	if noteskin == "pixel" then
+
+	elseif noteskin == "normal" then
+		if column == 0 then
+			susend:addAnimByPrefix(color .. "holdend", "pruple end hold")
+		else
+			susend:addAnimByPrefix(color .. "holdend", color .. " hold end")
+		end
+		sustain:addAnimByPrefix("static", color .. " hold piece")
+	else
+		susend:addAnimByPrefix("static", color .. " hold end")
+		sustain:addAnimByPrefix("static", color .. " hold piece")
+	end
+
+	susend:play("static"); self.updateHitbox(susend)
+	sustain:play("static"); self.updateHitbox(sustain)
+end
+
+function Note:updateHitbox()
+	local width, height = self:getFrameDimensions()
+
+	self.width = math.abs(self.scale.x * self.zoom.x) * width
+	self.height = math.abs(self.scale.y * self.zoom.y) * height
+	self.__width, self.__height = self.width, self.height
+
+	self:centerOrigin(width, height)
+	self:centerOffsets(width, height)
+end
+
+function Note:play(anim, force, frame)
+	Note.super.play(self, anim, force, frame)
+	self:updateHitbox()
+end
+
+function Note:_canDraw()
+	if self.sustain then
+		self.sustain.cameras = self.cameras
+		self.sustainEnd.cameras = self.cameras
+	end
+	return (self.texture ~= nil and (self.width ~= 0 or self.height ~= 0)) and
+		(Note.super._canDraw(self) or (
+			self.sustain and (self.sustain:_canDraw() or self.sustainEnd:_canDraw())
+		))
+end
+
+function Note:__render(camera)
+	if self.sustain then
+		
+	end
+	Note.super.__render(self, camera)
+end
+
+--[[
 Note.chartingMode = false
 
 function Note:new(time, data, prevNote, sustain, parentNote)
@@ -127,6 +250,6 @@ function Note:update(dt)
 	if self.tooLate and self.alpha > 0.3 then self.alpha = 0.3 end
 
 	Note.super.update(self, dt)
-end
+end]]
 
 return Note
