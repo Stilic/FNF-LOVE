@@ -502,8 +502,8 @@ function Sprite:__render(camera)
 
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setBlendMode(blendMode, alphaMode)
+	if shader then love.graphics.setShader(shader) end
 	if self.clipRect then love.graphics.setStencilTest() end
-	if self.shader then love.graphics.setShader(shader) end
 end
 
 return Sprite

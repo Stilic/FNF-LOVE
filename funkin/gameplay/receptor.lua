@@ -1,7 +1,7 @@
 -- keep it in gameplay folder, it doesnt make sense for it to be ui
 -- of course its a 2d element but not every shit is ui!!
 
-local Receptor = Sprite:extend("Receptor")
+local Receptor = ActorSprite:extend("Receptor")
 
 Receptor.pixelAnim = { -- {static, pressed, confirm}
 	{{0}, {4, 8},  {12, 16}}, {{1}, {5, 9}, {13, 17}}, {{2}, {6, 10}, {14, 18}},
@@ -10,7 +10,10 @@ Receptor.pixelAnim = { -- {static, pressed, confirm}
 
 -- noteskip wip
 function Receptor:new(x, y, column, noteskin)
-	Receptor.super.new(self, x, y)
+	Receptor.super.new(self, x, y, 0)
+
+	self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
+	self.scale.x, self.scale.y = 0.7, 0.7
 
 	self.holdTime = 0
 	self:setColumn(column)
@@ -21,9 +24,6 @@ end
 function Receptor:setColumn(column)
 	self.column = column
 	local dir = Note.directions[column + 1]
-
-	self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
-	self.scale.x, self.scale.y = 0.7, 0.7
 
 	self:addAnimByPrefix("static", "arrow" .. dir:upper(), 24, false)
 	self:addAnimByPrefix("pressed", dir .. " press", 24, false)

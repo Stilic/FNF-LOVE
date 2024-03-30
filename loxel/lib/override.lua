@@ -185,6 +185,17 @@ function math.fastcos(v)
     return v <= 1 and -4 * v * (v - 1) or 4 * (v - 1) * (v - 2)
 end
 
+function math.aprsin(v)
+	v = ((v / math_pi + 1) % 2) - 1
+	return v > 0 and v * (3.1 + v * (0.5 + v * (-7.2 + v * 3.6)))
+		or v * (3.1 - v * (0.5 + v * (7.2 + v * 3.6)))
+end
+function math.aprcos(v)
+	v = ((v / math_pi + 1.5) % 2) - 1
+	return v > 0 and v * (3.1 + v * (0.5 + v * (-7.2 + v * 3.6)))
+		or v * (3.1 - v * (0.5 + v * (7.2 + v * 3.6)))
+end
+
 function math.odd(x) return x % 2 >= 1 end -- 1, 3, etc
 
 function math.even(x) return x % 2 < 1 end -- 2, 4, etc

@@ -552,6 +552,9 @@ function PlayState:update(dt)
 		PlayState.conductor:update()
 	end
 
+	self.playerNotefield.receptors.members[1].angle = PlayState.conductor.time / 10
+	--self.playerNotefield.rotation.y = PlayState.conductor.time / 10
+
 	PlayState.super.update(self, dt)
 
 	if self.camZooming then

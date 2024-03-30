@@ -1,4 +1,4 @@
-local Note = Sprite:extend("Note")
+local Note = ActorSprite:extend("Note")
 
 Note.colors = {"purple", "blue", "green", "red"}
 Note.directions = {"left", "down", "up", "right"}

@@ -10,7 +10,7 @@ function SpriteGroup:new(x, y)
 	self.__unusedCameraRenderQueue = {}
 	self.__cameraRenderQueue = {}
 
-	self:__initializeDrawFunctions()
+	self:_initializeDrawFunctions()
 end
 
 -- personally, dont use width, height, or origin if you plan to use "dynamic" scrollFactors
@@ -195,7 +195,7 @@ function SpriteGroup:_getBoundary()
 		self.origin.x, self.origin.y
 end
 
-function SpriteGroup:__initializeDrawFunctions()
+function SpriteGroup:_initializeDrawFunctions()
 	function self.__setColor(r, g, b, a)
 		if type(r) == "table" then
 			self.__ogSetColor(self:getMultColor(r[1], r[2], r[3], r[4]))

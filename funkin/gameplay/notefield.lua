@@ -1,7 +1,7 @@
-local Notefield = SpriteGroup:extend("Notefield")
+local Notefield = ActorGroup:extend("Notefield")
 
 function Notefield:new(x, y, keys, noteskin)
-	Notefield.super.new(self, x, y)
+	Notefield.super.new(self, x, y, 0)
 
 	self.noteWidth = math.floor(170 * 0.67)
 	self.height = 500
@@ -16,8 +16,8 @@ function Notefield:new(x, y, keys, noteskin)
 	self.shits = 0
 
 	local startx, y = -self.noteWidth / 2 - (self.noteWidth * keys / 2), -self.height / 2
-	self.receptors = SpriteGroup(0, 0)
-	self.notes = SpriteGroup(0, 0)
+	self.receptors = ActorGroup(0, 0, 0, false)
+	self.notes = ActorGroup(0, 0, 0, false)
 
 	for i = 1, keys do
 		local receptor = Receptor(startx + self.noteWidth * i, y, i - 1, noteskin)
@@ -28,6 +28,14 @@ function Notefield:new(x, y, keys, noteskin)
 	self:add(self.notes)
 
 	self:getWidth()
+end
+
+function Notefield:screenCenter(axes)
+	if axes == nil then axes = "xy" end
+	if axes:find("x") then self.x = game.width / 2 end
+	if axes:find("y") then self.y = game.height / 2 end
+	if axes:find("z") then self.z = 0 end
+	return self
 end
 
 function Notefield:getWidth()

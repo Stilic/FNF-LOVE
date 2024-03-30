@@ -7,10 +7,12 @@ end]]
 local Actor = Object:extend("Actor")
 
 function Actor:new(x, y, z)
-	Actor.super.new(self)
+	Actor.super.new(self, x, y)
 
-	self.z = z or 1
+	self.z = z or 0
+	self.rotation = {x = 0, y = 0, z = 0}
 	self.depth = 0 -- i guess you can call this the size for z axis??
+	self.fov = 60
 
 	self.offset.z = 0
 	self.origin.z = 0
@@ -99,32 +101,26 @@ function Actor:isOnScreen(cameras)
 end
 
 -- these fuckers that handles everything
-function Actor:toScreen(x, y, z, fov)
-	local hw, hh = game.width / 2, game.height / 2
+local max, rad, fastcos, fastsin = math.max, math.rad, math.aprcos, math.aprsin
+function Actor.toScreen(x, y, z, fov)
+	local hw, hh, z = game.width / 2, game.height / 2, max(((z / 200) * (fov / 180)) + 1, 0.00001)
 	return
-		hw + ((x - hw) / z) * fov,
-		hh + ((y - hh) / z) * fov,
-		(1 / z) * fov
+		hw + (x - hw) / z,
+		hh + (y - hh) / z,
+		(1 / z)
 end
 
-local rad, fastcos, fastsin = math.rad, math.fastcos, math.fastsin
-function Actor:worldSpin(x, y, z, ax, ay, az, midx, midy, midz)
+function Actor.worldSpin(x, y, z, ax, ay, az, midx, midy, midz)
 	local radx, rady, radz = rad(ax), rad(ay), rad(az)
-	local angx1, angx2, angy1, angy2, angz1, angz2 = fastcos(radx), fastsin(radx), fastcos(rady), fastsin(rady), fastcos(radz), fastsin(radz)
+	local angx0, angx1, angy0, angy1, angz0, angz1 = fastcos(radx), fastsin(radx), fastcos(rady), fastsin(rady), fastcos(radz), fastsin(radz)
 	local gapx, gapy, gapz = x - midx, midy - y, midz - z
 
 	local nx = midx
 		+ angy0 * angz0 * gapx + (-angz1 * angx0 + angx1 * angy1 * angz0) * gapy + (angx1 * angz1 + angx0 * angy1 * angz0) * gapz
 	local ny = midy
-		- angy0 * angz0 * gapx - (angx1 * angz0 + angx1 * angy1 * angz0) * gapy - (-angx1 * angz1 + angx0 * angy1 * angz0) * gapz
+		- angy0 * angz1 * gapx - (angx0 * angz0 + angx1 * angy1 * angz1) * gapy - (-angx1 * angz0 + angx0 * angy1 * angz1) * gapz
 	local nz = midz + angy1 * gapx - angx1 * angy0 * gapy - angx0 * angy0 * gapz
 
-	return nx, ny, nz
-end
-
-function Actor:multiWorldSpin(x, y, z, ax, ay, az, midx, midy, midz)
-	local nx, ny, nz = self:worldSpin(x, y, z, ax[1], ay[1], az[1], midx[1], midy[1], midz[1])
-	for i = 2, #ax do nx, ny, nz = self:worldSpin(nx, ny, nz, ax[i], ay[i], az[i], midx[i], midy[i], midz[i]) end
 	return nx, ny, nz
 end
 
