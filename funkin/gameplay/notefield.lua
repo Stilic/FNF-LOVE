@@ -11,7 +11,8 @@ function Notefield:new(x, y, keys, noteskin)
 	self.speed = 1
 
 	self.time = 0
-	self.drawSize = 800
+	self.drawSize = game.height + self.noteWidth / 2
+	self.drawSizeOffset = 0
 	self.maxNotes = 1028
 
 	self.hits = 0
@@ -81,23 +82,25 @@ function Notefield:getHeight()
 end
 
 function Notefield:__prepareLane(column, lane, time)
-	local notes, receptor, speed, drawSize = self.notes, lane.receptor,
+	local notes, receptor, speed, drawSize, drawSizeOffset = self.notes, lane.receptor,
 		self.speed * lane.speed,
-		self.drawSize * lane.drawSize
+		self.drawSize * lane.drawSize,
+		self.drawSizeOffset
 
 	local repy, size = receptor.y, #notes
-	local noteI = math.clamp(lane.currentNoteI, 1, size)
-	while noteI < size and (notes[noteI + 1].column ~= column or Note.toPos(notes[noteI + 1].time - time, speed) < repy) do noteI = noteI + 1 end
-	while noteI > 1 and (Note.toPos(notes[noteI - 1].time - time, speed) >= repy) do noteI = noteI - 1 end
+	local offset, noteI = (-drawSize / 2) - repy + drawSizeOffset, math.clamp(lane.currentNoteI, 1, size)
+	while noteI < size and (notes[noteI + 1].column ~= column or Note.toPos(notes[noteI + 1].time - time, speed) < offset) do noteI = noteI + 1 end
+	while noteI > 1 and (Note.toPos(notes[noteI - 1].time - time, speed) >= offset) do noteI = noteI - 1 end
 	lane.currentNoteI = noteI
 
 	local renderedNotes, renderedNotesI = lane.renderedNotes, lane.renderedNotesI
 	table.clear(renderedNotesI)
+
 	while noteI < size do
 		local note = notes[noteI]
 		if note.column == column then 
 			local y = Note.toPos(note.time - time, speed) + repy
-			if y > drawSize - repy then break end
+			if y > drawSize / 2 + drawSizeOffset then break end
 
 			local prevlane = note.lane
 			if prevlane ~= lane then
