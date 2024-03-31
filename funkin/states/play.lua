@@ -17,12 +17,6 @@ PlayState.controlDirs = {
 	note_up = 2,
 	note_right = 3
 }
-PlayState.ratings = {
-	{name = "sick", time = 45,        score = 350, splash = true,  mod = 1},
-	{name = "good", time = 90,        score = 200, splash = false, mod = 0.7},
-	{name = "bad",  time = 135,       score = 100, splash = false, mod = 0.4},
-	{name = "shit", time = math.huge, score = 50,  splash = false, mod = 0.2}
-}
 
 PlayState.SONG = nil
 PlayState.songDifficulty = ""
@@ -41,7 +35,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 0
+PlayState.startPos = 0--34000
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -123,6 +117,7 @@ function PlayState:enter()
 	self.doCountdownAtBeats = nil
 	self.lastCountdownBeats = nil
 
+	self.botPlay = ClientPrefs.data.botplayMode
 	self.playback = 1
 	Timer.setSpeed(1)
 
@@ -536,7 +531,6 @@ end
 function PlayState:update(dt)
 	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
-	self.scripts:call("update", dt)
 	self.timer:update(dt)
 
 	if self.startedCountdown then
@@ -590,6 +584,7 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	self.playerNotefield.time, self.enemyNotefield.time = noteTime, noteTime
 
+	self.scripts:call("update", dt)
 	PlayState.super.update(self, dt)
 
 	if self.camZooming then
@@ -621,10 +616,13 @@ function PlayState:update(dt)
 		end
 	end
 
-	local note = self.enemyNotefield.notes[1]
-	while note and not self.startingSong and self.enemyNotefield.time >= note.time do
-		self:goodNoteHit(note)
-		note = self.enemyNotefield.notes[1]
+	for _, notefield in pairs(self.enemyNotefields) do
+		self:doNotefieldBot(notefield)
+	end
+	if self.botPlay then
+		for _, notefield in pairs(self.playerNotefields) do
+			self:doNotefieldBot(notefield)
+		end
 	end
 
 	if self.health <= 0 and not self.isDead then
@@ -637,6 +635,85 @@ function PlayState:update(dt)
 	end
 
 	self.scripts:call("postUpdate", dt)
+end
+
+function PlayState:doNotefieldBot(notefield)
+	local i, contime, notes = 1, PlayState.conductor.time / 1000, notefield.notes
+	local size = #notes
+	if size == 0 then return end
+
+	while i <= size do
+		local note = notes[i]
+		if contime < note.time then break end
+
+		if not note.hit and not note.tooLate and not note.ignoreNote then
+			self:notefieldPress(notefield, note.time, note.column)
+		end
+
+		local newsize = #notes
+		if newsize == size then i = i + 1 end
+		size = newsize
+	end
+end
+
+function PlayState:notefieldPress(notefield, time, column)
+	local hit, rating, gotNotes = notefield:press(time, column, false)
+	if hit then
+		for _, n in ipairs(gotNotes) do self:goodNoteHit(n) end
+	else
+
+	end
+end
+
+function PlayState:goodNoteHit(n)
+	self.scripts:call("goodNoteHit", n)
+
+	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, (n.mustPress and self.boyfriend or self.dad)))
+
+	if not event.cancelled then
+		local notefield = n.parent
+		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
+
+		local char = notefield.character
+		local isBot = self.botPlay or table.find(self.enemyNotefields, notefield)
+		local holdTime = n.sustainTime + math.max(0.14 - n.sustainTime / 2, 0.05)
+
+		if not event.cancelledAnim and char then
+			local animType = ''
+			if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
+				animType = 'alt'
+			end
+
+			char:sing(n.column, animType)
+			if isBot then
+				char.strokeTime = n.sustainTime - 0.05
+			else
+				char.strokeTime = -1
+			end
+		end
+
+		local receptor = notefield.receptors[n.column + 1]
+		if not event.strumGlowCancelled then
+			receptor:play("confirm", true)
+
+			if isBot then
+				receptor.strokeTime = n.sustainTime - 0.05
+				receptor.holdTime = holdTime
+			else
+				receptor.strokeTime = -1
+			end
+		end
+
+		if table.find(self.playerNotefields, notefield) and not n.ignoreNote then
+			self.health = self.health + 0.023
+			if self.health > 2 then self.health = 2 end
+			--self.healthBar:setValue(self.health)
+		end
+
+		notefield:removeNote(n)
+	end
+
+	self.scripts:call("postGoodNoteHit", n)
 end
 
 function PlayState:focus(f)
@@ -731,49 +808,6 @@ function PlayState:onKeyRelease(key, type)
 
 	if key < 0 then return end
 	self.keysPressed[key] = false
-end
-
-function PlayState:goodNoteHit(n)
-	if n.wasGoodHit then return end
-	n.wasGoodHit = true
-	self.scripts:call("goodNoteHit", n)
-
-	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, (n.mustPress and self.boyfriend or self.dad)))
-
-	if not event.cancelled then
-		local notefield = n.parent
-		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
-
-		local animType = ''
-		if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
-			animType = 'alt'
-		end
-
-		if not event.cancelledAnim and notefield.character then
-			notefield.character:sing(n.column, animType)
-		end
-
-		local receptor = notefield.receptors[n.column + 1]
-		if not event.strumGlowCancelled then
-			receptor:play("confirm", true)
-
-			local isEnemy = table.find(self.enemyNotefields, notefield)
-			if n.sustain then receptor.strokeTime = isEnemy and n.sustainTime or -1 end
-			if self.botPlay or isEnemy then
-				receptor.holdTime = n.sustainTime + math.max(0.14 - n.sustainTime / 2, 0)
-			end
-		end
-
-		if table.find(self.playerNotefields, notefield) and not n.ignoreNote then
-			self.health = self.health + 0.023
-			if self.health > 2 then self.health = 2 end
-			--self.healthBar:setValue(self.health)
-		end
-
-		notefield:removeNote(n)
-	end
-
-	self.scripts:call("postGoodNoteHit", n)
 end
 
 function PlayState:closeSubstate()

@@ -4,15 +4,8 @@ Note.colors = {"purple", "blue", "green", "red"}
 Note.directions = {"left", "down", "up", "right"}
 Note.pixelAnim = {{{4}, {0}}, {{5}, {1}}, {{6}, {2}}, {{7}, {3}}}
 
-local safeZoneOffset = (10 / 60) * 1000
-
 function Note.toPos(time, speed)
 	return time * 450 * speed
-end
-
-function Note:checkDiff(time)
-	return self.time > time - safeZoneOffset * self.lateHitMult and
-		self.time < time + safeZoneOffset * self.earlyHitMult
 end
 
 function Note:new(time, column, sustaintime, noteskin)

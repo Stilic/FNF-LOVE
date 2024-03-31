@@ -15,6 +15,11 @@ Classic.__index = Classic
 ---base function that can be called with Classic() or Classic:new()
 function Classic:new() end
 
+---returns the cloned instance
+function Classic:clone()
+	return setmetatable(table.clone(self), getmetatable(self))
+end
+
 ---returns the class with the tables functions and variables
 ---@return Classic
 function Classic:extend(type)

@@ -19,6 +19,8 @@ function Character:new(x, y, char, isPlayer)
 
 	self.holdTime = 4
 	self.lastHit = math.negative_infinity
+	self.strokeTime = 0
+	self.__strokeDelta = 0
 
 	self.danceSpeed = 2
 	self.danced = false
@@ -128,6 +130,20 @@ function Character:update(dt)
 		else
 			self.offset.x, self.offset.y = 0, 0
 		end
+
+		if self.strokeTime ~= 0 and self.curAnim.name:startsWith("sing") then
+			self.strokeTime = self.strokeTime - dt
+			if self.strokeTime <= 0 then
+				self.__strokeDelta, self.strokeTime  = 0, 0
+			else
+				self.__strokeDelta = self.__strokeDelta + dt
+			 	if self.__strokeDelta >= 0.13 then
+			 		self.lastHit = PlayState.conductor.currentBeatFloat
+					self.curFrame, self.animFinished = 1, false
+					self.__strokeDelta = 0
+				end
+			end
+		end
 	end
 	Character.super.update(self, dt)
 end
@@ -146,6 +162,7 @@ end
 
 function Character:playAnim(anim, force, frame)
 	Character.super.play(self, anim, force, frame)
+	self.strokeTime = 0
 
 	local offset = self.animOffsets[anim]
     if offset then

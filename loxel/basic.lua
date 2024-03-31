@@ -28,8 +28,8 @@ function Basic:destroy()
 	self.cameras = nil
 end
 
-function Basic:_getXYWH()
-	return 0, 0, 0, 0
+function Basic:_getBoundary()
+	return
 end
 
 function Basic:isOnScreen(cameras)
