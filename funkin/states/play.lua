@@ -1074,7 +1074,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	PlayState.conductor.time = prev
 
 	local r = self.playerReceptors.members[key + 1]
-	if r and r.curAnim.name ~= "confirm" then
+	if r and not r.curAnim.name:find("confirm") then
 		r:play("pressed")
 	end
 end

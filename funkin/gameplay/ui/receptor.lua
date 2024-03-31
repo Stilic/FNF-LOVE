@@ -29,7 +29,7 @@ function Receptor:setStyle(style)
 	self.__shaderTable = {}
 	if paths.getJSON('data/notes/' .. style) == nil then
 		print("Note Style with name " .. style .. " doesn't exists!")
-		style = self.__style
+		style = "default"
 	end
 	self.__style = style
 
@@ -50,19 +50,20 @@ function Receptor:setStyle(style)
 		self:_addAnim(anim[1], anim[2], anim[3], anim[4])
 	end
 
-	local idx = math.min(self.data + 1, #jsonData.colors)
-	self.__shaderTable['static'] = RGBShader.create(
-		Color.fromString(jsonData.colors[idx][1]),
-		Color.fromString(jsonData.colors[idx][2]),
-		Color.fromString(jsonData.colors[idx][3])
-	)
-	local noteColor = json.notes.colors
-	idx = math.min(self.data + 1, #noteColor)
-	self.__shaderTable['pressed'] = RGBShader.create(
-		Color.fromString(noteColor[idx][1]),
-		Color.fromString(noteColor[idx][2]),
-		Color.fromString(noteColor[idx][3])
-	)
+	if not jsonData.disableRgb then
+		local idx = math.min(self.data + 1, #jsonData.colors)
+		self.__shaderTable['static'] = RGBShader.create(
+			Color.fromString(jsonData.colors[idx][1]),
+			Color.fromString(jsonData.colors[idx][2]),
+			Color.fromString(jsonData.colors[idx][3])
+		)
+		local noteColor = json.notes.colors
+		self.__shaderTable['pressed'] = RGBShader.create(
+			Color.fromString(noteColor[self.data + 1][1]),
+			Color.fromString(noteColor[self.data + 1][2]),
+			Color.fromString(noteColor[self.data + 1][3])
+		)
+	end
 
 	if jsonData.properties then
 		local noteProps = jsonData.properties[self.data + 1]

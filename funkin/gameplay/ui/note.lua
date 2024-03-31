@@ -18,6 +18,21 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 	self.ignoreNote = false
 	self.scrollOffset = {x = 0, y = 0}
 
+	if sustain and prevNote then
+		table.insert(parentNote.children, self)
+
+		self.alpha = 0.6
+		self.earlyHitMult = 0.5
+
+		self.isSustainEnd = true
+
+		if prevNote.isSustain then
+			prevNote.isSustainEnd = false
+		end
+	else
+		self.children = {}
+	end
+
 	self.__style = 'unknown'
 	self:setStyle(PlayState.SONG.noteStyle or
 		(PlayState.pixelStage and 'pixel' or 'default'))
@@ -36,12 +51,11 @@ function Note:setStyle(style)
 	if style == self.__style then return end
 
 	if paths.getJSON('data/notes/' .. style) == nil then
-		print("Note Style with name " .. style .. " doesn't exists!")
-		style = self.__style
+		style = "default"
 	end
 	self.__style = style
 
-	local jsonData = paths.getJSON('data/notes/' .. style).notes
+	local jsonData = paths.getJSON('data/notes/' .. self.__style).notes
 	local texture, str = '', 'skins/%s/%s'
 	texture = str:format(jsonData.isPixel and 'pixel' or 'normal',
 		jsonData.sprite)
@@ -88,15 +102,9 @@ function Note:setStyle(style)
 	self:play('note')
 
 	if self.isSustain and self.prevNote then
-		table.insert(self.parentNote.children, self)
-
-		self.alpha = 0.6
-		self.earlyHitMult = 0.5
 		self.scrollOffset.x = self.width / 2
 
 		self:play('endhold')
-		self.isSustainEnd = true
-
 		self:updateHitbox()
 
 		self.scrollOffset.x = self.scrollOffset.x - self.width / 2
@@ -107,7 +115,6 @@ function Note:setStyle(style)
 
 		if self.prevNote.isSustain then
 			self.prevNote:play('hold')
-			self.prevNote.isSustainEnd = false
 
 			self.prevNote.scale.y = (self.prevNote.width / self.prevNote:getFrameWidth()) *
 				((PlayState.conductor.stepCrotchet / 100) *
@@ -119,8 +126,6 @@ function Note:setStyle(style)
 			end
 			self.prevNote:updateHitbox()
 		end
-	else
-		self.children = {}
 	end
 end
 

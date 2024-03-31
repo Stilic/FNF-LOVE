@@ -15,33 +15,35 @@ function NoteSplash:setStyle(style)
 
 	if paths.getJSON("data/notes/" .. style) == nil then
 		print("Note Style with name " .. style .. " doesn't exists!")
-		style = self.__style
+		style = "default"
 	end
 	self.__style = style
 
-	local jsonData = paths.getJSON("data/notes/" .. style).splashes
+	local json = paths.getJSON("data/notes/" .. style)
+	local jsonData = json.splashes
 	local texture, str = "", 'skins/%s/%s'
 	texture = str:format(jsonData.isPixel and 'pixel' or 'normal',
 		jsonData.sprite)
 	self:setFrames(paths.getAtlas(texture))
 
 	local function setShader(anim, color)
-		if json.disableRgb then return end
 		anim.shader = RGBShader.create(
 			Color.fromString(color[1]),
 			Color.fromString(color[2]),
 			Color.fromString(color[3]))
 	end
 
-	local colorData = jsonData.colors and jsonData.colors or
-		paths.getJSON("data/notes/" .. style).notes.colors
+	if not jsonData.disableRgb then
+		local colorData = jsonData.colors and jsonData.colors or
+			json.notes.colors
 
-	for i = 1, #colorData do
-		self.__shaderTable["splash" .. i] = RGBShader.create(
-			Color.fromString(colorData[i][1]),
-			Color.fromString(colorData[i][2]),
-			Color.fromString(colorData[i][3])
-		)
+		for i = 1, #colorData do
+			self.__shaderTable["splash" .. i] = RGBShader.create(
+				Color.fromString(colorData[i][1]),
+				Color.fromString(colorData[i][2]),
+				Color.fromString(colorData[i][3])
+			)
+		end
 	end
 
 	self.animationData = jsonData.animations

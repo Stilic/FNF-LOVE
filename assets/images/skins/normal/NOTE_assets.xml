@@ -6,8 +6,8 @@
 	<SubTexture name="Note confirm0001" x="223" y="220" width="212" height="214" frameX="-1" frameY="-1"/>
 	<SubTexture name="Note confirm0002" x="2" y="2" width="217" height="218" frameX="1" frameY="2"/>
 
-	<SubTexture name="Note pressed0000" x="439" y="155" width="139" height="142" frameX="-1" frameY="1"/>
-	<SubTexture name="Note pressed0001" x="439" y="155" width="139" height="142" frameX="-1" frameY="1"/>
+	<SubTexture name="Note pressed0000" x="439" y="155" width="139" height="142"/>
+	<SubTexture name="Note pressed0001" x="439" y="155" width="139" height="142"/>
 	<SubTexture name="Note pressed0002" x="439" y="2" width="146" height="149" frameX="3" frameY="3"/>
 
 	<SubTexture name="sustain0000" x="535" y="299" width="50" height="44"/>
