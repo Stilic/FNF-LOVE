@@ -140,7 +140,7 @@ function ActorSprite:__render(camera)
 		self.x - (camera.scroll.x * self.scrollFactor.x),
 		self.y - (camera.scroll.y * self.scrollFactor.y),
 		self.z,
-		self.rotation.x, self.rotation.y, self.rotation.z + self.angle,
+		self.rotation.x, self.rotation.y, self.rotation.z - self.angle,
 		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y, self.scale.z * self.zoom.z,
 		self.origin.x, self.origin.y, self.origin.z
 
@@ -148,7 +148,7 @@ function ActorSprite:__render(camera)
 	local uvx, uvy, uvw, uvh = 0, 0, 1, 1
 	if f then
 		local tw, th = self.texture:getWidth(), self.texture:getHeight()
-		ox, oy = ox + f.offset.x, oy + f.offset.y
+		--ox, oy = ox + f.offset.x, oy + f.offset.y ?? fix this
 		uvx, uvy, uvw, uvh = f.quad:getViewport()
 		uvx, uvy, uvw, uvh = uvx / tw, uvy / th, uvw / tw, uvh / th
 	end

@@ -13,7 +13,13 @@ function Receptor:new(x, y, column, noteskin)
 	Receptor.super.new(self, x, y)
 
 	self.scale.x, self.scale.y = 0.7, 0.7
+	self.strokeTime = 0
 	self.holdTime = 0
+	self.__strokeDelta = 0
+
+	self.noteRotations = {x = 0, y = 0, z = 0}
+	self.noteOffsets = {x = 0, y = 0, z = 0}
+	self.lane = nil
 
 	self:setNoteskin(noteskin)
 	self:setColumn(column)
@@ -64,11 +70,25 @@ function Receptor:update(dt)
 	end
 
 	Receptor.super.update(self, dt)
+
+	if self.strokeTime ~= 0 and self.curAnim.name == "confirm" then
+		self.strokeTime = self.strokeTime - dt
+		if self.strokeTime <= 0 then
+			self.__strokeDelta, self.strokeTime  = 0, 0
+		else
+			self.__strokeDelta = self.__strokeDelta + dt
+		 	if self.__strokeDelta >= 0.1 then
+				self.curFrame, self.animFinished = 1, false
+				self.__strokeDelta = 0
+			end
+		end
+	end
 end
 
 function Receptor:play(anim, force, frame)
 	Receptor.super.play(self, anim, force, frame)
 	self:updateHitbox()
+	self.strokeTime = 0
 end
 
 return Receptor

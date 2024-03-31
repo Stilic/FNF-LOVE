@@ -67,7 +67,9 @@ function Note:setSustainTime(sustaintime)
 	if sustaintime == self.sustainTime then return end
 	self.sustainTime = sustaintime
 
-	if sustaintime <= 100 then return end
+	if sustaintime <= 0.01 then
+		return self:destroySustain()
+	end
 	local column, noteskin = self.column, self.noteskin
 	local color = Note.colors[column + 1]
 
@@ -75,21 +77,32 @@ function Note:setSustainTime(sustaintime)
 	self.sustain, self.sustainEnd = sustain, susend
 
 	if noteskin == "pixel" then
-
+		local tex = paths.getImage('skins/pixel/NOTE_assetsENDS')
 	elseif noteskin == "normal" then
+		susend:loadTextureFromSprite(self)
+		sustain:loadTextureFromSprite(self)
 		if column == 0 then
-			susend:addAnimByPrefix(color .. "holdend", "pruple end hold")
+			susend:addAnimByPrefix("static", "pruple end hold")
 		else
-			susend:addAnimByPrefix(color .. "holdend", color .. " hold end")
+			susend:addAnimByPrefix("static", color .. " hold end")
 		end
 		sustain:addAnimByPrefix("static", color .. " hold piece")
 	else
+		susend:loadTextureFromSprite(self)
+		sustain:loadTextureFromSprite(self)
 		susend:addAnimByPrefix("static", color .. " hold end")
 		sustain:addAnimByPrefix("static", color .. " hold piece")
 	end
 
 	susend:play("static"); self.updateHitbox(susend)
 	sustain:play("static"); self.updateHitbox(sustain)
+end
+
+function Note:destroySustain()
+	if not self.sustain then return end
+
+	self.sustainEnd:destroy()
+	self.sustain:destroy()
 end
 
 function Note:updateHitbox()
@@ -101,6 +114,11 @@ function Note:updateHitbox()
 
 	self:centerOrigin(width, height)
 	self:centerOffsets(width, height)
+end
+
+function Note:destroy()
+	Note.super.destroy(self)
+	self:destroySustain()
 end
 
 function Note:play(anim, force, frame)

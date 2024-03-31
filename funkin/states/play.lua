@@ -198,14 +198,16 @@ function PlayState:enter()
 	self.camZooming = false
 
 	local center = game.width / 2
-	self.playerNotefield = Notefield(0, game.height / 2, 4)
-	self.enemyNotefield = Notefield(0, game.height / 2, 4)
+	self.playerNotefield = Notefield(0, game.height / 2, 4, self.boyfriend)
+	self.enemyNotefield = Notefield(0, game.height / 2, 4, self.dad)
 	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
 
 	self.playerNotefield.cameras = {self.camNotes}
 	self.enemyNotefield.cameras = {self.camNotes}
 
+	self.playerNotefields = {self.playerNotefield}
+	self.enemyNotefields = {self.enemyNotefield}
 	self.notefields = {self.playerNotefield, self.enemyNotefield}
 	self:generateNotes()
 
@@ -585,9 +587,6 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	self.playerNotefield.time, self.enemyNotefield.time = noteTime, noteTime
 
-	self.playerNotefield.rotation.y = PlayState.conductor.time / PlayState.conductor.crotchet * 90
-	self.playerNotefield.rotation.x = 180 + PlayState.conductor.time / PlayState.conductor.crotchet * 45
-
 	PlayState.super.update(self, dt)
 
 	if self.camZooming then
@@ -617,6 +616,12 @@ function PlayState:update(dt)
 		if controls:pressed("reset") then
 			self.health = 0
 		end
+	end
+
+	local note = self.enemyNotefield.notes[1]
+	while note and not self.startingSong and self.enemyNotefield.time >= note.time do
+		self:goodNoteHit(note)
+		note = self.enemyNotefield.notes[1]
 	end
 
 	if self.health <= 0 and not self.isDead then
@@ -723,6 +728,49 @@ function PlayState:onKeyRelease(key, type)
 
 	if key < 0 then return end
 	self.keysPressed[key] = false
+end
+
+function PlayState:goodNoteHit(n)
+	if n.wasGoodHit then return end
+	n.wasGoodHit = true
+	self.scripts:call("goodNoteHit", n)
+
+	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, (n.mustPress and self.boyfriend or self.dad)))
+
+	if not event.cancelled then
+		local notefield = n.parent
+		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
+
+		local animType = ''
+		if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
+			animType = 'alt'
+		end
+
+		if not event.cancelledAnim and notefield.character then
+			notefield.character:sing(n.column, animType)
+		end
+
+		local receptor = notefield.receptors[n.column + 1]
+		if not event.strumGlowCancelled then
+			receptor:play("confirm", true)
+
+			local isEnemy = table.find(self.enemyNotefields, notefield)
+			if n.sustain then receptor.strokeTime = isEnemy and n.sustainTime or -1 end
+			if self.botPlay or isEnemy then
+				receptor.holdTime = n.sustainTime + math.max(0.14 - n.sustainTime / 2, 0)
+			end
+		end
+
+		if table.find(self.playerNotefields, notefield) and not n.ignoreNote then
+			self.health = self.health + 0.023
+			if self.health > 2 then self.health = 2 end
+			--self.healthBar:setValue(self.health)
+		end
+
+		notefield:removeNote(n)
+	end
+
+	self.scripts:call("postGoodNoteHit", n)
 end
 
 function PlayState:closeSubstate()

@@ -80,10 +80,12 @@ function ActorGroup:__render(camera)
 
 	local a, b = camera.scroll, self.scrollFactor
 	for i, member in ipairs(list) do
+		-- i made it too comp[licated] im sorryy :sob:
 		if member.x then
-			local mrot, msc = member.rotation, member.scale
-			local px, py, pz, pa, psx, psy, psz, prx, pry, prz = member.x, member.y, member.z,
-				member.angle, msc.x, msc.y, msc.z
+			local mrot, msc, mmmr, mmms = member.rotation, member.scale, member.memberRotations, member.memberScales
+
+			local px, py, pz, pa, psx, psy, psz, pma, prx, pry, prz, pmsx, pmsy, pmsz, pmrx, pmry, pmrz = member.x, member.y,
+				member.z, member.angle, msc.x, msc.y, msc.z, member.memberAngles
 
 			local vx, vy, vz = Actor.worldSpin(px * sx, py * sy, pz * sz, rx, ry, rz, ox, oy, oz)
 			member.x, member.y, member.z =
@@ -91,35 +93,42 @@ function ActorGroup:__render(camera)
 				vy + y + (a.y * member.scrollFactor.y * (1 - b.y)),
 				vz + z
 
-			if mrot then
-				prx, pry, prz = mrot.x, mrot.y, mrot.z
-				mrot.x, mrot.y, mrot.z = prx + mmrx, pry + mmry, prz + mmrz
+			if mmmr then
+				pmrx, pmry, pmrz = mmmr.x, mmmr.y, mmmr.z
+				mmmr.x, mmmr.y, mmmr.z = pmrx + mmrx, pmry + mmry, pmrz + mmrz
 			end
-			member.angle = pa + mma
+			if pma then member.memberAngles = pma + mma
+			else member.angle = pa + mma end
 			if affectAngle then
-				if prx then
-					mrot.x, mrot.y, mrot.z = mrot.x + rx, mrot.y + ry, mrot.z + rz
+				if mrot then
+					prx, pry, prz = mrot.x, mrot.y, mrot.z
+					mrot.x, mrot.y, mrot.z = prx + rx, pry + ry, prz + rz
 				end
 				member.angle = member.angle + angle
 			end
+			if not mmmr and mrot then
+				if not prx then prx, pry, prz = mrot.x, mrot.y, mrot.z end
+				mrot.x, mrot.y, mrot.z = mrot.x + mmrx, mrot.y + mmry, mrot.z + mmrz
+			end
 
-			msc.x, msc.y, msc.z = psx * mmsx, psy * mmsy, psz * mmsz
+			if mmms then
+				pmsx, pmsy, pmsz = mmms.x, mmms.y, mmms.z
+				mmms.x, mmms.y, mmms.z = pmsx * mmsx, pmsy * mmsy, pmsz * mmsz
+			else msc.x, msc.y, msc.z = psx * mmsx, psy * mmsy, psz * mmsz end
 			if affectScale then
 				msc.x, msc.y, msc.z = msc.x * sx, msc.y * sy, msc.z * sz
 			end
 
 			member:__render(camera)
 
-			member.x, member.y, member.z = px, py, pz
-			if affectAngle then
-				if mrot then
-					mrot.x, mrot.y, mrot.z = prx, pry, prz
-				end
+			member.x, member.y, member.z, member.memberAngles = px, py, pz, pma
+			if mmmr then mmmr.x, mmmr.y, mmmr.z = pmrx, pmry, pmrz end
+			if prx then mrot.x, mrot.y, mrot.z = prx, pry, prz end
+			if pa then
 				member.angle = pa
 			end
-			if affectScale then
-				msc.x, msc.y, msc.z = psx, psy, psz
-			end
+			if mmms then mmms.x, mmms.y, mmms.z = pmsx, pmsy, pmsz end
+			msc.x, msc.y, msc.z = psx, psy, psz
 		else
 			member:__render(camera)
 		end
