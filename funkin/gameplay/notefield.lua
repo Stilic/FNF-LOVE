@@ -59,7 +59,6 @@ end
 function Notefield:addNote(note)
 	note.parent = self
 	table.insert(self.notes, note)
-	table.sort(self.notes, Conductor.sortByTime)
 	return note
 end
 

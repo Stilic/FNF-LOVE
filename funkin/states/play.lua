@@ -41,7 +41,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 23300
+PlayState.startPos = 0
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -326,7 +326,7 @@ function PlayState:enter()
 	PlayState.super.enter(self)
 	collectgarbage()
 
-	self.scripts:call("postCreate")	
+	self.scripts:call("postCreate")
 end
 
 function PlayState:generateNote(n, s, prev)
@@ -355,6 +355,9 @@ function PlayState:generateNotes()
 	local speed = PlayState.SONG.speed
 	self.playerNotefield.speed = speed
 	self.enemyNotefield.speed = speed
+
+	table.sort(self.playerNotefield.notes, Conductor.sortByTime)
+	table.sort(self.enemyNotefield.notes, Conductor.sortByTime)
 end
 
 function PlayState:loadStageWithSongName(songName)
