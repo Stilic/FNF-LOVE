@@ -56,20 +56,11 @@ function Notefield:makeNote(time, col, sustain, noteskin)
 	return note, self:addNote(note)
 end
 
-function Notefield:addNote(note, from)
-	local size = #self.notes
-	from = from or size
-
-	local reverse = (self.notes[from] or note).time > note.time
-	local i = from < 1 and (reverse and size or 1) or from + (reverse and -1 or 1)
-	while reverse and i > 0 or i <= size do
-		if reverse then if self.notes[i].time <= time then break end elseif self.notes[i].time > time then break end
-		i = reverse and i - 1 or i + 1
-	end
-
+function Notefield:addNote(note)
 	note.parent = self
-	table.insert(self.notes, i, note)
-	return i
+	table.insert(self.notes, note)
+	table.sort(self.notes, Conductor.sortByTime)
+	return note
 end
 
 function Notefield:removeNotefromIndex(idx)
