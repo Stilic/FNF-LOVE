@@ -418,8 +418,8 @@ function Sprite:centerOffsets(__width, __height)
 end
 
 function Sprite:fixOffsets(__width, __height)
-	self.offset.x = ((__width or self:getFrameWidth()) - self.width) / 2
-	self.offset.y = ((__height or self:getFrameHeight()) - self.height) / 2
+	self.offset.x = (self.width - (__width or self:getFrameWidth())) / -2
+	self.offset.y = (self.height - (__height or self:getFrameHeight())) / -2
 end
 
 function Sprite:centerOrigin(__width, __height)
