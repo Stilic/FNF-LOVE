@@ -709,8 +709,6 @@ function PlayState:goodNoteHit(n)
 			if self.health > 2 then self.health = 2 end
 			--self.healthBar:setValue(self.health)
 		end
-
-		notefield:removeNote(n)
 	end
 
 	self.scripts:call("postGoodNoteHit", n)

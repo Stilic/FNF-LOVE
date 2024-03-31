@@ -9,11 +9,12 @@ Notefield.ratings = {
 	{name = "shit",		time = safeZoneOffset,	score = 50,  splash = false, mod = 0.2}
 }
 
-function Notefield.getRating(a, b)
+function Notefield.getRating(a, b, returnShit)
 	local diff = math.abs(a - b)
 	for i, r in ipairs(Notefield.ratings) do
 		if diff <= r.time then return r, i end
 	end
+	return returnShit and Notefield.ratings[#Notefield.ratings] or nil
 end
 
 function Notefield.checkDiff(note, time)
@@ -158,7 +159,9 @@ function Notefield:getNotes(time, column)
 end
 
 function Notefield:hit(time, note, force)
-	local rating = Notefield.getRating(note.time, time)
+	local sus = note.sustain and note.hit
+	local notetime = sus and note.time + note.sustainTime or note.time
+	local rating = Notefield.getRating(notetime, time, sus)
 	if not rating then return self:miss(note, force) end
 
 	if not note.hit then
@@ -248,7 +251,7 @@ function Notefield:release(time, column, play)
 	time = time or self.time
 	if note ~= true then
 		if note.sustain and note.hit then
-			self:hit(note, true)
+			self:hit(time, note, true)
 		end
 	end
 
@@ -271,9 +274,9 @@ function Notefield:update(dt)
 
 		if not note.hit and not note.tooLate then
 			self:miss(note)
-		elseif note.sustain and offset + safeZoneOffset > note.time + note.sustainTime then
+		elseif note.sustain and offset > note.time + note.sustainTime then
 			if note.hit then
-				self:hit(note, true)
+				self:hit(offset, note, true)
 			else
 				self:miss(note, true)
 			end
