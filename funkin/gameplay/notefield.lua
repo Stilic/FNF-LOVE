@@ -41,7 +41,7 @@ function Notefield:new(x, y, keys, character, noteskin)
 	self.drawSizeOffset = 0
 	self.maxNotes = 1028
 
-	self.hits = 0
+	self.totalHits = 0
 	self.misses = 0
 	self.perfects = 0
 	self.sicks = 0
@@ -52,6 +52,7 @@ function Notefield:new(x, y, keys, character, noteskin)
 	self.missCallback = nil
 
 	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
+	self.lastPress = {}
 	self.pressed = {}
 	self.lanes = {}
 	self.receptors = {}
@@ -80,6 +81,7 @@ function Notefield:makeLane(column, y)
 	self.receptors[column] = lane.receptor
 	self.lanes[column] = lane
 	self.pressed[column] = false
+	self.lastPress[column] = 0
 	self:add(lane)
 	return lane
 end
@@ -169,7 +171,7 @@ function Notefield:hit(time, note, force)
 		note.hit = true
 
 		local name = rating.name .. "s"
-		self.hits = self.hits + 1
+		self.totalHits = self.totalHits + rating.mod
 		self[name] = (self[name] or 0) + 1
 		(self.hitCallback or __NULL__)(rating, note, force)
 	end
@@ -201,10 +203,11 @@ end
 function Notefield:press(time, column, play)
 	time = time or self.time
 
-	local gotNotes = self:getNotes(time, column)
+	local fixedColumn, gotNotes = column + 1, self:getNotes(time, column)
 	local missed = #gotNotes == 0
 
-	self.pressed[column + 1] = true
+	self.lastPress[fixedColumn] = time
+	self.pressed[fixedColumn] = true
 	local isSustain, rating
 	if not missed then
 		local coolNote = gotNotes[1]
@@ -223,7 +226,7 @@ function Notefield:press(time, column, play)
 
 		rating = self:hit(time, coolNote)
 		isSustain = coolNote.sustain ~= nil
-		self.pressed[column + 1] = coolNote
+		self.pressed[fixedColumn] = coolNote
 
 		if play and self.hitsoundVolume > 0 and self.hitsound then
 			game.sound.play(self.hitsound, hitsoundVolume)
@@ -234,13 +237,13 @@ function Notefield:press(time, column, play)
 		local receptor = self.receptors[column + 1]
 		if receptor then
 			receptor:play(missed and "pressed" or "confirm", true)
-			if isSustain then receptor.strokeTime = -1 end
+			if not missed and isSustain then receptor.strokeTime = -1 end
 		end
 
 		local char = self.character
 		if char then
 			char:sing(column)
-			if isSustain then char.strokeTime = -1 end
+			if not missed and isSustain then char.strokeTime = -1 end
 		end
 	end
 
@@ -248,8 +251,9 @@ function Notefield:press(time, column, play)
 end
 
 function Notefield:release(time, column, play)
-	local note = self.pressed[column + 1]
-	self.pressed[column + 1] = nil
+	local fixedColumn = column + 1
+	local note = self.pressed[fixedColumn]
+	self.pressed[fixedColumn] = nil
 	if not note then return end
 
 	local hit, rating = note ~= true
@@ -261,7 +265,7 @@ function Notefield:release(time, column, play)
 	end
 
 	if play then
-		local receptor = self.receptors[column + 1]
+		local receptor = self.receptors[fixedColumn]
 		if receptor then
 			receptor:play("static", true)
 		end

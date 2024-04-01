@@ -35,7 +35,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 0
+PlayState.startPos = 0--33000
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -231,13 +231,13 @@ function PlayState:enter()
 	self.health = 1
 
 	-- for ratings
+	self.totalPlayed = 0
+	self.totalHit = 0
+	self.perfects = 0
 	self.sicks = 0
 	self.goods = 0
 	self.bads = 0
 	self.shits = 0
-
-	self.totalPlayed = 0
-	self.totalHit = 0.0
 
 	if love.system.getDevice() == "Mobile" then
 		local w, h = game.width / 4, game.height
@@ -619,10 +619,16 @@ function PlayState:update(dt)
 	for _, notefield in pairs(self.enemyNotefields) do
 		self:doNotefieldBot(notefield)
 	end
-	if self.botPlay then
-		for _, notefield in pairs(self.playerNotefields) do
+
+	for _, notefield in pairs(self.playerNotefields) do
+		if self.botPlay then
 			self:doNotefieldBot(notefield)
 		end
+	end
+
+	for _, note in ipairs(self.playerNotefield.missedNotes) do
+		self:noteMiss(note)
+		table.delete(self.playerNotefield.missedNotes, note)
 	end
 
 	if self.health <= 0 and not self.isDead then
@@ -643,10 +649,14 @@ function PlayState:doNotefieldBot(notefield)
 
 	for i = 1, notefield.keys do
 		local note = notefield.pressed[i]
-		if note ~= true and note and contime > note.time + math.max(note.sustainTime, 0.14) then
-			local notetime = note.time + math.max(note.sustainTime, 0.14)
-			if contime >= notetime then
-				self:notefieldRelease(notefield, notetime, note.column)
+		if note then
+			if note ~= true then
+				local notetime = note.time + math.max(note.sustainTime, 0.14)
+				if contime >= notetime then
+					self:notefieldRelease(notefield, notetime, note.column)
+				end
+			elseif notefield.lastPress[i] - 0.1 > contime then
+				self:notefieldRelease(notefield, contime, i - 1)
 			end
 		end
 	end
@@ -671,9 +681,10 @@ function PlayState:notefieldPress(notefield, time, column)
 	local isPlayer = table.find(self.playerNotefields, notefield)
 	if hit then
 		game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
-		for _, n in ipairs(gotNotes) do self:goodNoteHit(n) end
+		for _, n in ipairs(gotNotes) do self:goodNoteHit(n, rating) end
 	else
-
+		local receptor = notefield.receptors[column + 1]
+		if receptor then receptor:play("pressed", true) end
 	end
 end
 
@@ -681,17 +692,50 @@ function PlayState:notefieldRelease(notefield, time, column)
 	local hit, rating, gotNote = notefield:release(time, column, true)
 end
 
-function PlayState:goodNoteHit(n)
-	self.scripts:call("goodNoteHit", n)
+function PlayState:noteMiss(n)
+	self.scripts:call("noteMiss", n)
 
-	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, (n.mustPress and self.boyfriend or self.dad)))
+	local notefield = n.parent
+	local char = notefield.character
+	local event = self.scripts:event("onNoteMiss", Events.NoteMiss(n, char))
 
 	if not event.cancelled then
-		local notefield = n.parent
-		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
+		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
 
-		local char = notefield.character
-		--local holdTime = n.sustainTime + math.max(0.14 - n.sustainTime / 2, 0.05)
+		if not event.cancelledAnim then
+			char:sing(n.column, "miss")
+		end
+
+		if notefield == self.playerNotefield then
+			if self.combo >= 10 and not event.cancelledSadGF and self.gf.__animations['sad'] then
+				self.gf:playAnim('sad', true)
+				self.gf.lastHit = PlayState.conductor.currentBeat
+			end
+
+			if self.combo > 0 then self.combo = 0 end
+			self.score = self.score - 100
+			self.misses = self.misses + 1
+			self.totalPlayed = self.totalPlayed + 1
+			self.health = self.health - 0.0475
+
+			if self.health < 0 then self.health = 0 end
+			--self.healthBar:setValue(self.health)
+			self:recalculateRating()
+		end
+	end
+
+	self.scripts:call("postNoteMiss", n)
+end
+
+function PlayState:goodNoteHit(n, rating)
+	self.scripts:call("goodNoteHit", n, rating)
+
+	local notefield = n.parent
+	local char = notefield.character
+	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating))
+
+	if not event.cancelled then
+		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
 
 		if not event.cancelledAnim and char then
 			local animType = ''
@@ -706,18 +750,83 @@ function PlayState:goodNoteHit(n)
 		local receptor = notefield.receptors[n.column + 1]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
-
 			if n.sustain then receptor.strokeTime = -1 end
 		end
 
-		if table.find(self.playerNotefields, notefield) and not n.ignoreNote then
-			self.health = self.health + 0.023
-			if self.health > 2 then self.health = 2 end
+		if self.playerNotefield == notefield and not n.ignoreNote then
+			self.health = math.min(self.health + 0.023, 2)
 			--self.healthBar:setValue(self.health)
+
+			if self.combo < 0 then self.combo = 0 end
+			self.combo = self.combo + 1
+			self.score = self.score + rating.score
+
+			self.totalHit = self.totalHit + rating.mod
+			self.totalPlayed = self.totalPlayed + 1
+			self:recalculateRating(rating.name)
 		end
 	end
 
-	self.scripts:call("postGoodNoteHit", n)
+	self.scripts:call("postGoodNoteHit", n, rating)
+end
+
+local ratingFormat, noRating = "(%s) %s", "?"
+function PlayState:recalculateRating(rating)
+	if rating then
+		local ratingAdd = rating .. "s"
+		if self[ratingAdd] then self[ratingAdd] = (self[ratingAdd] or 0) + 1 end
+	end
+
+	local ratingStr = noRating
+	if self.totalPlayed > 0 then
+		local accuracy, class = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
+		if accuracy >= 1 then class = "X"
+		elseif accuracy >= 0.99 then class = "S+"
+		elseif accuracy >= 0.95 then class = "S"
+		elseif accuracy >= 0.90 then class = "A"
+		elseif accuracy >= 0.80 then class = "B"
+		elseif accuracy >= 0.70 then class = "C"
+		elseif accuracy >= 0.60 then class = "D"
+		elseif accuracy >= 0.50 then class = "E"
+		else class = "F" end
+		self.accuracy = accuracy
+
+		local fc
+		if self.misses < 1 then
+			if self.bads > 0 or self.shits > 0 then fc = "FC"
+			elseif self.goods > 0 then fc = "GFC"
+			elseif self.sicks > 0 then fc = "SFC"
+			else fc = "FC" end
+		else
+			fc = self.misses >= 10 and "Clear" or "SDCB"
+		end
+
+		ratingStr = ratingFormat:format(fc, class)
+	end
+
+	self.rating = ratingStr
+
+	local vars = self.scoreFormatVariables
+	if not vars then
+		vars = table.new(0, 4)
+		self.scoreFormatVariables = vars
+	end
+	vars.score = math.floor(self.score)
+	vars.misses = math.floor(self.misses)
+	vars.accuracy = math.truncate(self.accuracy * 100, 2)
+	vars.rating = ratingStr
+
+	--[[
+	self.scoreTxt.content = self.scoreFormat:gsub("%%(%w+)", vars)
+	self.scoreTxt:updateHitbox()
+
+	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
+	if not event.cancelled then
+		self.judgement.ratingVisible = not event.hideRating
+		self.judgement.comboSprVisible = not event.hideCombo
+		self.judgement.comboNumVisible = not event.hideScore
+		self.judgement:spawn(rating, self.combo)
+	end]]
 end
 
 function PlayState:focus(f)
