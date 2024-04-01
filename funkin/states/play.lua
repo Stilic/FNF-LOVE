@@ -35,7 +35,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 73000
+PlayState.startPos = 0
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -670,7 +670,6 @@ function PlayState:notefieldPress(notefield, time, column)
 	local hit, rating, gotNotes = notefield:press(time, column, false)
 	local isPlayer = table.find(self.playerNotefields, notefield)
 	if hit then
-		print(time - gotNotes[1].time, rating.name)
 		game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
 		for _, n in ipairs(gotNotes) do self:goodNoteHit(n) end
 	else
