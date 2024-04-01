@@ -35,7 +35,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 0--34000
+PlayState.startPos = 73000
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -640,8 +640,18 @@ end
 function PlayState:doNotefieldBot(notefield)
 	local i, contime, notes = 1, PlayState.conductor.time / 1000, notefield.notes
 	local size = #notes
-	if size == 0 then return end
 
+	for i = 1, notefield.keys do
+		local note = notefield.pressed[i]
+		if note ~= true and note and contime > note.time + math.max(note.sustainTime, 0.14) then
+			local notetime = note.time + math.max(note.sustainTime, 0.14)
+			if contime >= notetime then
+				self:notefieldRelease(notefield, notetime, note.column)
+			end
+		end
+	end
+
+	if size == 0 then return end
 	while i <= size do
 		local note = notes[i]
 		if contime < note.time then break end
@@ -658,11 +668,18 @@ end
 
 function PlayState:notefieldPress(notefield, time, column)
 	local hit, rating, gotNotes = notefield:press(time, column, false)
+	local isPlayer = table.find(self.playerNotefields, notefield)
 	if hit then
+		print(time - gotNotes[1].time, rating.name)
+		game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
 		for _, n in ipairs(gotNotes) do self:goodNoteHit(n) end
 	else
 
 	end
+end
+
+function PlayState:notefieldRelease(notefield, time, column)
+	local hit, rating, gotNote = notefield:release(time, column, true)
 end
 
 function PlayState:goodNoteHit(n)
@@ -675,8 +692,7 @@ function PlayState:goodNoteHit(n)
 		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
 
 		local char = notefield.character
-		local isBot = self.botPlay or table.find(self.enemyNotefields, notefield)
-		local holdTime = n.sustainTime + math.max(0.14 - n.sustainTime / 2, 0.05)
+		--local holdTime = n.sustainTime + math.max(0.14 - n.sustainTime / 2, 0.05)
 
 		if not event.cancelledAnim and char then
 			local animType = ''
@@ -685,23 +701,14 @@ function PlayState:goodNoteHit(n)
 			end
 
 			char:sing(n.column, animType)
-			if isBot then
-				char.strokeTime = n.sustainTime - 0.05
-			else
-				char.strokeTime = -1
-			end
+			if n.sustain then char.strokeTime = -1 end
 		end
 
 		local receptor = notefield.receptors[n.column + 1]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 
-			if isBot then
-				receptor.strokeTime = n.sustainTime - 0.05
-				receptor.holdTime = holdTime
-			else
-				receptor.strokeTime = -1
-			end
+			if n.sustain then receptor.strokeTime = -1 end
 		end
 
 		if table.find(self.playerNotefields, notefield) and not n.ignoreNote then
@@ -788,16 +795,13 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	self.keysPressed[key] = true
 
 	-- the most closest thing possible to sub-precision ms
-	local prev = PlayState.conductor.time
-	local time = prev + (time - self.lastTick) * game.sound.music:getActualPitch()
-	PlayState.conductor.time = time
-
-	--
-
-	PlayState.conductor.time = prev
+	local time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
+	for _, notefield in ipairs(self.playerNotefields) do
+		self:notefieldPress(notefield, time, key)
+	end
 end
 
-function PlayState:onKeyRelease(key, type)
+function PlayState:onKeyRelease(key, type, scancode, isrepeat, time)
 	if self.botPlay or (self.substate and not self.persistentUpdate) then return end
 	local controls = controls:getControlsFromSource(type .. ":" .. key)
 
@@ -806,6 +810,11 @@ function PlayState:onKeyRelease(key, type)
 
 	if key < 0 then return end
 	self.keysPressed[key] = false
+
+	local time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
+	for _, notefield in ipairs(self.playerNotefields) do
+		self:notefieldRelease(notefield, time, key)
+	end
 end
 
 function PlayState:closeSubstate()

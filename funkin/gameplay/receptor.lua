@@ -59,14 +59,16 @@ function Receptor:update(dt)
 	end
 
 	if self.strokeTime ~= 0 and self.curAnim and self.curAnim.name == "confirm" then
-		self.strokeTime = self.strokeTime - dt
-		if self.strokeTime <= 0 then
-			self.__strokeDelta, self.strokeTime  = 0, 0
-		else
-			self.__strokeDelta = self.__strokeDelta + dt
-		 	if self.__strokeDelta >= 0.13 then
-				self.curFrame, self.animFinished = 1, false
-				self.__strokeDelta = 0
+		self.__strokeDelta = self.__strokeDelta + dt
+		 if self.__strokeDelta >= 0.13 then
+			self.curFrame, self.animFinished = 1, false
+			self.__strokeDelta = 0
+		end
+
+		if self.strokeTime ~= -1 then
+			self.strokeTime = self.strokeTime - dt
+			if self.strokeTime <= 0 then
+				self.__strokeDelta, self.strokeTime  = 0, 0
 			end
 		end
 	end

@@ -60,7 +60,7 @@ function Note:setSustainTime(sustaintime)
 	if sustaintime == self.sustainTime then return end
 	self.sustainTime = sustaintime
 
-	if sustaintime <= 0.01 then
+	if sustaintime < 0.005 then
 		return self:destroySustain()
 	end
 	local column, noteskin = self.column, self.noteskin

@@ -80,7 +80,7 @@ until s > 1]]
 
 local eventhandlers = {
 	keypressed = function(t, b, s, r) return love.keypressed(b, s, r, t) end,
-	keyreleased = function(t, b, s) return love.keyreleased(b, s, t) end,
+	keyreleased = function(t, b, s) return love.keyreleased(b, s, t, t) end,
 	touchpressed = function(t, id, x, y, dx, dy, p) return love.touchpressed(id, x, y, dx, dy, p, t) end,
 	touchmoved = function(t, id, x, y, dx, dy, p) return love.touchmoved(id, x, y, dx, dy, p, t) end,
 	touchreleased = function(t, id, x, y, dx, dy, p) return love.touchreleased(id, x, y, dx, dy, p, t) end,

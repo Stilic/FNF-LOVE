@@ -205,13 +205,13 @@ function Notefield:press(time, column, play)
 	local missed = #gotNotes == 0
 
 	self.pressed[column + 1] = true
-	local rating
+	local isSustain, rating
 	if not missed then
 		local coolNote = gotNotes[1]
 
 		for i = 2, #gotNotes do
 			local n = gotNotes[i]
-			if n.time - coolNote.time <= 1 then
+			if n.time - coolNote.time <= 0.001 then
 				if n.sustainTime > coolNote.sustainTime then
 					self:hit(time, coolNote, true)
 					gotNotes[i], gotNotes[1], coolNote = coolNote, n, n
@@ -222,6 +222,7 @@ function Notefield:press(time, column, play)
 		end
 
 		rating = self:hit(time, coolNote)
+		isSustain = coolNote.sustain ~= nil
 		self.pressed[column + 1] = coolNote
 
 		if play and self.hitsoundVolume > 0 and self.hitsound then
@@ -233,11 +234,14 @@ function Notefield:press(time, column, play)
 		local receptor = self.receptors[column + 1]
 		if receptor then
 			receptor:play(missed and "pressed" or "confirm", true)
-			receptor.strokeTime = -1
+			if isSustain then receptor.strokeTime = -1 end
 		end
 
 		local char = self.character
-		if char then char:sing(column) end
+		if char then
+			char:sing(column)
+			if isSustain then char.strokeTime = -1 end
+		end
 	end
 
 	return not missed, rating, gotNotes
@@ -248,10 +252,11 @@ function Notefield:release(time, column, play)
 	self.pressed[column + 1] = nil
 	if not note then return end
 
+	local hit, rating = note ~= true
 	time = time or self.time
-	if note ~= true then
+	if hit then
 		if note.sustain and note.hit then
-			self:hit(time, note, true)
+			rating = self:hit(time, note, true)
 		end
 	end
 
@@ -260,15 +265,39 @@ function Notefield:release(time, column, play)
 		if receptor then
 			receptor:play("static", true)
 		end
+
+		if hit then
+			local char = self.character
+			if char and char.columnAnim == column then
+				char.strokeTime = 0
+			end
+		end
 	end
+
+	return hit, rating, note
 end
 
 function Notefield:update(dt)
 	Notefield.super.update(self, dt)
 
+	local time = self.time
+	for i, note in pairs(self.pressed) do
+		if note ~= true and note and note.sustain and time > note.time + note.sustainTime then
+			local receptor = self.receptors[note.column + 1]
+			if receptor then
+				receptor.strokeTime = 0
+			end
+
+			local char = self.character
+			if char and char.columnAnim == note.column then
+				char.strokeTime = 0
+			end
+		end
+	end
+
 	local notes = self.notes
-	local offset, i = self.time - safeZoneOffset, 1
-	while #notes ~= 0 do
+	local offset, i = time - safeZoneOffset, 1
+	while i <= #notes do
 		local note = notes[i]
 		if offset <= note.time then break end
 
