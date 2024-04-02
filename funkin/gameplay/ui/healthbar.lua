@@ -1,9 +1,7 @@
-local PlayHealth = SpriteGroup:extend("PlayHealth")
--- todo urgently, rename this to smth else
--- kaoy
+local HealthBar = SpriteGroup:extend("HealthBar")
 
-function PlayHealth:new(bfData, dadData, tracker)
-	PlayHealth.super.new(self, 0, 0)
+function HealthBar:new(bfData, dadData, tracker)
+	HealthBar.super.new(self, 0, 0)
 
 	self.maxHealth = 2
 	self.iconScale = 1
@@ -38,8 +36,8 @@ function PlayHealth:new(bfData, dadData, tracker)
 	self.bar:setValue(self.tracker)
 end
 
-function PlayHealth:update(dt)
-	PlayHealth.super.update(self, dt)
+function HealthBar:update(dt)
+	HealthBar.super.update(self, dt)
 
 	self.bar:setValue(self.tracker)
 
@@ -67,17 +65,17 @@ function PlayHealth:update(dt)
 	self.iconP2:setState((perc2 and 2 or 1))
 end
 
-function PlayHealth:scaleIcons(val)
+function HealthBar:scaleIcons(val)
 	self.iconScale = val
 	self.iconP1.scale = {x = val, y = val}
 	self.iconP2.scale = {x = val, y = val}
 end
 
-function Object:screenCenter(axes)
+function HealthBar:screenCenter(axes)
 	if axes == nil then axes = "xy" end
 	if axes:find("x") then self.x = (game.width - self.bg.width) / 2 end
 	if axes:find("y") then self.y = (game.height - self.bg.height) / 2 end
 	return self
 end
 
-return PlayHealth
+return HealthBar
