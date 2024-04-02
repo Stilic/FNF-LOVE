@@ -137,27 +137,26 @@ function ActorSprite:__render(camera)
 	local f = self:getCurrentFrame()
 
 	local x, y, z, rx, ry, rz, sx, sy, sz, ox, oy, oz =
-		self.x - (camera.scroll.x * self.scrollFactor.x),
-		self.y - (camera.scroll.y * self.scrollFactor.y),
-		self.z,
+		self.x - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+		self.y - self.offset.y - (camera.scroll.y * self.scrollFactor.y),
+		self.z - self.offset.z,
 		self.rotation.x, self.rotation.y, self.rotation.z - self.angle,
 		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y, self.scale.z * self.zoom.z,
 		self.origin.x, self.origin.y, self.origin.z
 
-	x, y, z = x + ox - self.offset.x, y + oy - self.offset.y, z + oz - self.offset.z
-	local uvx, uvy, uvw, uvh = 0, 0, 1, 1
-	if f then
-		local tw, th = self.texture:getWidth(), self.texture:getHeight()
-		--ox, oy = ox + f.offset.x, oy + f.offset.y ?? fix this
-		uvx, uvy, uvw, uvh = f.quad:getViewport()
-		uvx, uvy, uvw, uvh = uvx / tw, uvy / th, uvw / tw, uvh / th
-	end
-	ox, oy, oz = ox * sx, oy * sy, oz * sz
+	x, y = x + ox, y + oy
 
-	if self.flipX then sx = -sx + 2 end
-	if self.flipY then sy = -sy + 2 end
-	sx = sx * self:getFrameWidth()
-	sy = sy * self:getFrameHeight()
+	local tw, th = self.texture:getWidth(), self.texture:getHeight()
+	local fw, fh, uvx, uvy, uvw, uvh = tw, th, 0, 0, 1, 1
+	if f then
+		ox, oy = ox + f.offset.x, oy + f.offset.y
+		uvx, uvy, fw, fh = f.quad:getViewport()
+		uvx, uvy, uvw, uvh = uvx / tw, uvy / th, fw / tw, fh / th
+	end
+	fw, fh, ox, oy, oz = fw * sx, fh * sy, ox * sx, oy * sy, oz * sz
+
+	if self.flipX then uvx, uvw = uvx + uvw, -uvw end
+	if self.flipY then uvy, uvh = uvy + uvh, -uvh end
 
 	local mesh, verts = self.mesh, self.__vertices
 	local vert, vx, vy, vz
@@ -165,7 +164,7 @@ function ActorSprite:__render(camera)
 		vert = verts[i] or table.new(5, 0)
 		verts[i] = vert
 
-		vx, vy, vz = self.worldSpin(v[1] * sx, v[2] * sy, v[3] * sz, rx, ry, rz, ox, oy, oz)
+		vx, vy, vz = self.worldSpin(v[1] * fw, v[2] * fh, v[3] * sz, rx, ry, rz, ox, oy, oz)
 		vert[1], vert[2], vert[5] = self.toScreen(vx + x - ox, vy + y - oy, vz + z - oz, self.fov)
 		vert[3], vert[4] = (v[4] * uvw + uvx) * vert[5], (v[5] * uvh + uvy) * vert[5]
 	end

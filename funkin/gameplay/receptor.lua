@@ -76,10 +76,20 @@ function Receptor:update(dt)
 	Receptor.super.update(self, dt)
 end
 
+function Receptor:updateHitbox()
+	local width, height = self:getFrameDimensions()
+
+	self.width = math.abs(self.scale.x * self.zoom.x) * width
+	self.height = math.abs(self.scale.y * self.zoom.y) * height
+	self.__width, self.__height = self.width, self.height
+
+	self:centerOrigin(width, height)
+	self:centerOffsets(width, height)
+end
+
 function Receptor:play(anim, force, frame)
 	Receptor.super.play(self, anim, force, frame)
-	self:centerOrigin()
-	self:centerOffsets()
+	self:updateHitbox()
 	self.strokeTime = 0
 end
 
