@@ -165,7 +165,7 @@ end
 
 function Character:playAnim(anim, force, frame)
 	Character.super.play(self, anim, force, frame)
-	self.strokeTime, self.columnAnim = 0, nil
+	self.__strokeDelta, self.strokeTime, self.columnAnim = 0, 0, nil
 
 	local offset = self.animOffsets[anim]
     if offset then

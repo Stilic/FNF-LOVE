@@ -35,7 +35,7 @@ PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
-PlayState.startPos = 0--33000
+PlayState.startPos = 0
 
 function PlayState.loadSong(song, diff)
 	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
@@ -88,7 +88,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-	if PlayState.SONG == nil then PlayState.loadSong('false-paradise', 'hard') end
+	if PlayState.SONG == nil then PlayState.loadSong('test') end
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
 	local conductor = Conductor():setSong(PlayState.SONG)
@@ -581,6 +581,9 @@ function PlayState:update(dt)
 		end
 	end
 
+	--self.playerNotefield.memberRotations.x = PlayState.conductor.time / PlayState.conductor.crotchet * 90
+	--self.playerNotefield.memberRotations.z = PlayState.conductor.time / PlayState.conductor.crotchet * 50 + 20
+
 	local noteTime = PlayState.conductor.time / 1000
 	self.playerNotefield.time, self.enemyNotefield.time = noteTime, noteTime
 
@@ -664,7 +667,7 @@ function PlayState:doNotefieldBot(notefield)
 	if size == 0 then return end
 	while i <= size do
 		local note = notes[i]
-		if contime < note.time then break end
+		if not note or contime < note.time then break end
 
 		if not note.hit and not note.tooLate and not note.ignoreNote then
 			self:notefieldPress(notefield, note.time, note.column)
