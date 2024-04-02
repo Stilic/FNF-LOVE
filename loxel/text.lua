@@ -43,8 +43,8 @@ function Text:__updateDimension()
 
 	self.__width = self.font:getWidth(self.content)
 	self.__height = self.font:getHeight()
-	if self.limit ~= nil or self.width ~= 0 then
-		local _, lines = self.font:getWrap(self.content, self.limit or self.width)
+	if self.limit ~= nil or self.__width ~= 0 then
+		local _, lines = self.font:getWrap(self.content, self.limit or self.__width)
 		self.__height = self.__height * #lines
 	end
 end
