@@ -150,7 +150,7 @@ function Note:createSustain()
 
 	susend:play("end"); self.updateHitbox(susend)
 	sustain:play("hold"); self.updateHitbox(sustain)
-	sustain.__render, susend.__render = nil
+	sustain.__render, susend.__render = __NIL__, __NIL__
 end
 
 function Note:destroySustain()

@@ -38,6 +38,13 @@
 			["#F9393F", "#FFFFFF", "#651038"]
 		],
 
+		"properties": [
+			{"x": 0, "alpha": 0.6},
+			{"x": 0, "alpha": 0.6},
+			{"x": 3, "alpha": 0.6},
+			{"x": 3, "alpha": 0.6}
+		],
+
 		"scale": 0.7,
 		"antialiasing": false
 	},
@@ -54,6 +61,13 @@
 			["#00FFFF", "#FFFFFF", "#1542B7"],
 			["#12FA05", "#FFFFFF", "#0A4447"],
 			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"properties": [
+			{"x": 0, "alpha": 0.6},
+			{"x": 0, "alpha": 0.6},
+			{"x": 3, "alpha": 0.6},
+			{"x": 3, "alpha": 0.6}
 		],
 
 		"scale": 0.7,
@@ -87,11 +101,18 @@
 			["glow", "hit glow", 24, false]
 		],
 
+		"colors": [
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
 		"properties": [
-			{"angle": -90},
-			{"angle": 180},
-			{"angle": 0},
-			{"angle": 90}
+			{"angle": -90, "alpha": 0.7},
+			{"angle": 180, "alpha": 0.7},
+			{"angle": 0, "alpha": 0.7},
+			{"angle": 90, "alpha": 0.7}
 		],
 
 		"scale": 0.7,

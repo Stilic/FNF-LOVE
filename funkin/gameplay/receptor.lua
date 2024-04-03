@@ -42,10 +42,11 @@ function Receptor:setColumn(column)
 	if column == self.column then return end
 	self.column = column
 
-	if self.skin.receptors.disableRgb then
+	local skin = self.skin
+	if skin.receptors.disableRgb then
 		self.__shaderAnimations.pressed = nil
 	else
-		local dataNotes, fixedColumn = self.skin.notes, column + 1
+		local dataNotes, fixedColumn = skin.notes, column + 1
 		local noteColor = dataNotes and dataNotes.colors
 		noteColor = noteColor and noteColor[fixedColumn]
 
@@ -56,6 +57,12 @@ function Receptor:setColumn(column)
 				Color.fromString(noteColor[3])
 			)
 		end
+	end
+
+	if skin.glow then
+		self.glow = Sprite()
+		self.glow.offset.z, self.glow.origin.z, self.glow.__render = 0, 0, __NIL__
+		Note.loadSkinData(self.glow, skin.glow, skin.skin, column)
 	end
 end
 
@@ -102,11 +109,30 @@ function Receptor:play(anim, force, frame, dontShader)
 	local realAnim = self.__animations[toPlay] and toPlay or anim
 	Sprite.play(self, realAnim, force, frame)
 
+	if anim == "confirm" and self.glow then
+		local anim, toPlay = 'glow', 'glop-note' .. self.column
+		local realAnim = self.glow.__animations[toPlay] and toPlay or anim
+		Sprite.play(self.glow, realAnim, force, frame)
+		self.updateHitbox(self.glow)
+	end
+
 	self:updateHitbox()
 	self.__strokeDelta, self.strokeTime = 0, 0
 
 	if not dontShader then
 		self.shader = self.__shaderAnimations[anim]
+	end
+end
+
+function Receptor:__render(camera)
+	ActorSprite.__render(self, camera)
+
+	local glow = self.glow
+	if glow and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
+		glow.x, glow.y, glow.z, glow.scale, glow.zoom, glow.rotation, glow.vertices, glow.__vertices, glow.fov, glow.mesh =
+			self.x, self.y, self.z, self.scale, self.zoom, self.rotation, self.vertices, self.__vertices, self.fov, self.mesh
+
+		ActorSprite.__render(glow, camera)
 	end
 end
 
