@@ -107,7 +107,8 @@ function Note:setSustainTime(sustaintime)
 	if sustaintime == self.sustainTime then return end
 	self.sustainTime = sustaintime
 
-	return sustaintime > 0.01 and self:createSustain() or self:destroySustain()
+	if sustaintime > 0.01 then return self:createSustain() end
+	return self:destroySustain()
 	--[[
 	local column, skin = self.column, self.skin
 	local color = Note.colors[column + 1]
