@@ -1,9 +1,9 @@
 {
 	"notes": {
-		"sprite": "NOTE_assets",
+		"sprite": "funkin-noteskin",
 
 		"animations": [
-			["note", "Note base", 24, true]
+			["note", "note", 1, false]
 		],
 
 		"colors": [
@@ -14,45 +14,89 @@
 		],
 
 		"properties": [
-			{},
 			{"angle": -90},
-			{"angle": 90},
-			{"angle": 180}
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
 		],
-
-		"sustains": {
-			"animations": [
-				["hold", "sustain", 24, true],
-				["endhold", "end sustain", 24, true]
-			]
-		},
 
 		"scale": 0.7,
 		"antialiasing": true
 	},
 
-	"receptors": {
-		"sprite": "NOTE_assets",
+	"sustains": {
+		"sprite": "funkin-noteskin",
 
 		"animations": [
-			["static", "Note base", 24, true],
-			["pressed", "Note pressed", 24, false],
-			["confirm", "Note confirm", 24, false]
+			["hold", "hold piece", 1, false]
 		],
 
 		"colors": [
-			["#87A3AD", "#FFFFFF","#000000"]
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"scale": 0.7,
+		"antialiasing": false
+	},
+
+	"sustainends": {
+		"sprite": "funkin-noteskin",
+
+		"animations": [
+			["end", "hold end", 1, false]
+		],
+
+		"colors": [
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"scale": 0.7,
+		"antialiasing": false
+	},
+
+	"receptors": {
+		"sprite": "funkin-noteskin",
+
+		"animations": [
+			["static", "receptor", 1, true],
+			["pressed", "press", 24, false],
+			["confirm", "hit0", 24, false]
 		],
 
 		"properties": [
-			{},
 			{"angle": -90},
-			{"angle": 90},
-			{"angle": 180}
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
 		],
 
 		"scale": 0.7,
 		"antialiasing": true
+	},
+
+	"glow": {
+		"sprite": "funkin-noteskin",
+		
+		"animations": [
+			["glow", "hit glow", 24, false]
+		],
+
+		"properties": [
+			{"angle": -90},
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
+		],
+
+		"scale": 0.7,
+		"antialiasing": true,
+		"blend": "add"
 	},
 
 	"splashes": {
@@ -64,6 +108,6 @@
 		],
 
 		"scale": 1,
-		"antialiasing": false
+		"antialiasing": true
 	}
 }

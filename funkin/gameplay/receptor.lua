@@ -9,44 +9,54 @@ Receptor.pixelAnim = { -- {static, pressed, confirm}
 }
 
 -- noteskip wip
-function Receptor:new(x, y, column, noteskin)
+function Receptor:new(x, y, column, skin)
 	Receptor.super.new(self, x, y)
 
-	self.scale.x, self.scale.y = 0.7, 0.7
 	self.holdTime = 0
 	self.strokeTime = 0
 	self.__strokeDelta = 0
+
+	self.__shaderAnimations = {}
+	self.glow = nil
 
 	self.noteRotations = {x = 0, y = 0, z = 0}
 	self.noteOffsets = {x = 0, y = 0, z = 0}
 	self.lane = nil
 
-	self:setNoteskin(noteskin)
-	self:setColumn(column)
-
-	self:play("static")
+	self.column = column
+	self:setSkin(skin)
 end
 
-function Receptor:setNoteskin(noteskin)
-	if noteskin == self.noteskin then return end
-	self.noteskin = noteskin
+function Receptor:setSkin(skin)
+	if skin == self.skin or not skin.receptors then return end
 
 	local col = self.column
-	self.column = nil
-
-	self:setFrames(paths.getSparrowAtlas("skins/" .. noteskin .."/NOTE_assets"))
+	self.skin, self.column = skin, nil
+	Note.loadSkinData(self, skin.receptors, skin.skin, col)
 
 	if col then self:setColumn(col) end
+	self:play("static")
 end
 
 function Receptor:setColumn(column)
 	if column == self.column then return end
 	self.column = column
 
-	local dir = Note.directions[column + 1]
-	self:addAnimByPrefix("static", "arrow" .. dir:upper(), 24, false)
-	self:addAnimByPrefix("pressed", dir .. " press", 24, false)
-	self:addAnimByPrefix("confirm", dir .. " confirm", 24, false)
+	if self.skin.receptors.disableRgb then
+		self.__shaderAnimations.pressed = nil
+	else
+		local dataNotes, fixedColumn = self.skin.notes, column + 1
+		local noteColor = dataNotes and dataNotes.colors
+		noteColor = noteColor and noteColor[fixedColumn]
+
+		if noteColor then
+			self.__shaderAnimations.pressed = RGBShader.actorCreate(
+				Color.fromString(noteColor[1]),
+				Color.fromString(noteColor[2]),
+				Color.fromString(noteColor[3])
+			)
+		end
+	end
 end
 
 function Receptor:update(dt)
@@ -58,7 +68,7 @@ function Receptor:update(dt)
 		end
 	end
 
-	if self.strokeTime ~= 0 and self.curAnim and self.curAnim.name == "confirm" then
+	if self.strokeTime ~= 0 and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
 		self.__strokeDelta = self.__strokeDelta + dt
 		 if self.__strokeDelta >= 0.13 then
 			self.curFrame, self.animFinished = 1, false
@@ -87,10 +97,17 @@ function Receptor:updateHitbox()
 	self:centerOffsets(width, height)
 end
 
-function Receptor:play(anim, force, frame)
-	Receptor.super.play(self, anim, force, frame)
+function Receptor:play(anim, force, frame, dontShader)
+	local toPlay = anim .. '-note' .. self.column
+	local realAnim = self.__animations[toPlay] and toPlay or anim
+	Sprite.play(self, realAnim, force, frame)
+
 	self:updateHitbox()
 	self.__strokeDelta, self.strokeTime = 0, 0
+
+	if not dontShader then
+		self.shader = self.__shaderAnimations[anim]
+	end
 end
 
 return Receptor

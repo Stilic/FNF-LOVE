@@ -64,10 +64,15 @@ end
 function paths.getJSON(key)
 	local data = readFile(paths.getMods(key .. ".json")) or
 		readFile(paths.getPath(key .. ".json"))
+
+	if data then return decodeJson(data) end
+end
+
+function paths.getNoteskin(skin)
+	local data = paths.getJSON("data/notes/" .. skin)
 	if data then
-		return decodeJson(data)
-	else
-		return nil
+		data.skin = skin
+		return data
 	end
 end
 

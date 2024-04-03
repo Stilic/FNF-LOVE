@@ -1,6 +1,7 @@
 local ActorSprite = Actor:extend("ActorSprite")
 ActorSprite:implement(Sprite)
 
+-- Actors have their own shader format, to avoid uv affine.
 ActorSprite.vertexFormat = {
 	{"VertexPosition", "float", 2},
 	{"VertexTexCoord", "float", 3},
@@ -173,7 +174,7 @@ function ActorSprite:__render(camera)
 	mesh:setVertices(verts)
 	mesh:setTexture(self.texture)
 
-	love.graphics.setShader(defaultShader or self.shader); love.graphics.setBlendMode(self.blend)
+	love.graphics.setShader(self.shader or defaultShader); love.graphics.setBlendMode(self.blend)
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
 	love.graphics.draw(mesh, 0, 0)
 

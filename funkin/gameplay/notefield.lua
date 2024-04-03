@@ -22,15 +22,15 @@ function Notefield.checkDiff(note, time)
 		note.time < time + safeZoneOffset * note.earlyHitMult
 end
 
-function Notefield:new(x, y, keys, character, noteskin)
+function Notefield:new(x, y, keys, character, skin)
 	Notefield.super.new(self, x, y)
-	noteskin = noteskin or "normal"
+	skin = skin or paths.getNoteskin("default")
 
 	self.noteWidth = math.floor(170 * 0.67)
 	self.height = 500
 	self.keys = keys
 	self.character = character
-	self.noteskin = noteskin
+	self.skin = skin
 	self.speed = 1
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound('hitsound')
@@ -64,15 +64,17 @@ function Notefield:new(x, y, keys, character, noteskin)
 		self:makeLane(i).x = startx + self.noteWidth * i
 	end
 
+	--self.lanes[2].scale.y = -1
+
 	self:getWidth()
 end
 
 function Notefield:makeLane(column, y)
 	local lane = ActorGroup(0, 0, 0, false)
-	lane.receptor = Receptor(0, y or -self.height / 2, column - 1, self.noteskin)
+	lane.receptor = Receptor(0, y or -self.height / 2, column - 1, self.skin)
 	lane.renderedNotes, lane.renderedNotesI = {}, {}
 	lane.currentNoteI = 1
-	lane.drawSize = 1
+	lane.drawSize, lane.drawSizeOffset = 1, 0
 	lane.speed = 1
 
 	lane:add(lane.receptor)
@@ -86,8 +88,8 @@ function Notefield:makeLane(column, y)
 	return lane
 end
 
-function Notefield:makeNote(time, col, sustain, noteskin)
-	local note = Note(time, col, sustain, noteskin or self.noteskin)
+function Notefield:makeNote(time, col, sustain, skin)
+	local note = Note(time, col, sustain, skin or self.skin)
 	return note, self:addNote(note)
 end
 
@@ -102,7 +104,7 @@ function Notefield:copyNotesfromNotefield(notefield)
 	for i, note in ipairs(notefield.notes) do
 		local noteClone = note:clone()
 		noteClone.parent = self
-		noteClone.lane = nil
+		noteClone.group = nil
 
 		clone[i] = noteClone
 	end
@@ -119,9 +121,9 @@ function Notefield:removeNotefromIndex(idx, dontClearHits)
 		note.parent = nil
 	end
 
-	local lane = note.lane
+	local lane = note.group
 	if lane then
-		note.lane, lane.renderedNotesI[note] = nil
+		note.group, lane.renderedNotesI[note] = nil
 		lane:remove(note)
 		table.delete(lane.renderedNotes, note)
 	end
@@ -174,6 +176,8 @@ function Notefield:hit(time, note, force)
 		self.totalHits = self.totalHits + rating.mod
 		self[name] = (self[name] or 0) + 1
 		(self.hitCallback or __NULL__)(rating, note, force)
+	elseif note.sustain then -- for sustains
+
 	end
 
 	if force or not note.sustain then
@@ -341,52 +345,60 @@ function Notefield:__prepareLane(column, lane, time)
 		self.notes, lane.receptor,
 		self.speed * lane.speed,
 		self.drawSize * lane.drawSize,
-		self.drawSizeOffset
+		self.drawSizeOffset + lane.drawSizeOffset
 
-	local size = #notes
-	if size == 0 then return end
+	local size, renderedNotes, renderedNotesI = #notes, lane.renderedNotes, lane.renderedNotesI
+	table.clear(renderedNotesI)
+
+	if size == 0 then
+		for _, note in ipairs(renderedNotes) do
+			note.group = nil
+			lane:remove(note)
+			table.delete(renderedNotes, note)
+		end
+		return
+	end
 
 	local repx, repy, repz = receptor.x, receptor.y, receptor.z
 	local offset, noteI = (-drawSize / 2) - repy + drawSizeOffset, math.clamp(lane.currentNoteI, 1, size)
-	while noteI < size and not (notes[noteI].hit or notes[noteI].tooLate) and
+	while noteI < size and not notes[noteI].sustain and
 		(notes[noteI + 1].column ~= column or Note.toPos(notes[noteI + 1].time - time, speed) <= offset)
 	do
 		noteI = noteI + 1
 	end
 	while noteI > 1 and (Note.toPos(notes[noteI - 1].time - time, speed) > offset) do noteI = noteI - 1 end
-	lane.currentNoteI = noteI
 
-	local renderedNotes, renderedNotesI = lane.renderedNotes, lane.renderedNotesI
-	table.clear(renderedNotesI)
-
+	lane._drawSize, lane._drawSizeOffset = lane.drawSize, lane.drawSizeOffset
+	lane.drawSize, lane.drawSizeOffset, lane.currentNoteI = drawSize, drawSizeOffset, noteI
 	local reprx, repry, reprz = receptor.noteRotations.x, receptor.noteRotations.y, receptor.noteRotations.z
-	local repox, repoy, repoz = receptor.noteOffsets.x, receptor.noteOffsets.y, receptor.noteOffsets.z
+	local repox, repoy, repoz = repx + receptor.noteOffsets.x, repy + receptor.noteOffsets.y, repz + receptor.noteOffsets.z
 	while noteI <= size do
 		local note = notes[noteI]
 		local y = Note.toPos(note.time - time, speed)
-		if note.column == column and (y > offset or note.hit or note.tooLate) then
+		if note.column == column and (y > offset or note.sustain) then
 			if y > drawSize / 2 + drawSizeOffset - repy then break end
 
 			renderedNotesI[note] = true
-			local prevlane = note.lane
+			local prevlane = note.group
 			if prevlane ~= lane then
 				if prevlane then prevlane:remove(note) end
 				table.insert(renderedNotes, note)
 				lane:add(note)
-				note.lane = lane
+				note.group = lane
 			end
 
-			-- todo: render path here
-			local x, y, z = Actor.worldSpin(0, y, 0, reprx, repry, reprz, repox, repoy, repoz)
-			note.x, note.y, note.z = x + repox + repx, y + repoy + repy, z + repoz + repz
+			-- Notes Render are handled in Note.lua
+			note._rx, note._ry, note._rz, note._speed = note.rotation.x, note.rotation.y, note.rotation.z, note.speed
+			note._targetTime, note.speed, note.x, note.y, note.z, note.rotation.x, note.rotation.y, note.rotation.z =
+				time, note._speed * speed, repox, repoy, repoz, note._rx + reprx, note._ry + repry, note._rz + reprz
 		end
 
 		noteI = noteI + 1
 	end
 
-	for i, note in ipairs(renderedNotes) do
+	for _, note in ipairs(renderedNotes) do
 		if not renderedNotesI[note] then
-			note.lane = nil
+			note.group = nil
 			lane:remove(note)
 			table.delete(renderedNotes, note)
 		end
@@ -400,6 +412,13 @@ function Notefield:__render(camera)
 	end
 
 	Notefield.super.__render(self, camera)
+
+	for _, lane in ipairs(self.lanes) do
+		lane.drawSize, lane.drawSizeOffset = lane._drawSize, lane._drawSizeOffset
+		for _, note in ipairs(lane.renderedNotes) do
+			note.speed, note.rotation.x, note.rotation.y, note.rotation.z = note._speed, note._rx, note._ry, note._rz
+		end
+	end
 end
 
 return Notefield
