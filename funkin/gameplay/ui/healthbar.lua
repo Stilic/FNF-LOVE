@@ -13,21 +13,17 @@ function HealthBar:new(bfData, dadData, tracker)
 		math.floor(self.bg.width - 8),
 		math.floor(self.bg.height - 8), 0, self.maxHealth, true)
 
-	if dadData.iconColor then
-		self.bar.bg.color = dadData.iconColor
-	end
-	if bfData.iconColor then
-		self.bar.color = bfData.iconColor
-	end
-
 	self:add(self.bg)
 	self:add(self.bar)
 
-	self.iconP1 = HealthIcon(dadData.icon, true)
-	self.iconP2 = HealthIcon(bfData.icon)
+	self.iconP1 = HealthIcon(bfData.icon, true)
+	self.iconP2 = HealthIcon(dadData.icon)
 
 	self.iconP1.y = self.bar.y + (self.bar.height - self.iconP1.height) / 2
 	self.iconP2.y = self.bar.y + (self.bar.height - self.iconP2.height) / 2
+
+	self.bar.color = bfData.iconColor ~= nil and Color.fromString(bfData.iconColor) or Color.GREEN
+	self.bar.color.bg = dadData.iconColor ~= nil and Color.fromString(dadData.iconColor) or Color.RED
 
 	self:add(self.iconP1)
 	self:add(self.iconP2)
