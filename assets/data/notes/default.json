@@ -1,0 +1,69 @@
+{
+	"notes": {
+		"sprite": "NOTE_assets",
+
+		"animations": [
+			["note", "Note base", 24, true]
+		],
+
+		"colors": [
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"properties": [
+			{},
+			{"angle": -90},
+			{"angle": 90},
+			{"angle": 180}
+		],
+
+		"sustains": {
+			"animations": [
+				["hold", "sustain", 24, true],
+				["endhold", "end sustain", 24, true]
+			]
+		},
+
+		"scale": 0.7,
+		"antialiasing": true
+	},
+
+	"receptors": {
+		"sprite": "NOTE_assets",
+
+		"animations": [
+			["static", "Note base", 24, true],
+			["pressed", "Note pressed", 24, false],
+			["confirm", "Note confirm", 24, false]
+		],
+
+		"colors": [
+			["#87A3AD", "#FFFFFF","#000000"]
+		],
+
+		"properties": [
+			{},
+			{"angle": -90},
+			{"angle": 90},
+			{"angle": 180}
+		],
+
+		"scale": 0.7,
+		"antialiasing": true
+	},
+
+	"splashes": {
+		"sprite": "noteSplashes",
+
+		"animations": [
+			["splash0", "note impact 1 red", 12, false],
+			["splash1", "note impact 2 red", 12, false]
+		],
+
+		"scale": 1,
+		"antialiasing": false
+	}
+}

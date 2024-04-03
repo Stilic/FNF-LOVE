@@ -1,0 +1,78 @@
+{
+	"notes": {
+		"sprite": "NOTE_assets",
+		"isPixel": true,
+
+		"animations": [
+			["note", [0], 12, true]
+		],
+
+		"colors": [
+			["#E276FF", "#FFF9FF", "#60008D"],
+			["#3DCAFF", "#FFF9FF", "#003060"],
+			["#71E300", "#FFF9FF", "#003100"],
+			["#FF884E", "#FFF9FF", "#6C0000"]
+		],
+
+		"properties": [
+			{},
+			{"angle": -90},
+			{"angle": 90},
+			{"angle": 180}
+		],
+
+		"sustains": {
+			"frameWidth": 7,
+			"frameHeight": 6,
+			"animations": [
+				["hold", [0], 12, true],
+				["endhold", [1], 12, true]
+			]
+		},
+
+		"frameWidth": 17,
+		"frameHeight": 17,
+		"scale": 6,
+		"antialiasing": false
+	},
+
+	"receptors": {
+		"sprite": "NOTE_assets",
+		"isPixel": true,
+
+		"animations": [
+			["static", [0], 12, true],
+			["pressed", [0, 1], 12, false],
+			["confirm", [2, 3], 12, false]
+		],
+
+		"colors": [
+			["#A2BAC8", "#FFF5FC","#404047"]
+		],
+
+		"properties": [
+			{},
+			{"angle": -90},
+			{"angle": 90},
+			{"angle": 180}
+		],
+
+		"frameWidth": 17,
+		"frameHeight": 17,
+		"scale": 6,
+		"antialiasing": false
+	},
+
+	"splashes": {
+		"sprite": "noteSplashes",
+		"isPixel": true,
+
+		"animations": [
+			["splash0", "Note splash 1", 12, false],
+			["splash1", "Note splash 2", 12, false]
+		],
+
+		"scale": 5.6,
+		"antialiasing": false
+	}
+}
