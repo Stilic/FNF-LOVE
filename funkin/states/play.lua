@@ -581,11 +581,11 @@ function PlayState:update(dt)
 		end
 	end
 
-	--self.playerNotefield.memberRotations.x = PlayState.conductor.time / PlayState.conductor.crotchet * 90
-	--self.playerNotefield.memberRotations.z = PlayState.conductor.time / PlayState.conductor.crotchet * 50 + 20
-
 	local noteTime = PlayState.conductor.time / 1000
 	self.playerNotefield.time, self.enemyNotefield.time = noteTime, noteTime
+
+	--self.playerNotefield.rotation.x = PlayState.conductor.time / PlayState.conductor.crotchet * 40
+	--self.playerNotefield.rotation.y = PlayState.conductor.time / PlayState.conductor.crotchet * 30
 
 	self.scripts:call("update", dt)
 	PlayState.super.update(self, dt)
@@ -912,7 +912,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	end
 end
 
-function PlayState:onKeyRelease(key, type, scancode, isrepeat, time)
+function PlayState:onKeyRelease(key, type, scancode, time)
 	if self.botPlay or (self.substate and not self.persistentUpdate) then return end
 	local controls = controls:getControlsFromSource(type .. ":" .. key)
 
