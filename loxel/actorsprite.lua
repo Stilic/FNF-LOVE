@@ -16,6 +16,7 @@ function ActorSprite.initShader()
 			love_PixelColor = Texel(MainTex, VaryingTexCoord.xy / VaryingTexCoord.z) * VaryingColor;
 		}
 	]]
+	ActorSprite.defaultShader = defaultShader
 end
 
 function ActorSprite:new(x, y, z, texture)
@@ -164,8 +165,8 @@ function ActorSprite:__render(camera)
 		vert = verts[i] or table.new(5, 0)
 		verts[i] = vert
 
-		vx, vy, vz = self.worldSpin(v[1] * fw, v[2] * fh, v[3] * sz, rx, ry, rz, ox, oy, oz)
-		vert[1], vert[2], vert[5] = self.toScreen(vx + x - ox, vy + y - oy, vz + z - oz, self.fov)
+		vx, vy, vz = Actor.worldSpin(v[1] * fw, v[2] * fh, v[3] * sz, rx, ry, rz, ox, oy, oz)
+		vert[1], vert[2], vert[5] = Actor.toScreen(vx + x - ox, vy + y - oy, vz + z - oz, self.fov)
 		vert[3], vert[4] = (v[4] * uvw + uvx) * vert[5], (v[5] * uvh + uvy) * vert[5]
 	end
 	mesh:setDrawRange(1, #self.vertices)

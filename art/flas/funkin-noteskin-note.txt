@@ -1,0 +1,3 @@
+i had to manually edit the exported image in paint.net to be color-balanced full brightness
+because everytime when exported in animate, even if the blending is anything, it just had these
+weird black colours, no offense but i just dont like it, it also ruins the add blending if used in-game

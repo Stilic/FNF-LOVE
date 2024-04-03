@@ -59,6 +59,8 @@ function ActorGroup:__drawNestGroup(members, camera, list, x2, y2, sf, force, zo
 	end
 end
 
+local tempScales, tempRotations = {x = 1, y = 1, z = 1}, {x = 0, y = 0, z = 0}
+
 function ActorGroup:__render(camera)
 	local list = self.__cameraRenderQueue[camera]
 	if not list then return end
@@ -80,12 +82,12 @@ function ActorGroup:__render(camera)
 
 	local a, b = camera.scroll, self.scrollFactor
 	for i, member in ipairs(list) do
-		-- i made it too comp[licated] im sorryy :sob:
-		if member.x then
-			local mrot, msc, mmmr, mmms = member.rotation, member.scale, member.memberRotations, member.memberScales
+		if not member.ignoreAffectByGroup then -- i made it too comp[licated] im sorryy :sob:
+			local mrot, msc, mmmr, mmms = member.rotation or tempRotations, member.scale or tempScales,
+				member.memberRotations, member.memberScales
 
-			local px, py, pz, pa, psx, psy, psz, pma, prx, pry, prz, pmsx, pmsy, pmsz, pmrx, pmry, pmrz = member.x, member.y,
-				member.z, member.angle, msc.x, msc.y, msc.z, member.memberAngles
+			local px, py, pz, pa, psx, psy, psz, pma, prx, pry, prz, pmsx, pmsy, pmsz, pmrx, pmry, pmrz =
+				member.x or 0, member.y or 0, member.z or 0, member.angle or 0, msc.x, msc.y, msc.z, member.memberAngles
 
 			local vx, vy, vz = Actor.worldSpin(px * sx, py * sy, pz * sz, rx, ry, rz, ox, oy, oz)
 			member.x, member.y, member.z =

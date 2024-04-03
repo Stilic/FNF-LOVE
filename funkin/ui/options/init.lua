@@ -296,7 +296,12 @@ function Options:leave()
 		self.buttons:disable()
 	end
 
-	for _, v in ipairs(self.throttles) do v:destroy() end
+	if self.throttles then
+		for i, v in ipairs(self.throttles) do
+			v:destroy()
+			self.throttles[i] = nil
+		end
+	end
 	table.clear(self.throttles)
 
 	self:kill()
@@ -312,7 +317,9 @@ end
 function Options:destroy()
 	Options.super.destroy(self)
 
-	for _, v in ipairs(self.throttles) do v:destroy() end
+	if self.throttles then
+		for _, v in ipairs(self.throttles) do v:destroy() end
+	end
 	self.throttles = nil
 
 	if self.tabGroup then

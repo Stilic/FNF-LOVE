@@ -143,7 +143,7 @@ function Character:update(dt)
 			if self.strokeTime ~= -1 then
 				self.strokeTime = self.strokeTime - dt
 				if self.strokeTime <= 0 then
-					self.__strokeDelta, self.strokeTime  = 0, 0
+					self.__strokeDelta, self.strokeTime = 0, 0
 				end
 			end
 		end
