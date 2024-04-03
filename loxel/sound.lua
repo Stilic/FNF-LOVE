@@ -153,8 +153,8 @@ function Sound:update(dt)
 
 	self.__isFinished = isFinished
 
-	if self.__fadeStartTime then
-		self.__fadeElapsed = self.__fadeTime + dt
+	if self.__fadeDuration then
+		self.__fadeElapsed = self.__fadeElapsed + dt
 		if self.__fadeElapsed < self.__fadeDuration then
 			self:setVolume(math.lerp(self.__startVolume, self.__endVolume, self.__fadeElapsed / self.__fadeDuration))
 		else
