@@ -683,7 +683,9 @@ function PlayState:notefieldPress(notefield, time, column)
 	local hit, rating, gotNotes = notefield:press(time, column, false)
 	local isPlayer = table.find(self.playerNotefields, notefield)
 	if hit then
-		game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
+		if notefield.hitsound and notefield.hitsoundVolume > 0 then
+			game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
+		end
 		for _, n in ipairs(gotNotes) do self:goodNoteHit(n, rating) end
 	else
 		local receptor = notefield.receptors[column + 1]
