@@ -5,7 +5,7 @@ MainMenuState.curSelected = 1
 function MainMenuState:enter()
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/mainmenu", false)
+	self.script = Script("data/states/mainmenu", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true

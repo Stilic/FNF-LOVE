@@ -6,7 +6,7 @@ StoryMenuState.curDifficulty = 2
 function StoryMenuState:enter()
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/storymenu", false)
+	self.script = Script("data/states/storymenu", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true

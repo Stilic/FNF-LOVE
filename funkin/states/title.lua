@@ -5,7 +5,7 @@ TitleState.initialized = false
 function TitleState:enter()
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/title", false)
+	self.script = Script("data/states/title", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true

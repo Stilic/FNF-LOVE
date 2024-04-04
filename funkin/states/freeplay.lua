@@ -7,7 +7,7 @@ FreeplayState.curDifficulty = 2
 function FreeplayState:enter()
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/freeplay", false)
+	self.script = Script("data/states/freeplay", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true
