@@ -32,7 +32,8 @@ function Receptor:setSkin(skin)
 
 	local col = self.column
 	self.skin, self.column = skin, nil
-	Note.loadSkinData(self, skin.receptors, skin.skin, col)
+	Note.loadSkinData(self, skin, "receptors", col)
+	self.__shaderAnimations.static = self.shader
 
 	if col then self:setColumn(col) end
 	self:play("static")
@@ -43,26 +44,10 @@ function Receptor:setColumn(column)
 	self.column = column
 
 	local skin = self.skin
-	if skin.receptors.disableRgb then
-		self.__shaderAnimations.pressed = nil
-	else
-		local dataNotes, fixedColumn = skin.notes, column + 1
-		local noteColor = dataNotes and dataNotes.colors
-		noteColor = noteColor and noteColor[fixedColumn]
-
-		if noteColor then
-			self.__shaderAnimations.pressed = RGBShader.actorCreate(
-				Color.fromString(noteColor[1]),
-				Color.fromString(noteColor[2]),
-				Color.fromString(noteColor[3])
-			)
-		end
-	end
-
 	if skin.glow then
 		self.glow = Sprite()
 		self.glow.offset.z, self.glow.origin.z, self.glow.__render = 0, 0, __NIL__
-		Note.loadSkinData(self.glow, skin.glow, skin.skin, column)
+		Note.loadSkinData(self.glow, skin, "glow", column)
 	end
 end
 
@@ -78,7 +63,11 @@ function Receptor:update(dt)
 	if self.strokeTime ~= 0 and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
 		self.__strokeDelta = self.__strokeDelta + dt
 		 if self.__strokeDelta >= 0.13 then
+		 	local time = self.__strokeTime
 			self.curFrame, self.animFinished = 1, false
+			if self.glow then
+				self.glow.curFrame, self.glow.animFinished = 1, false
+			end
 			self.__strokeDelta = 0
 		end
 
@@ -90,7 +79,11 @@ function Receptor:update(dt)
 		end
 	end
 
-	Receptor.super.update(self, dt)
+	if self.glow then
+		ActorSprite.update(self.glow, dt)
+	end
+
+	ActorSprite.update(self, dt)
 end
 
 function Receptor:updateHitbox()

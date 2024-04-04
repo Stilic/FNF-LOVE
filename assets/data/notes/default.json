@@ -78,9 +78,13 @@
 		"sprite": "funkin-noteskin",
 
 		"animations": [
-			["static", "receptor", 1, true],
-			["pressed", "press", 24, false],
+			["static", "note", 1, true],
+			["pressed", "press", 24, false, true],
 			["confirm", "hit0", 24, false]
+		],
+
+		"colors": [
+			["#87A3AD", "#FFFFFF", "#000000"]
 		],
 
 		"properties": [
@@ -109,10 +113,10 @@
 		],
 
 		"properties": [
-			{"angle": -90, "alpha": 0.7},
-			{"angle": 180, "alpha": 0.7},
-			{"angle": 0, "alpha": 0.7},
-			{"angle": 90, "alpha": 0.7}
+			{"angle": -90},
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
 		],
 
 		"scale": 0.7,

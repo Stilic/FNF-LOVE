@@ -33,8 +33,9 @@ function Note:_addAnim(...)
 	(type(select(2, ...)) == 'table' and Sprite.addAnim or Sprite.addAnimByPrefix)(self, ...)
 end
 
-function Note:loadSkinData(data, name, column, noRgb)
-	local anims, tex = data.animations, "skins/" .. name .. "/" .. data.sprite
+function Note:loadSkinData(skinData, name, column, noRgb)
+	local data, fixedColumn = skinData[name], column and column + 1 or -1
+	local anims, tex = data.animations, "skins/" .. skinData.skin .. "/" .. data.sprite
 	if anims then
 		if data.isPixel then
 			self:loadTexture(paths.getImage(tex), true, data.frameWidth, data.frameHeight)
@@ -42,7 +43,18 @@ function Note:loadSkinData(data, name, column, noRgb)
 			self:setFrames(paths.getSparrowAtlas(tex))
 		end
 
-		for _, anim in ipairs(anims) do Note._addAnim(self, unpack(anim)) end
+		local noteDatas = not noRgb and skinData.notes
+		local noteColor = noteDatas and noteDatas.colors and noteDatas.colors[fixedColumn]
+		for _, anim in ipairs(anims) do
+			Note._addAnim(self, unpack(anim))
+			if anim[5] and noteColor then
+				self.__shaderAnimations[anim[1]] = RGBShader.actorCreate(
+					Color.fromString(noteColor[1]),
+					Color.fromString(noteColor[2]),
+					Color.fromString(noteColor[3])
+				)
+			end
+		end
 	else
 		self:loadTexture(paths.getImage(tex))
 	end
@@ -54,13 +66,13 @@ function Note:loadSkinData(data, name, column, noRgb)
 	if self.antialiasing == nil then self.antialiasing = true end
 
 	local props = data.properties
-	props = props and column and props[column + 1] or props
+	props = props and props[math.min(fixedColumn, #props)] or props
 	if props then for i, v in pairs(props) do self[i] = v end end
 
 	if not noRgb and not data.disableRgb then
 		local color = data.colors
-		color = color and column and color[column + 1] or color
-		self.shader = color and RGBShader.actorCreate(
+		color = color and color[math.min(fixedColumn, #color)] or color
+		self.shader = color and #color >= 3 and RGBShader.actorCreate(
 			Color.fromString(color[1]),
 			Color.fromString(color[2]),
 			Color.fromString(color[3])
@@ -75,11 +87,11 @@ function Note:setSkin(skin)
 	local name, col = skin.skin, self.column
 	self.skin, self.column = skin, nil
 
-	self:loadSkinData(skin.notes, name, col, true)
+	self:loadSkinData(skin, "notes", col, true)
 
 	if self.sustain then
-		Note.loadSkinData(self.sustain, skin.sustains, name, col)
-		Note.loadSkinData(self.sustainEnd, skin.sustainends, name, col)
+		Note.loadSkinData(self.sustain, skin, "sustains", col)
+		Note.loadSkinData(self.sustainEnd, skin, "sustainends", col)
 	end
 	if col then self:setColumn(col) end
 
@@ -145,8 +157,8 @@ function Note:createSustain()
 	self.sustain, self.sustainEnd = sustain, susend
 
 	local skin, col = self.skin, self.column
-	Note.loadSkinData(sustain, skin.sustains, skin.skin, col)
-	Note.loadSkinData(susend, skin.sustainends, skin.skin, col)
+	Note.loadSkinData(sustain, skin, "sustains", col)
+	Note.loadSkinData(susend, skin, "sustainends", col)
 
 	susend:play("end"); self.updateHitbox(susend)
 	sustain:play("hold"); self.updateHitbox(sustain)
