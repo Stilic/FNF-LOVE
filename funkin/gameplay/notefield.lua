@@ -233,7 +233,7 @@ function Notefield:press(time, column, play)
 		self.pressed[fixedColumn] = coolNote
 
 		if play and self.hitsoundVolume > 0 and self.hitsound then
-			game.sound.play(self.hitsound, hitsoundVolume)
+			game.sound.play(self.hitsound, self.hitsoundVolume)
 		end
 	end
 
