@@ -26,7 +26,7 @@ function Notefield:new(x, y, keys, character, skin)
 	Notefield.super.new(self, x, y)
 	skin = skin or paths.getNoteskin("default")
 
-	self.noteWidth = math.floor(170 * 0.67)
+	self.noteWidth = math.floor(160 * 0.7)
 	self.height = 500
 	self.keys = keys
 	self.character = character
