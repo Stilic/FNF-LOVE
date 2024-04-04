@@ -11,6 +11,7 @@ function Script:new(path, notFoundMsg)
 	self.variables = {}
 	self.notFoundMsg = (notFoundMsg == nil and true or false)
 	self.closed = false
+	self.chunk = nil
 
 	local s, err = pcall(function()
 		local p = path
@@ -18,7 +19,7 @@ function Script:new(path, notFoundMsg)
 		local chunk = paths.getLua(p)
 		if chunk then
 			setfenv(chunk, setmetatable(self.variables, chunkMt))
-			chunk()
+			self.chunk = chunk()
 		else
 			if not self.notFoundMsg then return end
 			print("script not found for " .. paths.getPath(p))
