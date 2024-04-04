@@ -121,14 +121,12 @@ function PlayState:enter()
 	self.playback = 1
 	Timer.setSpeed(1)
 
-	self.camNotes = Camera()
 	self.camHUD = Camera()
 	self.camOther = Camera()
-	game.cameras.add(self.camNotes, false)
 	game.cameras.add(self.camHUD, false)
 	game.cameras.add(self.camOther, false)
 
-	self.camNotes.bgColor[4] = ClientPrefs.data.backgroundDim / 100
+	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 
 	if game.sound.music then game.sound.music:reset(true) end
 	game.sound.loadMusic(paths.getInst(songName))
@@ -193,21 +191,18 @@ function PlayState:enter()
 	self.camZooming = false
 
 	local center = game.width / 2
-	self.playerNotefield = Notefield(0, game.height / 2, 4, self.boyfriend)
 	self.enemyNotefield = Notefield(0, game.height / 2, 4, self.dad)
-	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
+	self.playerNotefield = Notefield(0, game.height / 2, 4, self.boyfriend)
+	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
 
-	self.playerNotefield.cameras = {self.camNotes}
-	self.enemyNotefield.cameras = {self.camNotes}
-
+  self.enemyNotefields = {self.enemyNotefield}
 	self.playerNotefields = {self.playerNotefield}
-	self.enemyNotefields = {self.enemyNotefield}
-	self.notefields = {self.playerNotefield, self.enemyNotefield}
+	self.notefields = {self.enemyNotefield, self.playerNotefield}
 	self:generateNotes()
 
+  self:add(self.enemyNotefield)
 	self:add(self.playerNotefield)
-	self:add(self.enemyNotefield)
 
 	self.countdown = Countdown()
 	self.countdown:screenCenter()
@@ -221,7 +216,7 @@ function PlayState:enter()
 	self:add(self.botplayTxt)
 
 	for _, o in ipairs({
-		self.botplayTxt, self.countdown
+		self.enemyNotefield, self.playerNotefield, self.botplayTxt, self.countdown
 	}) do o.cameras = {self.camHUD} end
 
 	self.score = 0
@@ -841,7 +836,6 @@ function PlayState:tryPause()
 	if event ~= Script.Event_Cancel then
 		game.camera:unfollow()
 		game.camera:freeze()
-		self.camNotes:freeze()
 		self.camHUD:freeze()
 	
 		game.sound.music:pause()
@@ -932,7 +926,6 @@ function PlayState:closeSubstate()
 	PlayState.super.closeSubstate(self)
 
 	game.camera:unfreeze()
-	self.camNotes:unfreeze()
 	self.camHUD:unfreeze()
 
 	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
