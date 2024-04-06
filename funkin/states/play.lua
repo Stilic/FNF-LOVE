@@ -220,8 +220,12 @@ function PlayState:enter()
 	self.botplayTxt.visible = self.botPlay
 	self:add(self.botplayTxt)
 
+	self.healthBar = HealthBar(self.boyfriend, self.dad, 1)
+	self.healthBar:screenCenter("x").y = game.height * 0.91
+	self:add(self.healthBar)
+
 	for _, o in ipairs({
-		self.botplayTxt, self.countdown
+		self.botplayTxt, self.countdown, self.healthBar
 	}) do o.cameras = {self.camHUD} end
 
 	self.score = 0
@@ -254,12 +258,12 @@ function PlayState:enter()
 		self.buttons:add(up)
 		self.buttons:add(right)
 		self.buttons:set({
-			cameras = {self.camOther},
 			fill = "line",
 			lined = false,
-			config = {
-				round = {0, 0}
-			}
+			blend = "add",
+			releasedAlpha = 0,
+			cameras = {self.camOther},
+			config = {round = {0, 0}}
 		})
 		self.buttons:disable()
 	end
@@ -492,6 +496,8 @@ function PlayState:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
+	self.healthBar:scaleIcons(1.2)
+
 	self.scripts:call("postBeat", b)
 end
 
@@ -637,6 +643,8 @@ function PlayState:update(dt)
 	if self.health <= 0 and not self.isDead then
 		self:tryGameOver()
 	end
+
+	self.healthBar.tracker = self.health
 
 	if Project.DEBUG_MODE then
 		if game.keys.justPressed.TWO then self:endSong() end
