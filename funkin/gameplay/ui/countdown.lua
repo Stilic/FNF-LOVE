@@ -6,10 +6,10 @@ function Countdown:new()
 	self.playback = 1
 	self.duration = .8
 	self.data = {
-		{sound = "skins/normal/intro3",  image = nil},
-		{sound = "skins/normal/intro2",  image = "skins/normal/ready"},
-		{sound = "skins/normal/intro1",  image = "skins/normal/set"},
-		{sound = "skins/normal/introGo", image = "skins/normal/go"}
+		{sound = "skins/default/intro3",  image = nil},
+		{sound = "skins/default/intro2",  image = "skins/default/ready"},
+		{sound = "skins/default/intro1",  image = "skins/default/set"},
+		{sound = "skins/default/introGo", image = "skins/default/go"}
 	}
 end
 

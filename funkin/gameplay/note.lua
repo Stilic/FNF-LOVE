@@ -121,34 +121,6 @@ function Note:setSustainTime(sustaintime)
 
 	if sustaintime > 0.01 then return self:createSustain() end
 	return self:destroySustain()
-	--[[
-	local column, skin = self.column, self.skin
-	local color = Note.colors[column + 1]
-
-	local sustain, susend = self.sustain or Sprite(), self.sustainEnd or Sprite()
-	self.sustain, self.sustainEnd = sustain, susend
-
-	if skin == "pixel" then
-		local tex = paths.getImage('skins/pixel/NOTE_assetsENDS')
-	elseif skin == "normal" then
-		susend:loadTextureFromSprite(self)
-		sustain:loadTextureFromSprite(self)
-		if column == 0 then
-			susend:addAnimByPrefix("static", "pruple end hold")
-		else
-			susend:addAnimByPrefix("static", color .. " hold end")
-		end
-		sustain:addAnimByPrefix("static", color .. " hold piece")
-	else
-		susend:loadTextureFromSprite(self)
-		sustain:loadTextureFromSprite(self)
-		susend:addAnimByPrefix("static", color .. " hold end")
-		sustain:addAnimByPrefix("static", color .. " hold piece")
-	end
-
-	susend:play("static"); self.updateHitbox(susend)
-	sustain:play("static"); self.updateHitbox(sustain)
-	sustain.__render, susend.__render = nil]]
 end
 
 function Note:createSustain()
@@ -230,6 +202,14 @@ function Note:__render(camera)
 	end
 	self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
 
+	--[[
+		I'm aware that if the texture size height or scale are minimized, it'll be huge draw calls
+		i can't wrap it around it either since it requires a shader which would not be a big deal but
+		ActorSprite and rgb uses a shader, and i have to make it around before those renders,
+		I could make a canvas but who knows...
+
+		get fucked™
+	--]]
 	local sustain = self.sustain
 	if sustain then
 		local r, g, b, a = love.graphics.getColor()
@@ -251,7 +231,7 @@ function Note:__render(camera)
 			uvx, uvy, fw, fh = f.quad:getViewport()
 			uvx, uvy, uvw, uvh = uvx / tw, uvy / th, fw / tw, fh / th
 		end
-		fw, fh = fw * sx, fh * sy
+		fw, fh = fw * sx, math.min(fh * sy, 128)
 
 		sustain.texture:setFilter(mode, mode, anisotropy)
 		love.graphics.setShader(sustain.shader or defaultShader); love.graphics.setBlendMode(sustain.blend)

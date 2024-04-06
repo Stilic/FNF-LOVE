@@ -90,7 +90,7 @@ local eventhandlers = {
 	gamepadreleased = function(t, j, b) if love.gamepadreleased then return love.gamepadreleased(j, b, t) end end,
 }
 function love.run()
-	love.FPScap, love.unfocusedFPScap = math.max(select(3, love.window.getMode()).refreshrate, 60), 8
+	love.FPScap, love.unfocusedFPScap = math.max(select(3, love.window.getMode()).refreshrate, 60), 16
 	love.autoPause = Project.flags.InitialAutoFocus
 	love.parallelUpdate = Project.flags.InitialParallelUpdate
 	love.asyncInput, thread_event = Project.flags.InitialAsyncInput, love.thread.newThread(thread_event_code)

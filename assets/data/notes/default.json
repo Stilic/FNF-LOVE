@@ -79,8 +79,8 @@
 
 		"animations": [
 			["static", "note", 1, true],
-			["pressed", "press", 24, false, true],
-			["confirm", "hit0", 24, false]
+			["pressed", "press", 12, false, true],
+			["confirm", "hit0", 12, false]
 		],
 
 		"colors": [

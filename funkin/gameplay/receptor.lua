@@ -17,6 +17,7 @@ function Receptor:new(x, y, column, skin)
 	self.__strokeDelta = 0
 
 	self.__shaderAnimations = {}
+	self.hideReceptor = false
 	self.glow = nil
 
 	self.noteRotations = {x = 0, y = 0, z = 0}
@@ -118,10 +119,12 @@ function Receptor:play(anim, force, frame, dontShader)
 end
 
 function Receptor:__render(camera)
-	ActorSprite.__render(self, camera)
+	if not self.hideReceptor then
+		ActorSprite.__render(self, camera)
+	end
 
 	local glow = self.glow
-	if glow and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
+	if glow and glow.visible and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
 		glow.x, glow.y, glow.z, glow.scale, glow.zoom, glow.rotation, glow.vertices, glow.__vertices, glow.fov, glow.mesh =
 			self.x, self.y, self.z, self.scale, self.zoom, self.rotation, self.vertices, self.__vertices, self.fov, self.mesh
 

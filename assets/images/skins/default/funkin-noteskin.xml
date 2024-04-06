@@ -1,20 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAtlas imagePath="funkin-noteskin.png">
-	<!-- Created with Adobe Animate version 23.0.1.70 -->
-	<!-- http://www.adobe.com/products/animate.html -->
-	<SubTexture name="hit0000" x="458" y="204" width="177" height="173"/>
-	<SubTexture name="hit0001" x="458" y="204" width="177" height="173"/>
-	<SubTexture name="hit0002" x="636" y="204" width="171" height="167" frameX="-3" frameY="-3" frameWidth="177" frameHeight="173"/>
-	<SubTexture name="hit0003" x="636" y="204" width="171" height="167" frameX="-3" frameY="-3" frameWidth="177" frameHeight="173"/>
-	<SubTexture name="hit glow0000" x="241" y="0" width="216" height="215" frameX="-12" frameY="-17" frameWidth="240" frameHeight="237"/>
-	<SubTexture name="hit glow0001" x="458" y="0" width="206" height="203" frameX="-17" frameY="-17" frameWidth="240" frameHeight="237"/>
-	<SubTexture name="hit glow0002" x="0" y="0" width="240" height="237"/>
-	<SubTexture name="hit glow0003" x="0" y="0" width="240" height="237"/>
-	<SubTexture name="hold end0000" x="147" y="238" width="55" height="69"/>
-	<SubTexture name="hold piece0000" x="147" y="308" width="55" height="53"/>
-	<SubTexture name="note0000" x="241" y="216" width="157" height="154"/>
-	<SubTexture name="press0000" x="0" y="238" width="146" height="143" frameX="-3" frameY="-3" frameWidth="153" frameHeight="150"/>
-	<SubTexture name="press0001" x="0" y="238" width="146" height="143" frameX="-3" frameY="-3" frameWidth="153" frameHeight="150"/>
-	<SubTexture name="press0002" x="665" y="0" width="153" height="150"/>
-	<SubTexture name="press0003" x="665" y="0" width="153" height="150"/>
+<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="funkin-noteskin.png" width="778" height="382">
+	<SubTexture name="hit glow0000" x="0" y="0" width="206" height="208" frameX="-16" frameY="-19" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="hit glow0001" x="207" y="0" width="198" height="196" frameX="-20" frameY="-19" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="hit glow0002" x="406" y="0" width="225" height="227" frameX="-7" frameY="-4" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="hit glow0003" x="406" y="0" width="225" height="227" frameX="-7" frameY="-4" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="hit0000" x="0" y="209" width="177" height="173" frameX="-0" frameY="-0" frameWidth="177" frameHeight="173"/>
+	<SubTexture name="hit0002" x="207" y="197" width="171" height="167" frameX="-3" frameY="-3" frameWidth="177" frameHeight="173"/>
+	<SubTexture name="hold end0000" x="632" y="0" width="55" height="69" frameX="-0" frameY="-0" frameWidth="55" frameHeight="69"/>
+	<SubTexture name="hold piece0000" x="379" y="228" width="55" height="128" frameX="-0" frameY="-0" frameWidth="55" frameHeight="128"/>
+	<SubTexture name="note0000" x="435" y="228" width="157" height="154" frameX="-0" frameY="-0" frameWidth="157" frameHeight="154"/>
+	<SubTexture name="press0000" x="632" y="70" width="146" height="142" frameX="-3" frameY="-4" frameWidth="153" frameHeight="150"/>
+	<SubTexture name="press0002" x="593" y="228" width="153" height="150" frameX="-0" frameY="-0" frameWidth="153" frameHeight="150"/>
 </TextureAtlas>
