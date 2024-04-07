@@ -11,7 +11,7 @@
 	<SubTexture name="confirm glow0002" x="778" y="0" width="240" height="237"/>
 	<SubTexture name="confirm glow0003" x="778" y="0" width="240" height="237"/>
 	<SubTexture name="hold end0000" x="0" y="239" width="55" height="69"/>
-	<SubTexture name="hold piece0000" x="57" y="239" width="55" height="128"/>
+	<SubTexture name="hold piece0000" x="57" y="239" width="55" height="64"/>
 	<SubTexture name="note0000" x="114" y="239" width="157" height="154"/>
 	<SubTexture name="press0000" x="273" y="239" width="146" height="143" frameX="-3" frameY="-3" frameWidth="152" frameHeight="150"/>
 	<SubTexture name="press0001" x="273" y="239" width="146" height="143" frameX="-3" frameY="-3" frameWidth="152" frameHeight="150"/>
