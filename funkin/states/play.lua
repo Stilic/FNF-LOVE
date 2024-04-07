@@ -220,7 +220,7 @@ function PlayState:enter()
 	self.botplayTxt.visible = self.botPlay
 	self:add(self.botplayTxt)
 
-	self.healthBar = HealthBar(self.boyfriend, self.dad, 1)
+	self.healthBar = HealthBar(self.boyfriend, self.dad)
 	self.healthBar:screenCenter("x").y = game.height * 0.91
 	self:add(self.healthBar)
 
@@ -640,11 +640,11 @@ function PlayState:update(dt)
 		table.delete(self.playerNotefield.missedNotes, note)
 	end
 
+	self.healthBar.value = self.health
+
 	if self.health <= 0 and not self.isDead then
 		self:tryGameOver()
 	end
-
-	self.healthBar.tracker = self.health
 
 	if Project.DEBUG_MODE then
 		if game.keys.justPressed.TWO then self:endSong() end
@@ -738,7 +738,6 @@ function PlayState:noteMiss(n)
 			self.health = self.health - 0.0475
 
 			if self.health < 0 then self.health = 0 end
-			--self.healthBar:setValue(self.health)
 			self:recalculateRating()
 		end
 	end
@@ -775,7 +774,6 @@ function PlayState:goodNoteHit(n, rating)
 
 		if self.playerNotefield == notefield and not n.ignoreNote then
 			self.health = math.min(self.health + 0.023, 2)
-			--self.healthBar:setValue(self.health)
 
 			if self.combo < 0 then self.combo = 0 end
 			self.combo = self.combo + 1

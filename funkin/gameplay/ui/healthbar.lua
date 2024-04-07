@@ -1,12 +1,11 @@
 local HealthBar = SpriteGroup:extend("HealthBar")
 
-function HealthBar:new(bfData, dadData, tracker)
+function HealthBar:new(bfData, dadData, skin)
 	HealthBar.super.new(self, 0, 0)
 
 	self.maxHealth = 2
-	self.iconScale = 1
 
-	self.bg = Sprite():loadTexture(paths.getImage("skins/normal/healthBar"))
+	self.bg = Sprite():loadTexture(paths.getImage("skins/default/healthBar"))
 	self.bg:updateHitbox()
 
 	self.bar = Bar(self.bg.x + 4, self.bg.y + 4,
@@ -28,19 +27,18 @@ function HealthBar:new(bfData, dadData, tracker)
 	self:add(self.iconP1)
 	self:add(self.iconP2)
 
-	self.tracker = tracker or 1
-	self.bar:setValue(self.tracker)
+	self.value = 1
+	self.bar:setValue(1)
+	self:scaleIcons(1)
 end
 
 function HealthBar:update(dt)
 	HealthBar.super.update(self, dt)
 
-	self.bar:setValue(self.tracker)
+	self.bar:setValue(self.value)
 
 	local mult = util.coolLerp(self.iconScale, 1, 15, dt)
-	self.iconScale = mult
-	self.iconP1.scale = {x = mult, y = mult}
-	self.iconP2.scale = {x = mult, y = mult}
+	self:scaleIcons(util.coolLerp(self.iconScale, 1, 15, dt))
 
 	self.iconP1:updateHitbox()
 	self.iconP2:updateHitbox()

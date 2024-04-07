@@ -1,3 +1,9 @@
+--[[
+	Probably need a rework because the vertices are still locked to 4,
+	because its in fixed length,
+	also probably change it to ffi datas
+]]
+
 local ActorSprite = Actor:extend("ActorSprite")
 ActorSprite:implement(Sprite)
 
@@ -72,7 +78,7 @@ function ActorSprite:destroy()
 end
 
 function ActorSprite:makeUniqueMesh()
-	if self.mesh ~= ActorSprite.allMesh then return end
+	if self.mesh and self.mesh ~= ActorSprite.allMesh then return end
 	self.mesh = love.graphics.newMesh(ActorSprite.vertexFormat, self.__vertices, "fan")
 end
 
@@ -171,7 +177,7 @@ function ActorSprite:__render(camera)
 	if self.flipX then uvx, uvw = uvx + uvw, -uvw end
 	if self.flipY then uvy, uvh = uvy + uvh, -uvh end
 
-	local mesh, verts = self.mesh, self.__vertices
+	local mesh, verts, length = self.mesh, self.__vertices, #self.vertices
 	local vert, vx, vy, vz
 	for i, v in pairs(self.vertices) do
 		vert = verts[i] or table.new(5, 0)
@@ -181,8 +187,7 @@ function ActorSprite:__render(camera)
 		vert[1], vert[2], vert[5] = Actor.toScreen(vx + x - ox, vy + y - oy, vz + z - oz, self.fov)
 		vert[3], vert[4] = (v[4] * uvw + uvx) * vert[5], (v[5] * uvh + uvy) * vert[5]
 	end
-	mesh:setDrawRange(1, #self.vertices)
-	mesh:setVertices(verts)
+	mesh:setDrawRange(1, length); mesh:setVertices(verts)
 
 	if mesh:getTexture() ~= self.texture then mesh:setTexture(self.texture) end
 	love.graphics.setShader(self.shader or defaultShader); love.graphics.setBlendMode(self.blend)

@@ -22,9 +22,9 @@ function Classic:clone()
 	self.__index, self.super = nil
 
 	local clone = table.clone(self)
-	setmetatable(self, meta)
-	self.__index, clone.super, self.super = index, super, super
-	return setmetatable(clone, meta)
+	setmetatable(self, meta); setmetatable(clone, meta)
+	clone.__index, self.__index, clone.super, self.super = index, index, super, super
+	return clone
 end
 
 ---returns the class with the tables functions and variables

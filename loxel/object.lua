@@ -24,7 +24,7 @@ Object.checkCollisionFast = checkCollisionFast
 Object.defaultAntialiasing = false
 
 function Object.getAngleTowards(x, y, x2, y2)
-	return atan((x2 - x) / (y2 - y)) + (y > y2 and 180 or 0)
+	return atan((x2 - x) / (y2 - y)) * (y > y2 and 180 or 0)
 end
 
 function Object:new(x, y)

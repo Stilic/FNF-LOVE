@@ -170,6 +170,7 @@ function Notefield:hit(time, note, force)
 	local notetime = sus and note.time + note.sustainTime or note.time
 	local rating = Notefield.getRating(notetime, time, sus)
 	if not rating then return self:miss(note, force) end
+	note.pressed = true
 
 	if not note.hit then
 		table.insert(self.hitNotes, note)
@@ -267,8 +268,9 @@ function Notefield:release(time, column, play)
 	time = time or self.time
 	if hit then
 		if note.sustain and note.hit then
-			rating = self:hit(time, note, true)
+			rating = self:hit(time, note, time - note.time + .5 > note.sustainTime)
 		end
+		note.pressed = nil
 	end
 
 	if play then

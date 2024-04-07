@@ -8,7 +8,14 @@ function Note.toPos(time, speed)
 	return time * 450 * speed
 end
 
+local susMesh
+function Note.init()
+	if susMesh then return end
+	susMesh = love.graphics.newMesh(ActorSprite.vertexFormat, 16, "strip")
+end
+
 function Note:new(time, column, sustaintime, skin)
+	Note.init()
 	Note.super.new(self)
 	self.ignoreAffectByGroup = true
 
@@ -24,11 +31,23 @@ function Note:new(time, column, sustaintime, skin)
 	self.type = ""
 	self.group = nil
 
-	self.sustainSegments = 0
+	self.sustainSegments = 1
 
 	self.column = column
 	self:setSkin(skin)
 	self:setSustainTime(sustaintime)
+end
+
+function Note:clone()
+	local clone = Note(self.time, self.column, self.sustainTime, self.skin)
+	clone.scale.x, clone.scale.y, clone.scale.z = self.scale.x, self.scale.y, self.scale.z
+	clone.zoom.x, clone.zoom.y, clone.zoom.z = self.zoom.x, self.zoom.y, self.zoom.z
+	clone.rotation.x, clone.rotation.y, clone.rotation.z = self.rotation.x, self.rotation.y, self.rotation.z
+	clone.canBeHit, clone.ignoreNote, clone.priority, clone.type = self.canBeHit, self.ignoreNote, self.priority, self.type
+	clone.earlyHitMult, clone.lateHitMult, clone.hit = self.earlyHitMult, self.lateHitMult, self.hit
+	clone.speed, clone.sustainSegments = self.speed, self.sustainSegments
+
+	return clone
 end
 
 function Note:_addAnim(...)
@@ -137,8 +156,8 @@ function Note:createSustain()
 	sustain:play("hold"); self.updateHitbox(sustain)
 	susend:play("end"); self.updateHitbox(susend)
 
-	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__render = 0, 0, 0, __NIL__
-	susend.z, susend.offset.z, susend.origin.z, susend.__render = 0, 0, 0, __NIL__
+	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__vertices, sustain.__render = 0, 0, 0, {}, __NIL__
+	susend.z, susend.offset.z, susend.origin.z, susend.__vertices, susend.__render = 0, 0, 0, {}, __NIL__
 end
 
 function Note:destroySustain()
@@ -182,7 +201,7 @@ local function getValue(receptor, pos, axis)
 	if receptor then return receptor:getValue(pos, axis) end
 end
 
-local worldSpin, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, alpha, skewX, skewY, skewZ = Actor.worldSpin,
+local worldSpin, toScreen, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, alpha, skewX, skewY, skewZ = Actor.worldSpin, Actor.toScreen,
 	"x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "alpha", "skewX", "skewY", "skewZ"
 
 function Note:__render(camera)
@@ -226,6 +245,8 @@ function Note:__render(camera)
 		I could make a canvas but who knows...
 
 		get fucked™
+
+		Also probably need a rework like the actorsprite
 	--]]
 	local sustain = self.sustain
 	if sustain then
@@ -233,50 +254,78 @@ function Note:__render(camera)
 		local shader = love.graphics.getShader()
 		local blendMode, alphaMode = love.graphics.getBlendMode()
 		local min, mag, anisotropy = self.texture:getFilter()
-		local fov, mesh, verts, defaultShader = self.fov, self.mesh, self.__vertices, ActorSprite.defaultShader
-		local drawSize, drawSizeOffset, sx, sy, sz = grp and grp.drawSize or 800, grp and grp.drawSizeOffset or 0, sc.x, sc.y, sc.z
+		local fov, defaultShader = self.fov, ActorSprite.defaultShader
+		local susend, drawSize, drawSizeOffset = self.sustainEnd, grp and grp.drawSize or 800, grp and grp.drawSizeOffset or 0
+		local susSc, endSc = sustain.scale, susend and susend.scale
+		local height, fSusEnd, dont = Note.toPos(self.sustainTime, speed), susend and susend:getCurrentFrame(), false
 
-		local susend, dont = self.sustainEnd, false
-		local height = Note.toPos(self.sustainTime, speed)
+		local newPos = self.pressed and 0 or math.max(pos, -drawSize / 2 + drawSizeOffset - py)
+		height, pos = height - (newPos - pos), newPos
+		if susend then height = height - (fSusEnd and select(4, fSusEnd.quad:getViewport()) or susend.texture:getHeight()) * endSc.y end
 
 		-- Sustains
 		local mode = sustain.antialiasing and "linear" or "nearest"
-		local susx, susy, susz = px + sustain.x - sustain.offset.x, pos + py + sustain.y - sustain.offset.y, pz + sustain.z - sustain.offset.z
-		local vertsLength, vx, vy, vz = 2 + self.sustainSegments * 2
+		local sox, soy, soz = sustain.offset.x, sustain.offset.y, sustain.offset.z
+		local susx, susy, susz = px + sustain.x, py + sustain.y, pz + sustain.z
+		local vertsLength, vx, vy, vz = math.min(2 + self.sustainSegments * 2, 16)
 
 		if vertsLength > 2 then
-			local f, tw, th = sustain:getCurrentFrame(), sustain.texture:getWidth(), sustain.texture:getHeight()
+			local verts, f, tw, th = sustain.__vertices, sustain:getCurrentFrame(), sustain.texture:getWidth(), sustain.texture:getHeight()
 			local fw, fh, uvx, uvy, uvw, uvh = tw, th, 0, 0, 1, 1
 			if f then
 				uvx, uvy, fw, fh = f.quad:getViewport()
 				uvx, uvy, uvw, uvh = uvx / tw, uvy / th, fw / tw, fh / th
 				susx, susy = susx - f.offset.x, susy - f.offset.y
 			end
-			fw, fh = fw * sx, math.clamp(fh * sy, 64, 128) / self.sustainSegments
+			fw, fh = fw * susSc.x, math.clamp(fh * susSc.y, 64, 128)
+			fh = fh / (self.sustainSegments * math.round(fh / 64))
 
 			sustain.texture:setFilter(mode, mode, anisotropy)
 			love.graphics.setShader(sustain.shader or defaultShader); love.graphics.setBlendMode(sustain.blend)
 			love.graphics.setColor(sustain.color[1], sustain.color[2], sustain.color[3], sustain.alpha)
-			mesh:setTexture(sustain.texture)
-			mesh:setDrawRange(1, 4)
+			susMesh:setTexture(sustain.texture)
+			susMesh:setDrawRange(1, vertsLength)
 
-			local uvxw, hfw, vi = uvx + uvw, fw / 2, 0
+			vx, vy, vz = worldSpin(
+				(susx + (getValue(rec, pos - .01, x) or 0)) * gsx,
+				(susy + (getValue(rec, pos - .01, y) or pos)) * gsy,
+				(susz + (getValue(rec, pos - .01, z) or 0)) * gsz,
+				grx, gry, grz, gox, goy, goz)
+			local sustaintime, pvx, pvy = self.sustainTime, toScreen(vx + gx, vy + gy, vz + gz, fov)
+
+			local uvxw, hfw, vi, vert, va, aa, as, ac = uvx + uvw, fw / 2, 0, 0
 			while height > 0 do
-				vi, vx, vy, vz = vi + 1, worldSpin(susx * gsx, susy * gsy, susz * gsz, grx, gry, grz, gox, goy, goz)
+				vi, va, vx, vy, vz = vi + 1, getValue(rec, pos, alpha) or 1, worldSpin(
+					(susx + (getValue(rec, pos, x) or 0)) * gsx,
+					(susy + (getValue(rec, pos, y) or pos)) * gsy,
+					(susz + (getValue(rec, pos, z) or 0)) * gsz,
+					grx, gry, grz, gox, goy, goz)
 
-				height, susy = height - fh, susy + fh
-				dont = susy > drawSize / 2 + drawSizeOffset - py1
+				vert = verts[vi] or table.new(5, 0); verts[vi] = vert
+				vx, vy, vz = toScreen(vx + gx, vy + gy, vz + gz, fov)
+
+				aa = -math.atan((pvx - vx) / (pvy - vy))
+				as, ac, pvx, pvy = math.fastsin(aa) * vz, math.fastcos(aa) * vz, vx, vy
+
+				vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1, vx - hfw * ac, vy - hfw * as,
+					uvx * vz, (uvy + ((vi - 1) / vertsLength) * uvh) * vz, vz, 1, 1, 1, va
+
+				vert = verts[vi] or table.new(5, 0); verts[vi] = vert
+				vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vx + hfw * ac, vy + hfw * as,
+					uvxw * vz, (uvy + ((vi - 2) / vertsLength) * uvh) * vz, vz, 1, 1, 1, va
+
+				height, pos = height - fh, pos + fh
+				dont = pos > drawSize / 2 + drawSizeOffset - py
 				if dont then break end
 
-				if v1 >= vertsLength then
-					mesh:setVertices(verts); love.graphics.draw(mesh)
+				if vi >= vertsLength then
+					susMesh:setVertices(verts); love.graphics.draw(susMesh)
 
 					vi = vi - 1
-					verts[1][1], verts[1][2], verts[1][3], verts[1][4], verts[1][5] =
+					vi, verts[1][1], verts[1][2], verts[1][3], verts[1][4], verts[1][5] = vi + 1,
 						verts[vi][1], verts[vi][2], uvx * verts[vi][5], uvy * verts[vi][5], verts[vi][5]
 
-					vi = vi + 1
-					verts[2][1], verts[2][2], verts[2][3], verts[2][4], verts[2][5] =
+					vi, verts[2][1], verts[2][2], verts[2][3], verts[2][4], verts[2][5] = 2,
 						verts[vi][1], verts[vi][2], uvxw * verts[vi][5], uvy * verts[vi][5], verts[vi][5]
 				end
 
@@ -296,14 +345,15 @@ function Note:__render(camera)
 				vx, vy, vz = worldSpin((px - hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
 				verts[4][1], verts[4][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
 				verts[4][3], verts[4][4], verts[4][5] = uvx * vz, uvyh * vz, vz]]
+			end
 
-				mesh:setVertices(verts)
-				love.graphics.draw(mesh, 0, 0)
+			if vi > 2 then
+				susMesh:setDrawRange(1, vi); susMesh:setVertices(verts); love.graphics.draw(susMesh)
 			end
 		end
 
 		-- Sus END
-		if not dont then
+		if not dont and susend then
 
 		end
 
