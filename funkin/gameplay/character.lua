@@ -14,14 +14,11 @@ function Character:new(x, y, char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
-	self.columnAnim = 0
 
 	self.__reverseDraw = false
 
 	self.holdTime = 4
 	self.lastHit = math.negative_infinity
-	self.strokeTime = 0
-	self.__strokeDelta = 0
 
 	self.danceSpeed = 2
 	self.danced = false
@@ -131,29 +128,14 @@ function Character:update(dt)
 		else
 			self.offset.x, self.offset.y = 0, 0
 		end
-
-		if self.strokeTime ~= 0 and self.curAnim.name:startsWith("sing") then
-			self.__strokeDelta = self.__strokeDelta + dt
-			if self.__strokeDelta >= 0.13 then
-			 	self.lastHit = PlayState.conductor.time
-				self.curFrame, self.animFinished = 1, false
-				self.__strokeDelta = 0
-			end
-
-			if self.strokeTime ~= -1 then
-				self.strokeTime = self.strokeTime - dt
-				if self.strokeTime <= 0 then
-					self.__strokeDelta, self.strokeTime = 0, 0
-				end
-			end
-		end
 	end
 	Character.super.update(self, dt)
 end
 
 function Character:beat(b)
 	if self.lastHit > 0 then
-		if PlayState.conductor.time > self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime then
+		if self.lastHit + math.max(1, self.holdTime - 4) <
+			PlayState.conductor.currentBeat then
 			self:dance()
 			self.lastHit = math.negative_infinity
 		end
@@ -164,7 +146,6 @@ end
 
 function Character:playAnim(anim, force, frame)
 	Character.super.play(self, anim, force, frame)
-	self.__strokeDelta, self.strokeTime, self.columnAnim = 0, 0, nil
 
 	local offset = self.animOffsets[anim]
     if offset then
@@ -190,7 +171,6 @@ function Character:sing(dir, type)
 	if suffix and self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, true)
 
-	self.columnAnim = dir
 	self.lastHit = PlayState.conductor.currentBeat
 end
 
