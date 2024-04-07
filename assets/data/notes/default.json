@@ -1,9 +1,9 @@
 {
 	"notes": {
-		"sprite": "funkin-noteskin",
+		"sprite": "NOTE_assets",
 
 		"animations": [
-			["note", "note", 1, false]
+			["note", "note", 24, true]
 		],
 
 		"colors": [
@@ -25,10 +25,10 @@
 	},
 
 	"sustains": {
-		"sprite": "funkin-noteskin",
+		"sprite": "NOTE_assets",
 
 		"animations": [
-			["hold", "hold piece", 1, false]
+			["hold", "hold piece", 24, true]
 		],
 
 		"colors": [
@@ -50,10 +50,10 @@
 	},
 
 	"sustainends": {
-		"sprite": "funkin-noteskin",
+		"sprite": "NOTE_assets",
 
 		"animations": [
-			["end", "hold end", 1, false]
+			["end", "hold end", 24, true]
 		],
 
 		"colors": [
@@ -75,12 +75,12 @@
 	},
 
 	"receptors": {
-		"sprite": "funkin-noteskin",
+		"sprite": "NOTE_assets",
 
 		"animations": [
-			["static", "note", 1, true],
-			["pressed", "press", 12, false, true],
-			["confirm", "hit0", 12, false]
+			["static", "note", 24, true],
+			["pressed", "press", 24, false, true],
+			["confirm", "confirm0", 24, false]
 		],
 
 		"colors": [
@@ -99,10 +99,10 @@
 	},
 
 	"glow": {
-		"sprite": "funkin-noteskin",
+		"sprite": "NOTE_assets",
 		
 		"animations": [
-			["glow", "hit glow", 24, false]
+			["glow", "confirm glow", 24, false]
 		],
 
 		"colors": [
@@ -128,8 +128,8 @@
 		"sprite": "noteSplashes",
 
 		"animations": [
-			["splash0", "note impact 1 red", 12, false],
-			["splash1", "note impact 2 red", 12, false]
+			["splash0", "note impact 1 red", 24, false],
+			["splash1", "note impact 2 red", 24, false]
 		],
 
 		"scale": 1,
