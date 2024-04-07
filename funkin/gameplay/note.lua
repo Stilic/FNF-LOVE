@@ -258,10 +258,10 @@ function Note:__render(camera)
 		local susend, drawSize, drawSizeOffset = self.sustainEnd, grp and grp.drawSize or 800, grp and grp.drawSizeOffset or 0
 		local susSc, endSc = sustain.scale, susend and susend.scale
 		local height, fSusEnd, dont = Note.toPos(self.sustainTime, speed), susend and susend:getCurrentFrame(), false
+		local susEndHeight = (susend and (fSusEnd and select(4, fSusEnd.quad:getViewport()) or susend.texture:getHeight()) or 0) * endSc.y
 
 		local newPos = self.pressed and 0 or math.max(pos, -drawSize / 2 + drawSizeOffset - py)
-		height, pos = height - (newPos - pos), newPos
-		if susend then height = height - (fSusEnd and select(4, fSusEnd.quad:getViewport()) or susend.texture:getHeight()) * endSc.y end
+		height, pos = height - (newPos - pos) - susEndHeight, newPos
 
 		-- Sustains
 		local mode = sustain.antialiasing and "linear" or "nearest"
