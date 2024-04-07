@@ -24,6 +24,8 @@ function Note:new(time, column, sustaintime, skin)
 	self.type = ""
 	self.group = nil
 
+	self.sustainSegments = 0
+
 	self.column = column
 	self:setSkin(skin)
 	self:setSustainTime(sustaintime)
@@ -132,16 +134,16 @@ function Note:createSustain()
 	Note.loadSkinData(sustain, skin, "sustains", col)
 	Note.loadSkinData(susend, skin, "sustainends", col)
 
-	susend:play("end"); self.updateHitbox(susend)
 	sustain:play("hold"); self.updateHitbox(sustain)
-	sustain.__render, susend.__render = __NIL__, __NIL__
+	susend:play("end"); self.updateHitbox(susend)
+
+	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__render = 0, 0, 0, __NIL__
+	susend.z, susend.offset.z, susend.origin.z, susend.__render = 0, 0, 0, __NIL__
 end
 
 function Note:destroySustain()
-	if not self.sustain then return end
-
-	self.sustainEnd:destroy()
-	self.sustain:destroy()
+	if self.sustainEnd and self.sustainEnd.destroy then self.sustainEnd:destroy() end
+	if self.sustain and self.sustain.destroy then self.sustain:destroy() end
 end
 
 function Note:updateHitbox()
@@ -176,20 +178,23 @@ function Note:_canDraw()
 		))
 end
 
-local worldSpin = Actor.worldSpin
+local function getValue(receptor, pos, axis)
+	if receptor then return receptor:getValue(pos, axis) end
+end
+
+local worldSpin, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, alpha, skewX, skewY, skewZ = Actor.worldSpin,
+	"x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "alpha", "skewX", "skewY", "skewZ"
+
 function Note:__render(camera)
-	local grp, px, py, pz, pa, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.rotation, self.scale
+	local grp, px, py, pz, pa, pal, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.alpha, self.rotation, self.scale
 	local time, target, speed, psx, psy, psz, prx, pry, prz = self.time, self._targetTime, self.speed,
 		sc.x, sc.y, sc.z, rot.x, rot.y, rot.z
 
-	-- for now, its just a simple thing, no splines mod yet
-	local path = Note.toPos(time - target, speed)
-	local vx, vy, vz = px, py + path, pz
-
+	local pos, rec = Note.toPos(time - target, speed)
 	local gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	if grp then
-		gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz = grp.x, grp.y, grp.z, grp.scale.x, grp.scale.y, grp.scale.z,
-			grp.rotation.x, grp.rotation.y, grp.rotation.z, grp.origin.x, grp.origin.y, grp.origin.z
+		gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz, rec = grp.x, grp.y, grp.z, grp.scale.x, grp.scale.y, grp.scale.z,
+			grp.rotation.x, grp.rotation.y, grp.rotation.z, grp.origin.x, grp.origin.y, grp.origin.z, grp.receptor
 
 		self.angle, rot.x, rot.y, rot.z, sc.x, sc.y, sc.z = pa + grp.memberAngles,
 			prx + grp.memberRotations.x, pry + grp.memberRotations.y, prz + grp.memberRotations.z,
@@ -198,9 +203,21 @@ function Note:__render(camera)
 		if grp.affectAngle then self.angle, rot.y, rot.y, rot.z = self.angle + grp.angle, rot.y + grx, rot.y + gry, rot.z + grz end
 		if grp.affectScale then sc.x, sc.y, sc.z = sc.x * gsx, sc.y * gsy, sc.z * gsz end
 
-		vx, vy, vz = worldSpin(vx * gsx, vy * gsy, vz * gsz, grx, gry, grz, gox, goy, goz)
+		local vx, vy, vz = worldSpin(
+			(px + (getValue(rec, pos, x) or 0)) * gsx,
+			(py + (getValue(rec, pos, y) or pos)) * gsy,
+			(pz + (getValue(rec, pos, z) or 0)) * gsz,
+			grx, gry, grz, gox, goy, goz)
+
+		self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
+	else
+		self.x, self.y, self.z = px, py + pos, pz
 	end
-	self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
+
+	local v = getValue(rec, pos, size) or 1
+	rot.x, rot.y, rot.z = rot.x + (getValue(rec, pos, rotX) or 0), rot.y + (getValue(rec, pos, rotY) or 0), rot.z + (getValue(rec, pos, rotZ) or 0)
+	sc.x, sc.y, sc.z = sc.x * (getValue(rec, pos, sizeX) or 1) * v, sc.y * (getValue(rec, pos, sizeY) or 1) * v, sc.z * (getValue(rec, pos, sizeZ) or 1) * v
+	self.alpha = self.alpha * (getValue(rec, pos, alpha) or 1)
 
 	--[[
 		I'm aware that if the texture size height or scale are minimized, it'll be huge draw calls
@@ -219,50 +236,70 @@ function Note:__render(camera)
 		local fov, mesh, verts, defaultShader = self.fov, self.mesh, self.__vertices, ActorSprite.defaultShader
 		local drawSize, drawSizeOffset, sx, sy, sz = grp and grp.drawSize or 800, grp and grp.drawSizeOffset or 0, sc.x, sc.y, sc.z
 
-		local susend, dont, y1, y2 = self.sustainEnd, false, path + py
+		local susend, dont = self.sustainEnd, false
 		local height = Note.toPos(self.sustainTime, speed)
 
 		-- Sustains
 		local mode = sustain.antialiasing and "linear" or "nearest"
-		local f, tw, th = sustain:getCurrentFrame(), sustain.texture:getWidth(), sustain.texture:getHeight()
-		local fx, fy, fw, fh, uvx, uvy, uvw, uvh = 0, 0, tw, th, 0, 0, 1, 1
-		if f then
-			fx, fy = fx - f.offset.x, fy - f.offset.y
-			uvx, uvy, fw, fh = f.quad:getViewport()
-			uvx, uvy, uvw, uvh = uvx / tw, uvy / th, fw / tw, fh / th
-		end
-		fw, fh = fw * sx, math.min(fh * sy, 128)
+		local susx, susy, susz = px + sustain.x - sustain.offset.x, pos + py + sustain.y - sustain.offset.y, pz + sustain.z - sustain.offset.z
+		local vertsLength, vx, vy, vz = 2 + self.sustainSegments * 2
 
-		sustain.texture:setFilter(mode, mode, anisotropy)
-		love.graphics.setShader(sustain.shader or defaultShader); love.graphics.setBlendMode(sustain.blend)
-		love.graphics.setColor(sustain.color[1], sustain.color[2], sustain.color[3], sustain.alpha)
-		mesh:setTexture(sustain.texture)
+		if vertsLength > 2 then
+			local f, tw, th = sustain:getCurrentFrame(), sustain.texture:getWidth(), sustain.texture:getHeight()
+			local fw, fh, uvx, uvy, uvw, uvh = tw, th, 0, 0, 1, 1
+			if f then
+				uvx, uvy, fw, fh = f.quad:getViewport()
+				uvx, uvy, uvw, uvh = uvx / tw, uvy / th, fw / tw, fh / th
+				susx, susy = susx - f.offset.x, susy - f.offset.y
+			end
+			fw, fh = fw * sx, math.clamp(fh * sy, 64, 128) / self.sustainSegments
 
-		local uvxw, uvyh, hfw = uvx + uvw, uvy + uvh, fw / 2
-		while height > 0 do
-			height, y1, y2 = height - fh, y1 + fh, y1
-			dont = y1 > drawSize / 2 + drawSizeOffset - py
-			if dont then break end
-
-			vx, vy, vz = worldSpin((px - hfw) * gsx, y1 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-			verts[1][1], verts[1][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-			verts[1][3], verts[1][4], verts[1][5] = uvx * vz, uvy * vz, vz
-
-			vx, vy, vz = worldSpin((px + hfw) * gsx, y1 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-			verts[2][1], verts[2][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-			verts[2][3], verts[2][4], verts[2][5] = uvxw * vz, uvy * vz, vz
-
-			vx, vy, vz = worldSpin((px + hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-			verts[3][1], verts[3][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-			verts[3][3], verts[3][4], verts[3][5] = uvxw * vz, uvyh * vz, vz
-
-			vx, vy, vz = worldSpin((px - hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-			verts[4][1], verts[4][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-			verts[4][3], verts[4][4], verts[4][5] = uvx * vz, uvyh * vz, vz
-
+			sustain.texture:setFilter(mode, mode, anisotropy)
+			love.graphics.setShader(sustain.shader or defaultShader); love.graphics.setBlendMode(sustain.blend)
+			love.graphics.setColor(sustain.color[1], sustain.color[2], sustain.color[3], sustain.alpha)
+			mesh:setTexture(sustain.texture)
 			mesh:setDrawRange(1, 4)
-			mesh:setVertices(verts)
-			love.graphics.draw(mesh, 0, 0)
+
+			local uvxw, hfw, vi = uvx + uvw, fw / 2, 0
+			while height > 0 do
+				vi, vx, vy, vz = vi + 1, worldSpin(susx * gsx, susy * gsy, susz * gsz, grx, gry, grz, gox, goy, goz)
+
+				height, susy = height - fh, susy + fh
+				dont = susy > drawSize / 2 + drawSizeOffset - py1
+				if dont then break end
+
+				if v1 >= vertsLength then
+					mesh:setVertices(verts); love.graphics.draw(mesh)
+
+					vi = vi - 1
+					verts[1][1], verts[1][2], verts[1][3], verts[1][4], verts[1][5] =
+						verts[vi][1], verts[vi][2], uvx * verts[vi][5], uvy * verts[vi][5], verts[vi][5]
+
+					vi = vi + 1
+					verts[2][1], verts[2][2], verts[2][3], verts[2][4], verts[2][5] =
+						verts[vi][1], verts[vi][2], uvxw * verts[vi][5], uvy * verts[vi][5], verts[vi][5]
+				end
+
+				--[[
+				vx, vy, vz = worldSpin((px - hfw) * gsx, y1 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
+				verts[1][1], verts[1][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
+				verts[1][3], verts[1][4], verts[1][5] = uvx * vz, uvy * vz, vz
+
+				vx, vy, vz = worldSpin((px + hfw) * gsx, y1 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
+				verts[2][1], verts[2][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
+				verts[2][3], verts[2][4], verts[2][5] = uvxw * vz, uvy * vz, vz
+
+				vx, vy, vz = worldSpin((px + hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
+				verts[3][1], verts[3][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
+				verts[3][3], verts[3][4], verts[3][5] = uvxw * vz, uvyh * vz, vz
+
+				vx, vy, vz = worldSpin((px - hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
+				verts[4][1], verts[4][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
+				verts[4][3], verts[4][4], verts[4][5] = uvx * vz, uvyh * vz, vz]]
+
+				mesh:setVertices(verts)
+				love.graphics.draw(mesh, 0, 0)
+			end
 		end
 
 		-- Sus END
@@ -279,7 +316,7 @@ function Note:__render(camera)
 		ActorSprite.__render(self, camera)
 	end
 
-	self.x, self.y, self.z, self.angle, sc.x, sc.y, sc.z, rot.x, rot.y, rot.z = px, py, pz, pa, psx, psy, psz, prx, pry, prz
+	self.x, self.y, self.z, self.angle, self.alpha, sc.x, sc.y, sc.z, rot.x, rot.y, rot.z = px, py, pz, pa, pal, psx, psy, psz, prx, pry, prz
 end
 
 --[[

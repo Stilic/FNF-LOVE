@@ -17,7 +17,14 @@ function Classic:new() end
 
 ---returns the cloned instance
 function Classic:clone()
-	return setmetatable(table.clone(self), getmetatable(self))
+	local meta, super, index = getmetatable(self), self.super, self.__index
+	setmetatable(self, nil)
+	self.__index, self.super = nil
+
+	local clone = table.clone(self)
+	setmetatable(self, meta)
+	self.__index, clone.super, self.super = index, super, super
+	return setmetatable(clone, meta)
 end
 
 ---returns the class with the tables functions and variables

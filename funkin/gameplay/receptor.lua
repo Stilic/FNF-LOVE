@@ -22,10 +22,62 @@ function Receptor:new(x, y, column, skin)
 
 	self.noteRotations = {x = 0, y = 0, z = 0}
 	self.noteOffsets = {x = 0, y = 0, z = 0}
+	self.noteSplines = {}
 	self.lane = nil
 
 	self.column = column
 	self:setSkin(skin)
+end
+
+function Receptor:getValue(pos, axis)
+	local splineAxis = self.noteSplines[axis]
+	if not splineAxis then return end
+
+	local got = 1
+	for i = 2, #splineAxis do
+		if pos >= splineAxis[i].position then got = i end
+	end
+
+	local spline, nextSpline = splineAxis[got], splineAxis[got + 1]
+	if not nextSpline or pos < spline.position then return spline.value end
+
+	local start, length = spline.position, nextSpline.position - spline.position
+	local tween, ease, s = Timer.tween[spline.tween], spline.ease, (pos - start) / length
+	local value, toValue = spline.value, nextSpline.value - spline.value
+	if ease == "out" then
+		return value + (1 - tween(1 - s)) * toValue
+	elseif ease == "inout" then
+		return value + (s < 0.5 and tween(s * 2) or 2 - tween(2 - (s * 2))) * toValue / 2
+	elseif ease == "outin" then
+		return value + (s < 0.5 and 1 - tween(1 - (s * 2)) or 1 + tween(s * 2 - 1)) * toValue / 2
+	end
+	return value + tween(s) * toValue
+end
+
+--[[
+	axis = [
+		X, Y, Z,
+		rotX, rotY, rotZ,
+		sizeX, sizeY, sizeZ, size
+		alpha,
+		skewX, skewY, skewZ ?
+	]
+--]]
+function Receptor:setSpline(axis, idx, value, position, tween, ease)
+	local spline = {
+		value = value,
+		position = position or 0,
+		tween = tween or "linear",
+		ease = ease or "inout"
+	}
+
+	local splineAxis = self.noteSplines[axis] or table.new(idx, 0)
+	for i = 1, idx - 1 do splineAxis[i] = splineAxis[i] or {
+		value = 0,
+		position = 0,
+		tween = "linear"
+	} end
+	self.noteSplines[axis], splineAxis[idx] = splineAxis, spline
 end
 
 function Receptor:setSkin(skin)

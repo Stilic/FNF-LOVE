@@ -100,16 +100,19 @@ function Notefield:addNote(note)
 end
 
 function Notefield:copyNotesfromNotefield(notefield)
-	local clone = {}
 	for i, note in ipairs(notefield.notes) do
+		local parent, grp = note.parent, note.group
+		note.parent, note.group = nil
+
 		local noteClone = note:clone()
 		noteClone.parent = self
-		noteClone.group = nil
 
-		clone[i] = noteClone
+		note.parent, note.group = parent, grp
+
+		table.insert(self.notes, noteClone)
 	end
 
-	table.merge(self.notes, clone)
+	table.sort(self.notes, Conductor.sortByTime)
 end
 
 function Notefield:removeNotefromIndex(idx, dontClearHits)
@@ -344,8 +347,8 @@ function Notefield:__prepareLane(column, lane, time)
 	local notes, receptor, speed, drawSize, drawSizeOffset =
 		self.notes, lane.receptor,
 		self.speed * lane.speed,
-		self.drawSize * lane.drawSize,
-		self.drawSizeOffset + lane.drawSizeOffset
+		self.drawSize * (lane.drawSize or 1),
+		self.drawSizeOffset + (lane.drawSizeOffset or 0)
 
 	local size, renderedNotes, renderedNotesI = #notes, lane.renderedNotes, lane.renderedNotesI
 	table.clear(renderedNotesI)

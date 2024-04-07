@@ -54,4 +54,11 @@ function ScriptsHandler:set(variable, value)
 	for _, script in ipairs(self.scripts) do script:set(variable, value) end
 end
 
+function ScriptsHandler:close()
+	for _, script in ipairs(self.scripts) do
+		script:close()
+	end
+	self.scripts = nil
+end
+
 return ScriptsHandler

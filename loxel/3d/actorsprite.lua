@@ -9,7 +9,7 @@ ActorSprite.vertexFormat = {
 }
 
 local defaultShader
-function ActorSprite.initShader()
+function ActorSprite.init()
 	if defaultShader then return end
 	defaultShader = love.graphics.newShader[[
 		uniform Image MainTex;
@@ -18,11 +18,12 @@ function ActorSprite.initShader()
 		}
 	]]
 	ActorSprite.defaultShader = defaultShader
+	ActorSprite.allMesh = love.graphics.newMesh(ActorSprite.vertexFormat, 4, "fan")
 end
 
 function ActorSprite:new(x, y, z, texture)
 	ActorSprite.super.new(self, x, y, z)
-	ActorSprite.initShader()
+	ActorSprite.init()
 
 	self.texture = Sprite.defaultTexture
 
@@ -38,7 +39,7 @@ function ActorSprite:new(x, y, z, texture)
 		{1, 1, 1, 1, 1},
 		{0, 1, 0, 1, 1},
 	}
-	self.mesh = love.graphics.newMesh(ActorSprite.vertexFormat, self.__vertices, "fan")
+	self.mesh = ActorSprite.allMesh
 
 	self.clipRect = nil
 
@@ -70,7 +71,14 @@ function ActorSprite:destroy()
 	self.animPaused = false
 end
 
+function ActorSprite:makeUniqueMesh()
+	if self.mesh ~= ActorSprite.allMesh then return end
+	self.mesh = love.graphics.newMesh(ActorSprite.vertexFormat, self.__vertices, "fan")
+end
+
 function ActorSprite:setDrawMode(mode)
+	if mode == self:getDrawMode() then return end
+	self:makeUniqueMesh()
 	self.mesh:setDrawMode(mode)
 end
 
@@ -82,6 +90,9 @@ function ActorSprite:destroy()
 	ActorSprite.super.destroy(self)
 
 	self.texture = nil
+	if self.mesh ~= ActorSprite.allMesh then
+		self.mesh:setTexture()
+	end
 
 	self.__frames = nil
 	self.__animations = nil
@@ -172,13 +183,12 @@ function ActorSprite:__render(camera)
 	end
 	mesh:setDrawRange(1, #self.vertices)
 	mesh:setVertices(verts)
-	mesh:setTexture(self.texture)
 
+	if mesh:getTexture() ~= self.texture then mesh:setTexture(self.texture) end
 	love.graphics.setShader(self.shader or defaultShader); love.graphics.setBlendMode(self.blend)
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
-	love.graphics.draw(mesh, 0, 0)
+	love.graphics.draw(mesh)
 
-	mesh:setTexture()
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setBlendMode(blendMode, alphaMode)
 	love.graphics.setShader(shader)

@@ -587,6 +587,16 @@ function PlayState:update(dt)
 	--self.playerNotefield.rotation.x = PlayState.conductor.time / PlayState.conductor.crotchet * 40
 	--self.playerNotefield.rotation.y = PlayState.conductor.time / PlayState.conductor.crotchet * 30
 
+	for _, notefield in pairs(self.enemyNotefields) do
+		self:doNotefieldBot(notefield)
+	end
+
+	for _, notefield in pairs(self.playerNotefields) do
+		if self.botPlay then
+			self:doNotefieldBot(notefield)
+		end
+	end
+
 	self.scripts:call("update", dt)
 	PlayState.super.update(self, dt)
 
@@ -619,16 +629,6 @@ function PlayState:update(dt)
 		end
 	end
 
-	for _, notefield in pairs(self.enemyNotefields) do
-		self:doNotefieldBot(notefield)
-	end
-
-	for _, notefield in pairs(self.playerNotefields) do
-		if self.botPlay then
-			self:doNotefieldBot(notefield)
-		end
-	end
-
 	for _, note in ipairs(self.playerNotefield.missedNotes) do
 		self:noteMiss(note)
 		table.delete(self.playerNotefield.missedNotes, note)
@@ -641,6 +641,12 @@ function PlayState:update(dt)
 	if Project.DEBUG_MODE then
 		if game.keys.justPressed.TWO then self:endSong() end
 		if game.keys.justPressed.ONE then self.botPlay = not self.botPlay end
+		if game.keys.justPressed.THREE then
+			local time = (self.conductor.time / 1000) + (self.conductor.crotchet / 1000) * 4
+			self.conductor.time = time * 1000
+			game.sound.music:seek(time)
+			if self.vocals then self.vocals:seek(time) end
+		end
 	end
 
 	self.scripts:call("postUpdate", dt)
@@ -744,7 +750,8 @@ function PlayState:goodNoteHit(n, rating)
 
 		if not event.cancelledAnim and char then
 			local animType = ''
-			if PlayState.SONG.notes[PlayState.conductor.currentSection + 1].altAnim then
+			local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
+			if section and section.altAnim then
 				animType = 'alt'
 			end
 
@@ -1074,6 +1081,7 @@ function PlayState:leave()
 	controls:unbindRelease(self.bindedKeyRelease)
 
 	self.scripts:call("postLeave")
+	self.scripts:close()
 end
 
 return PlayState
