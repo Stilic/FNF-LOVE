@@ -3,7 +3,7 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["note", "note", 24, true]
+			["note", "note", 1, true]
 		],
 
 		"colors": [
@@ -28,7 +28,7 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["hold", "hold piece", 24, true]
+			["hold", "hold piece", 1, true]
 		],
 
 		"colors": [
@@ -41,8 +41,8 @@
 		"properties": [
 			{"x": 0, "alpha": 0.6},
 			{"x": 0, "alpha": 0.6},
-			{"x": 3, "alpha": 0.6},
-			{"x": 3, "alpha": 0.6}
+			{"x": 2, "alpha": 0.6},
+			{"x": 2, "alpha": 0.6}
 		],
 
 		"scale": 0.7,
@@ -53,7 +53,7 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["end", "hold end", 24, true]
+			["end", "hold end", 1, true]
 		],
 
 		"colors": [
@@ -66,8 +66,8 @@
 		"properties": [
 			{"x": 0, "alpha": 0.6},
 			{"x": 0, "alpha": 0.6},
-			{"x": 3, "alpha": 0.6},
-			{"x": 3, "alpha": 0.6}
+			{"x": 2, "alpha": 0.6},
+			{"x": 2, "alpha": 0.6}
 		],
 
 		"scale": 0.7,
@@ -78,9 +78,9 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["static", "note", 24, true],
-			["pressed", "press", 24, false, true],
-			["confirm", "confirm0", 24, false]
+			["static", "note", 1, true],
+			["pressed", "press", 12, false, true],
+			["confirm", "confirm0", 12, false]
 		],
 
 		"colors": [
@@ -100,7 +100,7 @@
 
 	"glow": {
 		"sprite": "NOTE_assets",
-		
+
 		"animations": [
 			["glow", "confirm glow", 24, false]
 		],
