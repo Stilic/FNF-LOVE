@@ -52,8 +52,6 @@ function GameOverSubstate:new(x, y)
 end
 
 function GameOverSubstate:enter(x, y)
-	PlayState.notePosition = 0
-
 	self.boyfriend:playAnim('firstDeath')
 
 	game.sound.music:setPitch(1)

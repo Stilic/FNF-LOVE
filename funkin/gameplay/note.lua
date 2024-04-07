@@ -413,7 +413,7 @@ function Note:new(time, data, prevNote, sustain, parentNote)
 		self:setGraphicSize(math.floor(self.width * 6))
 		self.antialiasing = false
 	else
-		self:setFrames(paths.getSparrowAtlas("skins/normal/NOTE_assets"))
+		self:setFrames(paths.getSparrowAtlas("skins/default/NOTE_assets"))
 
 		if sustain then
 			if data == 0 then

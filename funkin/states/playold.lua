@@ -317,7 +317,7 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 
 	self.healthBarBG = Sprite()
-	self.healthBarBG:loadTexture(paths.getImage("skins/normal/healthBar"))
+	self.healthBarBG:loadTexture(paths.getImage("skins/default/healthBar"))
 	self.healthBarBG:updateHitbox()
 	self.healthBarBG:screenCenter("x")
 	self.healthBarBG.y = game.height * 0.9

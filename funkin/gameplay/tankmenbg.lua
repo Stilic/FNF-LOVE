@@ -43,9 +43,9 @@ function TankmenBG:update(dt)
 		local endDirection = (game.width * 0.74) + self.endingOffset
 		if self.goingRight then
 			endDirection = (game.width * 0.02) - self.endingOffset
-			self.x = (endDirection + (PlayState.notePosition - self.time) * self.tankSpeed)
+			self.x = (endDirection + (PlayState.conductor.time - self.time) * self.tankSpeed)
 		else
-			self.x = (endDirection - (PlayState.notePosition - self.time) * self.tankSpeed)
+			self.x = (endDirection - (PlayState.conductor.time - self.time) * self.tankSpeed)
 		end
 	elseif self.animFinished then
 		self:kill()
