@@ -6,7 +6,7 @@ function HealthBar:new(bfData, dadData, tracker)
 	self.maxHealth = 2
 	self.iconScale = 1
 
-	self.bg = Sprite():loadTexture(paths.getImage("skins/normal/healthBar"))
+	self.bg = Sprite():loadTexture(paths.getImage("skins/default/healthBar"))
 	self.bg:updateHitbox()
 
 	self.bar = Bar(self.bg.x + 4, self.bg.y + 4,
