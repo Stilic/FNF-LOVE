@@ -37,6 +37,7 @@ Notefield = require "funkin.gameplay.notefield"
 Countdown = require "funkin.gameplay.ui.Countdown"
 
 HealthIcon = require "funkin.gameplay.ui.healthicon"
+HealthBar = require "funkin.gameplay.ui.healthbar"
 ProgressArc = require "funkin.gameplay.ui.progressarc"
 
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
