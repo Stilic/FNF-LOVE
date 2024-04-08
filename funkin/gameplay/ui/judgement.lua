@@ -10,6 +10,7 @@ function Judgement:new(x, y)
 	self.comboNumVisible = true
 
 	self.skin = PlayState.pixelStage and "pixel" or "default"
+	self.antialiasing = (self.skin == "pixel" and false or true)
 end
 
 function Judgement:update(dt)
@@ -19,7 +20,6 @@ end
 
 function Judgement:spawn(rating, combo)
 	local accel = PlayState.conductor.crotchet * 0.001
-	local antialias = not PlayState.pixelStage
 
 	local function create(name, scale, alpha, duration)
 		local sprite = self:recycle()
@@ -33,7 +33,7 @@ function Judgement:spawn(rating, combo)
 		sprite.velocity.x = 0
 		sprite.velocity.y = 0
 		sprite.acceleration.y = 0
-		sprite.antialiasing = antialias
+		sprite.antialiasing = self.antialiasing
 		self.timer:after(duration, function()
 			self.timer:tween(0.2, sprite, {alpha = 0}, "linear", function()
 				self.timer:cancelTweensOf(sprite)
