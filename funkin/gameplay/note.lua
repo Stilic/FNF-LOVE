@@ -53,7 +53,9 @@ function Note:_addAnim(...)
 end
 
 function Note:loadSkinData(skinData, name, column, noRgb)
-	local data, fixedColumn = skinData[name], column and column + 1 or -1
+	column = column + 1
+
+	local data = skinData[name]
 	local anims, tex = data.animations, "skins/" .. skinData.skin .. "/" .. data.sprite
 	if anims then
 		if data.isPixel then
@@ -63,7 +65,7 @@ function Note:loadSkinData(skinData, name, column, noRgb)
 		end
 
 		local noteDatas = not noRgb and skinData.notes
-		local noteColor = noteDatas and noteDatas.colors and noteDatas.colors[fixedColumn]
+		local noteColor = noteDatas and noteDatas.colors and noteDatas.colors[column]
 		for _, anim in ipairs(anims) do
 			Note._addAnim(self, unpack(anim))
 			if anim[5] and noteColor then
@@ -87,12 +89,12 @@ function Note:loadSkinData(skinData, name, column, noRgb)
 	if data.antialiasing ~= nil then self.antialiasing = data.antialiasing end
 
 	local props = data.properties
-	props = props and props[math.min(fixedColumn, #props)] or props
+	props = props and props[math.min(column, #props)] or props
 	if props then for i, v in pairs(props) do self[i] = v end end
 
 	if not noRgb and not data.disableRgb then
 		local color = data.colors
-		color = color and color[math.min(fixedColumn, #color)] or color
+		color = color and color[math.min(column, #color)] or color
 		self.shader = color and #color >= 3 and RGBShader.actorCreate(
 			Color.fromString(color[1]),
 			Color.fromString(color[2]),
