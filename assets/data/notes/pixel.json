@@ -46,13 +46,7 @@
 			["#FF884E", "#FFF9FF", "#6C0000"]
 		],
 
-		"properties": [
-			{"alpha": 0.6},
-			{"alpha": 0.6},
-			{"alpha": 0.6},
-			{"alpha": 0.6}
-		],
-
+		"alpha": 0.6,
 		"scale": 6,
 		"antialiasing": false
 	},
@@ -75,13 +69,7 @@
 			["#FF884E", "#FFF9FF", "#6C0000"]
 		],
 
-		"properties": [
-			{"alpha": 0.6},
-			{"alpha": 0.6},
-			{"alpha": 0.6},
-			{"alpha": 0.6}
-		],
-
+		"alpha": 0.6,
 		"scale": 6,
 		"antialiasing": false
 	},
@@ -122,10 +110,7 @@
 			["splash1", "Note splash 2", 24, false, true]
 		],
 
-		"properties": [
-			{"alpha": 0.6}
-		],
-
+		"alpha": 0.6,
 		"scale": 6,
 		"antialiasing": false
 	}

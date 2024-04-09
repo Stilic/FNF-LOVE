@@ -24,19 +24,18 @@ end
 
 function Notefield:new(x, y, keys, character, skin)
 	Notefield.super.new(self, x, y)
-	skin = skin or paths.getNoteskin("default")
 
 	self.noteWidth = math.floor(160 * 0.7)
 	self.height = 500
 	self.keys = keys
 	self.character = character
-	self.skin = skin
-	self.speed = 1
+	self.skin = skin or paths.getNoteskin("default")
 	self.hitsoundVolume = 0
-	self.hitsound = paths.getSound('hitsound')
+	self.hitsound = paths.getSound("hitsound")
 
 	self.time = 0
 	self.offsetTime = 0
+	self.speed = 1
 	self.drawSize = game.height + self.noteWidth
 	self.drawSizeOffset = 0
 	self.maxNotes = 1028
