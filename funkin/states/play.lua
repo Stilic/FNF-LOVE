@@ -848,10 +848,6 @@ function PlayState:recalculateRating(rating)
 	end]]
 end
 
-function PlayState:focus(f)
-	
-end
-
 function PlayState:tryPause()
 	local event = self.scripts:call("paused")
 	if event ~= Script.Event_Cancel then
