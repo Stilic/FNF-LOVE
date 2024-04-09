@@ -59,6 +59,7 @@ function Notefield:new(x, y, keys, character, skin)
 	self.hitNotes = {}
 	self.missedNotes = {}
 	self.notes = {}
+	self.splashes = {}
 
 	for i = 1, keys do
 		self:makeLane(i).x = startx + self.noteWidth * i
@@ -207,6 +208,15 @@ function Notefield:miss(note, force)
 	end
 end
 
+function Notefield:spawnSplash(column)
+	local receptor = self.receptors[column + 1]
+	if receptor then
+		local splash = receptor:spawnSplash()
+		table.insert(self.splashes, splash)
+		self:add(splash)
+	end
+end
+
 function Notefield:press(time, column, play)
 	time = time or self.time
 
@@ -241,10 +251,11 @@ function Notefield:press(time, column, play)
 	end
 
 	if play then
-		local receptor = self.receptors[column + 1]
+		local receptor = self.receptors[fixedColumn]
 		if receptor then
 			receptor:play(missed and "pressed" or "confirm", true)
 			if not missed and isSustain then receptor.strokeTime = -1 end
+			if rating.splash then self:spawnSplash(column) end
 		end
 
 		local char = self.character
@@ -267,7 +278,7 @@ function Notefield:release(time, column, play)
 	time = time or self.time
 	if hit then
 		if note.sustain and note.hit then
-			rating = self:hit(time, note, time - note.time + .1 > note.sustainTime)
+			rating = self:hit(time, note, time - note.time + safeZoneOffset > note.sustainTime)
 		end
 		note.pressed = nil
 		note.lastPress = time
@@ -305,6 +316,14 @@ function Notefield:update(dt)
 			if char and char.columnAnim == note.column then
 				char.strokeTime = 0
 			end
+		end
+	end
+
+	for i = #self.splashes, 1, -1 do
+		local splash = self.splashes[i]
+		if splash.animFinished then
+			table.remove(self.splashes, i)
+			self:remove(splash)
 		end
 	end
 

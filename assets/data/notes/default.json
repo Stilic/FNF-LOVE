@@ -128,11 +128,16 @@
 		"sprite": "noteSplashes",
 
 		"animations": [
-			["splash0", "note impact 1 red", 24, false],
-			["splash1", "note impact 2 red", 24, false]
+			["splash0", "note impact 1 red", 24, false, true],
+			["splash1", "note impact 2 red", 24, false, true]
+		],
+
+		"properties": [
+			{"alpha": 0.6}
 		],
 
 		"scale": 1,
-		"antialiasing": true
+		"antialiasing": true,
+		"blend": "add"
 	}
 }

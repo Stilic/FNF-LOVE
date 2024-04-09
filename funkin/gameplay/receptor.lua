@@ -17,6 +17,9 @@ function Receptor:new(x, y, column, skin)
 	self.__strokeDelta = 0
 
 	self.__shaderAnimations = {}
+	self.__splashAnimations = {}
+	self.__splashCaches = {}
+	self.splashes = {}
 	self.hideReceptor = false
 	self.glow = nil
 
@@ -107,6 +110,32 @@ function Receptor:setColumn(column)
 		self.glow.offset.z, self.glow.origin.z, self.glow.__render = 0, 0, __NIL__
 		Note.loadSkinData(self.glow, skin, "glow", column)
 	end
+
+	table.clear(self.__splashAnimations)
+	if skin.splashes then
+		for _, anim in ipairs(skin.splashes.animations) do
+			if anim[1]:sub(1, 6) == "splash" then
+				table.insert(self.__splashAnimations, anim[1])
+			end
+		end
+	end
+end
+
+function Receptor:spawnSplash()
+	if not self.skin or not self.skin.splashes then return end
+
+	local splash = table.remove(self.__splashCaches)
+	if not splash then
+		splash = ActorSprite()
+		splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
+		Note.loadSkinData(splash, self.skin, "splashes", self.column)
+	end
+	splash.column, splash.parent = self.column, self
+	splash.x, splash.y, splash.z = self._x, self._y, self._z
+
+	Receptor.play(splash, self.__splashAnimations[math.random(1, #self.__splashAnimations)], true)
+	table.insert(self.splashes, splash)
+	return splash
 end
 
 function Receptor:update(dt)
@@ -142,17 +171,14 @@ function Receptor:update(dt)
 	end
 
 	ActorSprite.update(self, dt)
-end
 
-function Receptor:updateHitbox()
-	local width, height = self:getFrameDimensions()
-
-	self.width = math.abs(self.scale.x * self.zoom.x) * width
-	self.height = math.abs(self.scale.y * self.zoom.y) * height
-	self.__width, self.__height = self.width, self.height
-
-	self:centerOrigin(width, height)
-	self:centerOffsets(width, height)
+	for i = #self.splashes, 1, -1 do
+		local splash = self.splashes[i]
+		if splash.animFinished then
+			table.remove(self.splashes, i)
+			table.insert(self.__splashCaches, splash)
+		end
+	end
 end
 
 function Receptor:play(anim, force, frame, dontShader)
@@ -164,18 +190,27 @@ function Receptor:play(anim, force, frame, dontShader)
 		local anim, toPlay = 'glow', 'glop-note' .. self.column
 		local realAnim = self.glow.__animations[toPlay] and toPlay or anim
 		Sprite.play(self.glow, realAnim, force, frame)
-		self.updateHitbox(self.glow)
+		Note.updateHitbox(self.glow)
 	end
 
-	self:updateHitbox()
+	Note.updateHitbox(self)
 	self.__strokeDelta, self.strokeTime = 0, 0
 
-	if not dontShader then
+	if not dontShader and self.__shaderAnimations then
 		self.shader = self.__shaderAnimations[anim]
 	end
 end
 
+function Receptor:destroy()
+	Receptor.super.destroy(self)
+	if self.glow then self.glow:destroy() end
+	for i, splash in ipairs(self.splashes) do splash:destroy(); self.splashes[i] = nil end
+	for i, splash in ipairs(self.__splashCaches) do splash:destroy(); self.__splashCaches[i] = nil end
+	self.splashes, self.__splashCaches, self.__splashAnimations = nil
+end
+
 function Receptor:__render(camera)
+	self._x, self._y, self._z = self.x, self.y, self.z
 	if not self.hideReceptor then
 		ActorSprite.__render(self, camera)
 	end

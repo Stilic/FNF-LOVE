@@ -185,7 +185,7 @@ end
 
 function Note:play(anim, force, frame)
 	Note.super.play(self, anim, force, frame)
-	self:updateHitbox()
+	Note.updateHitbox(self)
 end
 
 function Note:_canDraw()

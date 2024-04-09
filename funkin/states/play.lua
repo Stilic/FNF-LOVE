@@ -770,6 +770,7 @@ function PlayState:goodNoteHit(n, rating)
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			if n.sustain then receptor.strokeTime = -1 end
+			if rating.splash and table.find(self.playerNotefields, notefield) then notefield:spawnSplash(n.column) end
 		end
 
 		if self.playerNotefield == notefield and not n.ignoreNote then
