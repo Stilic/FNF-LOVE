@@ -335,8 +335,8 @@ function Note:__render(camera)
 					uvy, fh = uvy + 1, fh - 2
 					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
 				end
-				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 64)
-				segments = segments * math.max(math.round(fh / 64), 1)
+				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, f.height)
+				segments = segments * math.max(math.round(fh / f.height), 1)
 				fh = fh / segments
 
 				tex:setFilter(sus.antialiasing and "linear" or "nearest")
