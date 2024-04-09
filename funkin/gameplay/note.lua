@@ -84,9 +84,11 @@ function Note:loadSkinData(skinData, name, column, noRgb)
 
 	self.blend = data.blend or self.blend
 
-	local scale = data.scale
-	self.scale.x, self.scale.y, self.scale.z, self.antialiasing = scale, scale, scale, data.antialiasing
-	if self.antialiasing == nil then self.antialiasing = true end
+	if data.scale ~= nil then
+		self.scale.x, self.scale.y, self.scale.z = data.scale, data.scale, data.scale
+	end
+	if data.alpha ~= nil then self.alpha = data.alpha end
+	if data.antialiasing ~= nil then self.antialiasing = data.antialiasing end
 
 	local props = data.properties
 	props = props and props[math.min(fixedColumn, #props)] or props
@@ -124,7 +126,7 @@ end
 function Note:setColumn(column)
 	if column == self.column then return end
 	self.column = column
-	
+
 	local data = self.skin.notes
 	if not data.disableRgb then
 		local color = data.colors[column + 1]
@@ -394,7 +396,8 @@ function Note:__render(camera)
 					if enduv or vi > vertLens then
 						susMesh:setDrawRange(1, vi - 1); susMesh:setVertices(susVerts); love.graphics.draw(susMesh)
 
-						if enduv then break
+						if enduv then
+							break
 						else
 							susVerts[2][1], susVerts[2][2], susVerts[2][3], susVerts[2][4], susVerts[2][5],
 							susVerts[2][6], susVerts[2][7], susVerts[2][8], susVerts[2][9] =
