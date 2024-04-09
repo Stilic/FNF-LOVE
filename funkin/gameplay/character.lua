@@ -1,5 +1,6 @@
 local Character = Sprite:extend("Character")
 
+Character.directions = {"left", "down", "up", "right"}
 Character.editorMode = false
 
 function Character:new(x, y, char, isPlayer)
@@ -179,7 +180,7 @@ function Character:playAnim(anim, force, frame)
 end
 
 function Character:sing(dir, type)
-	local anim = "sing" .. string.upper(Note.directions[dir + 1])
+	local anim = "sing" .. string.upper(Character.directions[dir + 1])
 	local suffix
 	if type then
 		switch(type:lower(), {

@@ -3,12 +3,6 @@
 
 local Receptor = ActorSprite:extend("Receptor")
 
-Receptor.pixelAnim = { -- {static, pressed, confirm}
-	{{0}, {4, 8},  {12, 16}}, {{1}, {5, 9}, {13, 17}}, {{2}, {6, 10}, {14, 18}},
-	{{3}, {7, 11}, {15, 19}}
-}
-
--- noteskip wip
 function Receptor:new(x, y, column, skin)
 	Receptor.super.new(self, x, y)
 
