@@ -201,11 +201,12 @@ end
 
 local function getValue(receptor, pos, axis)
 	if receptor then return receptor:getValue(pos, axis) end
+	return Receptor.getDefaultValue(axis, pos)
 end
 
-local worldSpin, toScreen, linear, nearest, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, alpha, skewX, skewY, skewZ =
+local worldSpin, toScreen, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, red, green, blue, alpha, skewX, skewY, skewZ =
 	Actor.worldSpin, Actor.toScreen,
-	"linear", "nearest", "x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "alpha", "skewX", "skewY", "skewZ"
+	"x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "red", "green", "blue", "alpha", "skewX", "skewY", "skewZ"
 
 function Note:__render(camera)
 	local grp, px, py, pz, pa, pal, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.alpha, self.rotation, self.scale
@@ -229,9 +230,9 @@ function Note:__render(camera)
 		end
 
 		local vx, vy, vz = worldSpin(
-			(nx + (getValue(rec, pos, x) or 0)) * gsx,
-			(ny + (getValue(rec, pos, y) or pos)) * gsy,
-			(nz + (getValue(rec, pos, z) or 0)) * gsz,
+			(nx + getValue(rec, pos, x)) * gsx,
+			(ny + getValue(rec, pos, y)) * gsy,
+			(nz + getValue(rec, pos, z)) * gsz,
 			grx, gry, grz, gox, goy, goz)
 
 		self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
@@ -239,13 +240,13 @@ function Note:__render(camera)
 		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
-	local v = getValue(rec, pos, size) or 1
-	rot.x, rot.y, rot.z = rot.x + (getValue(rec, pos, rotX) or 0), rot.y + (getValue(rec, pos, rotY) or 0), rot.z + (getValue(rec, pos, rotZ) or 0)
-	sc.x, sc.y, sc.z = sc.x * (getValue(rec, pos, sizeX) or 1) * v, sc.y * (getValue(rec, pos, sizeY) or 1) * v, sc.z * (getValue(rec, pos, sizeZ) or 1) * v
-	self.alpha = self.alpha * (getValue(rec, pos, alpha) or 1)
+	local v = getValue(rec, pos, size)
+	rot.x, rot.y, rot.z = rot.x + getValue(rec, pos, rotX), rot.y + getValue(rec, pos, rotY), rot.z + getValue(rec, pos, rotZ)
+	sc.x, sc.y, sc.z = sc.x * getValue(rec, pos, sizeX) * v, sc.y * getValue(rec, pos, sizeY) * v, sc.z * getValue(rec, pos, sizeZ) * v
+	self.alpha = pal * getValue(rec, pos, alpha)
 
 	--[[
-		I'm aware that if the texture size height or scale are minimized, it'll be huge draw calls
+		I'm aware that if the texture size height or scale are too small, it'll be huge draw calls
 		i can't wrap it around it either since it requires a shader which would not be a big deal but
 		ActorSprite and rgb uses a shader, and i have to make it around before those renders,
 		I could make a canvas but who knows...
@@ -276,29 +277,30 @@ function Note:__render(camera)
 				local hfw, fh, uvx, uvy, uvxw, uvh = tw, th, 0, 0, 1, 1
 				if f then
 					uvx, uvy, hfw, fh = f.quad:getViewport()
+					uvy, fh = uvy + 1, fh - 1
 					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
 				end
 				local fhs = uvh / segments
 				hfw, fh, gotVerts = hfw * ssc.x / 2, fh / segments * ssc.y, vertLens
 
-				tex:setFilter(susend.antialiasing and linear or nearest)
+				tex:setFilter(susend.antialiasing and "linear" or "nearest")
 				love.graphics.setShader(susend.shader or defaultShader); love.graphics.setBlendMode(susend.blend)
 				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha)
 				susMesh:setTexture(tex)
 
 				vx, vy, vz = worldSpin(
-					(snx + (getValue(rec, suspos + 1, x) or 0)) * gsx,
-					(sny + (getValue(rec, suspos + 1, y) or suspos + 1)) * gsy,
-					(snz + (getValue(rec, suspos + 1, z) or 0)) * gsz,
+					(snx + getValue(rec, suspos + 1, x)) * gsx,
+					(sny + getValue(rec, suspos + 1, y)) * gsy,
+					(snz + getValue(rec, suspos + 1, z)) * gsz,
 					grx, gry, grz, gox, goy, goz
 				)
 				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
 				local enduv, vert, aa, as, ac
 				for vi = 1, vertLens, 2 do
-					va, vx, vy, vz = getValue(rec, suspos, alpha) or 1, worldSpin(
-						(snx + (getValue(rec, suspos, x) or 0)) * gsx,
-						(sny + (getValue(rec, suspos, y) or suspos)) * gsy,
-						(snz + (getValue(rec, suspos, z) or 0)) * gsz,
+					va, vx, vy, vz = getValue(rec, suspos, alpha), worldSpin(
+						(snx + getValue(rec, suspos, x)) * gsx,
+						(sny + getValue(rec, suspos, y)) * gsy,
+						(snz + getValue(rec, suspos, z)) * gsz,
 						grx, gry, grz, gox, goy, goz
 					)
 
@@ -332,21 +334,22 @@ function Note:__render(camera)
 				local hfw, fh, uvx, uvy, uvxw, uvh = tw, th, 0, 0, 1, 1
 				if f then
 					uvx, uvy, hfw, fh = f.quad:getViewport()
+					uvy, fh = uvy + 1, fh - 2
 					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
 				end
 				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 64)
 				segments = segments * math.max(math.round(fh / 64), 1)
 				fh = fh / segments
 
-				tex:setFilter(sus.antialiasing and linear or nearest)
+				tex:setFilter(sus.antialiasing and "linear" or "nearest")
 				love.graphics.setShader(sus.shader or defaultShader); love.graphics.setBlendMode(sus.blend)
 				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha)
 				susMesh:setTexture(tex)
 
 				suspos, vertLens, vx, vy, vz = math.min(suspos, maxbound), math.min(2 + segments * 2, 16), worldSpin(
-					(snx + (getValue(rec, suspos + 1, x) or 0)) * gsx,
-					(sny + (getValue(rec, suspos + 1, y) or suspos + 1)) * gsy,
-					(snz + (getValue(rec, suspos + 1, z) or 0)) * gsz,
+					(snx + getValue(rec, suspos + 1, x)) * gsx,
+					(sny + getValue(rec, suspos + 1, y)) * gsy,
+					(snz + getValue(rec, suspos + 1, z)) * gsz,
 					grx, gry, grz, gox, goy, goz
 				)
 				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
@@ -368,10 +371,10 @@ function Note:__render(camera)
 				end
 
 				while true do
-					va, vx, vy, vz = getValue(rec, suspos, alpha) or 1, worldSpin(
-						(snx + (getValue(rec, suspos, x) or 0)) * gsx,
-						(sny + (getValue(rec, suspos, y) or suspos)) * gsy,
-						(snz + (getValue(rec, suspos, z) or 0)) * gsz,
+					va, vx, vy, vz = getValue(rec, suspos, alpha), worldSpin(
+						(snx + getValue(rec, suspos, x)) * gsx,
+						(sny + getValue(rec, suspos, y)) * gsy,
+						(snz + getValue(rec, suspos, z)) * gsz,
 						grx, gry, grz, gox, goy, goz
 					)
 
@@ -421,131 +424,5 @@ function Note:__render(camera)
 
 	self.x, self.y, self.z, self.angle, self.alpha, sc.x, sc.y, sc.z, rot.x, rot.y, rot.z = px, py, pz, pa, pal, psx, psy, psz, prx, pry, prz
 end
-
---[[
-Note.chartingMode = false
-
-function Note:new(time, data, prevNote, sustain, parentNote)
-	Note.super.new(self, 0, -2000)
-
-	self.time = time
-	self.data = data
-	self.prevNote = prevNote
-	if sustain == nil then sustain = false end
-	self.isSustain, self.isSustainEnd, self.parentNote = sustain, false, parentNote
-	self.mustPress = false
-	self.canBeHit, self.wasGoodHit, self.tooLate = false, false, false
-	self.earlyHitMult, self.lateHitMult = 1, 1
-	self.type = ''
-	self.ignoreNote = false
-
-	self.scrollOffset = {x = 0, y = 0}
-
-	local color = Note.colors[data + 1]
-	if PlayState.pixelStage then
-		if sustain then
-			self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'))
-			self.width = self.width / 4
-			self.height = self.height / 2
-			self:loadTexture(paths.getImage('skins/pixel/NOTE_assetsENDS'),
-				true, math.floor(self.width),
-				math.floor(self.height))
-
-			self:addAnim(color .. 'holdend', Note.pixelAnim[data + 1][1])
-			self:addAnim(color .. 'hold', Note.pixelAnim[data + 1][2])
-		else
-			self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'))
-			self.width = self.width / 4
-			self.height = self.height / 5
-			self:loadTexture(paths.getImage('skins/pixel/NOTE_assets'), true,
-				math.floor(self.width), math.floor(self.height))
-
-			self:addAnim(color .. 'Scroll', Note.pixelAnim[data + 1][1])
-		end
-
-		self:setGraphicSize(math.floor(self.width * 6))
-		self.antialiasing = false
-	else
-		self:setFrames(paths.getSparrowAtlas("skins/default/NOTE_assets"))
-
-		if sustain then
-			if data == 0 then
-				self:addAnimByPrefix(color .. "holdend", "pruple end hold")
-			else
-				self:addAnimByPrefix(color .. "holdend", color .. " hold end")
-			end
-			self:addAnimByPrefix(color .. "hold", color .. " hold piece")
-		else
-			self:addAnimByPrefix(color .. "Scroll", color .. "0")
-		end
-
-		self:setGraphicSize(math.floor(self.width * 0.7))
-	end
-	self:updateHitbox()
-
-	self:play(color .. "Scroll")
-
-	if sustain and prevNote then
-		table.insert(parentNote.children, self)
-
-		self.alpha = 0.6
-		self.earlyHitMult = 0.5
-		self.scrollOffset.x = self.scrollOffset.x + self.width / 2
-
-		self:play(color .. "holdend")
-		self.isSustainEnd = true
-
-		self:updateHitbox()
-
-		self.scrollOffset.x = self.scrollOffset.x - self.width / 2
-
-		if PlayState.pixelStage then
-			self.scrollOffset.x = self.scrollOffset.x + 30
-		end
-
-		if prevNote.isSustain then
-			prevNote:play(Note.colors[prevNote.data + 1] .. "hold")
-			prevNote.isSustainEnd = false
-
-			prevNote.scale.y = (prevNote.width / prevNote:getFrameWidth()) *
-				((PlayState.conductor.stepCrotchet / 100) *
-					(1.05 / 0.7)) * PlayState.SONG.speed
-
-			if PlayState.pixelStage then
-				prevNote.scale.y = prevNote.scale.y * 5
-				prevNote.scale.y = prevNote.scale.y * (6 / self.height)
-			end
-			prevNote:updateHitbox()
-		end
-	else
-		self.children = {}
-	end
-end
-
-local safeZoneOffset = (10 / 60) * 1000
-
-function Note:checkDiff()
-	local instTime =
-		(Note.chartingMode and ChartingState or PlayState).conductor.time
-	return self.time > instTime - safeZoneOffset * self.lateHitMult and
-		self.time < instTime + safeZoneOffset * self.earlyHitMult
-end
-
-function Note:update(dt)
-	local instTime =
-		(Note.chartingMode and ChartingState or PlayState).conductor.time
-	self.canBeHit = self:checkDiff()
-
-	if self.mustPress then
-		if not self.ignoreNote and not self.wasGoodHit and
-			self.time < instTime - safeZoneOffset then
-			self.tooLate = true
-		end
-	end
-
-	if self.tooLate and self.alpha > 0.3 then self.alpha = 0.3 end
-
-	Note.super.update(self, dt)
-end]]
 
 return Note

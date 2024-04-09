@@ -29,9 +29,14 @@ function Receptor:new(x, y, column, skin)
 	self:setSkin(skin)
 end
 
+local retOne, retPos = {sizeX = true, sizeY = true, sizeZ = true, size = true, red = true, green = true, blue = true, alpha = true}, {y = true}
+function Receptor.getDefaultValue(axis, pos)
+	return retOne[axis] and 1 or (retPos[axis] and pos or 0)
+end
+
 function Receptor:getValue(pos, axis)
 	local splineAxis = self.noteSplines[axis]
-	if not splineAxis then return end
+	if not splineAxis then return Receptor.getDefaultValue(axis, pos) end
 
 	local got = 1
 	for i = 2, #splineAxis do
@@ -56,16 +61,16 @@ end
 
 --[[
 	axis = [
-		X, Y, Z,
+		x, y, z,
 		rotX, rotY, rotZ,
 		sizeX, sizeY, sizeZ, size
-		alpha,
+		red, green, blue, alpha,
 		skewX, skewY, skewZ ?
 	]
 --]]
 function Receptor:setSpline(axis, idx, value, position, tween, ease)
 	local spline = {
-		value = value,
+		value = value or Receptor.getDefaultValue(axis, position),
 		position = position or 0,
 		tween = tween or "linear",
 		ease = ease or "inout"
@@ -73,7 +78,7 @@ function Receptor:setSpline(axis, idx, value, position, tween, ease)
 
 	local splineAxis = self.noteSplines[axis] or table.new(idx, 0)
 	for i = 1, idx - 1 do splineAxis[i] = splineAxis[i] or {
-		value = 0,
+		value = Receptor.getDefaultValue(axis, position),
 		position = 0,
 		tween = "linear"
 	} end

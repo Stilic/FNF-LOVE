@@ -64,8 +64,6 @@ function Notefield:new(x, y, keys, character, skin)
 		self:makeLane(i).x = startx + self.noteWidth * i
 	end
 
-	--self.lanes[2].scale.y = -1
-
 	self:getWidth()
 end
 

@@ -46,7 +46,7 @@
 		],
 
 		"scale": 0.7,
-		"antialiasing": false
+		"antialiasing": true
 	},
 
 	"sustainends": {
@@ -71,7 +71,7 @@
 		],
 
 		"scale": 0.7,
-		"antialiasing": false
+		"antialiasing": true
 	},
 
 	"receptors": {

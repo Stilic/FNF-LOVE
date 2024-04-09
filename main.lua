@@ -108,6 +108,8 @@ function love.load()
 	end
 
 	local res, isMobile = math.abs(ClientPrefs.data.resolution), love.system.getDevice() == "Mobile"
+	Camera.defaultResolution = res
+
 	love.window.setTitle(Project.title)
 	love.window.setIcon(love.image.newImageData(Project.icon))
 	love.window.setMode(Project.width * res, Project.height * res, {
@@ -141,7 +143,11 @@ function love.load()
 	game.init(Project, SplashScreen)
 
 	if ClientPrefs.data.resolution == -1 then
-		ClientPrefs.data.resolution = love.graphics.getFixedScale()
+		Camera.defaultResolution = love.graphics.getFixedScale()
+		ClientPrefs.data.resolution = Camera.defaultResolution
+		for _, camera in ipairs(game.cameras.list) do
+			if camera then camera:resize(camera.width, camera.height, value) end
+		end
 	end
 
 	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
