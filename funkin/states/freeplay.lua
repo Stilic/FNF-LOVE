@@ -5,6 +5,8 @@ FreeplayState.curSelected = 1
 FreeplayState.curDifficulty = 2
 
 function FreeplayState:enter()
+	FreeplayState.super.enter(self)
+
 	self.notCreated = false
 
 	self.script = Script("data/states/freeplay", false)
@@ -127,8 +129,6 @@ function FreeplayState:enter()
 	if #self.songsData > 0 then self:changeSelection() end
 
 	self.script:call("postCreate")
-
-	FreeplayState.super.enter(self)
 end
 
 function FreeplayState:update(dt)

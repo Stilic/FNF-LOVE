@@ -3,6 +3,8 @@ local MainMenuState = State:extend("MainMenuState")
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
+	MainMenuState.super.enter(self)
+
 	self.notCreated = false
 
 	self.script = Script("data/states/mainmenu", false)
@@ -107,8 +109,6 @@ function MainMenuState:enter()
 	self:changeSelection()
 
 	self.script:call("postCreate")
-
-	MainMenuState.super.enter(self)
 end
 
 function MainMenuState:update(dt)

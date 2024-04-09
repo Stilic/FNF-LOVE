@@ -3,6 +3,8 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
+	TitleState.super.enter(self)
+
 	self.notCreated = false
 
 	self.script = Script("data/states/title", false)
@@ -81,8 +83,6 @@ function TitleState:enter()
 	end
 
 	self.script:call("postCreate")
-
-	TitleState.super.enter(self)
 end
 
 function TitleState:getIntroTextShit()
