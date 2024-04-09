@@ -8,10 +8,12 @@ function Note.toPos(time, speed)
 	return time * 450 * speed
 end
 
-local susMesh
+local susMesh, susVerts
 function Note.init()
 	if susMesh then return end
 	susMesh = love.graphics.newMesh(ActorSprite.vertexFormat, 16, "strip")
+	susVerts = table.new(16, 0)
+	for i = 1, 16 do susVerts[i] = table.new(9, 0) end
 end
 
 function Note:new(time, column, sustaintime, skin)
@@ -156,8 +158,8 @@ function Note:createSustain()
 	sustain:play("hold"); self.updateHitbox(sustain)
 	susend:play("end"); self.updateHitbox(susend)
 
-	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__vertices, sustain.__render = 0, 0, 0, {}, __NIL__
-	susend.z, susend.offset.z, susend.origin.z, susend.__vertices, susend.__render = 0, 0, 0, {}, __NIL__
+	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__render = 0, 0, 0, __NIL__
+	susend.z, susend.offset.z, susend.origin.z, susend.__render = 0, 0, 0, __NIL__
 end
 
 function Note:destroySustain()
@@ -201,15 +203,16 @@ local function getValue(receptor, pos, axis)
 	if receptor then return receptor:getValue(pos, axis) end
 end
 
-local worldSpin, toScreen, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, alpha, skewX, skewY, skewZ = Actor.worldSpin, Actor.toScreen,
-	"x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "alpha", "skewX", "skewY", "skewZ"
+local worldSpin, toScreen, linear, nearest, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, alpha, skewX, skewY, skewZ =
+	Actor.worldSpin, Actor.toScreen,
+	"linear", "nearest", "x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "alpha", "skewX", "skewY", "skewZ"
 
 function Note:__render(camera)
 	local grp, px, py, pz, pa, pal, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.alpha, self.rotation, self.scale
 	local time, target, speed, psx, psy, psz, prx, pry, prz = self.time, self._targetTime, self.speed,
 		sc.x, sc.y, sc.z, rot.x, rot.y, rot.z
 
-	local pos, rec = Note.toPos(time - target, speed)
+	local nx, ny, nz, pos, rec = px, py, pz, Note.toPos(time - target, speed)
 	local gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	if grp then
 		gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz, rec = grp.x, grp.y, grp.z, grp.scale.x, grp.scale.y, grp.scale.z,
@@ -221,16 +224,19 @@ function Note:__render(camera)
 
 		if grp.affectAngle then self.angle, rot.y, rot.y, rot.z = self.angle + grp.angle, rot.y + grx, rot.y + gry, rot.z + grz end
 		if grp.affectScale then sc.x, sc.y, sc.z = sc.x * gsx, sc.y * gsy, sc.z * gsz end
+		if rec then
+			nx, ny, nz = nx + rec.x, ny + rec.y, nz + rec.z
+		end
 
 		local vx, vy, vz = worldSpin(
-			(px + (getValue(rec, pos, x) or 0)) * gsx,
-			(py + (getValue(rec, pos, y) or pos)) * gsy,
-			(pz + (getValue(rec, pos, z) or 0)) * gsz,
+			(nx + (getValue(rec, pos, x) or 0)) * gsx,
+			(ny + (getValue(rec, pos, y) or pos)) * gsy,
+			(nz + (getValue(rec, pos, z) or 0)) * gsz,
 			grx, gry, grz, gox, goy, goz)
 
 		self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
 	else
-		self.x, self.y, self.z = px, py + pos, pz
+		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
 	local v = getValue(rec, pos, size) or 1
@@ -248,118 +254,165 @@ function Note:__render(camera)
 
 		Also probably need a rework like the actorsprite
 	--]]
-	local sustain = self.sustain
-	if sustain then
-		local r, g, b, a = love.graphics.getColor()
-		local shader = love.graphics.getShader()
+
+	local sus = self.sustain
+	if sus then
+		local dshader, shader, r, g, b, a = ActorSprite.defaultShader, love.graphics.getShader(), love.graphics.getColor()
 		local blendMode, alphaMode = love.graphics.getBlendMode()
-		local min, mag, anisotropy = self.texture:getFilter()
-		local fov, defaultShader = self.fov, ActorSprite.defaultShader
-		local susend, drawSize, drawSizeOffset = self.sustainEnd, grp and grp.drawSize or 800, grp and grp.drawSizeOffset or 0
-		local susSc, endSc = sustain.scale, susend and susend.scale
-		local height, fSusEnd, dont = Note.toPos(self.sustainTime, speed), susend and susend:getCurrentFrame(), false
-		local susEndHeight = (susend and (fSusEnd and select(4, fSusEnd.quad:getViewport()) or susend.texture:getHeight()) or 0) * endSc.y
 
-		local newPos = self.pressed and 0 or math.max(pos, -drawSize / 2 + drawSizeOffset - py)
-		height, pos = height - (newPos - pos) - susEndHeight, newPos
+		local fov, drawSize, drawSizeOffset = self.fov, grp and grp.drawSize or 800, grp and grp.drawSizeOffset or 0
+		local suspos, minbound, maxbound = Note.toPos(time + self.sustainTime - target, speed),
+			self.pressed and 0 or self.lastPress and Note.toPos(self.lastPress - target, speed) or math.max(pos, -drawSize / 2 + drawSizeOffset - ny),
+			drawSize / 2 + drawSizeOffset - ny
 
-		-- Sustains
-		local mode = sustain.antialiasing and "linear" or "nearest"
-		local sox, soy, soz = sustain.offset.x, sustain.offset.y, sustain.offset.z
-		local susx, susy, susz = px + sustain.x, py + sustain.y, pz + sustain.z
-		local vertsLength, vx, vy, vz = math.min(2 + self.sustainSegments * 2, 16)
+		local segments = self.sustainSegments
+		local vertLens = math.min(2 + segments * 2, 16)
 
-		if vertsLength > 2 then
-			local verts, f, tw, th = sustain.__vertices, sustain:getCurrentFrame(), sustain.texture:getWidth(), sustain.texture:getHeight()
-			local fw, fh, uvx, uvy, uvw, uvh = tw, th, 0, 0, 1, 1
-			if f then
-				uvx, uvy, fw, fh = f.quad:getViewport()
-				uvx, uvy, uvw, uvh = uvx / tw, uvy / th, fw / tw, fh / th
-				susx, susy = susx - f.offset.x, susy - f.offset.y
-			end
-			fw, fh = fw * susSc.x, math.clamp(fh * susSc.y, 64, 128)
-			fh = fh / (self.sustainSegments * math.round(fh / 64))
+		if vertLens > 2 then
+			local susend, gotVerts = self.sustainEnd
+			if susend and suspos >= minbound and suspos < maxbound then
+				local snx, sny, snz, ssc, tex = susend.x + nx, susend.y + ny, (susend.z or 0) + nz, susend.scale, susend.texture
+				local f, tw, th = susend:getCurrentFrame(), tex:getWidth(), tex:getHeight()
+				local hfw, fh, uvx, uvy, uvxw, uvh = tw, th, 0, 0, 1, 1
+				if f then
+					uvx, uvy, hfw, fh = f.quad:getViewport()
+					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
+				end
+				local fhs = uvh / segments
+				hfw, fh, gotVerts = hfw * ssc.x / 2, fh / segments * ssc.y, vertLens
 
-			sustain.texture:setFilter(mode, mode, anisotropy)
-			love.graphics.setShader(sustain.shader or defaultShader); love.graphics.setBlendMode(sustain.blend)
-			love.graphics.setColor(sustain.color[1], sustain.color[2], sustain.color[3], sustain.alpha)
-			susMesh:setTexture(sustain.texture)
-			susMesh:setDrawRange(1, vertsLength)
+				tex:setFilter(susend.antialiasing and linear or nearest)
+				love.graphics.setShader(susend.shader or defaultShader); love.graphics.setBlendMode(susend.blend)
+				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha)
+				susMesh:setTexture(tex)
 
-			vx, vy, vz = worldSpin(
-				(susx + (getValue(rec, pos - .01, x) or 0)) * gsx,
-				(susy + (getValue(rec, pos - .01, y) or pos)) * gsy,
-				(susz + (getValue(rec, pos - .01, z) or 0)) * gsz,
-				grx, gry, grz, gox, goy, goz)
-			local sustaintime, pvx, pvy = self.sustainTime, toScreen(vx + gx, vy + gy, vz + gz, fov)
+				vx, vy, vz = worldSpin(
+					(snx + (getValue(rec, suspos + 1, x) or 0)) * gsx,
+					(sny + (getValue(rec, suspos + 1, y) or suspos + 1)) * gsy,
+					(snz + (getValue(rec, suspos + 1, z) or 0)) * gsz,
+					grx, gry, grz, gox, goy, goz
+				)
+				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
+				local enduv, vert, aa, as, ac
+				for vi = 1, vertLens, 2 do
+					va, vx, vy, vz = getValue(rec, suspos, alpha) or 1, worldSpin(
+						(snx + (getValue(rec, suspos, x) or 0)) * gsx,
+						(sny + (getValue(rec, suspos, y) or suspos)) * gsy,
+						(snz + (getValue(rec, suspos, z) or 0)) * gsz,
+						grx, gry, grz, gox, goy, goz
+					)
 
-			local uvxw, hfw, vi, vert, va, aa, as, ac = uvx + uvw, fw / 2, 0, 0
-			while height > 0 do
-				vi, va, vx, vy, vz = vi + 1, getValue(rec, pos, alpha) or 1, worldSpin(
-					(susx + (getValue(rec, pos, x) or 0)) * gsx,
-					(susy + (getValue(rec, pos, y) or pos)) * gsy,
-					(susz + (getValue(rec, pos, z) or 0)) * gsz,
-					grx, gry, grz, gox, goy, goz)
+					vert, vx, vy, vz = susVerts[vi], toScreen(vx + gx, vy + gy, vz + gz, fov)
 
-				vert = verts[vi] or table.new(5, 0); verts[vi] = vert
-				vx, vy, vz = toScreen(vx + gx, vy + gy, vz + gz, fov)
+					aa = -math.atan((pvx - vx) / (pvy - vy))
+					as, ac, pvx, pvy = math.fastsin(aa) * vz, math.fastcos(aa) * vz, vx, vy
 
-				aa = -math.atan((pvx - vx) / (pvy - vy))
-				as, ac, pvx, pvy = math.fastsin(aa) * vz, math.fastcos(aa) * vz, vx, vy
+					vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1,
+						vx - hfw * ac, vy - hfw * as, uvx * vz, (uvy + uvh) * vz, vz, 1, 1, 1, va
 
-				vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1, vx - hfw * ac, vy - hfw * as,
-					uvx * vz, (uvy + ((vi - 1) / vertsLength) * uvh) * vz, vz, 1, 1, 1, va
+					vert = susVerts[vi]
+					vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] =
+						vx + hfw * ac, vy + hfw * as, uvxw * vz, (uvy + uvh) * vz, vz, 1, 1, 1, va
 
-				vert = verts[vi] or table.new(5, 0); verts[vi] = vert
-				vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vx + hfw * ac, vy + hfw * as,
-					uvxw * vz, (uvy + ((vi - 2) / vertsLength) * uvh) * vz, vz, 1, 1, 1, va
-
-				height, pos = height - fh, pos + fh
-				dont = pos > drawSize / 2 + drawSizeOffset - py
-				if dont then break end
-
-				if vi >= vertsLength then
-					susMesh:setVertices(verts); love.graphics.draw(susMesh)
-
-					vi = vi - 1
-					vi, verts[1][1], verts[1][2], verts[1][3], verts[1][4], verts[1][5] = vi + 1,
-						verts[vi][1], verts[vi][2], uvx * verts[vi][5], uvy * verts[vi][5], verts[vi][5]
-
-					vi, verts[2][1], verts[2][2], verts[2][3], verts[2][4], verts[2][5] = 2,
-						verts[vi][1], verts[vi][2], uvxw * verts[vi][5], uvy * verts[vi][5], verts[vi][5]
+					if vi < vertLens then suspos, uvh = suspos - fh, uvh - fhs end
+					if enduv then
+						gotVerts = vi
+						break
+					elseif suspos < minbound then
+						suspos, uvh, enduv = minbound, uvh - ((suspos - minbound) / th / segments), true
+					end
 				end
 
-				--[[
-				vx, vy, vz = worldSpin((px - hfw) * gsx, y1 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-				verts[1][1], verts[1][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-				verts[1][3], verts[1][4], verts[1][5] = uvx * vz, uvy * vz, vz
-
-				vx, vy, vz = worldSpin((px + hfw) * gsx, y1 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-				verts[2][1], verts[2][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-				verts[2][3], verts[2][4], verts[2][5] = uvxw * vz, uvy * vz, vz
-
-				vx, vy, vz = worldSpin((px + hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-				verts[3][1], verts[3][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-				verts[3][3], verts[3][4], verts[3][5] = uvxw * vz, uvyh * vz, vz
-
-				vx, vy, vz = worldSpin((px - hfw) * gsx, y2 * gsy, pz * gsz, grx, gry, grz, gox, goy, goz)
-				verts[4][1], verts[4][2], vz = self.toScreen(vx + gx, vy + gy, vz + gz, fov)
-				verts[4][3], verts[4][4], verts[4][5] = uvx * vz, uvyh * vz, vz]]
+				susMesh:setDrawRange(1, gotVerts); susMesh:setVertices(susVerts); love.graphics.draw(susMesh)
 			end
 
-			if vi > 2 then
-				susMesh:setDrawRange(1, vi); susMesh:setVertices(verts); love.graphics.draw(susMesh)
+			if suspos >= minbound then
+				local snx, sny, snz, ssc, tex = sus.x + nx, sus.y + ny, (sus.z or 0) + nz, sus.scale, sus.texture
+				local f, tw, th = sus:getCurrentFrame(), tex:getWidth(), tex:getHeight()
+				local hfw, fh, uvx, uvy, uvxw, uvh = tw, th, 0, 0, 1, 1
+				if f then
+					uvx, uvy, hfw, fh = f.quad:getViewport()
+					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
+				end
+				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 64)
+				segments = segments * math.max(math.round(fh / 64), 1)
+				fh = fh / segments
+
+				tex:setFilter(sus.antialiasing and linear or nearest)
+				love.graphics.setShader(sus.shader or defaultShader); love.graphics.setBlendMode(sus.blend)
+				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha)
+				susMesh:setTexture(tex)
+
+				suspos, vertLens, vx, vy, vz = math.min(suspos, maxbound), math.min(2 + segments * 2, 16), worldSpin(
+					(snx + (getValue(rec, suspos + 1, x) or 0)) * gsx,
+					(sny + (getValue(rec, suspos + 1, y) or suspos + 1)) * gsy,
+					(snz + (getValue(rec, suspos + 1, z) or 0)) * gsz,
+					grx, gry, grz, gox, goy, goz
+				)
+				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
+				local uvfh, fhs, uvyh, vi, enduv, vert, aa, as, ac = uvh, uvh / segments, uvy + uvh, 1
+				if gotVerts then
+					vert, vi, suspos, uvfh = susVerts[gotVerts], 3, suspos - fh, uvfh - fhs
+					susVerts[2][1], susVerts[2][2], susVerts[2][3], susVerts[2][4], susVerts[2][5],
+					susVerts[2][6], susVerts[2][7], susVerts[2][8], susVerts[2][9] =
+						vert[1], vert[2], uvxw * vert[5], uvyh * vert[5], vert[5], vert[6], vert[7], vert[8], vert[9]
+
+					vert = susVerts[gotVerts - 1]
+					susVerts[1][1], susVerts[1][2], susVerts[1][3], susVerts[1][4], susVerts[1][5],
+					susVerts[1][6], susVerts[1][7], susVerts[1][8], susVerts[1][9] =
+						vert[1], vert[2], uvx * vert[5], uvyh * vert[5], vert[5], vert[6], vert[7], vert[8], vert[9]
+
+					if suspos < minbound then
+						suspos, uvfh, enduv = minbound, uvfh - ((suspos - minbound) / th / segments), true
+					end
+				end
+
+				while true do
+					va, vx, vy, vz = getValue(rec, suspos, alpha) or 1, worldSpin(
+						(snx + (getValue(rec, suspos, x) or 0)) * gsx,
+						(sny + (getValue(rec, suspos, y) or suspos)) * gsy,
+						(snz + (getValue(rec, suspos, z) or 0)) * gsz,
+						grx, gry, grz, gox, goy, goz
+					)
+
+					vert, vx, vy, vz = susVerts[vi], toScreen(vx + gx, vy + gy, vz + gz, fov)
+
+					aa = -math.atan((pvx - vx) / (pvy - vy))
+					as, ac, pvx, pvy = math.fastsin(aa) * vz, math.fastcos(aa) * vz, vx, vy
+
+					vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1,
+						vx - hfw * ac, vy - hfw * as, uvx * vz, (uvy + uvfh) * vz, vz, 1, 1, 1, va
+
+					vert = susVerts[vi]
+					vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1,
+						vx + hfw * ac, vy + hfw * as, uvxw * vz, (uvy + uvfh) * vz, vz, 1, 1, 1, va
+
+					suspos, uvfh = suspos - fh, uvfh - fhs
+					if enduv or vi > vertLens then
+						susMesh:setDrawRange(1, vi - 1); susMesh:setVertices(susVerts); love.graphics.draw(susMesh)
+
+						if enduv then break
+						else
+							susVerts[2][1], susVerts[2][2], susVerts[2][3], susVerts[2][4], susVerts[2][5],
+							susVerts[2][6], susVerts[2][7], susVerts[2][8], susVerts[2][9] =
+								vert[1], vert[2], vert[3], uvyh * vert[5], vert[5], vert[6], vert[7], vert[8], vert[9]
+
+							vert, uvfh, vi = susVerts[vi - 2], uvh - fhs, 3
+							susVerts[1][1], susVerts[1][2], susVerts[1][3], susVerts[1][4], susVerts[1][5],
+							susVerts[1][6], susVerts[1][7], susVerts[1][8], susVerts[1][9] =
+								vert[1], vert[2], vert[3], uvyh * vert[5], vert[5], vert[6], vert[7], vert[8], vert[9]
+						end
+					end
+
+					if suspos < minbound then
+						suspos, uvfh, enduv = minbound, uvfh - ((suspos - minbound) / th / segments), true
+					end
+				end
 			end
 		end
 
-		-- Sus END
-		if not dont and susend then
-
-		end
-
-		love.graphics.setColor(r, g, b, a)
+		love.graphics.setShader(shader); love.graphics.setColor(r, g, b, a)
 		love.graphics.setBlendMode(blendMode, alphaMode)
-		love.graphics.setShader(shader)
 	end
 
 	if self.showNote and (not self.hit or self.showNoteOnHit) then

@@ -175,23 +175,23 @@ function table.splice(list, start, count, ...)
 	return removed
 end
 
-local math_pi = math.pi
+local pi = math.pi
 function math.fastsin(v)
-	v = (v / math_pi) % 2
+	v = (v / pi) % 2
     return v <= 1 and -4 * v * (v - 1) or 4 * (v - 1) * (v - 2)
 end
 function math.fastcos(v)
-	v = (v / math_pi + .5) % 2
+	v = (v / pi + .5) % 2
     return v <= 1 and -4 * v * (v - 1) or 4 * (v - 1) * (v - 2)
 end
 
 function math.aprsin(v)
-	v = ((v / math_pi + 1) % 2) - 1
+	v = ((v / pi + 1) % 2) - 1
 	return v > 0 and v * (3.1 + v * (0.5 + v * (-7.2 + v * 3.6)))
 		or v * (3.1 - v * (0.5 + v * (7.2 + v * 3.6)))
 end
 function math.aprcos(v)
-	v = ((v / math_pi + 1.5) % 2) - 1
+	v = ((v / pi + 1.5) % 2) - 1
 	return v > 0 and v * (3.1 + v * (0.5 + v * (-7.2 + v * 3.6)))
 		or v * (3.1 - v * (0.5 + v * (7.2 + v * 3.6)))
 end

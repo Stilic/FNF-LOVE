@@ -171,6 +171,7 @@ function Notefield:hit(time, note, force)
 	local rating = Notefield.getRating(notetime, time, sus)
 	if not rating then return self:miss(note, force) end
 	note.pressed = true
+	note.lastPress = time
 
 	if not note.hit then
 		table.insert(self.hitNotes, note)
@@ -268,9 +269,10 @@ function Notefield:release(time, column, play)
 	time = time or self.time
 	if hit then
 		if note.sustain and note.hit then
-			rating = self:hit(time, note, time - note.time + .5 > note.sustainTime)
+			rating = self:hit(time, note, time - note.time + .1 > note.sustainTime)
 		end
 		note.pressed = nil
+		note.lastPress = time
 	end
 
 	if play then
@@ -394,8 +396,8 @@ function Notefield:__prepareLane(column, lane, time)
 
 			-- Notes Render are handled in Note.lua
 			note._rx, note._ry, note._rz, note._speed = note.rotation.x, note.rotation.y, note.rotation.z, note.speed
-			note._targetTime, note.speed, note.x, note.y, note.z, note.rotation.x, note.rotation.y, note.rotation.z =
-				time, note._speed * speed, repox, repoy, repoz, note._rx + reprx, note._ry + repry, note._rz + reprz
+			note._targetTime, note.speed, note.rotation.x, note.rotation.y, note.rotation.z =
+				time, note._speed * speed, note._rx + reprx, note._ry + repry, note._rz + reprz
 		end
 
 		noteI = noteI + 1

@@ -1,4 +1,4 @@
-local abs, rad, atan, cos, sin = math.abs, math.rad, math.atan, math.fastcos, math.fastsin
+local abs, rad, deg, atan, cos, sin = math.abs, math.rad, math.deg, math.atan, math.fastcos, math.fastsin
 local function checkCollisionFast(
 	x1, y1, w1, h1, sx1, sy1, ox1, oy1, a1,
 	x2, y2, w2, h2, sx2, sy2, ox2, oy2, a2
@@ -24,7 +24,7 @@ Object.checkCollisionFast = checkCollisionFast
 Object.defaultAntialiasing = false
 
 function Object.getAngleTowards(x, y, x2, y2)
-	return atan((x2 - x) / (y2 - y)) * (y > y2 and 180 or 0)
+	return deg(atan((x2 - x) / (y2 - y))) + (y > y2 and 180 or 0)
 end
 
 function Object:new(x, y)
