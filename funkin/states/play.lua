@@ -224,6 +224,9 @@ function PlayState:enter()
 	self.healthBar:screenCenter("x").y = game.height * 0.91
 	self:add(self.healthBar)
 
+	self.judgements = Judgement(658, 444)
+	self:add(self.judgements)
+
 	for _, o in ipairs({
 		self.botplayTxt, self.countdown, self.healthBar
 	}) do o.cameras = {self.camHUD} end
@@ -732,6 +735,7 @@ function PlayState:noteMiss(n)
 			end
 
 			if self.combo > 0 then self.combo = 0 end
+			self.combo = self.combo - 1
 			self.score = self.score - 100
 			self.misses = self.misses + 1
 			self.totalPlayed = self.totalPlayed + 1
@@ -838,14 +842,15 @@ function PlayState:recalculateRating(rating)
 	--[[
 	self.scoreTxt.content = self.scoreFormat:gsub("%%(%w+)", vars)
 	self.scoreTxt:updateHitbox()
+	]]
 
 	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
 	if not event.cancelled then
-		self.judgement.ratingVisible = not event.hideRating
-		self.judgement.comboSprVisible = not event.hideCombo
-		self.judgement.comboNumVisible = not event.hideScore
-		self.judgement:spawn(rating, self.combo)
-	end]]
+		self.judgements.ratingVisible = not event.hideRating
+		self.judgements.comboSprVisible = not event.hideCombo
+		self.judgements.comboNumVisible = not event.hideScore
+		self.judgements:spawn(rating, self.combo)
+	end
 end
 
 function PlayState:tryPause()
