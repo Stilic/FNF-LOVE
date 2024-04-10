@@ -321,7 +321,7 @@ function Note:__render(camera)
 						gotVerts = vi
 						break
 					elseif suspos < minbound then
-						suspos, uvh, enduv = minbound, uvh - ((suspos - minbound) / th / segments), true
+						suspos, uvh, enduv = minbound, uvh - ((suspos - minbound) / ssc.y / th / segments), true
 					end
 				end
 
@@ -337,8 +337,8 @@ function Note:__render(camera)
 					if sus.antialiasing then uvy, fh = uvy + 1, fh - 2 end
 					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
 				end
-				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 32)
-				segments = segments * math.max(math.round(fh / 32), 1)
+				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 64)
+				segments = segments * math.max(math.round(fh / 64), 1)
 				fh = fh / segments
 
 				tex:setFilter(sus.antialiasing and "linear" or "nearest")
@@ -366,7 +366,7 @@ function Note:__render(camera)
 						vert[1], vert[2], uvx * vert[5], uvyh * vert[5], vert[5], vert[6], vert[7], vert[8], vert[9]
 
 					if suspos < minbound then
-						suspos, uvfh, enduv = minbound, uvfh - ((suspos - minbound) / th / segments), true
+						suspos, uvfh, enduv = minbound, uvfh - ((suspos - minbound) / ssc.y / th / segments), true
 					end
 				end
 
@@ -409,7 +409,7 @@ function Note:__render(camera)
 					end
 
 					if suspos < minbound then
-						suspos, uvfh, enduv = minbound, uvfh - ((suspos - minbound) / th / segments), true
+						suspos, uvfh, enduv = minbound, uvfh - ((suspos - minbound) / ssc.y / th / segments), true
 					end
 				end
 			end
