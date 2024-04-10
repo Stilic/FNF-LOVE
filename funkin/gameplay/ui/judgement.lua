@@ -1,5 +1,5 @@
 local Judgement = SpriteGroup:extend("Judgement")
-Judgement.area = {width = 336, height = 146}
+Judgement.area = {width = 336, height = 126}
 
 function Judgement:new(x, y)
 	Judgement.super.new(self, x, y)
@@ -10,7 +10,7 @@ function Judgement:new(x, y)
 	self.comboNumVisible = true
 
 	self.skin = PlayState.pixelStage and "pixel" or "default"
-	self.antialiasing = (self.skin == "pixel" and false or true)
+	self.antialiasing = not PlayState.pixelStage
 end
 
 function Judgement:update(dt)
@@ -25,6 +25,7 @@ function Judgement:spawn(rating, combo)
 		local sprite = self:recycle()
 		sprite:loadTexture(paths.getImage("skins/" .. self.skin .. "/" .. name))
 		sprite:setGraphicSize(math.floor(sprite.width * scale))
+		sprite.x, sprite.y = 0, 0
 		sprite:updateHitbox()
 		sprite.alpha = alpha
 		sprite.antialiasing = antialias
@@ -46,7 +47,8 @@ function Judgement:spawn(rating, combo)
 	if rating then
 		local ratingSpr = create(rating, PlayState.pixelStage and 4.7 or 0.7,
 			1, accel)
-		ratingSpr.x, ratingSpr.y = (self.area.width - ratingSpr.width) / 2, 0
+		ratingSpr.x = (self.area.width - ratingSpr.width) / 2
+		ratingSpr.y = ((self.area.height - ratingSpr.height) / 2) - self.area.height / 2
 		ratingSpr.acceleration.y = 550
 		ratingSpr.velocity.y = ratingSpr.velocity.y - math.random(140, 175)
 		ratingSpr.velocity.x = ratingSpr.velocity.x - math.random(0, 10)
