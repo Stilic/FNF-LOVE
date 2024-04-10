@@ -1,9 +1,11 @@
 local Judgement = SpriteGroup:extend("Judgement")
-Judgement.area = {width = 336, height = 126}
+Judgement.area = {width = 336, height = 135}
 
 function Judgement:new(x, y)
 	Judgement.super.new(self, x, y)
 	self.timer = Timer()
+	
+	self:add(Graphic(0,0,self.area.width,self.area.height))
 
 	self.ratingVisible = true
 	self.comboSprVisible = true
@@ -45,10 +47,11 @@ function Judgement:spawn(rating, combo)
 	end
 
 	if rating then
+		local areaHeight = self.area.height / 2
 		local ratingSpr = create(rating, PlayState.pixelStage and 4.7 or 0.7,
 			1, accel)
 		ratingSpr.x = (self.area.width - ratingSpr.width) / 2
-		ratingSpr.y = ((self.area.height - ratingSpr.height) / 2) - self.area.height / 2
+		ratingSpr.y = (self.area.height - ratingSpr.height) / 2 - self.area.height / 3
 		ratingSpr.acceleration.y = 550
 		ratingSpr.velocity.y = ratingSpr.velocity.y - math.random(140, 175)
 		ratingSpr.velocity.x = ratingSpr.velocity.x - math.random(0, 10)
