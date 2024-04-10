@@ -277,7 +277,7 @@ function Note:__render(camera)
 				local hfw, fh, uvx, uvy, uvxw, uvh = tw, th, 0, 0, 1, 1
 				if f then
 					uvx, uvy, hfw, fh = f.quad:getViewport()
-					uvy, fh = uvy + 1, fh - 1
+					if susend.antialiasing then uvy, fh = uvy + 1, fh - 1 end
 					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
 				end
 				local fhs = uvh / segments
@@ -334,11 +334,11 @@ function Note:__render(camera)
 				local hfw, fh, uvx, uvy, uvxw, uvh = tw, th, 0, 0, 1, 1
 				if f then
 					uvx, uvy, hfw, fh = f.quad:getViewport()
-					uvy, fh = uvy + 1, fh - 2
+					if sus.antialiasing then uvy, fh = uvy + 1, fh - 2 end
 					uvx, uvy, uvxw, uvh = uvx / tw, uvy / th, (hfw + uvx) / tw, fh / th
 				end
-				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 16)
-				segments = segments * math.max(math.round(fh / 16), 1)
+				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 32)
+				segments = segments * math.max(math.round(fh / 32), 1)
 				fh = fh / segments
 
 				tex:setFilter(sus.antialiasing and "linear" or "nearest")
