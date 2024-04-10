@@ -27,25 +27,25 @@ end
 
 function Mods.getMetadata(mods)
 	local function readMetaFile()
-		if paths.exists('mods/' .. mods .. '/meta.json', "file") then
+		if paths.exists("mods", "directory") and
+			paths.exists('mods/' .. (mods or "") .. '/meta.json', "file") then
 			local json = (require "lib.json").decode(
 				love.filesystem.read('mods/' .. mods .. '/meta.json'))
 			return json
 		end
-		return nil
+		return {
+			name = "unknown", color = "#1F1F1F",
+			description = "unknown", version = 1
+		}
 	end
-	local metaJson = readMetaFile() or {}
-	local metadata = {
-		name = metaJson.name or "Name",
-		color = metaJson.color or "#1F1F1F",
-		description = metaJson.description or "description",
-		version = metaJson.version
-	}
-	return metadata
+
+	return readMetaFile()
 end
 
 function Mods.loadMods()
 	Mods.mods = {}
+	if not paths.exists("mods", "directory") then return end
+
 	for _, dir in ipairs(love.filesystem.getDirectoryItems('mods')) do
 		if love.filesystem.getInfo('mods/' .. dir, 'directory') ~= nil then
 			table.insert(Mods.mods, dir)

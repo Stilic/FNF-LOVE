@@ -1,100 +1,100 @@
 local CreditsState = State:extend()
 
 -- would it be funny if the x renamed to twitter instead to mock elon musk
-local defaultData = {
-    {
-        header = "Engine Team",
-        credits = {
-            {
+CreditsState.defaultData = {
+	{
+		header = "Engine Team",
+		credits = {
+			{
 				name = "Stilic", icon = "stilic", color = "#FFCA45",
-            	description = "something",
-                social = {
-                    {name = "X", text = "@stilic_dev"},
-                    {name = "Github", text = "/Stilic"}
-                }
-            },
-            {
+				description = "something",
+				social = {
+					{name = "X", text = "@stilic_dev"},
+					{name = "Github", text = "/Stilic"}
+				}
+			},
+			{
 				name = "Raltyro", icon = "ralty", color = "#FF4545",
-                description = "something",
-                social = {
-                    {name = "X", text = "@raltyro"},
-                    {name = "Youtube", text = "@Raltyro"},
-                    {name = "Github", text = "/Raltyro"}
-                }
-            },
-            {
-                name = "Fellyn", icon = "fellyn", color = "#E49CFA",
-                description = "something",
-                social = {
-                    {name = "X", text = "@FellynnLol_"},
-                    {name = "Youtube", text = "@FellynnMusic_"},
-                    {name = "Github", text = "/FellynYukira"}
-                }
-            },
-            {
-            	name = "Victor Kaoy", icon = "vickaoy", color = "#D1794D",
-                description = "something",
-                social = {
-                    {name = "X", text = "@vk15_"}
-                }
-            },
-            {
-                name = "Blue Colorsin", icon = "bluecolorsin", color = "#2B56FF",
-                description = "something",
-                social = {
-                    {name = "X", text = "@BlueColorsin"},
-                    {name = "Youtube", text = "@BlueColorsin"},
-                    {name = "Github", text = "/BlueColorsin"}
-                }
-            },
-            {
-                name = "Ralsin", icon = "ralsin", color = "#383838",
-                description = "something",
-                social = {
-                    {name = "X", text = "@ralsi_"},
-                    {name = "Youtube", text = "@ralsin"},
-                    {name = "Github", text = "/Ralsin"}
-                }
-            }
-        }
-    },
-    {
-        header = "Funkin' Team",
-        credits = {
-            {
-                name = "Ninjamuffin99", icon = "ninjamuffin", color = "#FF392B",
-                description = "Programmer of Friday Night Funkin'",
-                social = {
-                    {name = "X", text = "@ninja_muffin99"},
-                    {name = "Youtube", text = "@camerontaylor5970"},
-                    {name = "Github", text = "/ninjamuffin99"}
-                }
-            },
-            {
-                name = "Phantom Arcade", icon = "phantomarcade", color = "#EBC73B",
-                description = "Animator of Friday Night Funkin'",
-                social = {
-                    {name = "X", text = "@PhantomArcade3K"},
-                    {name = "Youtube", text = "@PhantomArcade"}
-                }
-            },
-            {
-                name = "EvilSk8r", icon = "evilsk8r", color = "#5EED3E",
-                description = "Artist of Friday Night Funkin'",
-                social = {
-                    {name = "X", text = "@evilsk8r"}
-                }
-            },
-            {
-                name = "Kawai Sprite", icon = "kawaisprite", color = "#4185FA",
-                description = "Musician of Friday Night Funkin'",
-                social = {
-                    {name = "X", text = "@kawaisprite"},
-                    {name = "Youtube", text = "@KawaiSprite"}
-                }
-            }
-        }
-    }
+				description = "something",
+				social = {
+					{name = "X", text = "@raltyro"},
+					{name = "Youtube", text = "@Raltyro"},
+					{name = "Github", text = "/Raltyro"}
+				}
+			},
+			{
+				name = "Fellyn", icon = "fellyn", color = "#E49CFA",
+				description = "something",
+				social = {
+					{name = "X", text = "@FellynnLol_"},
+					{name = "Youtube", text = "@FellynnMusic_"},
+					{name = "Github", text = "/FellynYukira"}
+				}
+			},
+			{
+				name = "Victor Kaoy", icon = "vickaoy", color = "#D1794D",
+				description = "something",
+				social = {
+					{name = "X", text = "@vk15_"}
+				}
+			},
+			{
+				name = "Blue Colorsin", icon = "bluecolorsin", color = "#2B56FF",
+				description = "something",
+				social = {
+					{name = "X", text = "@BlueColorsin"},
+					{name = "Youtube", text = "@BlueColorsin"},
+					{name = "Github", text = "/BlueColorsin"}
+				}
+			},
+			{
+				name = "Ralsin", icon = "ralsin", color = "#383838",
+				description = "something",
+				social = {
+					{name = "X", text = "@ralsi_"},
+					{name = "Youtube", text = "@ralsin"},
+					{name = "Github", text = "/Ralsin"}
+				}
+			}
+		}
+	},
+	{
+		header = "Funkin' Team",
+		credits = {
+			{
+				name = "Ninjamuffin99", icon = "ninjamuffin", color = "#FF392B",
+				description = "Programmer of Friday Night Funkin'",
+				social = {
+					{name = "X", text = "@ninja_muffin99"},
+					{name = "Youtube", text = "@camerontaylor5970"},
+					{name = "Github", text = "/ninjamuffin99"}
+				}
+			},
+			{
+				name = "Phantom Arcade", icon = "phantomarcade", color = "#EBC73B",
+				description = "Animator of Friday Night Funkin'",
+				social = {
+					{name = "X", text = "@PhantomArcade3K"},
+					{name = "Youtube", text = "@PhantomArcade"}
+				}
+			},
+			{
+				name = "EvilSk8r", icon = "evilsk8r", color = "#5EED3E",
+				description = "Artist of Friday Night Funkin'",
+				social = {
+					{name = "X", text = "@evilsk8r"}
+				}
+			},
+			{
+				name = "Kawai Sprite", icon = "kawaisprite", color = "#4185FA",
+				description = "Musician of Friday Night Funkin'",
+				social = {
+					{name = "X", text = "@kawaisprite"},
+					{name = "Youtube", text = "@KawaiSprite"}
+				}
+			}
+		}
+	}
 }
 
 function CreditsState:enter()
@@ -139,8 +139,8 @@ function CreditsState:enter()
 		end
 	end
 
-	for i = 1, #defaultData do
-		table.insert(self.data, defaultData[i])
+	for i = 1, #self.defaultData do
+		table.insert(self.data, self.defaultData[i])
 	end
 
 	for i = 1, #self.data do
@@ -244,12 +244,7 @@ function CreditsState:update(dt)
 
 	local colorBG = Color.fromString(self.data[self.curTab].credits[self.curSelected].color or "#DF7B29")
 	self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
-
-	local color = {Color.RGBtoHSL(colorBG[1], colorBG[2], colorBG[3])}
-	color[2] = color[2] + 0.4
-	colorBG = {Color.HSLtoRGB(color[1], color[2], color[3])}
-
-	self.bd.color = Color.lerpDelta(self.bd.color, colorBG, 3, dt)
+	self.bd.color = Color.saturate(self.bg.color, 0.4)
 end
 
 function CreditsState:changeSelection(n)
