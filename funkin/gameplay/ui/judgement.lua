@@ -4,8 +4,6 @@ Judgement.area = {width = 336, height = 135}
 function Judgement:new(x, y)
 	Judgement.super.new(self, x, y)
 	self.timer = Timer()
-	
-	self:add(Graphic(0,0,self.area.width,self.area.height))
 
 	self.ratingVisible = true
 	self.comboSprVisible = true
