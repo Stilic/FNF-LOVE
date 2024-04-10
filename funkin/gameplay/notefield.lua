@@ -2,7 +2,7 @@ local Notefield = ActorGroup:extend("Notefield")
 
 local safeZoneOffset = 10 / 60
 Notefield.ratings = {
-	{name = "perfect",	time = 0.021,			score = 350, splash = true,  mod = 1.2},
+	{name = "perfect",	time = 0.021,			score = 400, splash = true,  mod = 1.0},
 	{name = "sick",		time = 0.033,			score = 350, splash = true,  mod = 1.0},
 	{name = "good",		time = 0.091,			score = 200, splash = false, mod = 0.725},
 	{name = "bad",		time = 0.133,			score = 100, splash = false, mod = 0.4},
