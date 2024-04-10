@@ -224,7 +224,7 @@ end
 function Camera:_getCameraBoundary()
 	self:getZoomXY()
 	local w, h = self.width, self.height
-	return 0, 0, w, h, -self.__zoom.x + 2, -self.__zoom.y + 2, w / 2, h / 2
+	return 0, 0, w, h, 1 / math.abs(self.__zoom.x), 1 / math.abs(self.__zoom.y), w / 2, h / 2
 end
 
 function Camera:getZoomXY()
