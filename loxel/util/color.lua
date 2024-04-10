@@ -48,7 +48,7 @@ function Color.HSLtoRGB(h, s, l)
 		elseif h < 3 then r, g, b = m, c, x
 		elseif h < 4 then r, g, b = m, x, c
 		elseif h < 5 then r, g, b = x, m, c
-		else              r, g, b = c, m, X
+		else			  r, g, b = c, m, x
 		end
 	end
 	return r, g, b
@@ -96,6 +96,12 @@ function Color.convert(rgb)
 		rgb[3] / 255}
 end
 
+function Color.saturate(rgb, amount)
+	local h, s, l = Color.RGBtoHSL(rgb[1], rgb[2], rgb[3])
+	s = math.min(1, math.max(0, s + amount))
+	return {Color.HSLtoRGB(h, s, l)}
+end
+
 function Color.lerp(x, y, i)
 	return {math.lerp(x[1], y[1], i),
 			math.lerp(x[2], y[2], i),
@@ -109,9 +115,9 @@ function Color.lerpDelta(x, y, i, delta)
 end
 
 setmetatable(Color, {
-    __index = function(tbl, key)
-        if colorTable[key] then return table.clone(colorTable[key]) end
-    end
+	__index = function(tbl, key)
+		if colorTable[key] then return table.clone(colorTable[key]) end
+	end
 })
 
 return Color
