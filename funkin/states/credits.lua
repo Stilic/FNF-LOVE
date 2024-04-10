@@ -195,11 +195,7 @@ function CreditsState:enter()
 
 	local colorBG = Color.fromString(self.data[self.curTab].credits[self.curSelected].color or "#DF7B29")
 	self.bg.color = colorBG
-
-	local color = {Color.RGBtoHSL(colorBG[1], colorBG[2], colorBG[3])}
-	color[2] = color[2] + 0.4
-	colorBG = {Color.HSLtoRGB(color[1], color[2], color[3])}
-	self.bd.color = colorBG
+	self.bd.color = Color.saturate(self.bg.color, 0.4)
 
 	self.throttles = {}
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
