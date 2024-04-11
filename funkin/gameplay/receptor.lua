@@ -45,9 +45,9 @@ function Receptor.getDefaultValue(axis, pos)
 	return retOne[axis] and 1 or (retPos[axis] and pos or 0)
 end
 
-function Receptor.getDefaultValues(pos, values)
+function Receptor.getDefaultValues(values)
 	values = values or table.new(0, #axes)
-	for _, axis in ipairs(axes) do values[axis] = Receptor.getDefaultValue(axis, pos) end
+	for _, axis in ipairs(axes) do values[axis] = Receptor.getDefaultValue(axis) end
 	return values
 end
 
@@ -77,7 +77,7 @@ function Receptor:getValue(pos, axis)
 end
 
 function Receptor:getValues(pos, values)
-	values = values or Receptor.getDefaultValue(pos)
+	values = values or Receptor.getDefaultValues()
 	for _, axis in ipairs(axes) do values[axis] = Receptor.getModValue(axis, values[axis], self:getValue(pos, axis)) end
 	return values
 end

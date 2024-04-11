@@ -215,7 +215,7 @@ function Note:__render(camera)
 		sc.x, sc.y, sc.z, rot.x, rot.y, rot.z
 
 	local par, nx, ny, nz, pos, rec, beat, mods = self.parent, px, py, pz, Note.toPos(time - target, speed)
-	Receptor.getDefaultValues(pos, values)
+	Receptor.getDefaultValues(values)
 
 	if par then
 		beat, mods = par.beat or 0, par.modifiers
@@ -299,7 +299,7 @@ function Note:__render(camera)
 				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha)
 				susMesh:setTexture(tex)
 
-				getValues(rec, suspos + 1, Receptor.getDefaultValues(suspos + 1, values)); applyMod(mods, beat, suspos + 1, par, col)
+				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, col)
 				vx, vy, vz = worldSpin(
 					(snx + values.x) * gsx,
 					(sny + values.y) * gsy,
@@ -309,7 +309,7 @@ function Note:__render(camera)
 				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
 				local enduv, vert, aa, as, ac
 				for vi = 1, vertLens, 2 do
-					getValues(rec, suspos, Receptor.getDefaultValues(suspos, values)); applyMod(mods, beat, suspos, par, col)
+					getValues(rec, suspos, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos, par, col)
 					vx, vy, vz = worldSpin(
 						(snx + values.x) * gsx,
 						(sny + values.y) * gsy,
@@ -360,7 +360,7 @@ function Note:__render(camera)
 				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha)
 				susMesh:setTexture(tex)
 
-				getValues(rec, suspos + 1, Receptor.getDefaultValues(suspos + 1, values)); applyMod(mods, beat, suspos + 1, par, col)
+				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, col)
 				suspos, vertLens, vx, vy, vz = math.min(suspos, maxbound), math.min(2 + segments * 2, 16), worldSpin(
 					(snx + values.x) * gsx,
 					(sny + values.y) * gsy,
@@ -386,7 +386,7 @@ function Note:__render(camera)
 				end
 
 				while true do
-					getValues(rec, suspos, Receptor.getDefaultValues(suspos, values)); applyMod(mods, beat, suspos, par, col)
+					getValues(rec, suspos, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos, par, col)
 					vx, vy, vz = worldSpin(
 						(snx + values.x) * gsx,
 						(sny + values.y) * gsy,
