@@ -265,7 +265,7 @@ end
 
 function Camera:destroy()
 	Camera.super.destroy(self)
-	self.canvas:release()
+	if self.canvas then self.canvas:release() end
 	self.canvas = nil
 end
 
