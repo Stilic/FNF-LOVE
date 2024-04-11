@@ -329,7 +329,7 @@ function Notefield:update(dt)
 		end
 	end
 
-	for _, mod in ipairs(self.modifiers) do mod:update(self.beat) end
+	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
 
 	local notes = self.notes
 	local offset, i = time - safeZoneOffset, 1
@@ -459,11 +459,9 @@ function Notefield:__render(camera)
 		self:__prepareLane(i - 1, lane, time)
 	end
 
-	for _, mod in ipairs(self.modifiers) do mod:apply(self) end
-
+	for _, mod in pairs(self.modifiers) do mod:apply(self) end
 	Notefield.super.__render(self, camera)
-
-	if #self.modifiers ~= 0 then NoteModifier.discard() end
+	NoteModifier.discard()
 
 	for _, lane in ipairs(self.lanes) do
 		lane.drawSize, lane.drawSizeOffset = lane._drawSize, lane._drawSizeOffset

@@ -30,6 +30,7 @@ function Receptor:new(x, y, column, skin)
 	self.noteRotations = {x = 0, y = 0, z = 0}
 	self.noteOffsets = {x = 0, y = 0, z = 0}
 	self.noteSplines = {}
+	self.noteAngles = 0
 	self.lane = nil
 
 	self.column = column
@@ -56,12 +57,11 @@ function Receptor:getValue(pos, axis)
 	if not splineAxis then return Receptor.getDefaultValue(axis, pos) end
 
 	local got = 1
-	for i = 2, #splineAxis do
+	for i = 2, #splineAxis - 1 do
 		if pos >= splineAxis[i].position then got = i end
 	end
 
 	local spline, nextSpline = splineAxis[got], splineAxis[got + 1]
-	if not nextSpline or pos < spline.position then return spline.value end
 
 	local start, length = spline.position, nextSpline.position - spline.position
 	local tween, ease, s = Timer.tween[spline.tween], spline.ease, (pos - start) / length

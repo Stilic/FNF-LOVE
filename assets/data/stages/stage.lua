@@ -8,7 +8,7 @@ function create()
 	bg.antialiasing = true
 	bg:setScrollFactor(0.9, 0.9)
 	bg:updateHitbox()
-	self:add(bg)
+	self:add(bg); self.bg = bg
 
 	local stageFront = Sprite(-650, 600):loadTexture(paths.getImage(
 		SCRIPT_PATH ..
@@ -17,7 +17,7 @@ function create()
 	stageFront:updateHitbox()
 	stageFront.antialiasing = true
 	stageFront:setScrollFactor(0.9, 0.9)
-	self:add(stageFront)
+	self:add(stageFront); self.stageFront = stageFront
 
 	local stageCurtains = Sprite(-500, -300):loadTexture(paths.getImage(
 		SCRIPT_PATH ..
@@ -26,7 +26,7 @@ function create()
 	stageCurtains:updateHitbox()
 	stageCurtains.antialiasing = true
 	stageCurtains:setScrollFactor(1.3, 1.3)
-	self:add(stageCurtains)
+	self:add(stageCurtains); self.stageCurtains = stageCurtains
 
 	close()
 end

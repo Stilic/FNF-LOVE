@@ -5,21 +5,33 @@ local function readFile(key)
 	return nil
 end
 
+local function excludeAssets(path)
+	local i, n = path:find("assets/")
+	if i == 1 then return path:sub(n + 1)
+	elseif path:find("mods/") == 1 then
+		i = path:find("/", 6)
+		if i then return path:sub(i + 1) end
+	end
+	return path
+end
+
 local paths = {
 	images = {},
 	audio = {},
 	atlases = {},
 	fonts = {},
-	persistantAssets = {"assets/music/freakyMenu.ogg"}
+	persistantAssets = {"music/freakyMenu.ogg"}
 }
 
 function paths.addPersistant(path)
+	path = excludeAssets(path)
 	if not table.find(paths.persistantAssets, path) then
 		table.insert(paths.persistantAssets, path)
 	end
 end
 
 function paths.isPersistant(path)
+	path = excludeAssets(path)
 	for _, k in pairs(paths.persistantAssets) do
 		if path:startsWith(k) then return true end
 	end

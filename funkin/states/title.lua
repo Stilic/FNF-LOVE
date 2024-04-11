@@ -76,7 +76,6 @@ function TitleState:enter()
 		game.sound.playMusic(paths.getMusic("freakyMenu"), 0)
 		game.sound.music:fade(4, 0, 1)
 	end
-	paths.addPersistant(paths.getModsAudio("music/freakyMenu"))
 
 	if love.system.getDevice() == "Mobile" then
 		self:add(VirtualPad("return", 0, 0, game.width, game.height, false))

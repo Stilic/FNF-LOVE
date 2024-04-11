@@ -206,7 +206,7 @@ local function getValues(r, pos, values)
 end
 
 local function applyMod(mods, beat, pos, notefield, column)
-	for _, mod in ipairs(mods) do mod:applyPath(values, beat, pos, notefield, column) end
+	for _, mod in ipairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, column) end end
 end
 
 function Note:__render(camera)
@@ -237,6 +237,7 @@ function Note:__render(camera)
 			nx, ny, nz = nx + rec.x + rec.noteOffsets.x, ny + rec.y + rec.noteOffsets.y, nz + rec.z + rec.noteOffsets.z
 			rot.x, rot.y, rot.z = rot.x + rec.noteRotations.x, rot.y + rec.noteRotations.y, rot.z + rec.noteRotations.z
 			grx, gry, grz = grx + rec.directions.x, gry + rec.directions.y, grz + rec.directions.z
+			self.angle = self.angle + rec.noteAngles
 		end
 
 		getValues(rec, pos, values)

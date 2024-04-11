@@ -2,16 +2,18 @@ local NoteModifier = Classic:extend("NoteModifier")
 
 local ocache, prepare = {}
 function prepare(o, i, v)
+	if v == nil then for i, v in pairs(i) do prepare(o, i, v) end return end
 	local c = ocache[o]
 	if not c then c = {}; ocache[o] = c end
-	if v == nil then for i, v in pairs(i) do prepare(o, i, v) end
-	elseif not c[i] then c[i] = v end
+	if not c[i] then c[i] = v end
 end
 NoteModifier.prepare = prepare
 
 function NoteModifier.discard()
 	for o, c in pairs(ocache) do
-		for i, v in pairs(c) do o[i] = v end
+		for i, v in pairs(c) do
+			o[i], c[i] = v
+		end
 	end
 end
 
@@ -25,11 +27,19 @@ function NoteModifier:new()
 	self.time = 0
 	self.duration = nil
 	self.percent = 0
-	self._lastBeat = 0
+	self.dontUpdatePercent = false
 end
 
 function NoteModifier:update(curBeat)
-	self.percent, self._lastBeat = math.clamp(self.percent + (curBeat - self._lastBeat), 0, self.strength), curBeat
+	if self.dontUpdatePercent then self._lastBeat = nil return end
+	if self._lastBeat then
+		if self.percent > self.strength then
+			self.percent = math.max(self.percent - (curBeat - self._lastBeat) * self.approach, self.strength)
+		elseif self.percent < self.strength then
+			self.percent = math.min(self.percent + (curBeat - self._lastBeat) * self.approach, self.strength)
+		end
+	end
+	self._lastBeat = curBeat
 end
 
 --[[

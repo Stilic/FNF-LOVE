@@ -189,7 +189,7 @@ end
 
 function Sound:isFinished()
 	return self.active and not self.__paused and not self:isPlaying() and
-		not self.__source:isLooping()
+		not self:isLooping()
 end
 
 function Sound:tell()

@@ -3,8 +3,9 @@ local PauseSubstate = require "funkin.substates.pause"
 
 --[[ LIST TODO OR NOTES
 	maybe make scripts vars just include conductor itself instead of the properties of conductor
+	-- NVM NVM, maybe do make a var conductor but keep props
+
 	rewrite timers. to just be dependancy to loxel,. just rewrite timers with new codes.
-	make pixelAnims array on Notes/Receptors to data assets
 ]]
 
 ---@class PlayState:State
