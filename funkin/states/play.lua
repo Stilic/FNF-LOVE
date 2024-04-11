@@ -195,7 +195,7 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = false
 
-	local y, center, keys, skin = game.height / 2, game.width / 2, 4, self.pixelStage and paths.getNoteskin("pixel") or nil
+	local y, center, keys, skin = game.height / 2, game.width / 2, 4, self.pixelStage and "pixel" or nil
 	self.enemyNotefield = Notefield(0, y, keys, self.dad, skin)
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
 	self.playerNotefield = Notefield(0, y, keys, self.boyfriend, skin)
