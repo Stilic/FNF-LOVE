@@ -1,12 +1,12 @@
 local Notefield = ActorGroup:extend("Notefield")
 
-local safeZoneOffset = 10 / 60
+Notefield.safeZoneOffset = 10 / 60
 Notefield.ratings = {
 	{name = "perfect",	time = 0.021,			score = 400, splash = true,  mod = 1.0},
 	{name = "sick",		time = 0.033,			score = 350, splash = true,  mod = 1.0},
 	{name = "good",		time = 0.091,			score = 200, splash = false, mod = 0.7},
 	{name = "bad",		time = 0.133,			score = 100, splash = false, mod = 0.4},
-	{name = "shit",		time = safeZoneOffset,	score = 50,  splash = false, mod = 0.2}
+	{name = "shit",		time = Notefield.safeZoneOffset,	score = 50,  splash = false, mod = 0.2}
 }
 
 function Notefield.getRating(a, b, returnShit)
@@ -18,8 +18,8 @@ function Notefield.getRating(a, b, returnShit)
 end
 
 function Notefield.checkDiff(note, time)
-	return note.time > time - safeZoneOffset * note.lateHitMult and
-		note.time < time + safeZoneOffset * note.earlyHitMult
+	return note.time > time - Notefield.safeZoneOffset * note.lateHitMult and
+		note.time < time + Notefield.safeZoneOffset * note.earlyHitMult
 end
 
 function Notefield:new(x, y, keys, character, skin)
@@ -150,7 +150,7 @@ function Notefield:getNotes(time, column)
 	local i, size = 1, #notes
 	if size == 0 then return gotNotes end
 
-	local offset = time - safeZoneOffset
+	local offset = time - Notefield.safeZoneOffset
 	while i < size and offset >= notes[i + 1].time do i = i + 1 end
 	while i > 1 and offset < notes[i - 1].time do i = i - 1 end
 	while i <= size do
@@ -280,7 +280,7 @@ function Notefield:release(time, column, play)
 	time = time or self.time
 	if hit then
 		if note.sustain and note.hit then
-			rating = self:hit(time, note, time - note.time + safeZoneOffset > note.sustainTime)
+			rating = self:hit(time, note, time - note.time + Notefield.safeZoneOffset > note.sustainTime)
 		end
 		note.pressed = nil
 		note.lastPress = time
@@ -332,7 +332,7 @@ function Notefield:update(dt)
 	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
 
 	local notes = self.notes
-	local offset, i = time - safeZoneOffset, 1
+	local offset, i = time - Notefield.safeZoneOffset, 1
 	while i <= #notes do
 		local note = notes[i]
 		if offset <= note.time then break end
