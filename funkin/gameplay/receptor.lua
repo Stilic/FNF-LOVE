@@ -3,6 +3,15 @@
 
 local Receptor = ActorSprite:extend("Receptor")
 
+local axes = {
+	"x", "y", "z",
+	"rotX", "rotY", "rotZ",
+	"sizeX", "sizeY", "sizeZ", "size",
+	"red", "green", "blue", "alpha",
+	"skewX", "skewY", "skewZ"
+}
+Receptor.axes = axes
+
 function Receptor:new(x, y, column, skin)
 	Receptor.super.new(self, x, y)
 
@@ -17,6 +26,7 @@ function Receptor:new(x, y, column, skin)
 	self.hideReceptor = false
 	self.glow = nil
 
+	self.directions = {x = 0, y = 0, z = 0}
 	self.noteRotations = {x = 0, y = 0, z = 0}
 	self.noteOffsets = {x = 0, y = 0, z = 0}
 	self.noteSplines = {}
@@ -27,8 +37,18 @@ function Receptor:new(x, y, column, skin)
 end
 
 local retOne, retPos = {sizeX = true, sizeY = true, sizeZ = true, size = true, red = true, green = true, blue = true, alpha = true}, {y = true}
+function Receptor.getModValue(axis, v1, v2)
+	return retOne[axis] and v1 * v2 or v1 + v2
+end
+
 function Receptor.getDefaultValue(axis, pos)
 	return retOne[axis] and 1 or (retPos[axis] and pos or 0)
+end
+
+function Receptor.getDefaultValues(pos, values)
+	values = values or table.new(0, #axes)
+	for _, axis in ipairs(axes) do values[axis] = Receptor.getDefaultValue(axis, pos) end
+	return values
 end
 
 function Receptor:getValue(pos, axis)
@@ -56,15 +76,12 @@ function Receptor:getValue(pos, axis)
 	return value + tween(s) * toValue
 end
 
---[[
-	axis = [
-		x, y, z,
-		rotX, rotY, rotZ,
-		sizeX, sizeY, sizeZ, size
-		red, green, blue, alpha,
-		skewX, skewY, skewZ ?
-	]
---]]
+function Receptor:getValues(pos, values)
+	values = values or Receptor.getDefaultValue(pos)
+	for _, axis in ipairs(axes) do values[axis] = Receptor.getModValue(axis, values[axis], self:getValue(pos, axis)) end
+	return values
+end
+
 function Receptor:setSpline(axis, idx, value, position, tween, ease)
 	local spline = {
 		value = value or Receptor.getDefaultValue(axis, position),
@@ -198,8 +215,8 @@ end
 function Receptor:destroy()
 	Receptor.super.destroy(self)
 	if self.glow then self.glow:destroy() end
-	for i, splash in ipairs(self.splashes) do splash:destroy(); self.splashes[i] = nil end
-	for i, splash in ipairs(self.__splashCaches) do splash:destroy(); self.__splashCaches[i] = nil end
+	if self.splashes then for i, splash in ipairs(self.splashes) do splash:destroy(); self.splashes[i] = nil end end
+	if self.__splashCaches then for i, splash in ipairs(self.__splashCaches) do splash:destroy(); self.__splashCaches[i] = nil end end
 	self.splashes, self.__splashCaches, self.__splashAnimations = nil
 end
 

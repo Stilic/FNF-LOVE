@@ -199,21 +199,29 @@ function Note:_canDraw()
 		))
 end
 
-local function getValue(receptor, pos, axis)
-	if receptor then return receptor:getValue(pos, axis) end
-	return Receptor.getDefaultValue(axis, pos)
+local values, worldSpin, toScreen = {}, Actor.worldSpin, Actor.toScreen
+
+local function getValues(r, pos, values)
+	if r then r:getValues(pos, values) end
 end
 
-local worldSpin, toScreen, x, y, z, rotX, rotY, rotZ, sizeX, sizeY, sizeZ, size, red, green, blue, alpha, skewX, skewY, skewZ =
-	Actor.worldSpin, Actor.toScreen,
-	"x", "y", "z", "rotX", "rotY", "rotZ", "sizeX", "sizeY", "sizeZ", "size", "red", "green", "blue", "alpha", "skewX", "skewY", "skewZ"
+local function applyMod(mods, beat, pos, notefield, column)
+	for _, mod in ipairs(mods) do mod:applyPath(values, beat, pos, notefield, column) end
+end
 
 function Note:__render(camera)
 	local grp, px, py, pz, pa, pal, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.alpha, self.rotation, self.scale
-	local time, target, speed, psx, psy, psz, prx, pry, prz = self.time, self._targetTime, self.speed,
+	local col, time, target, speed, psx, psy, psz, prx, pry, prz = self.column, self.time, self._targetTime, self.speed,
 		sc.x, sc.y, sc.z, rot.x, rot.y, rot.z
 
-	local nx, ny, nz, pos, rec = px, py, pz, Note.toPos(time - target, speed)
+	local par, nx, ny, nz, pos, rec, beat, mods = self.parent, px, py, pz, Note.toPos(time - target, speed)
+	Receptor.getDefaultValues(pos, values)
+
+	if par then
+		beat, mods = par.beat or 0, par.modifiers
+		applyMod(mods, beat, pos, par, col)
+	end
+
 	local gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 	if grp then
 		gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz, rec = grp.x, grp.y, grp.z, grp.scale.x, grp.scale.y, grp.scale.z,
@@ -226,13 +234,16 @@ function Note:__render(camera)
 		if grp.affectAngle then self.angle, rot.y, rot.y, rot.z = self.angle + grp.angle, rot.y + grx, rot.y + gry, rot.z + grz end
 		if grp.affectScale then sc.x, sc.y, sc.z = sc.x * gsx, sc.y * gsy, sc.z * gsz end
 		if rec then
-			nx, ny, nz = nx + rec.x, ny + rec.y, nz + rec.z
+			nx, ny, nz = nx + rec.x + rec.noteOffsets.x, ny + rec.y + rec.noteOffsets.y, nz + rec.z + rec.noteOffsets.z
+			rot.x, rot.y, rot.z = rot.x + rec.noteRotations.x, rot.y + rec.noteRotations.y, rot.z + rec.noteRotations.z
+			grx, gry, grz = grx + rec.directions.x, gry + rec.directions.y, grz + rec.directions.z
 		end
 
+		getValues(rec, pos, values)
 		local vx, vy, vz = worldSpin(
-			(nx + getValue(rec, pos, x)) * gsx,
-			(ny + getValue(rec, pos, y)) * gsy,
-			(nz + getValue(rec, pos, z)) * gsz,
+			(nx + values.x) * gsx,
+			(ny + values.y) * gsy,
+			(nz + values.z) * gsz,
 			grx, gry, grz, gox, goy, goz)
 
 		self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
@@ -240,10 +251,10 @@ function Note:__render(camera)
 		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
-	local v = getValue(rec, pos, size)
-	rot.x, rot.y, rot.z = rot.x + getValue(rec, pos, rotX), rot.y + getValue(rec, pos, rotY), rot.z + getValue(rec, pos, rotZ)
-	sc.x, sc.y, sc.z = sc.x * getValue(rec, pos, sizeX) * v, sc.y * getValue(rec, pos, sizeY) * v, sc.z * getValue(rec, pos, sizeZ) * v
-	self.alpha = pal * getValue(rec, pos, alpha)
+	local v = values.size
+	rot.x, rot.y, rot.z = rot.x + values.rotX, rot.y + values.rotY, rot.z + values.rotZ
+	sc.x, sc.y, sc.z = sc.x * values.sizeX * v, sc.y * values.sizeY * v, sc.z * values.sizeZ * v
+	self.alpha = pal * values.alpha
 
 	--[[
 		I'm aware that if the texture size height or scale are too small, it'll be huge draw calls
@@ -288,19 +299,21 @@ function Note:__render(camera)
 				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha)
 				susMesh:setTexture(tex)
 
+				getValues(rec, suspos + 1, Receptor.getDefaultValues(suspos + 1, values)); applyMod(mods, beat, suspos + 1, par, col)
 				vx, vy, vz = worldSpin(
-					(snx + getValue(rec, suspos + 1, x)) * gsx,
-					(sny + getValue(rec, suspos + 1, y)) * gsy,
-					(snz + getValue(rec, suspos + 1, z)) * gsz,
+					(snx + values.x) * gsx,
+					(sny + values.y) * gsy,
+					(snz + values.z) * gsz,
 					grx, gry, grz, gox, goy, goz
 				)
 				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
 				local enduv, vert, aa, as, ac
 				for vi = 1, vertLens, 2 do
-					va, vx, vy, vz = getValue(rec, suspos, alpha), worldSpin(
-						(snx + getValue(rec, suspos, x)) * gsx,
-						(sny + getValue(rec, suspos, y)) * gsy,
-						(snz + getValue(rec, suspos, z)) * gsz,
+					getValues(rec, suspos, Receptor.getDefaultValues(suspos, values)); applyMod(mods, beat, suspos, par, col)
+					vx, vy, vz = worldSpin(
+						(snx + values.x) * gsx,
+						(sny + values.y) * gsy,
+						(snz + values.z) * gsz,
 						grx, gry, grz, gox, goy, goz
 					)
 
@@ -310,11 +323,11 @@ function Note:__render(camera)
 					as, ac, pvx, pvy = math.fastsin(aa) * vz, math.fastcos(aa) * vz, vx, vy
 
 					vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1,
-						vx - hfw * ac, vy - hfw * as, uvx * vz, (uvy + uvh) * vz, vz, 1, 1, 1, va
+						vx - hfw * ac, vy - hfw * as, uvx * vz, (uvy + uvh) * vz, vz, 1, 1, 1, values.alpha
 
 					vert = susVerts[vi]
 					vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] =
-						vx + hfw * ac, vy + hfw * as, uvxw * vz, (uvy + uvh) * vz, vz, 1, 1, 1, va
+						vx + hfw * ac, vy + hfw * as, uvxw * vz, (uvy + uvh) * vz, vz, 1, 1, 1, values.alpha
 
 					if vi < vertLens then suspos, uvh = suspos - fh, uvh - fhs end
 					if enduv then
@@ -347,10 +360,11 @@ function Note:__render(camera)
 				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha)
 				susMesh:setTexture(tex)
 
+				getValues(rec, suspos + 1, Receptor.getDefaultValues(suspos + 1, values)); applyMod(mods, beat, suspos + 1, par, col)
 				suspos, vertLens, vx, vy, vz = math.min(suspos, maxbound), math.min(2 + segments * 2, 16), worldSpin(
-					(snx + getValue(rec, suspos + 1, x)) * gsx,
-					(sny + getValue(rec, suspos + 1, y)) * gsy,
-					(snz + getValue(rec, suspos + 1, z)) * gsz,
+					(snx + values.x) * gsx,
+					(sny + values.y) * gsy,
+					(snz + values.z) * gsz,
 					grx, gry, grz, gox, goy, goz
 				)
 				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
@@ -372,10 +386,11 @@ function Note:__render(camera)
 				end
 
 				while true do
-					va, vx, vy, vz = getValue(rec, suspos, alpha), worldSpin(
-						(snx + getValue(rec, suspos, x)) * gsx,
-						(sny + getValue(rec, suspos, y)) * gsy,
-						(snz + getValue(rec, suspos, z)) * gsz,
+					getValues(rec, suspos, Receptor.getDefaultValues(suspos, values)); applyMod(mods, beat, suspos, par, col)
+					vx, vy, vz = worldSpin(
+						(snx + values.x) * gsx,
+						(sny + values.y) * gsy,
+						(snz + values.z) * gsz,
 						grx, gry, grz, gox, goy, goz
 					)
 
@@ -385,11 +400,11 @@ function Note:__render(camera)
 					as, ac, pvx, pvy = math.fastsin(aa) * vz, math.fastcos(aa) * vz, vx, vy
 
 					vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1,
-						vx - hfw * ac, vy - hfw * as, uvx * vz, (uvy + uvfh) * vz, vz, 1, 1, 1, va
+						vx - hfw * ac, vy - hfw * as, uvx * vz, (uvy + uvfh) * vz, vz, 1, 1, 1, values.alpha
 
 					vert = susVerts[vi]
 					vi, vert[1], vert[2], vert[3], vert[4], vert[5], vert[6], vert[7], vert[8], vert[9] = vi + 1,
-						vx + hfw * ac, vy + hfw * as, uvxw * vz, (uvy + uvfh) * vz, vz, 1, 1, 1, va
+						vx + hfw * ac, vy + hfw * as, uvxw * vz, (uvy + uvfh) * vz, vz, 1, 1, 1, values.alpha
 
 					suspos, uvfh = suspos - fh, uvfh - fhs
 					if enduv or vi > vertLens then

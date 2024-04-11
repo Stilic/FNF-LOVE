@@ -4,7 +4,7 @@ local safeZoneOffset = 10 / 60
 Notefield.ratings = {
 	{name = "perfect",	time = 0.021,			score = 400, splash = true,  mod = 1.0},
 	{name = "sick",		time = 0.033,			score = 350, splash = true,  mod = 1.0},
-	{name = "good",		time = 0.091,			score = 200, splash = false, mod = 0.725},
+	{name = "good",		time = 0.091,			score = 200, splash = false, mod = 0.7},
 	{name = "bad",		time = 0.133,			score = 100, splash = false, mod = 0.4},
 	{name = "shit",		time = safeZoneOffset,	score = 50,  splash = false, mod = 0.2}
 }
@@ -33,7 +33,7 @@ function Notefield:new(x, y, keys, character, skin)
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound("hitsound")
 
-	self.time = 0
+	self.time, self.beat = 0, 0
 	self.offsetTime = 0
 	self.speed = 1
 	self.drawSize = game.height + self.noteWidth
@@ -49,6 +49,8 @@ function Notefield:new(x, y, keys, character, skin)
 	self.shits = 0
 	self.hitCallback = nil
 	self.missCallback = nil
+
+	self.modifiers = {}
 
 	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	self.lastPress = {}
@@ -77,6 +79,7 @@ function Notefield:makeLane(column, y)
 
 	lane:add(lane.receptor)
 	lane.receptor.lane = lane
+	lane.receptor.parent = self
 
 	self.receptors[column] = lane.receptor
 	self.lanes[column] = lane
@@ -94,7 +97,7 @@ end
 function Notefield:addNote(note)
 	note.parent = self
 	table.insert(self.notes, note)
-	return note
+	return #self.notes
 end
 
 function Notefield:copyNotesfromNotefield(notefield)
@@ -326,6 +329,8 @@ function Notefield:update(dt)
 		end
 	end
 
+	for _, mod in ipairs(self.modifiers) do mod:update(self.beat) end
+
 	local notes = self.notes
 	local offset, i = time - safeZoneOffset, 1
 	while i <= #notes do
@@ -361,6 +366,26 @@ end
 
 function Notefield:getHeight()
 	return self.height
+end
+
+function Notefield:destroy()
+	ActorSprite.destroy(self)
+
+	self.modifiers, self.hitCallback, self.missCallback = nil
+	if self.receptors then
+		for _, r in ipairs(self.receptors) do r:destroy() end
+		self.receptors = nil
+	end
+	if self.notes then
+		for _, n in ipairs(self.notes) do n:destroy() end
+		self.notes = nil
+	end
+	if self.lanes then
+		for _, l in ipairs(self.lanes) do
+			l:destroy(); if l.receptor then l.receptor:destroy() end
+			l.renderedNotes, l.renderedNotesI, l.currentNoteI, l.receptor = nil
+		end
+	end
 end
 
 function Notefield:__prepareLane(column, lane, time)
@@ -434,7 +459,11 @@ function Notefield:__render(camera)
 		self:__prepareLane(i - 1, lane, time)
 	end
 
+	for _, mod in ipairs(self.modifiers) do mod:apply(self) end
+
 	Notefield.super.__render(self, camera)
+
+	if #self.modifiers ~= 0 then NoteModifier.discard() end
 
 	for _, lane in ipairs(self.lanes) do
 		lane.drawSize, lane.drawSizeOffset = lane._drawSize, lane._drawSizeOffset

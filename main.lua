@@ -40,6 +40,8 @@ HealthIcon = require "funkin.gameplay.ui.healthicon"
 HealthBar = require "funkin.gameplay.ui.healthbar"
 ProgressArc = require "funkin.gameplay.ui.progressarc"
 
+NoteModifier = require "funkin.gameplay.notemods.notemodifier"
+
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 Character = require "funkin.gameplay.character"

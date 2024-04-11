@@ -98,6 +98,8 @@ function PlayState:enter()
 	conductor.onSection = bind(self, self.section)
 	PlayState.conductor = conductor
 
+	NoteModifier.reset()
+
 	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
 	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 
@@ -591,16 +593,15 @@ function PlayState:update(dt)
 	end
 
 	local noteTime = PlayState.conductor.time / 1000
-	self.playerNotefield.time, self.enemyNotefield.time = noteTime, noteTime
+	for _, notefield in ipairs(self.notefields) do
+		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
+	end
 
-	--self.playerNotefield.rotation.x = PlayState.conductor.time / PlayState.conductor.crotchet * 40
-	--self.playerNotefield.rotation.y = PlayState.conductor.time / PlayState.conductor.crotchet * 30
-
-	for _, notefield in pairs(self.enemyNotefields) do
+	for _, notefield in ipairs(self.enemyNotefields) do
 		self:doNotefieldBot(notefield)
 	end
 
-	for _, notefield in pairs(self.playerNotefields) do
+	for _, notefield in ipairs(self.playerNotefields) do
 		if self.botPlay then
 			self:doNotefieldBot(notefield)
 		end
@@ -1087,6 +1088,8 @@ function PlayState:leave()
 
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)
+
+	for _, notefield in ipairs(self.notefields) do notefield:destroy() end
 
 	self.scripts:call("postLeave")
 	self.scripts:close()
