@@ -53,7 +53,7 @@ function PlayState.loadSong(song, diff)
 		if metadata == nil then return false end
 		PlayState.SONG = {
 			song = song,
-			bpm = metadata.bpm or 150,
+			bpm = 150,
 			speed = 1,
 			needsVoices = true,
 			stage = 'stage',
