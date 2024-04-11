@@ -3,6 +3,7 @@ local Text = Object:extend("Text")
 
 function Text:new(x, y, content, font, color, align, limit)
 	Text.super.new(self, x, y)
+	self.width, self.height = 0, 0
 
 	self.content = content
 	self.font = font or love.graphics.getFont()
@@ -21,6 +22,8 @@ function Text:new(x, y, content, font, color, align, limit)
 	self.__content = nil
 	self.__limit = nil
 	self.__font = nil
+
+	Text:__updateDimension()
 end
 
 function Text:destroy()
@@ -41,29 +44,29 @@ function Text:__updateDimension()
 	self.__limit = self.limit
 	self.__font = self.font
 
-	self.__width = self.font:getWidth(self.content)
-	self.__height = self.font:getHeight()
-	if self.limit ~= nil or self.__width ~= 0 then
-		local _, lines = self.font:getWrap(self.content, self.limit or self.__width)
-		self.__height = self.__height * #lines
+	self.width = self.font:getWidth(self.content)
+	self.height = self.font:getHeight()
+	if self.limit ~= nil or self.width ~= 0 then
+		local _, lines = self.font:getWrap(self.content, self.limit or self.width)
+		self.height = self.height * #lines
 	end
 end
 
 function Text:getWidth()
 	self:__updateDimension()
-	return self.__width
+	return self.width
 end
 
 function Text:getHeight()
 	self:__updateDimension()
-	return self.__height
+	return self.height
 end
 
 function Text:screenCenter(axes)
 	self:__updateDimension()
 	if axes == nil then axes = "xy" end
-	if axes:find("x") then self.x = (game.width - self.__width) / 2 end
-	if axes:find("y") then self.y = (game.height - self.__height) / 2 end
+	if axes:find("x") then self.x = (game.width - self.width) / 2 end
+	if axes:find("y") then self.y = (game.height - self.height) / 2 end
 	return self
 end
 
