@@ -29,7 +29,7 @@ function Notefield:new(x, y, keys, character, skin)
 	self.height = 500
 	self.keys = keys
 	self.character = character
-	self.skin = paths.getNoteskin(skin) or paths.getNoteskin("default")
+	self.skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound("hitsound")
 
