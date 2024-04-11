@@ -9,8 +9,6 @@ function create()
 
 	self.boyfriendCam = {x = -100, y = -100}
 
-	self.ratingPos = {x = -180, y = 260}
-
 	local bgSky = Sprite()
 	bgSky:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebSky'))
 	bgSky:setScrollFactor(0.1, 0.1)

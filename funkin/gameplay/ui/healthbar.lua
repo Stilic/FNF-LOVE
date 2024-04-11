@@ -72,4 +72,12 @@ function HealthBar:screenCenter(axes)
 	return self
 end
 
+function HealthBar:getWidth()
+	return self.bg.width
+end
+
+function HealthBar:getHeight()
+	return self.bg.height
+end
+
 return HealthBar

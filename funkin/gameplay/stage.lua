@@ -16,7 +16,7 @@ function Stage:new(name)
 	self.gfCam = {x = 0, y = 0}
 	self.dadCam = {x = 0, y = 0}
 
-	self.ratingPos = {x = 0, y = 0}
+	self.ratingPos = {x = 658, y = 444}
 
 	self.foreground = Group()
 

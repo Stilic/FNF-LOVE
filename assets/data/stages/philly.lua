@@ -15,8 +15,6 @@ local startedMoving = false
 local phillyWindow, phillyTrain, trainSound
 
 function create()
-	self.ratingPos = {x = -160, y = 240}
-
 	local bg = Sprite(-100)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'sky'))
 	bg:setScrollFactor(0.1, 0.1)
