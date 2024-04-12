@@ -44,7 +44,6 @@ function Notefield:new(x, y, keys, skin, character)
 	self.speed = 1
 	self.drawSize = game.height + self.noteWidth
 	self.drawSizeOffset = 0
-	self.maxNotes = 1028
 
 	self.totalPlayed = 0
 	self.totalHit = 0.0
