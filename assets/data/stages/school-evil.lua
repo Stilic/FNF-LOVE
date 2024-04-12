@@ -6,8 +6,6 @@ function create()
 
 	self.boyfriendCam = {x = -100, y = -100}
 
-	self.ratingPos = {x = -180, y = 260}
-
 	local posX = 400
 	local posY = 200
 

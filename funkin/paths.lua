@@ -5,21 +5,33 @@ local function readFile(key)
 	return nil
 end
 
+local function excludeAssets(path)
+	local i, n = path:find("assets/")
+	if i == 1 then return path:sub(n + 1)
+	elseif path:find("mods/") == 1 then
+		i = path:find("/", 6)
+		if i then return path:sub(i + 1) end
+	end
+	return path
+end
+
 local paths = {
 	images = {},
 	audio = {},
 	atlases = {},
 	fonts = {},
-	persistantAssets = {"assets/music/freakyMenu.ogg"}
+	persistantAssets = {"music/freakyMenu.ogg"}
 }
 
 function paths.addPersistant(path)
+	path = excludeAssets(path)
 	if not table.find(paths.persistantAssets, path) then
 		table.insert(paths.persistantAssets, path)
 	end
 end
 
 function paths.isPersistant(path)
+	path = excludeAssets(path)
 	for _, k in pairs(paths.persistantAssets) do
 		if path:startsWith(k) then return true end
 	end
@@ -64,10 +76,15 @@ end
 function paths.getJSON(key)
 	local data = readFile(paths.getMods(key .. ".json")) or
 		readFile(paths.getPath(key .. ".json"))
+
+	if data then return decodeJson(data) end
+end
+
+function paths.getNoteskin(skin)
+	local data = paths.getJSON("data/notes/" .. skin)
 	if data then
-		return decodeJson(data)
-	else
-		return nil
+		data.skin = skin
+		return data
 	end
 end
 
@@ -125,7 +142,7 @@ function paths.getImage(key)
 	return nil
 end
 
-function paths.getAudio(key, stream)
+function paths.getAudio(key, stream, ignore)
 	local path
 	local obj
 	if Mods.currentMod then
@@ -149,7 +166,7 @@ function paths.getAudio(key, stream)
 		return obj
 	end
 
-	print('oh no its returning "audio" null NOOOO: ' .. key)
+	if not ignore then print('oh no its returning "audio" null NOOOO: ' .. key) end
 	return nil
 end
 
@@ -162,9 +179,9 @@ function paths.getInst(song)
 	return paths.getAudio("songs/" .. daSong .. "/Inst", true)
 end
 
-function paths.getVoices(song)
+function paths.getVoices(song, suffix, ignore)
 	local daSong = paths.formatToSongPath(song)
-	return paths.getAudio("songs/" .. daSong .. "/Voices", true)
+	return paths.getAudio("songs/" .. daSong .. "/Voices" .. (suffix and "-" .. suffix or ""), true, ignore)
 end
 
 function paths.getSparrowAtlas(key)

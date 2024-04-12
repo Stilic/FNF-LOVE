@@ -2,6 +2,10 @@
 local Script = Classic:extend("Script")
 
 local chunkMt = {__index = _G}
+local closedenv = setmetatable({}, {
+	__index = function()error("closed")end,
+	__newindex = function()error("closed")end,
+})
 
 Script.Event_Continue = 1
 Script.Event_Cancel = 2
@@ -11,13 +15,14 @@ function Script:new(path, notFoundMsg)
 	self.variables = {}
 	self.notFoundMsg = (notFoundMsg == nil and true or false)
 	self.closed = false
+	self.chunk = nil
 
 	local s, err = pcall(function()
-		local p = path
+		local p, vars = path, self.variables
 
 		local chunk = paths.getLua(p)
 		if chunk then
-			setfenv(chunk, setmetatable(self.variables, chunkMt))
+			setfenv(chunk, setmetatable(vars, chunkMt))
 			chunk()
 		else
 			if not self.notFoundMsg then return end
@@ -26,13 +31,14 @@ function Script:new(path, notFoundMsg)
 			return
 		end
 
-		p = path
 		if not p:endsWith("/") then p = p .. "/" end
-		self:set('Event_Continue', Script.Event_Continue)
-		self:set('Event_Cancel', Script.Event_Cancel)
-		self:set("SCRIPT_PATH", p)
-		self:set("close", function() self:close() end)
-		self:set("state", game.getState())
+		vars.close = function() self:close() end
+		vars.Event_Continue = Script.Event_Continue
+		vars.Event_Cancel = Script.Event_Cancel
+		vars.SCRIPT_PATH = Script.p
+		vars.state = game.getState()
+
+		self.chunk = chunk
 	end)
 
 	if not s then
@@ -67,8 +73,11 @@ function Script:call(func, ...)
 end
 
 function Script:close()
+	if self.variables then table.clear(self.variables) end
+	if self.chunk then setfenv(self.chunk, closedenv) end
 	self.closed = true
 	self.variables = nil
+	self.chunk = nil
 end
 
 return Script

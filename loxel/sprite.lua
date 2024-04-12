@@ -159,7 +159,6 @@ function Sprite:new(x, y, texture)
 	self.__animations = nil
 
 	self.__width, self.__height = self.width, self.height
-	self.__rectangleMode = false
 
 	if texture then self:loadTexture(texture) end
 end
@@ -185,7 +184,6 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 		texture = love.graphics.newImage(texture)
 	end
 	self.texture = texture or Sprite.defaultTexture
-	self.__rectangleMode = false
 
 	self.curAnim = nil
 	self.curFrame = nil
@@ -228,7 +226,6 @@ end
 
 function Sprite:loadTextureFromSprite(sprite)
 	self.texture = sprite.texture
-	self.__rectangleMode = false
 
 	self.antialiasing = sprite.antialiasing
 
@@ -352,16 +349,6 @@ function Sprite:finish()
 	end
 end
 
-function Sprite:make(width, height, color)
-	self.__rectangleMode = true
-
-	self:setGraphicSize(width or 10, height or 10)
-	self.color = color or {1, 1, 1}
-	self:updateHitbox()
-
-	return self
-end
-
 function Sprite:setFrames(frames)
 	self.__frames = frames.frames
 	self.texture = frames.texture
@@ -404,10 +391,8 @@ function Sprite:setGraphicSize(width, height)
 	if width == nil then width = 0 end
 	if height == nil then height = 0 end
 
-	self.scale = {
-		x = width / self:getFrameWidth(),
-		y = height / self:getFrameHeight()
-	}
+	self.scale.x = width / self:getFrameWidth()
+	self.scale.y = height / self:getFrameHeight()
 
 	if width <= 0 then
 		self.scale.x = self.scale.y
@@ -423,13 +408,18 @@ function Sprite:updateHitbox()
 	self.height = math.abs(self.scale.y * self.zoom.y) * height
 	self.__width, self.__height = self.width, self.height
 
-	self:centerOffsets(width, height)
+	self:fixOffsets(width, height)
 	self:centerOrigin(width, height)
 end
 
 function Sprite:centerOffsets(__width, __height)
-	self.offset.x = ((__width or self:getFrameWidth()) - self.width) / 2
-	self.offset.y = ((__height or self:getFrameHeight()) - self.height) / 2
+	self.offset.x = (__width or self:getFrameWidth()) / 2
+	self.offset.y = (__height or self:getFrameHeight()) / 2
+end
+
+function Sprite:fixOffsets(__width, __height)
+	self.offset.x = (self.width - (__width or self:getFrameWidth())) / -2
+	self.offset.y = (self.height - (__height or self:getFrameHeight())) / -2
 end
 
 function Sprite:centerOrigin(__width, __height)
@@ -473,16 +463,11 @@ function Sprite:__render(camera)
 	local r, g, b, a = love.graphics.getColor()
 	local shader = self.shader and love.graphics.getShader()
 	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local lineStyle, min, mag, anisotropy, mode
+	local min, mag, anisotropy, mode
 
-	if not self.__rectangleMode then
-		mode = self.antialiasing and "linear" or "nearest"
-		min, mag, anisotropy = self.texture:getFilter()
-		self.texture:setFilter(mode, mode, anisotropy)
-	else
-		mode = self.antialiasing and "smooth" or "rough"
-		lineStyle = love.graphics.getLineStyle()
-	end
+	mode = self.antialiasing and "linear" or "nearest"
+	min, mag, anisotropy = self.texture:getFilter()
+	self.texture:setFilter(mode, mode, anisotropy)
 
 	local f = self:getCurrentFrame()
 
@@ -507,30 +492,18 @@ function Sprite:__render(camera)
 		love.graphics.setStencilTest("greater", 0)
 	end
 
-	if self.__rectangleMode then
-		love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
-
-		local w, h = self:getFrameDimensions()
-		w, h = math.abs(sx) * w, math.abs(sy) * h
-
-		love.graphics.push()
-		love.graphics.translate(x, y)
-		love.graphics.rotate(rad)
-		love.graphics.rectangle('fill', -w / 2, -h / 2, w, h)
-		love.graphics.pop()
-	elseif f then
+	if f then
 		love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy)
 	else
 		love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
 	end
 
-	if not self.__rectangleMode then self.texture:setFilter(min, mag, anisotropy) end
+	self.texture:setFilter(min, mag, anisotropy)
 
 	love.graphics.setColor(r, g, b, a)
 	love.graphics.setBlendMode(blendMode, alphaMode)
+	if shader then love.graphics.setShader(shader) end
 	if self.clipRect then love.graphics.setStencilTest() end
-	if self.shader then love.graphics.setShader(shader) end
-	if self.__rectangleMode then love.graphics.setLineStyle(lineStyle) end
 end
 
 return Sprite

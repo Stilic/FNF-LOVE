@@ -12,7 +12,7 @@ end
 function CalibrationState:enter()
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/calibration", false)
+	self.script = Script("data/states/calibration", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true

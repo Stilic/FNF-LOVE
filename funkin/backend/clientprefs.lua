@@ -8,11 +8,14 @@ ClientPrefs.data = {
 	autoPause = true,
 	downScroll = false,
 	middleScroll = false,
+	ghostTap = true,
 	noteSplash = true,
 	backgroundDim = 0,
+	notesBelowHUD = true,
 	botplayMode = false,
 	timeType = 'left',
 	playback = 1,
+	gameOverInfos = true,
 
 	-- audio
 	pauseMusic = 'railways',

@@ -16,13 +16,14 @@ function MenuItem:update(dt)
 
 	self.y = util.coolLerp(self.y, 480 + self.targetY * 120, 10, dt)
 
-	if self.__isFlashing then self.flashingInt = self.flashingInt + 1 end
-
-	local fakeFramerate = math.round((1 / dt) / 10)
-	if self.flashingInt % fakeFramerate >= math.floor(fakeFramerate / 2) then
-		self.color = Color.fromRGB(51, 255, 255)
-	else
-		self.color = Color.WHITE
+	if self.__isFlashing then
+		self.flashingInt = self.flashingInt + 1
+		local fakeFramerate = math.round((1 / dt) / 10)
+		if self.flashingInt % fakeFramerate >= math.floor(fakeFramerate / 2) then
+			self.color = Color.fromRGB(51, 255, 255)
+		else
+			self.color = Color.WHITE
+		end
 	end
 end
 

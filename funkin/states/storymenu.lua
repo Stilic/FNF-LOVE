@@ -4,9 +4,11 @@ StoryMenuState.curWeek = 1
 StoryMenuState.curDifficulty = 2
 
 function StoryMenuState:enter()
+	StoryMenuState.super.enter(self)
+
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/storymenu", false)
+	self.script = Script("data/states/storymenu", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true
@@ -170,8 +172,6 @@ function StoryMenuState:enter()
 	end
 
 	self.script:call("postCreate")
-
-	StoryMenuState.super.enter(self)
 end
 
 local tweenDifficulty = Timer.new()

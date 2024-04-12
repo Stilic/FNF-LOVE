@@ -90,7 +90,7 @@ local eventhandlers = {
 	gamepadreleased = function(t, j, b) if love.gamepadreleased then return love.gamepadreleased(j, b, t) end end,
 }
 function love.run()
-	love.FPScap, love.unfocusedFPScap = math.max(select(3, love.window.getMode()).refreshrate, 60), 8
+	love.FPScap, love.unfocusedFPScap = math.max(select(3, love.window.getMode()).refreshrate, 60), 16
 	love.autoPause = Project.flags.InitialAutoFocus
 	love.parallelUpdate = Project.flags.InitialParallelUpdate
 	love.asyncInput, thread_event = Project.flags.InitialAsyncInput, love.thread.newThread(thread_event_code)
@@ -190,8 +190,7 @@ function love.timer.getFPS() return fps end
 function love.timer.getInputs()
 	if not love.asyncInput then return dt end
 	local ips = channel_event_tick:peek()
-	if not ips or ips > dt then return dt end
-	return ips
+	return ips and ips > dt and ips or dt
 end
 
 -- fix a bug where love.window.hasFocus doesnt return the actual focus in Mobiles
@@ -248,6 +247,9 @@ BackDrop = require "loxel.effects.backdrop"
 Trail = require "loxel.effects.trail"
 ParallaxImage = require "loxel.effects.parallax"
 Color = require "loxel.util.color"
+Actor = require "loxel.3d.actor"
+ActorSprite = require "loxel.3d.actorsprite"
+ActorGroup = require "loxel.group.actorgroup"
 
 VirtualPad = require "loxel.virtualpad"
 VirtualPadGroup = require "loxel.group.virtualpadgroup"
@@ -334,19 +336,16 @@ function game.init(app, state, ...)
 	end
 
 	Sprite.defaultTexture = love.graphics.newImage("loxel/assets/default.png")
-	Camera.__init(love.graphics.newCanvas(width, height, {
-		format = "normal",
-		dpiscale = 1
-	}))
+
+	Camera.__init()
+	game.cameras.reset()
+	game.bound:add(game.cameras)
+
 	Transition.__init(width, height, game.bound)
 
 	love.mouse.setVisible(false)
 
-	game.cameras.reset()
-	game.bound:add(game.cameras)
-
 	triggerCallback(game.onPreStateEnter, state)
-
 	Gamestate.switch(state(...))
 end
 
@@ -409,7 +408,7 @@ function game.update(real_dt)
 	game.dt = dt
 
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
-	game.sound.update()
+	game.sound.update(dt)
 
 	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end
 	for _, o in ipairs(game.members) do triggerCallback(o.update, o, dt) end

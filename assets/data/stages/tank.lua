@@ -13,8 +13,6 @@ function create()
 	self.gfPos = {x = 200, y = 65}
 	self.dadPos = {x = 20, y = 100}
 
-	self.ratingPos = {x = -120, y = 260}
-
 	local bg = Sprite(-400, -400)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankSky'))
 	bg:setScrollFactor()

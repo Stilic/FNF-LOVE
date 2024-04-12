@@ -1,7 +1,31 @@
+local abs, rad, deg, atan, cos, sin = math.abs, math.rad, math.deg, math.atan, math.fastcos, math.fastsin
+local function checkCollisionFast(
+	x1, y1, w1, h1, sx1, sy1, ox1, oy1, a1,
+	x2, y2, w2, h2, sx2, sy2, ox2, oy2, a2
+)
+	local hw1, hw2, hh1, hh2 = w1 / 2, w2 / 2, h1 / 2, h2 / 2
+	local rad1, rad2 = rad(a1), rad(a2)
+	local sin1, cos1 = abs(sin(rad1)), abs(cos(rad1))
+	local sin2, cos2 = abs(sin(rad2)), abs(cos(rad2))
+
+	-- i hate this alot, but fuck it. -ralty
+	-- todo: make it work for origin
+	return abs(x2 + hw2 - x1 - hw1)
+			- hw1 * cos1 * sx1 - hh1 * sin1 * sy1
+			- hw2 * cos2 * sx2 - hh2 * sin2 * sy2 < 0
+		and abs(y2 + hh2 - y1 - hh1)
+			- hh1 * cos1 * sy1 - hw1 * sin1 * sx1
+			- hh2 * cos2 * sy2 - hw2 * sin2 * sx2 < 0
+end
+
 ---@class Object:Basic
 local Object = Basic:extend("Object")
-
+Object.checkCollisionFast = checkCollisionFast
 Object.defaultAntialiasing = false
+
+function Object.getAngleTowards(x, y, x2, y2)
+	return deg(atan((x2 - x) / (y2 - y))) + (y > y2 and 180 or 0)
+end
 
 function Object:new(x, y)
 	Object.super.new(self)
@@ -61,11 +85,16 @@ end
 function Object:updateHitbox()
 	local width, height
 	if self.getWidth then width, height = self:getWidth(), self:getHeight() end
-	self:centerOffsets(width, height)
+	self:fixOffsets(width, height)
 	self:centerOrigin(width, height)
 end
 
 function Object:centerOffsets(__width, __height)
+	self.offset.x = (__width or self.width) / 2
+	self.offset.y = (__height or self.height) / 2
+end
+
+function Object:fixOffsets(__width, __height)
 	self.offset.x = ((__width or self.width) - self.width) / 2
 	self.offset.y = ((__height or self.height) - self.height) / 2
 end
@@ -91,9 +120,51 @@ function Object:update(dt)
 	end
 end
 
+function Object:_isOnScreen(x, y, w, h, sx, sy, ox, oy, sfx, sfy, c)
+	local x2, y2, w2, h2, sx2, sy2, ox2, oy2 = c:_getCameraBoundary()
+	return checkCollisionFast(
+		x - c.scroll.x * sfx, y - c.scroll.y * sfy, w, h, sx, sy, ox, oy, self.angle,
+		x2, y2, w2, h2, sx2, sy2, ox2, oy2, c.angle
+	)
+end
+
+function Object:isOnScreen(cameras)
+	local sf = self.scrollFactor
+	local sfx, sfy, x, y, w, h, sx, sy, ox, oy = sf and sf.x or 1, sf and sf.y or 1,
+		self:_getBoundary()
+
+	if cameras.x then return self:_isOnScreen(x, y, w, h, sx, sy, ox, oy, sfx, sfy, cameras) end
+
+	for _, c in pairs(cameras) do
+		if self:_isOnScreen(x, y, w, h, sx, sy, ox, oy, sfx, sfy, c) then return true end
+	end
+	return false
+end
+
 function Object:_canDraw()
 	return self.alpha > 0 and (self.scale.x * self.zoom.x ~= 0 or
 		self.scale.y * self.zoom.y ~= 0) and Object.super._canDraw(self)
+end
+
+-- i hate this too -ralty
+function Object:_getBoundary()
+	local x, y = self.x or 0, self.y or 0
+	if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
+	if self.getCurrentFrame then
+		local f = self:getCurrentFrame()
+		if f then x, y = x - f.offset.x, y - f.offset.y end
+	end
+
+	local w, h
+	if self.getWidth then
+		w, h = self:getWidth(), self:getHeight()
+	else
+		w, h = (self.getFrameWidth and self:getFrameWidth() or self.width or 0),
+			(self.getFrameHeight and self:getFrameHeight() or self.height or 0)
+	end
+
+	return x, y, w, h, abs(self.scale.x * self.zoom.x), abs(self.scale.y * self.zoom.y),
+		self.origin.x, self.origin.y
 end
 
 return Object

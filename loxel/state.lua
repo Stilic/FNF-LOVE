@@ -12,8 +12,6 @@ function State:new()
 	self.persistentUpdate = false
 	self.persistentDraw = true
 
-	--self.transIn = self.transIn or nil
-	--self.transOut = self.transOut or nil
 	self.skipTransIn = false
 	self.skipTransOut = false
 	self.currentTransition = nil

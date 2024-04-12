@@ -5,6 +5,7 @@ function ModsState:enter()
 	self.prevMods = nil
 	self.curSelected = table.find(Mods.mods, Mods.currentMod) or 1
 	self.switchingMods = false
+	self.curColor = {1, 1, 1}
 
 	self.bg = Sprite()
 	self.bg:loadTexture(paths.getImage('menus/menuDesat'))
@@ -19,14 +20,6 @@ function ModsState:enter()
 	self.bd:setScrollFactor()
 	self.bd.alpha = 0.5
 	self:add(self.bd)
-
-	local colorBG = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color or "#101010")
-	self.bg.color = colorBG
-
-	local color = {Color.RGBtoHSL(colorBG[1], colorBG[2], colorBG[3])}
-	color[2] = color[2] + 0.4
-	colorBG = {Color.HSLtoRGB(color[1], color[2], color[3])}
-	self.bd.color = colorBG
 
 	self.cardGroup = Group()
 	self:add(self.cardGroup)
@@ -82,6 +75,10 @@ function ModsState:enter()
 		self:add(self.buttons)
 	end
 
+	self:changeSelection()
+	self.bg.color = self.curColor
+	self.bd.color = Color.saturate(self.bg.color, 0.4)
+
 	ModsState.super.enter(self)
 end
 
@@ -106,14 +103,8 @@ function ModsState:update(dt)
 		end
 	end
 
-	local colorBG = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color or "#101010")
-	self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
-
-	local color = {Color.RGBtoHSL(colorBG[1], colorBG[2], colorBG[3])}
-	color[2] = color[2] + 0.4
-	colorBG = {Color.HSLtoRGB(color[1], color[2], color[3])}
-
-	self.bd.color = Color.lerpDelta(self.bd.color, colorBG, 3, dt)
+	self.bg.color = Color.lerpDelta(self.bg.color, self.curColor, 3, dt)
+	self.bd.color = Color.saturate(self.bg.color, 0.4)
 end
 
 function ModsState:selectMods()
@@ -162,10 +153,12 @@ function ModsState:changeSelection(change)
 	self.curSelected = self.curSelected + change
 	self.curSelected = (self.curSelected - 1) % #Mods.mods + 1
 
-	self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
+	local color = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color or "#1F1F1F")
+	self.curColor = {color[1] or 1, color[2] or 1, color[3] or 1}
 
-	if #Mods.mods > 1 then
+	if #Mods.mods > 0 then
 		game.sound.play(paths.getSound('scrollMenu'))
+		self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
 	end
 end
 

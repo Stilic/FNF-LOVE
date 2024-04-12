@@ -4,16 +4,13 @@
 ---@class Camera:Object
 local Camera = Object:extend("Camera")
 
-local canvas
 local stencilSupport = false
 local canvasTable = {nil, stencil = true}
 
 Camera.__defaultCameras = {}
+Camera.defaultResolution = 1
 
-function Camera.__init(canv)
-	canvas = canv
-	canvasTable[1] = canv
-
+function Camera.__init()
 	if love.graphics.getTextureFormats then
 		stencilSupport = love.graphics.getTextureFormats({canvas = true})["stencil8"]
 	else
@@ -35,8 +32,11 @@ function Camera:new(x, y, width, height)
 	self.clipCam = Project.flags.LoxelDefaultClipCamera == nil and true or Project.flags.LoxelDefaultClipCamera
 	self.antialiasing = true
 
-	self.width = width and (width > 0 and width) or game.width
-	self.height = height and (height > 0 and height) or game.height
+	self:resize(
+		width and (width > 0 and width) or game.width,
+		height and (height > 0 and height) or game.height,
+		nil, nil, true
+	)
 
 	self.scroll = {x = 0, y = 0}
 	self.rotation = 0
@@ -46,7 +46,6 @@ function Camera:new(x, y, width, height)
 	self.target = nil
 	self.followType = nil
 	self.followLerp = 0
-	self.__lerp = nil
 
 	self.bgColor = {0, 0, 0, 0}
 
@@ -70,6 +69,9 @@ function Camera:new(x, y, width, height)
 	self.__shakeIntensity = 0
 	self.__shakeDuration = 0
 	self.__shakeComplete = nil
+
+	self.freezed = false
+	self.__freeze = false
 end
 
 function Camera:shake(intensity, duration, onComplete, force, axes)
@@ -100,7 +102,7 @@ function Camera:fade(color, duration, fadeIn, onComplete, force)
 	if duration <= 0 then duration = 0.000001 end
 	self.__fadeDuration = duration
 	self.__fadeComplete = onComplete or nil
-	self.__fadeAlpha = fadeIn == true and 0.999999 or 0.000001
+	self.__fadeAlpha = fadeIn and 0.999999 or 0.000001
 end
 
 function Camera:follow(target, type, lerp)
@@ -108,7 +110,7 @@ function Camera:follow(target, type, lerp)
 
 	self.target = target
 	self.followType = type --soon
-	self.__lerp = lerp
+	self.followLerp = lerp
 end
 
 function Camera:unfollow()
@@ -116,7 +118,7 @@ function Camera:unfollow()
 
 	self.target = nil
 	self.followType = nil
-	self.__lerp = nil
+	self.followLerp = nil
 end
 
 function Camera:snapToTarget()
@@ -126,22 +128,48 @@ function Camera:snapToTarget()
 	self.scroll.y = self.target.y - self.height / 2
 end
 
+function Camera:freeze()
+	self.__freeze = true
+	self.freezed = not self.isSimple
+end
+
+function Camera:unfreeze()
+	self.__freeze = false
+	self.freezed = false
+end
+
+function Camera:resize(width, height, resX, resY, force)
+	resX = resX or Camera.defaultResolution
+	resY = resY or resX
+	if self.width == width and self.height == height and self.__resolutionX == resX and self.__resolutionY == resY then return end
+
+	self.width, self.height, self.resolutionX, self.resolutionY = width, height, resX, resY
+	self.__requestCanvas = not force and self.freezed
+	if not self.__requestCanvas and Camera.draw ~= Camera.drawSimple then
+		if self.canvas then self.canvas:release() end
+		self.__resolutionX, self.__resolutionY, self.canvas = resX, resY, love.graphics.newCanvas(width * resX, height * resY, {
+			format = "normal",
+			dpiscale = 1
+		})
+	end
+end
+
 function Camera:update(dt)
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
 	self.__zoom.y = isnum and self.zoom or self.zoom.y
 
 	if self.target then
-		self.followLerp = self.__lerp and 1 - math.exp(-dt * self.__lerp) or 0
-		local targetX = self.target.x - self.width / 2
-		local targetY = self.target.y - self.height / 2
-		if self.__lerp then
-			targetX = math.lerp(self.scroll.x, self.target.x - self.width / 2, self.followLerp)
-			targetY = math.lerp(self.scroll.y, self.target.y - self.height / 2, self.followLerp)
+		local targetX, targetY = self.target.x - self.width / 2, self.target.y - self.height / 2
+
+		if self.followLerp then
+			local lerp = 1 - math.exp(-dt * self.followLerp)
+			targetX, targetY = math.lerp(self.scroll.x, targetX, lerp),
+				math.lerp(self.scroll.y, targetY, lerp)
 		end
+
 		-- TODO: follow type
-		self.scroll.x = targetX
-		self.scroll.y = targetY
+		self.scroll.x, self.scroll.y = targetX, targetY
 	end
 
 	if self.__flashAlpha > 0 then
@@ -193,28 +221,52 @@ function Camera:update(dt)
 	end
 end
 
-function Camera:canDraw()
+function Camera:_getCameraBoundary()
+	self:getZoomXY()
+	local w, h = self.width, self.height
+	return 0, 0, w, h, 1 / math.abs(self.__zoom.x), 1 / math.abs(self.__zoom.y), w / 2, h / 2
+end
+
+function Camera:getZoomXY()
 	local isnum = type(self.zoom) == "number"
 	self.__zoom.x = isnum and self.zoom or self.zoom.x
 	self.__zoom.y = isnum and self.zoom or self.zoom.y
+	return self.__zoom.x, self.__zoom.y
+end
 
-	return self.visible and self.exists and next(self.__renderQueue) and
+function Camera:canDraw()
+	self:getZoomXY()
+
+	return self.visible and self.exists and (
+			self.freezed or next(self.__renderQueue)
+			or self.__flashAlpha > 0 or self.__fadeDuration > 0
+		) and
 		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and
 		(self.scale.y * self.__zoom.y) ~= 0
 end
 
 function Camera:draw()
+	if self.__freeze then return self:drawComplex(true) end
 	if not self:canDraw() then return end
+
 	local winWidth, winHeight = love.graphics.getDimensions()
+	local scale = math.min(winWidth / game.width, winHeight / game.height)
 	if not self.simple or self.shader or (self.antialiasing and
 			(self.x ~= math.floor(self.x) or self.y ~= math.floor(self.y) or
-				self.scale.x ~= 1 or self.scale.y ~= 1) or
-			math.min(winWidth / game.width, winHeight / game.height) > 1) or
+				self.scale.x ~= 1 or self.scale.y ~= 1 or
+				self.__resolutionX ~= scale or self.__resolutionX ~= scale) or
+			scale > 1) or
 		self.alpha < 1 or self.rotation ~= 0 then
 		self:drawComplex(true)
 	else
 		self:drawSimple(true)
 	end
+end
+
+function Camera:destroy()
+	Camera.super.destroy(self)
+	if self.canvas then self.canvas:release() end
+	self.canvas = nil
 end
 
 -- Simple Render
@@ -304,81 +356,94 @@ end
 
 function Camera:drawComplex(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
+	if self.__requestCanvas and not self.freezed then self:resize(self.width, self.height, self.resolutionX, self.resolutionY, true) end
 	self.isSimple = false
 
+	local canvas = self.canvas
 	local grap = love.graphics
 	local r, g, b, a = grap.getColor()
 	local shader = grap.getShader()
 	local blendMode, alphaMode = grap.getBlendMode()
 	local cv = grap.getCanvas()
-	local min, mag, anisotropy = canvas:getFilter()
-	local mode = self.antialiasing and "linear" or "nearest"
-	canvas:setFilter(mode, mode, anisotropy)
 
-	local x, y, w, h = self.x, self.y, self.width, self.height
-	local sx, sy = self.scale.x, self.scale.y
+	local x, y, w, h, resX, resY = self.x, self.y, self.width, self.height, self.__resolutionX, self.__resolutionY
+	local sx, sy = self.scale.x / resX, self.scale.y / resY
 	local w2, h2 = w / 2, h / 2
-	local color = self.bgColor
 
-	grap.setCanvas(canvasTable)
-	grap.clear(color[1], color[2], color[3], color[4])
-	grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
+	if not self.freezed then
+		if self.__freeze then
+			self.freezed = next(self.__renderQueue) ~= nil
+			self.__freeze = self.freezed
+		end
 
-	if self.clipCam then
-		grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-	else
-		grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
-	end
-	grap.rotate(math.rad(self.angle))
-	grap.scale(self.__zoom.x, self.__zoom.y)
-	grap.translate(-w2, -h2)
+		local _, _, anisotropy = canvas:getFilter()
+		local mode = self.antialiasing and "linear" or "nearest"
 
-	grap.setBlendMode("alpha", "alphamultiply")
-	self:renderObjects()
+		canvasTable[1] = canvas
+		canvas:setFilter(mode, mode, anisotropy)
 
-	color = self.__flashColor
-	if self.__flashAlpha > 0 then
+		local color = self.bgColor
+		grap.setCanvas(canvasTable)
+		grap.clear(color[1], color[2], color[3], color[4])
+		grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
+
+		grap.scale(resX, resY)
 		if self.clipCam then
 			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
 		else
 			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
 		end
-		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+		grap.rotate(math.rad(self.angle))
+		grap.scale(self.__zoom.x, self.__zoom.y)
 		grap.translate(-w2, -h2)
-		grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
-		grap.rectangle("fill", 0, 0, w, h)
-	end
 
-	color = self.__fadeColor
-	if self.__fadeDuration > 0 then
-		if self.clipCam then
-			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
-		else
-			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+		grap.setBlendMode("alpha", "alphamultiply")
+		self:renderObjects()
+
+		color = self.__flashColor
+		if self.__flashAlpha > 0 then
+			if self.clipCam then
+				grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+			else
+				grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+			end
+			grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+			grap.translate(-w2, -h2)
+			grap.setColor(color[1], color[2], color[3], self.__flashAlpha)
+			grap.rectangle("fill", 0, 0, w, h)
 		end
-		grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
-		grap.translate(-w2, -h2)
-		grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)
-		grap.rectangle("fill", 0, 0, w, h)
+
+		color = self.__fadeColor
+		if self.__fadeDuration > 0 then
+			if self.clipCam then
+				grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+			else
+				grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+			end
+			grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
+			grap.translate(-w2, -h2)
+			grap.setColor(color[1], color[2], color[3], self.__fadeAlpha)
+			grap.rectangle("fill", 0, 0, w, h)
+		end
+
+		game.__popBoundScissor()
+		grap.pop()
+
+		grap.setCanvas(cv)
 	end
-
-	game.__popBoundScissor()
-	grap.pop()
-
-	grap.setCanvas(cv)
 
 	local alpha = self.alpha; color = self.color
 	grap.setShader(self.shader)
 	grap.setBlendMode("alpha", "premultiplied")
 	grap.setColor(color[1] * alpha, color[2] * alpha, color[3] * alpha, alpha)
 
+	canvas:setFilter(self.antialiasing and "linear" or "nearest")
 	if self.clipCam then
-		grap.draw(canvas, w2 + x, h2 + y, math.rad(self.rotation), sx, sy, w2, h2)
+		grap.draw(canvas, w2 + x, h2 + y, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
 	else
-		grap.draw(canvas, w2, h2, math.rad(self.rotation), sx, sy, w2, h2)
+		grap.draw(canvas, w2, h2, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
 	end
 
-	canvas:setFilter(min, mag, anisotropy)
 	grap.setColor(r, g, b, a)
 	grap.setBlendMode(blendMode, alphaMode)
 	if self.shader then grap.setShader(shader) end

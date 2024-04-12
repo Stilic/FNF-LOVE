@@ -3,12 +3,16 @@ local defaults = {}
 
 function CameraManager.add(camera, defaultDrawTarget)
 	table.insert(CameraManager.list, camera)
-	if defaultDrawTarget == nil then defaultDrawTarget = true end
-	if defaultDrawTarget then table.insert(defaults, camera) end
+	if defaultDrawTarget == nil or defaultDrawTarget then
+		table.insert(defaults, camera)
+	end
 	return camera
 end
 
-function CameraManager.remove(camera)
+function CameraManager.remove(camera, destroy)
+	if destroy == nil or destroy then
+		camera:destroy()
+	end
 	if table.delete(CameraManager.list, camera) then
 		table.delete(defaults, camera)
 	end
@@ -16,6 +20,7 @@ end
 
 function CameraManager.reset(camera)
 	for i = #CameraManager.list, 1, -1 do
+		CameraManager.list[i]:destroy()
 		table.delete(defaults, CameraManager.list[i])
 		CameraManager.list[i] = nil
 	end

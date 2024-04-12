@@ -33,8 +33,8 @@ function SoundManager.playMusic(asset, volume, looped, ...)
 	return SoundManager.loadMusic(asset):play(volume, looped, ...)
 end
 
-function SoundManager.update()
-	SoundManager.list:update()
+function SoundManager.update(dt)
+	SoundManager.list:update(dt)
 end
 
 function SoundManager.onFocus(focus)

@@ -31,11 +31,16 @@ if love.system.getDevice() == "Desktop" then
 	Discord = require "funkin.backend.discord"
 end
 
+Receptor = require "funkin.gameplay.receptor"
+Note = require "funkin.gameplay.note"
+Notefield = require "funkin.gameplay.notefield"
+Countdown = require "funkin.gameplay.ui.Countdown"
+
 HealthIcon = require "funkin.gameplay.ui.healthicon"
-Note = require "funkin.gameplay.ui.note"
-NoteSplash = require "funkin.gameplay.ui.notesplash"
-Receptor = require "funkin.gameplay.ui.receptor"
+HealthBar = require "funkin.gameplay.ui.healthbar"
 ProgressArc = require "funkin.gameplay.ui.progressarc"
+
+NoteModifier = require "funkin.gameplay.notemods.notemodifier"
 
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
@@ -105,6 +110,8 @@ function love.load()
 	end
 
 	local res, isMobile = math.abs(ClientPrefs.data.resolution), love.system.getDevice() == "Mobile"
+	Camera.defaultResolution = res
+
 	love.window.setTitle(Project.title)
 	love.window.setIcon(love.image.newImageData(Project.icon))
 	love.window.setMode(Project.width * res, Project.height * res, {
@@ -138,7 +145,11 @@ function love.load()
 	game.init(Project, SplashScreen)
 
 	if ClientPrefs.data.resolution == -1 then
-		ClientPrefs.data.resolution = love.graphics.getFixedScale()
+		Camera.defaultResolution = love.graphics.getFixedScale()
+		ClientPrefs.data.resolution = Camera.defaultResolution
+		for _, camera in ipairs(game.cameras.list) do
+			if camera then camera:resize(camera.width, camera.height, value) end
+		end
 	end
 
 	game.statsCounter = StatsCounter(6, 6, love.graphics.newFont('assets/fonts/consolas.ttf', 14),
@@ -157,7 +168,9 @@ end
 function love.resize(w, h) game.resize(w, h) end
 
 function love.keypressed(key, ...)
-	if Project.DEBUG_MODE and love.keyboard.isDown("lctrl", "rctrl") then
+	if key == "f5" then
+		game.resetState(true)
+	elseif Project.DEBUG_MODE and love.keyboard.isDown("lctrl", "rctrl") then
 		if key == "f4" then error("force crash") end
 		if key == "`" then return "restart" end
 	end
@@ -218,7 +231,7 @@ local function error_printer(msg, layer)
 	print((debug.traceback("Error: " .. tostring(msg), 1 + (layer or 1)):gsub("\n[^\n]+$", "")))
 end
 function love.errorhandler(msg)
-	love.errorhandler_quit()
+	pcall(love.errorhandler_quit)
 
 	msg = tostring(msg)
 	error_printer(msg, 2)

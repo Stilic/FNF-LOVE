@@ -13,7 +13,6 @@ function Sound:revive()
 	self.__volume = 1
 	self.__pitch = 1
 	self.__duration = 0
-	self.__time = 0
 	self.__wasPlaying = nil
 	Sound.super.revive(self)
 end
@@ -38,7 +37,7 @@ function Sound:reset(cleanup, x, y)
 end
 
 function Sound:fade(duration, startVolume, endVolume)
-	self.__fadeStartTime = love.timer.getTime()
+	self.__fadeElapsed = 0
 	self.__fadeDuration = duration
 	self.__startVolume = startVolume
 	self.__endVolume = endVolume
@@ -112,7 +111,6 @@ function Sound:play(volume, looped, pitch, restart)
 
 	self.__paused = false
 	self.__isFinished = false
-	if math.abs(self.__time - self:getDuration()) <= 0.1 then self:seek(0) end
 	self:setVolume(volume)
 	self:setLooping(looped)
 	self:setPitch(pitch)
@@ -128,7 +126,6 @@ end
 
 function Sound:stop()
 	self.__paused = true
-	self.__time = 0
 	if self.__source then pcall(self.__source.stop, self.__source) end
 	return self
 end
@@ -141,9 +138,7 @@ function Sound:proximity(x, y, target, radius)
 	return self
 end
 
-function Sound:update()
-	if self:isPlaying() then self.__time = self:tell() end
-
+function Sound:update(dt)
 	local isFinished = self:isFinished()
 	if isFinished and not self.__isFinished then
 		local onComplete = self.onComplete
@@ -158,20 +153,13 @@ function Sound:update()
 
 	self.__isFinished = isFinished
 
-	if self.__fadeStartTime then
-		local currentTime = love.timer.getTime()
-		local elapsedTime = currentTime - self.__fadeStartTime
-
-		if elapsedTime < self.__fadeDuration then
-			local ratio = elapsedTime / self.__fadeDuration
-			local newVolume = self.__startVolume + (self.__endVolume - self.__startVolume) * ratio
-			self:setVolume(newVolume)
+	if self.__fadeDuration then
+		self.__fadeElapsed = self.__fadeElapsed + dt
+		if self.__fadeElapsed < self.__fadeDuration then
+			self:setVolume(math.lerp(self.__startVolume, self.__endVolume, self.__fadeElapsed / self.__fadeDuration))
 		else
 			self:setVolume(self.__endVolume)
-			self.__fadeStartTime = nil
-			self.__fadeDuration = nil
-			self.__startVolume = nil
-			self.__endVolume = nil
+			self.__fadeStartTime, self.__fadeDuration, self.__startVolume, self.__endVolume = nil
 		end
 	end
 end
@@ -201,7 +189,7 @@ end
 
 function Sound:isFinished()
 	return self.active and not self.__paused and not self:isPlaying() and
-		not self.__source:isLooping() and math.abs(self.__time - self:getDuration()) <= 0.1
+		not self:isLooping()
 end
 
 function Sound:tell()
@@ -213,7 +201,6 @@ end
 
 function Sound:seek(position)
 	if not self.__source then return false end
-	self.__time = position
 	return pcall(self.__source.seek, self.__source, position)
 end
 

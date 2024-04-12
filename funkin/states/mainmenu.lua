@@ -3,9 +3,11 @@ local MainMenuState = State:extend("MainMenuState")
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
+	MainMenuState.super.enter(self)
+
 	self.notCreated = false
 
-	self.script = Script("data/scripts/states/mainmenu", false)
+	self.script = Script("data/states/mainmenu", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true
@@ -67,20 +69,14 @@ function MainMenuState:enter()
 	self.camFollow = {x = 0, y = 0}
 	game.camera:follow(self.camFollow, nil, 10)
 
-	self.engineVersion = Text(12, game.height - 42,
-		"FNF LÖVE v" .. Project.version,
-		paths.getFont("vcr.ttf", 16), {255, 255, 255})
-	self.engineVersion.antialiasing = false
-	self.engineVersion.outline.width = 1
-	self.engineVersion:setScrollFactor()
-	self:add(self.engineVersion)
-
-	self.funkinVersion = Text(12, game.height - 24, "Friday Night Funkin' v0.2.8",
-		paths.getFont("vcr.ttf", 16), {255, 255, 255})
-	self.funkinVersion.antialiasing = false
-	self.funkinVersion.outline.width = 1
-	self.funkinVersion:setScrollFactor()
-	self:add(self.funkinVersion)
+	self.versionFormat = "FNF LÖVE v%version\nFriday Night Funkin' v0.2.8"
+	self.versionText = Text(12, 0, self.versionFormat:gsub("%%version", Project.version),
+		paths.getFont("vcr.ttf", 16))
+	self.versionText.y = game.height - self.versionText:getHeight() - 8
+	self.versionText.antialiasing = false
+	self.versionText.outline.width = 1
+	self.versionText:setScrollFactor()
+	self:add(self.versionText)
 
 	self.throttles = {}
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
@@ -113,8 +109,6 @@ function MainMenuState:enter()
 	self:changeSelection()
 
 	self.script:call("postCreate")
-
-	MainMenuState.super.enter(self)
 end
 
 function MainMenuState:update(dt)
@@ -233,7 +227,7 @@ function MainMenuState:changeSelection(huh)
 			if #self.menuItems > 4 then add = #self.menuItems * 8 end
 			local x, y = spr:getGraphicMidpoint()
 			self.camFollow.x, self.camFollow.y = x, y - add
-			spr:centerOffsets()
+			spr:fixOffsets()
 		end
 	end
 end

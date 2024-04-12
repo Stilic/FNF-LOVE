@@ -32,4 +32,17 @@ function util.formatTime(seconds, includeMS)
 	return str .. ms:format(seconds - math.floor(seconds)):sub(2)
 end
 
+function util.playMenuMusic(fade)
+	local menu = paths.getMusic("freakyMenu")
+	if not game.sound.music or not game.sound.music:isPlaying() or game.sound.music.__source ~= menu then
+		if game.sound.music then game.sound.music:reset(true) end
+		game.sound.playMusic(menu, fade and 0 or ClientPrefs.data.menuMusicVolume)
+		if fade then game.sound.music:fade(4, 0, ClientPrefs.data.menuMusicVolume) end
+	end
+end
+
+function util.playSfx(asset, volume, ...)
+	return game.sound.play(asset, (volume or 1) * ClientPrefs.data.sfxVolume, ...)
+end
+
 return util

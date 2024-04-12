@@ -13,28 +13,6 @@ local colorTable = {
 ---@class Color:ColorTable
 local Color = {}
 
-function Color.HSL(h, s, l)
-	if s <= 0 then return l, l, l end
-	h = (h / 360) * 6
-	local c = (1 - math.abs(2 * l - 1)) * s
-	local x = (1 - math.abs(h % 2 - 1)) * c
-	local m, r, g, b = (l - .5 * c), 0, 0, 0
-	if h < 1 then
-		r, g, b = c, x, 0
-	elseif h < 2 then
-		r, g, b = x, c, 0
-	elseif h < 3 then
-		r, g, b = 0, c, x
-	elseif h < 4 then
-		r, g, b = 0, x, c
-	elseif h < 5 then
-		r, g, b = x, 0, c
-	else
-		r, g, b = c, 0, x
-	end
-	return r + m, g + m, b + m
-end
-
 function Color.HSLtoRGB(h, s, l)
 	local c = (1 - math.abs(l + l - 1)) * s
 	local m = l - 0.5 * c
@@ -48,7 +26,7 @@ function Color.HSLtoRGB(h, s, l)
 		elseif h < 3 then r, g, b = m, c, x
 		elseif h < 4 then r, g, b = m, x, c
 		elseif h < 5 then r, g, b = x, m, c
-		else              r, g, b = c, m, X
+		else			  r, g, b = c, m, x
 		end
 	end
 	return r, g, b
@@ -96,6 +74,12 @@ function Color.convert(rgb)
 		rgb[3] / 255}
 end
 
+function Color.saturate(rgb, amount)
+	local h, s, l = Color.RGBtoHSL(rgb[1], rgb[2], rgb[3])
+	s = math.min(1, math.max(0, s + amount))
+	return {Color.HSLtoRGB(h, s, l)}
+end
+
 function Color.lerp(x, y, i)
 	return {math.lerp(x[1], y[1], i),
 			math.lerp(x[2], y[2], i),
@@ -109,9 +93,9 @@ function Color.lerpDelta(x, y, i, delta)
 end
 
 setmetatable(Color, {
-    __index = function(tbl, key)
-        if colorTable[key] then return table.clone(colorTable[key]) end
-    end
+	__index = function(tbl, key)
+		if colorTable[key] then return table.clone(colorTable[key]) end
+	end
 })
 
 return Color

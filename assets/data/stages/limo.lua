@@ -9,8 +9,6 @@ function create()
 	self.boyfriendPos = {x = 1030, y = -120}
 	self.boyfriendCam = {x = -200, y = 0}
 
-	self.ratingPos = {x = -120, y = 190}
-
 	local skyBG = Sprite(-120, -50)
 	skyBG:loadTexture(paths.getImage(SCRIPT_PATH .. 'limoSunset'))
 	skyBG:setScrollFactor(0.1, 0.1)

@@ -3,7 +3,32 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["note", "Note base", 24, true]
+			["note", "note", 24, true]
+		],
+
+		"colors": [
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"properties": [
+			{"angle": -90},
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
+		],
+
+		"scale": 0.7,
+		"antialiasing": true
+	},
+
+	"sustains": {
+		"sprite": "NOTE_assets",
+
+		"animations": [
+			["hold", "hold piece", 24, true]
 		],
 
 		"colors": [
@@ -15,18 +40,38 @@
 
 		"properties": [
 			{},
-			{"angle": -90},
-			{"angle": 90},
-			{"angle": 180}
+			{},
+			{"x": 1},
+			{}
 		],
 
-		"sustains": {
-			"animations": [
-				["hold", "sustain", 24, true],
-				["endhold", "end sustain", 24, true]
-			]
-		},
+		"alpha": 0.6,
+		"scale": 0.7,
+		"antialiasing": true
+	},
 
+	"sustainends": {
+		"sprite": "NOTE_assets",
+
+		"animations": [
+			["end", "hold end", 24, true]
+		],
+
+		"colors": [
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"properties": [
+			{},
+			{},
+			{"x": 1},
+			{}
+		],
+
+		"alpha": 0.6,
 		"scale": 0.7,
 		"antialiasing": true
 	},
@@ -35,35 +80,65 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["static", "Note base", 24, true],
-			["pressed", "Note pressed", 24, false],
-			["confirm", "Note confirm", 24, false]
+			["static", "note", 24, true],
+			["pressed", "press", 24, false, true],
+			["confirm", "confirm0", 24, false]
 		],
 
 		"colors": [
-			["#87A3AD", "#FFFFFF","#000000"]
+			["#87A3AD", "#FFFFFF", "#000000"]
 		],
 
 		"properties": [
-			{},
 			{"angle": -90},
-			{"angle": 90},
-			{"angle": 180}
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
 		],
 
 		"scale": 0.7,
 		"antialiasing": true
 	},
 
+	"glow": {
+		"sprite": "NOTE_assets",
+
+		"animations": [
+			["glow", "confirm glow", 24, false]
+		],
+
+		"colors": [
+			["#C24B99", "#FFFFFF", "#3C1F56"],
+			["#00FFFF", "#FFFFFF", "#1542B7"],
+			["#12FA05", "#FFFFFF", "#0A4447"],
+			["#F9393F", "#FFFFFF", "#651038"]
+		],
+
+		"properties": [
+			{"angle": -90},
+			{"angle": 180},
+			{"angle": 0},
+			{"angle": 90}
+		],
+
+		"scale": 0.7,
+		"antialiasing": true,
+		"blend": "add"
+	},
+
 	"splashes": {
 		"sprite": "noteSplashes",
 
 		"animations": [
-			["splash0", "note impact 1 red", 12, false],
-			["splash1", "note impact 2 red", 12, false]
+			["splash0", "note impact 1 red", 24, false, true],
+			["splash1", "note impact 2 red", 24, false, true]
+		],
+
+		"properties": [
+			{"alpha": 0.6}
 		],
 
 		"scale": 1,
-		"antialiasing": false
+		"antialiasing": true
 	}
 }

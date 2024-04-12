@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="NOTE_assets.png" width="778" height="378">
+	<SubTexture name="confirm0000" x="433" y="197" width="177" height="173" frameX="-0" frameY="-0" frameWidth="177" frameHeight="173"/>
+	<SubTexture name="confirm0001" x="433" y="197" width="177" height="173" frameX="-0" frameY="-0" frameWidth="177" frameHeight="173"/>
+	<SubTexture name="confirm0002" x="226" y="209" width="171" height="168" frameX="-3" frameY="-2" frameWidth="177" frameHeight="173"/>
+	<SubTexture name="confirm0003" x="226" y="209" width="171" height="168" frameX="-3" frameY="-2" frameWidth="177" frameHeight="173"/>
+	<SubTexture name="confirm glow0000" x="226" y="0" width="206" height="208" frameX="-16" frameY="-19" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="confirm glow0001" x="433" y="0" width="198" height="196" frameX="-20" frameY="-19" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="confirm glow0002" x="0" y="0" width="225" height="227" frameX="-7" frameY="-4" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="confirm glow0003" x="0" y="0" width="225" height="227" frameX="-7" frameY="-4" frameWidth="240" frameHeight="237"/>
+	<SubTexture name="hold end0000" x="153" y="228" width="55" height="69" frameX="-0" frameY="-0" frameWidth="55" frameHeight="69"/>
+	<SubTexture name="hold piece0000" x="153" y="298" width="55" height="64" frameX="-0" frameY="-0" frameWidth="55" frameHeight="64"/>
+	<SubTexture name="note0000" x="611" y="197" width="157" height="154" frameX="-0" frameY="-0" frameWidth="157" frameHeight="154"/>
+	<SubTexture name="press0000" x="632" y="0" width="146" height="142" frameX="-3" frameY="-4" frameWidth="152" frameHeight="150"/>
+	<SubTexture name="press0001" x="632" y="0" width="146" height="142" frameX="-3" frameY="-4" frameWidth="152" frameHeight="150"/>
+	<SubTexture name="press0002" x="0" y="228" width="152" height="150" frameX="-0" frameY="-0" frameWidth="152" frameHeight="150"/>
+	<SubTexture name="press0003" x="0" y="228" width="152" height="150" frameX="-0" frameY="-0" frameWidth="152" frameHeight="150"/>
+</TextureAtlas>

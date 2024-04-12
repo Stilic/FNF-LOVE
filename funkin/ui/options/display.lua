@@ -39,7 +39,11 @@ local data = {
 		if Project.height * value >= ymax then value = ymax / Project.height end
 
 		ClientPrefs.data.resolution = value
+		Camera.defaultResolution = value
 		love.window.updateMode(Project.width * value, Project.height * value)
+		for _, camera in ipairs(game.cameras.list) do
+			if camera then camera:resize(camera.width, camera.height, value) end
+		end
 	end, function(value)
 		local _, ymax = love.window.getMaxDesktopDimensions()
 		local height = Project.height * value

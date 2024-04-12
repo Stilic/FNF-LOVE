@@ -35,7 +35,7 @@ end
 
 function PauseSubstate:enter()
 	self.music:play(0, true)
-	self.music:fade(6, 0, 0.7)
+	self.music:fade(6, 0, ClientPrefs.data.menuMusicVolume)
 
 	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 
@@ -142,7 +142,7 @@ function PauseSubstate:onSettingChange(setting, option)
 				self.music:cancelFade()
 				if not self.parent then return end
 				self:loadMusic()
-				self.music:play(0.7, true)
+				self.music:play(ClientPrefs.data.menuMusicVolume, true)
 			end)
 		end)
 	end
