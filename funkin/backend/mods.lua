@@ -27,8 +27,7 @@ end
 
 function Mods.getMetadata(mods)
 	local function readMetaFile()
-		if paths.exists("mods", "directory") and
-			paths.exists('mods/' .. (mods or "") .. '/meta.json', "file") then
+		if paths.exists("mods", "directory") and paths.exists('mods/' .. mods .. '/meta.json', "file") then
 			local json = (require "lib.json").decode(
 				love.filesystem.read('mods/' .. mods .. '/meta.json'))
 			return json
