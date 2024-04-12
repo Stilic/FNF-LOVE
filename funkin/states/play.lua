@@ -67,6 +67,10 @@ function PlayState.loadSong(song, diff)
 	return true
 end
 
+function PlayState.getSongName()
+	return PlayState.SONG.meta and PlayState.SONG.meta.name or PlayState.SONG.song
+end
+
 function PlayState:new(storyMode, song, diff)
 	PlayState.super.new(self)
 
@@ -109,6 +113,21 @@ function PlayState:enter()
 
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs", "songs/" .. songName)
+
+	if Discord then
+		local detailsText = "Freeplay"
+		if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+		local diff = PlayState.defaultDifficulty
+		if PlayState.songDifficulty ~= "" then
+			diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+		end
+
+		Discord.changePresence({
+			details = detailsText,
+			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+		})
+	end
 
 	self.scripts:set("bpm", PlayState.conductor.bpm)
 	self.scripts:set("crotchet", PlayState.conductor.crotchet)
@@ -521,8 +540,6 @@ function PlayState:startCountdown()
 		self.countdown.scale = {x = 7, y = 7}
 		self.countdown.antialiasing = false
 	end
-
-	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
 end
 
 function PlayState:cameraMovement()
@@ -562,6 +579,28 @@ end
 
 function PlayState:step(s)
 	if not self.startingSong then
+		if Discord and self.startedCountdown and game.sound.music:isPlaying() then
+			local detailsText = "Freeplay"
+			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+			local startTimestamp = os.time(os.date("*t"))
+			local endTimestamp = startTimestamp +
+				game.sound.music:getDuration()
+			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
+
+			local diff = PlayState.defaultDifficulty
+			if PlayState.songDifficulty ~= "" then
+				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+			end
+
+			Discord.changePresence({
+				details = detailsText,
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
+				startTimestamp = math.floor(startTimestamp),
+				endTimestamp = math.floor(endTimestamp)
+			})
+		end
+
 		self.scripts:set("curStep", s)
 		self.scripts:call("step")
 		self.scripts:call("postStep")
@@ -607,6 +646,109 @@ function PlayState:section(s)
 	if songStarted then
 		self.scripts:call("postSection")
 	end
+end
+
+function PlayState:focus(f)
+	if Discord then
+		if f then
+			local detailsText = "Freeplay"
+			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+			local startTimestamp = os.time(os.date("*t"))
+			local endTimestamp = startTimestamp +
+				game.sound.music:getDuration()
+			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
+
+			local diff = PlayState.defaultDifficulty
+			if PlayState.songDifficulty ~= "" then
+				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+			end
+
+			Discord.changePresence({
+				details = detailsText,
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
+				startTimestamp = math.floor(startTimestamp),
+				endTimestamp = math.floor(endTimestamp)
+			})
+		else
+			local detailsText = "Freeplay"
+			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+			local diff = PlayState.defaultDifficulty
+			if PlayState.songDifficulty ~= "" then
+				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+			end
+
+			Discord.changePresence({
+				details = "Paused - " .. detailsText,
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+			})
+		end
+	end
+end
+
+function PlayState:executeCutsceneEvent(event, isEnd)
+	switch(event.name, {
+		['Camera Position'] = function()
+			local xCam, yCam = event.params[1], event.params[2]
+			local isTweening = event.params[3]
+			local time = event.params[4]
+			local ease = event.params[6] .. '-' .. event.params[5]
+			if isTweening then
+				game.camera:follow(self.camFollow, nil)
+				self.timer:tween(time, self.camFollow, {x = xCam, y = yCam}, ease)
+			else
+				self.camFollow:set(xCam, yCam)
+				game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+			end
+		end,
+		['Camera Zoom'] = function()
+			local zoomCam = event.params[1]
+			local isTweening = event.params[2]
+			local time = event.params[3]
+			local ease = event.params[5] .. '-' .. event.params[4]
+			if isTweening then
+				self.timer:tween(time, game.camera, {zoom = zoomCam}, ease)
+			else
+				game.camera.zoom = zoomCam
+			end
+		end,
+		['Play Sound'] = function()
+			local soundPath = event.params[1]
+			local volume = event.params[2]
+			local isFading = event.params[3]
+			local time = event.params[4]
+			local volStart, volEnd = event.params[5], event.params[6]
+
+			local sound = game.sound.play(paths.getSound(soundPath), volume)
+			if isFading then sound:fade(time, volStart, volEnd) end
+		end,
+		['Play Animation'] = function()
+			local character = nil
+			switch(event.params[1], {
+				['bf'] = function() character = self.boyfriend end,
+				['gf'] = function() character = self.gf end,
+				['dad'] = function() character = self.dad end
+			})
+			local animation = event.params[2]
+
+			if character then character:playAnim(animation, true) end
+		end,
+		['End Cutscene'] = function()
+			if isEnd then
+				self:endSong(true)
+			else
+				local skipCountdown = event.params[1]
+				if skipCountdown then
+					PlayState.conductor.time = 0
+					self.startedCountdown = true
+					if self.buttons then self.buttons:enable() end
+				else
+					self:startCountdown()
+				end
+			end
+		end,
+	})
 end
 
 function PlayState:doCountdown(beat)
@@ -711,7 +853,42 @@ function PlayState:update(dt)
 
 	if self.startedCountdown then
 		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
-			self:tryPause()
+			local event = self.scripts:call("paused")
+			if event ~= Script.Event_Cancel then
+				game.camera:unfollow()
+				game.camera:freeze()
+				self.camNotes:freeze()
+				self.camHUD:freeze()
+
+				game.sound.music:pause()
+				if self.vocals then self.vocals:pause() end
+				if self.dadVocals then self.dadVocals:pause() end
+
+				self.paused = true
+
+				if Discord then
+					local detailsText = "Freeplay"
+					if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+					local diff = PlayState.defaultDifficulty
+					if PlayState.songDifficulty ~= "" then
+						diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+					end
+
+					Discord.changePresence({
+						details = "Paused - " .. detailsText,
+						state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+					})
+				end
+
+				if self.buttons then
+					self.buttons:disable()
+				end
+
+				local pause = PauseSubstate()
+				pause.cameras = {self.camOther}
+				self:openSubstate(pause)
+			end
 		end
 
 		if controls:pressed("debug_1") then
@@ -754,7 +931,47 @@ function PlayState:update(dt)
 	end
 
 	if self.health <= 0 and not self.isDead then
-		self:tryGameOver()
+		local event = self.scripts:event("onGameOver", Events.GameOver())
+		if not event.cancelled then
+			self.paused = event.pauseGame
+
+			if event.pauseSong then
+				game.sound.music:pause()
+				if self.vocals then self.vocals:pause() end
+				if self.dadVocals then self.dadVocals:pause() end
+			end
+
+			if Discord then
+				local detailsText = "Freeplay"
+				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+				local diff = PlayState.defaultDifficulty
+				if PlayState.songDifficulty ~= "" then
+					diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+				end
+
+				Discord.changePresence({
+					details = "Game Over - " .. detailsText,
+					state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+				})
+			end
+
+			self.camNotes.visible = false
+			self.camHUD.visible = false
+			self.boyfriend.visible = false
+
+			if self.buttons then
+				self.buttons:disable()
+			end
+
+			GameOverSubstate.characterName = event.characterName
+			GameOverSubstate.deathSoundName = event.deathSoundName
+			GameOverSubstate.loopSoundName = event.loopSoundName
+			GameOverSubstate.endSoundName = event.endSoundName
+
+			self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y))
+			self.isDead = true
+		end
 	end
 
 	if Project.DEBUG_MODE then
@@ -1131,59 +1348,6 @@ function PlayState:recalculateRating(rating)
 	if rating then self:popUpScore(rating) end
 end
 
-function PlayState:tryPause()
-	local event = self.scripts:call("paused")
-	if event ~= Script.Event_Cancel then
-		game.camera:unfollow()
-		game.camera:freeze()
-		self.camNotes:freeze()
-		self.camHUD:freeze()
-
-		game.sound.music:pause()
-		if self.vocals then self.vocals:pause() end
-		if self.dadVocals then self.dadVocals:pause() end
-
-		self.paused = true
-
-		if self.buttons then
-			self.buttons:disable()
-		end
-
-		local pause = PauseSubstate()
-		pause.cameras = {self.camOther}
-		self:openSubstate(pause)
-	end
-end
-
-function PlayState:tryGameOver()
-	local event = self.scripts:event("onGameOver", Events.GameOver())
-	if not event.cancelled then
-		self.paused = event.pauseGame
-
-		if event.pauseSong then
-			game.sound.music:pause()
-			if self.vocals then self.vocals:pause() end
-			if self.dadVocals then self.dadVocals:pause() end
-		end
-
-		self.camNotes.visible = false
-		self.camHUD.visible = false
-		self.boyfriend.visible = false
-
-		if self.buttons then
-			self.buttons:disable()
-		end
-
-		GameOverSubstate.characterName = event.characterName
-		GameOverSubstate.deathSoundName = event.deathSoundName
-		GameOverSubstate.loopSoundName = event.loopSoundName
-		GameOverSubstate.endSoundName = event.endSoundName
-
-		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y))
-		self.isDead = true
-	end
-end
-
 function PlayState:getKeyFromEvent(controls)
 	for _, control in pairs(controls) do
 		if PlayState.controlDirs[control] then
@@ -1234,6 +1398,7 @@ function PlayState:closeSubstate()
 	self.camHUD:unfreeze()
 
 	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+
 	if not self.startingSong then
 		game.sound.music:play()
 		if self.vocals then
@@ -1246,6 +1411,28 @@ function PlayState:closeSubstate()
 		end
 
 		PlayState.conductor.time = game.sound.music:tell() * 1000
+
+		if Discord then
+			local detailsText = "Freeplay"
+			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+			local startTimestamp = os.time(os.date("*t"))
+			local endTimestamp = startTimestamp +
+				game.sound.music:getDuration()
+			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
+
+			local diff = PlayState.defaultDifficulty
+			if PlayState.songDifficulty ~= "" then
+				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+			end
+
+			Discord.changePresence({
+				details = detailsText,
+				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
+				startTimestamp = math.floor(startTimestamp),
+				endTimestamp = math.floor(endTimestamp)
+			})
+		end
 	end
 
 	if self.buttons then
