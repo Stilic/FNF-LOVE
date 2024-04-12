@@ -76,9 +76,9 @@ function Notefield:new(x, y, keys, skin, character)
 	self:getWidth()
 end
 
-function Notefield:makeLane(column, y)
+function Notefield:makeLane(data, y)
 	local lane = ActorGroup(0, 0, 0, false)
-	lane.receptor = Receptor(0, y or -self.height / 2, column - 1, self.skin)
+	lane.receptor = Receptor(0, y or -self.height / 2, data - 1, self.skin)
 	lane.renderedNotes, lane.renderedNotesI = {}, {}
 	lane.currentNoteI = 1
 	lane.drawSize, lane.drawSizeOffset = 1, 0
@@ -88,10 +88,10 @@ function Notefield:makeLane(column, y)
 	lane.receptor.lane = lane
 	lane.receptor.parent = self
 
-	self.receptors[column] = lane.receptor
-	self.lanes[column] = lane
-	self.pressed[column] = false
-	self.lastPress[column] = 0
+	self.receptors[data] = lane.receptor
+	self.lanes[data] = lane
+	self.pressed[data] = false
+	self.lastPress[data] = 0
 	self:add(lane)
 	return lane
 end
@@ -152,7 +152,7 @@ function Notefield:removeNote(note, dontClearHits)
 	end
 end
 
-function Notefield:getNotes(time, column)
+function Notefield:getNotes(time, data)
 	local gotNotes, notes = {}, self.notes
 	local i, size = 1, #notes
 	if size == 0 then return gotNotes end
@@ -164,7 +164,7 @@ function Notefield:getNotes(time, column)
 		local n = notes[i]
 		local dont = n.tooLate or n.hit
 		if not Notefield.checkDiff(n, time) and not dont then break end
-		if not dont and n.column == column then
+		if not dont and n.data == data then
 			table.insert(gotNotes, n)
 		end
 		i = i + 1
@@ -221,8 +221,8 @@ function Notefield:miss(note, force)
 	end
 end
 
-function Notefield:spawnSplash(column)
-	local receptor = self.receptors[column + 1]
+function Notefield:spawnSplash(data)
+	local receptor = self.receptors[data + 1]
 	if receptor then
 		local splash = receptor:spawnSplash()
 		if not splash then return end
@@ -231,14 +231,14 @@ function Notefield:spawnSplash(column)
 	end
 end
 
-function Notefield:press(time, column, play)
+function Notefield:press(time, data, play)
 	time = time or self.time
 
-	local fixedColumn, gotNotes = column + 1, self:getNotes(time, column)
+	local fixedData, gotNotes = data + 1, self:getNotes(time, data)
 	local missed = #gotNotes == 0
 
-	self.lastPress[fixedColumn] = time
-	self.pressed[fixedColumn] = true
+	self.lastPress[fixedData] = time
+	self.pressed[fixedData] = true
 	local isSustain, rating
 	if not missed then
 		local coolNote = gotNotes[1]
@@ -257,7 +257,7 @@ function Notefield:press(time, column, play)
 
 		rating = self:hit(time, coolNote)
 		isSustain = coolNote.sustain ~= nil
-		self.pressed[fixedColumn] = coolNote
+		self.pressed[fixedData] = coolNote
 
 		if play and self.hitsoundVolume > 0 and self.hitsound then
 			game.sound.play(self.hitsound, self.hitsoundVolume)
@@ -267,16 +267,16 @@ function Notefield:press(time, column, play)
 	end
 
 	if play then
-		local receptor = self.receptors[fixedColumn]
+		local receptor = self.receptors[fixedData]
 		if receptor then
 			receptor:play(missed and "pressed" or "confirm", true)
 			if not missed and isSustain then receptor.strokeTime = -1 end
-			if rating.splash then self:spawnSplash(column) end
+			if rating.splash then self:spawnSplash(data) end
 		end
 
 		local char = self.character
 		if char then
-			char:sing(column)
+			char:sing(data)
 			if not missed and isSustain then char.strokeTime = -1 end
 		end
 	end
@@ -284,10 +284,10 @@ function Notefield:press(time, column, play)
 	return not missed, rating, gotNotes
 end
 
-function Notefield:release(time, column, play)
-	local fixedColumn = column + 1
-	local note = self.pressed[fixedColumn]
-	self.pressed[fixedColumn] = nil
+function Notefield:release(time, data, play)
+	local fixedData = data + 1
+	local note = self.pressed[fixedData]
+	self.pressed[fixedData] = nil
 	if not note then return end
 
 	local hit, rating = note ~= true
@@ -301,14 +301,14 @@ function Notefield:release(time, column, play)
 	end
 
 	if play then
-		local receptor = self.receptors[fixedColumn]
+		local receptor = self.receptors[fixedData]
 		if receptor then
 			receptor:play("static", true)
 		end
 
 		if hit then
 			local char = self.character
-			if char and char.columnAnim == column then
+			if char and char.dirAnim == data then
 				char.strokeTime = 0
 			end
 		end
@@ -323,13 +323,13 @@ function Notefield:update(dt)
 	local time = self.time
 	for i, note in pairs(self.pressed) do
 		if note ~= true and note and note.sustain and time > note.time + note.sustainTime then
-			local receptor = self.receptors[note.column + 1]
+			local receptor = self.receptors[note.data + 1]
 			if receptor then
 				receptor.strokeTime = 0
 			end
 
 			local char = self.character
-			if char and char.columnAnim == note.column then
+			if char and char.dirAnim == note.data then
 				char.strokeTime = 0
 			end
 		end
@@ -402,7 +402,7 @@ function Notefield:destroy()
 	end
 end
 
-function Notefield:__prepareLane(column, lane, time)
+function Notefield:__prepareLane(data, lane, time)
 	local notes, receptor, speed, drawSize, drawSizeOffset =
 		self.notes, lane.receptor,
 		self.speed * lane.speed,
@@ -424,7 +424,7 @@ function Notefield:__prepareLane(column, lane, time)
 	local repx, repy, repz = receptor.x, receptor.y, receptor.z
 	local offset, noteI = (-drawSize / 2) - repy + drawSizeOffset, math.clamp(lane.currentNoteI, 1, size)
 	while noteI < size and not notes[noteI].sustain and
-		(notes[noteI + 1].column ~= column or Note.toPos(notes[noteI + 1].time - time, speed) <= offset)
+		(notes[noteI + 1].data ~= data or Note.toPos(notes[noteI + 1].time - time, speed) <= offset)
 	do
 		noteI = noteI + 1
 	end
@@ -437,7 +437,7 @@ function Notefield:__prepareLane(column, lane, time)
 	while noteI <= size do
 		local note = notes[noteI]
 		local y = Note.toPos(note.time - time, speed)
-		if note.column == column and (y > offset or note.sustain) then
+		if note.data == data and (y > offset or note.sustain) then
 			if y > drawSize / 2 + drawSizeOffset - repy then break end
 
 			renderedNotesI[note] = true
