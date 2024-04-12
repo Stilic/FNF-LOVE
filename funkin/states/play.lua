@@ -102,6 +102,8 @@ function PlayState:enter()
 	Note.defaultSustainSegments = 1
 	NoteModifier.reset()
 
+	self.unfreezeOnNextFrame = false
+
 	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
 	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
 
@@ -753,7 +755,26 @@ function PlayState:update(dt)
 	self.scripts:call("postUpdate", dt)
 end
 
+function PlayState:draw()
+	self.scripts:call("draw")
+	if self.unfreezeOnNextFrame then
+		game.camera:unfreeze()
+		self.camNotes:unfreeze()
+		self.camHUD:unfreeze()
+	end
+	PlayState.super.draw(self)
+	if self.unfreezeOnNextFrame then
+		game.camera:freeze()
+		self.camNotes:freeze()
+		self.camHUD:freeze()
+		self.unfreezeOnNextFrame = false
+	end
+	self.scripts:call("postDraw")
+end
+
 function PlayState:onSettingChange(category, setting)
+	self.unfreezeOnNextFrame = true
+
 	if category == "gameplay" then
 		switch(setting, {
 			["downScroll"]=function()
