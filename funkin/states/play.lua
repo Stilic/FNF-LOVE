@@ -1095,7 +1095,7 @@ end
 
 function PlayState:doNotefieldBot(notefield)
 	local i, contime, notes = 1, PlayState.conductor.time / 1000, notefield.notes
-	local size, pressedNote = #notes
+	local size = #notes
 
 	for j = 1, notefield.keys do
 		local note = notefield.pressed[j]
@@ -1117,15 +1117,13 @@ function PlayState:doNotefieldBot(notefield)
 		if not note or contime < note.time then break end
 
 		if not note.hit and not note.tooLate and not note.ignoreNote then
-			pressedNote = self:notefieldPress(notefield, note.time, note.column) and true or pressedNote
+			self:notefieldPress(notefield, note.time, note.column)
 		end
 
 		local newsize = #notes
 		if newsize == size then i = i + 1 end
 		size = newsize
 	end
-
-	return pressedNote
 end
 
 function PlayState:notefieldPress(notefield, time, column)
@@ -1136,13 +1134,12 @@ function PlayState:notefieldPress(notefield, time, column)
 			game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
 		end
 		for _, n in ipairs(gotNotes) do self:goodNoteHit(n, rating) end
-		return true
 	else
 		local receptor = notefield.receptors[column + 1]
 		if receptor then receptor:play("pressed", true) end
 		if not notefield.ghostTap then self:miss(notefield, column) end
-		return false
 	end
+	return hit
 end
 
 function PlayState:notefieldRelease(notefield, time, column)
