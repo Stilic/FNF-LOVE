@@ -2,8 +2,11 @@ local NoteModBeat = NoteModifier:extend("NoteModBeat")
 
 local function getAmplitude(curBeat)
 	local beat, amp = curBeat % 1, 0
-	if beat <= 0.3 then amp = Timer.tween.sine((0.3 - beat) / 0.3) * 0.3
-	elseif beat >= 0.7 then amp = -(1 - Timer.tween.sine(1 - (beat - 0.7) / 0.3)) * 0.3 end
+	if beat <= 0.3 then
+		amp = Timer.tween.sine((0.3 - beat) / 0.3) * 0.3
+	elseif beat >= 0.7 then
+		amp = -(1 - Timer.tween.sine(1 - (beat - 0.7) / 0.3)) * 0.3
+	end
 	return amp / 0.3 * (curBeat % 2 >= 1 and -1 or 1)
 end
 NoteModBeat.getAmplitude = getAmplitude
@@ -33,8 +36,9 @@ function NoteModBeat:apply(notefield)
 	end
 end
 
-function NoteModBeat:applyPath(path, curBeat, pos, notefield, column)
-	local x = getAmplitude(curBeat / self.beat + self.beatOffset) * math.fastcos(pos / 45 * self.scrollSpeed) * notefield.noteWidth / 2 * self.percent
+function NoteModBeat:applyPath(path, curBeat, pos, notefield, data)
+	local x = getAmplitude(curBeat / self.beat + self.beatOffset) * math.fastcos(pos / 45 * self.scrollSpeed) * notefield.noteWidth / 2 *
+	self.percent
 	path.x = path.x + x * self.x
 	path.y = path.y + x * self.y
 	path.z = path.z + x * self.z

@@ -34,10 +34,11 @@ function NoteModTipsy:apply(notefield)
 	end
 end
 
-function NoteModTipsy:applyPath(path, curBeat, pos, notefield, column)
+function NoteModTipsy:applyPath(path, curBeat, pos, notefield, data)
 	path.x = path.x + math.fastsin(curBeat / 4 *
-			(self.drunkSpeed * self.speed) * math.pi + (self.drunkOffset + self.offset) + (column + pos / 222 * math.pi) * (self.drunkSpacing * self.spacing) / 2
-		) * notefield.noteWidth / 2 * self.percent * self.drunk
+		(self.drunkSpeed * self.speed) * math.pi + (self.drunkOffset + self.offset) +
+		(data + pos / 222 * math.pi) * (self.drunkSpacing * self.spacing) / 2
+	) * notefield.noteWidth / 2 * self.percent * self.drunk
 end
 
 return NoteModTipsy

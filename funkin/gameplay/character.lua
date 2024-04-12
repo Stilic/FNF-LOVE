@@ -15,7 +15,7 @@ function Character:new(x, y, char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
-	self.columnAnim = 0
+	self.dirAnim = 0
 
 	self.__reverseDraw = false
 
@@ -165,7 +165,7 @@ end
 
 function Character:playAnim(anim, force, frame)
 	Character.super.play(self, anim, force, frame)
-	self.__strokeDelta, self.strokeTime, self.columnAnim = 0, 0, nil
+	self.__strokeDelta, self.strokeTime, self.dirAnim = 0, 0, nil
 
 	local offset = self.animOffsets[anim]
     if offset then
@@ -191,7 +191,7 @@ function Character:sing(dir, type)
 	if suffix and self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, true)
 
-	self.columnAnim = dir
+	self.dirAnim = dir
 	self.lastHit = PlayState.conductor.currentBeat
 end
 
