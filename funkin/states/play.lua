@@ -727,6 +727,92 @@ function PlayState:update(dt)
 	self.scripts:call("postUpdate", dt)
 end
 
+function PlayState:onSettingChange(category, setting)
+	if category == "gameplay" then
+		switch(setting, {
+			["downScroll"]=function()
+				self.downScroll = ClientPrefs.data.downScroll
+				if self.downScroll then
+					for _, notefield in ipairs(self.notefields) do
+						notefield.scale.y = -1
+					end
+					for _, o in ipairs({
+						self.healthBar, self.timeArc,
+						self.scoreText, self.timeText, self.botplayText
+					}) do
+						o.y = -o.y + (o.offset.y * 2) + game.height - (
+							o.getHeight and o:getHeight() or o.height)
+					end
+				else
+					for _, notefield in ipairs(self.notefields) do
+						notefield.scale.y = 1
+					end
+					for _, o in ipairs({
+						self.healthBar, self.timeArc,
+						self.scoreText, self.timeText, self.botplayText
+					}) do
+						o.y = (o.offset.y * 2) + game.height - (o.y +
+							(o.getHeight and o:getHeight() or o.height))
+					end
+				end
+			end,
+			["middleScroll"]=function()
+				self.middleScroll = ClientPrefs.data.middleScroll
+
+				for _, notefield in ipairs(self.notefields) do
+					if self.middleScroll then
+						if notefield ~= self.playerNotefield then
+							notefield.visible = false
+						else
+							notefield:screenCenter("x")
+						end
+					else
+						local center, keys = game.width / 2, 4
+						self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5,
+							math.lerp(0, game.width, 0.25))
+						self.enemyNotefield.visible = true
+						self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5,
+							math.lerp(0, game.width, 0.75))
+					end
+				end
+			end,
+			["botplayMode"]=function()
+				self.botPlay = ClientPrefs.data.botplayMode
+				self.botplayText.visible = self.botPlay
+			end,
+			["backgroundDim"]=function()
+				self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
+			end,
+			["playback"]=function()
+				self.playback = ClientPrefs.data.playback
+				Timer.setSpeed(self.playback)
+				game.sound.music:setPitch(self.playback)
+				if self.vocals then
+					self.vocals:setPitch(self.playback)
+				end
+			end,
+			["timeType"]=function()
+				local songTime = PlayState.conductor.time / 1000
+				if ClientPrefs.data.timeType == "left" then
+					songTime = game.sound.music:getDuration() - songTime
+				end
+				self.timeText.content = util.formatTime(songTime)
+			end
+		})
+	elseif category == "controls" then
+		controls:unbindPress(self.bindedKeyPress)
+		controls:unbindRelease(self.bindedKeyRelease)
+
+		self.bindedKeyPress = function(...) self:onKeyPress(...) end
+		controls:bindPress(self.bindedKeyPress)
+
+		self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
+		controls:bindRelease(self.bindedKeyRelease)
+	end
+
+	self.scripts:call("onSettingChange", category, setting)
+end
+
 function PlayState:doNotefieldBot(notefield)
 	local i, contime, notes = 1, PlayState.conductor.time / 1000, notefield.notes
 	local size = #notes
