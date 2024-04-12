@@ -287,8 +287,8 @@ end
 
 function FreeplayState:loadSongs()
 	if Mods.currentMod then
-		if paths.exists(paths.getMods('data/freeplayList.txt'), 'file') then
-			local listData = paths.getText('freeplayList'):gsub('\r', ''):split(
+		if paths.exists(paths.getMods('data/freeplaySonglist.txt'), 'file') then
+			local listData = paths.getText('freeplaySonglist'):gsub('\r', ''):split(
 				'\n')
 			for _, song in pairs(listData) do
 				table.insert(self.songsData, getSongMetadata(song))
@@ -318,8 +318,8 @@ function FreeplayState:loadSongs()
 			end
 		end
 	else
-		if paths.exists(paths.getPath('data/freeplayList.txt'), 'file') then
-			local listData = paths.getText('freeplayList'):gsub('\r', ''):split(
+		if paths.exists(paths.getPath('data/freeplaySonglist.txt'), 'file') then
+			local listData = paths.getText('freeplaySonglist'):gsub('\r', ''):split(
 				'\n')
 			for _, song in pairs(listData) do
 				table.insert(self.songsData, getSongMetadata(song))
