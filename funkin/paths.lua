@@ -142,7 +142,7 @@ function paths.getImage(key)
 	return nil
 end
 
-function paths.getAudio(key, stream)
+function paths.getAudio(key, stream, ignore)
 	local path
 	local obj
 	if Mods.currentMod then
@@ -166,7 +166,7 @@ function paths.getAudio(key, stream)
 		return obj
 	end
 
-	print('oh no its returning "audio" null NOOOO: ' .. key)
+	if not ignore then print('oh no its returning "audio" null NOOOO: ' .. key) end
 	return nil
 end
 
@@ -179,9 +179,9 @@ function paths.getInst(song)
 	return paths.getAudio("songs/" .. daSong .. "/Inst", true)
 end
 
-function paths.getVoices(song)
+function paths.getVoices(song, suffix, ignore)
 	local daSong = paths.formatToSongPath(song)
-	return paths.getAudio("songs/" .. daSong .. "/Voices", true)
+	return paths.getAudio("songs/" .. daSong .. "/Voices" .. (suffix and "-" .. suffix or ""), true, ignore)
 end
 
 function paths.getSparrowAtlas(key)
