@@ -1141,7 +1141,7 @@ function PlayState:closeSubstate()
 			self.dadVocals:play()
 		end
 
-		PlayState.conductor.time = time * 1000
+		PlayState.conductor.time = game.sound.music:tell() * 1000
 	end
 
 	if self.buttons then

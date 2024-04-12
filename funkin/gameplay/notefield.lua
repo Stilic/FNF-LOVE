@@ -214,6 +214,7 @@ function Notefield:spawnSplash(column)
 	local receptor = self.receptors[column + 1]
 	if receptor then
 		local splash = receptor:spawnSplash()
+		if not splash then return end
 		table.insert(self.splashes, splash)
 		self:add(splash)
 	end
