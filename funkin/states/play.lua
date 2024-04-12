@@ -1170,12 +1170,6 @@ function PlayState:closeSubstate()
 	end
 end
 
-function PlayState:draw()
-	self.scripts:call("draw")
-	PlayState.super.draw(self)
-	self.scripts:call("postDraw")
-end
-
 function PlayState:endSong(skip)
 	if skip == nil then skip = false end
 	PlayState.seenCutscene = false
