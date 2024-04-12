@@ -3,16 +3,16 @@ local Notefield = ActorGroup:extend("Notefield")
 Notefield.safeZoneOffset = 10 / 60
 Notefield.ratings = {
 	{name = "perfect",	time = 0.021,			score = 400, splash = true,  mod = 1.0},
-	{name = "sick",		time = 0.033,			score = 350, splash = true,  mod = 1.0},
+	{name = "sick",		time = 0.033,			score = 350, splash = true,  mod = 0.98},
 	{name = "good",		time = 0.091,			score = 200, splash = false, mod = 0.7},
 	{name = "bad",		time = 0.133,			score = 100, splash = false, mod = 0.4},
-	{name = "shit",		time = Notefield.safeZoneOffset,	score = 50,  splash = false, mod = 0.2}
+	{name = "shit",		time = -1,				score = 50,  splash = false, mod = 0.2}
 }
 
 function Notefield.getRating(a, b, returnShit)
 	local diff = math.abs(a - b)
 	for i, r in ipairs(Notefield.ratings) do
-		if diff <= r.time then return r, i end
+		if diff <= (r.time == -1 and Notefield.safeZoneOffset or r.time) then return r, i end
 	end
 	return returnShit and Notefield.ratings[#Notefield.ratings] or nil
 end
@@ -52,7 +52,6 @@ function Notefield:new(x, y, keys, character, skin)
 
 	self.modifiers = {}
 
-	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	self.lastPress = {}
 	self.pressed = {}
 	self.lanes = {}
@@ -62,6 +61,7 @@ function Notefield:new(x, y, keys, character, skin)
 	self.notes = {}
 	self.splashes = {}
 
+	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	for i = 1, keys do
 		self:makeLane(i).x = startx + self.noteWidth * i
 	end

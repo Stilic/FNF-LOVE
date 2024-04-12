@@ -133,7 +133,7 @@ function Receptor:setColumn(column)
 end
 
 function Receptor:spawnSplash()
-	if not self.skin or not self.skin.splashes then return end
+	if not self.skin or not self.skin.splashes or #self.splashes > 4 then return end
 
 	local splash = table.remove(self.__splashCaches)
 	if not splash then

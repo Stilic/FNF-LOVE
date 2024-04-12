@@ -1,5 +1,7 @@
 local Note = ActorSprite:extend("Note")
 
+Note.defaultSustainSegments = 1 -- also resets on play.create
+
 function Note.toPos(time, speed)
 	return time * 450 * speed
 end
@@ -29,7 +31,7 @@ function Note:new(time, column, sustaintime, skin)
 	self.type = ""
 	self.group = nil
 
-	self.sustainSegments = 1
+	self.sustainSegments = Note.defaultSustainSegments
 
 	self.column = column
 	self:setSkin(skin)
@@ -353,7 +355,7 @@ function Note:__render(camera)
 				end
 				local ssy = math.max(fh * ssc.y, 64) / fh
 				hfw, fh = hfw * ssc.x / 2, math.max(fh * ssc.y, 64)
-				segments = segments * math.max(math.round(fh / 64), 1)
+				segments = segments * math.max(math.round(fh / 128), 1)
 				fh = fh / segments
 
 				tex:setFilter(sus.antialiasing and "linear" or "nearest")

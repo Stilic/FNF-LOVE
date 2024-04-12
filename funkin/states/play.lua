@@ -99,6 +99,7 @@ function PlayState:enter()
 	conductor.onSection = bind(self, self.section)
 	PlayState.conductor = conductor
 
+	Note.defaultSustainSegments = 1
 	NoteModifier.reset()
 
 	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
