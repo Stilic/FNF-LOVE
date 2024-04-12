@@ -15,6 +15,7 @@ ClientPrefs.data = {
 	botplayMode = false,
 	timeType = 'left',
 	playback = 1,
+	gameOverInfos = true,
 
 	-- audio
 	pauseMusic = 'railways',

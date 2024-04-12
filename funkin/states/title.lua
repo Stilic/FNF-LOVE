@@ -71,11 +71,7 @@ function TitleState:enter()
 
 	self.conductor = Conductor(102)
 	self.conductor.onBeat = bind(self, self.beat)
-
-	if not game.sound.music or not game.sound.music:isPlaying() then
-		game.sound.playMusic(paths.getMusic("freakyMenu"), 0)
-		game.sound.music:fade(4, 0, 1)
-	end
+	util.playMenuMusic(true)
 
 	if love.system.getDevice() == "Mobile" then
 		self:add(VirtualPad("return", 0, 0, game.width, game.height, false))

@@ -23,6 +23,7 @@ local data = {
 		ClientPrefs.data.playback = value
 	end, function(value) return "x" .. value end},
 	{"timeType",   "Song Time Type", "string", {"left", "elapsed"}},
+	{"gameOverInfos", "Show game infos in Game Over", "boolean"},
 
 	{"AUDIO"},
 	{"pauseMusic", "Pause Music",    "string", {"railways", "breakfast"}},

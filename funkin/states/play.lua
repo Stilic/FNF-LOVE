@@ -543,7 +543,7 @@ function PlayState:startCountdown()
 end
 
 function PlayState:cameraMovement()
-	local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
+	local section = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
 	if section ~= nil then
 		local target, camX, camY
 		if section.gfSection then
@@ -848,42 +848,7 @@ function PlayState:update(dt)
 
 	if self.startedCountdown then
 		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
-			local event = self.scripts:call("paused")
-			if event ~= Script.Event_Cancel then
-				game.camera:unfollow()
-				game.camera:freeze()
-				self.camNotes:freeze()
-				self.camHUD:freeze()
-
-				game.sound.music:pause()
-				if self.vocals then self.vocals:pause() end
-				if self.dadVocals then self.dadVocals:pause() end
-
-				self.paused = true
-
-				if Discord then
-					local detailsText = "Freeplay"
-					if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-					local diff = PlayState.defaultDifficulty
-					if PlayState.songDifficulty ~= "" then
-						diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-					end
-
-					Discord.changePresence({
-						details = "Paused - " .. detailsText,
-						state = PlayState.getSongName() .. ' - [' .. diff .. ']'
-					})
-				end
-
-				if self.buttons then
-					self.buttons:disable()
-				end
-
-				local pause = PauseSubstate()
-				pause.cameras = {self.camOther}
-				self:openSubstate(pause)
-			end
+			self:tryPause()
 		end
 
 		if controls:pressed("debug_1") then
@@ -925,49 +890,7 @@ function PlayState:update(dt)
 		self.timeArc.tracker = PlayState.conductor.time / 1000
 	end
 
-	if self.health <= 0 and not self.isDead then
-		local event = self.scripts:event("onGameOver", Events.GameOver())
-		if not event.cancelled then
-			self.paused = event.pauseGame
-
-			if event.pauseSong then
-				game.sound.music:pause()
-				if self.vocals then self.vocals:pause() end
-				if self.dadVocals then self.dadVocals:pause() end
-			end
-
-			if Discord then
-				local detailsText = "Freeplay"
-				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-				local diff = PlayState.defaultDifficulty
-				if PlayState.songDifficulty ~= "" then
-					diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-				end
-
-				Discord.changePresence({
-					details = "Game Over - " .. detailsText,
-					state = PlayState.getSongName() .. ' - [' .. diff .. ']'
-				})
-			end
-
-			self.camNotes.visible = false
-			self.camHUD.visible = false
-			self.boyfriend.visible = false
-
-			if self.buttons then
-				self.buttons:disable()
-			end
-
-			GameOverSubstate.characterName = event.characterName
-			GameOverSubstate.deathSoundName = event.deathSoundName
-			GameOverSubstate.loopSoundName = event.loopSoundName
-			GameOverSubstate.endSoundName = event.endSoundName
-
-			self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y))
-			self.isDead = true
-		end
-	end
+	if self.health <= 0 and not self.isDead then self:tryGameOver() end
 
 	if Project.DEBUG_MODE then
 		if game.keys.justPressed.TWO then self:endSong() end
@@ -1172,7 +1095,7 @@ function PlayState:noteMiss(n)
 			end
 
 			self.totalPlayed = self.totalPlayed + 1
-			self.combo = math.max(self.combo - 1, 0)
+			self.combo = math.min(self.combo - 1, 0)
 			self.score = self.score - 100
 			self.misses = self.misses + 1
 			self.health = self.health - 0.0475
@@ -1205,7 +1128,7 @@ function PlayState:miss(notefield, column)
 			end
 
 			self.totalPlayed = self.totalPlayed + 1
-			self.combo = math.max(self.combo - 1, 0)
+			self.combo = math.min(self.combo - 1, 0)
 			self.score = self.score - 100
 			self.misses = self.misses + 1
 			self.health = self.health - 0.0475
@@ -1344,6 +1267,63 @@ function PlayState:recalculateRating(rating)
 	self.scoreText:screenCenter("x")
 
 	if rating then self:popUpScore(rating) end
+end
+
+function PlayState:tryPause()
+	local event = self.scripts:call("paused")
+	if event ~= Script.Event_Cancel then
+		game.camera:unfollow()
+		game.camera:freeze()
+		self.camNotes:freeze()
+		self.camHUD:freeze()
+	
+		game.sound.music:pause()
+		if self.vocals then self.vocals:pause() end
+		if self.dadVocals then self.dadVocals:pause() end
+
+		self.paused = true
+
+		if self.buttons then
+			self.buttons:disable()
+		end
+
+		local pause = PauseSubstate()
+		pause.cameras = {self.camOther}
+		self:openSubstate(pause)
+	end
+end
+
+function PlayState:tryGameOver()
+	local event = self.scripts:event("onGameOver", Events.GameOver())
+	if not event.cancelled then
+		self.paused = event.pauseGame
+
+		if event.pauseSong then
+			game.sound.music:pause()
+			if self.vocals then self.vocals:pause() end
+			if self.dadVocals then self.dadVocals:pause() end
+		end
+
+		self.camNotes.visible = false
+		self.camHUD.visible = false
+		self.boyfriend.visible = false
+
+		if self.buttons then
+			self.buttons:disable()
+		end
+
+		GameOverSubstate.characterName = event.characterName
+		GameOverSubstate.deathSoundName = event.deathSoundName
+		GameOverSubstate.loopSoundName = event.loopSoundName
+		GameOverSubstate.endSoundName = event.endSoundName
+
+		self.scripts:call("gameOverCreate")
+
+		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y))
+		self.isDead = true
+
+		self.scripts:call("postGameOverCreate")
+	end
 end
 
 function PlayState:getKeyFromEvent(controls)
@@ -1528,15 +1508,13 @@ function PlayState:endSong(skip)
 			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
 			game.switchState(StoryMenuState())
 
-			game.sound.music:reset(true)
-			game.sound.playMusic(paths.getMusic("freakyMenu"))
+			util.playMenuMusic()
 		end
 	else
 		game.camera:unfollow()
 		game.switchState(FreeplayState())
 
-		game.sound.music:reset(true)
-		game.sound.playMusic(paths.getMusic("freakyMenu"))
+		util.playMenuMusic()
 	end
 
 	self.scripts:call("postEndSong")
