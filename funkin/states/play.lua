@@ -218,9 +218,9 @@ function PlayState:enter()
 	self.camZooming = false
 
 	local y, center, keys, skin = game.height / 2, game.width / 2, 4, self.pixelStage and "pixel" or nil
-	self.enemyNotefield = Notefield(0, y, keys, self.dad, skin)
+	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad)
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
-	self.playerNotefield = Notefield(0, y, keys, self.boyfriend, skin)
+	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend)
 	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
 
 	self.enemyNotefield.cameras = {self.camNotes}
@@ -247,20 +247,13 @@ function PlayState:enter()
 	self:add(self.timeArc)
 
 	local fontScore = paths.getFont("vcr.ttf", 17)
-	self.scoreText = Text(game.width / 2, self.healthBar.y + 28, "", fontScore, {1, 1, 1},
-		"center")
+	self.scoreText = Text(game.width / 2, self.healthBar.y + 28, "", fontScore, {1, 1, 1}, "center")
 	self.scoreText.outline.width = 1
 	self.scoreText.antialiasing = false
 	self:add(self.scoreText)
 
-	local songTime = 0
-	if ClientPrefs.data.timeType == "left" then
-		songTime = game.sound.music:getDuration() - songTime
-	end
-
 	local fontTime = paths.getFont("vcr.ttf", 24)
-	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, util.formatTime(songTime),
-		fontTime, {1, 1, 1}, "left")
+	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, "0:00", fontTime, {1, 1, 1}, "left")
 	self.timeText.outline.width = 2
 	self.timeText.antialiasing = false
 	self.timeText.y = (self.timeArc.y + self.timeArc.width) - self.timeText:getHeight()
@@ -331,9 +324,7 @@ function PlayState:enter()
 	controls:bindRelease(self.bindedKeyRelease)
 
 	if self.downScroll then
-		for _, notefield in ipairs(self.notefields) do
-			notefield.scale.y = -1
-		end
+		for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
 		for _, o in ipairs({
 			self.healthBar, self.timeArc,
 			self.scoreText, self.timeText, self.botplayText
@@ -767,30 +758,33 @@ function PlayState:onSettingChange(category, setting)
 	if category == "gameplay" then
 		switch(setting, {
 			["downScroll"]=function()
-				self.downScroll = ClientPrefs.data.downScroll
-				if self.downScroll then
-					for _, notefield in ipairs(self.notefields) do
-						notefield.scale.y = -1
-					end
-					for _, o in ipairs({
-						self.healthBar, self.timeArc,
-						self.scoreText, self.timeText, self.botplayText
-					}) do
-						o.y = -o.y + (o.offset.y * 2) + game.height - (
-							o.getHeight and o:getHeight() or o.height)
+				local downscroll = ClientPrefs.data.downScroll
+				if downscroll then
+					for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
+
+					if downscroll ~= self.downScroll then
+						for _, o in ipairs({
+							self.healthBar, self.timeArc,
+							self.scoreText, self.timeText, self.botplayText
+						}) do
+							o.y = -o.y + (o.offset.y * 2) + game.height - (
+								o.getHeight and o:getHeight() or o.height)
+						end
 					end
 				else
-					for _, notefield in ipairs(self.notefields) do
-						notefield.scale.y = 1
-					end
-					for _, o in ipairs({
-						self.healthBar, self.timeArc,
-						self.scoreText, self.timeText, self.botplayText
-					}) do
-						o.y = (o.offset.y * 2) + game.height - (o.y +
-							(o.getHeight and o:getHeight() or o.height))
+					for _, notefield in ipairs(self.notefields) do notefield.downscroll = false end
+
+					if downscroll ~= self.downScroll then
+						for _, o in ipairs({
+							self.healthBar, self.timeArc,
+							self.scoreText, self.timeText, self.botplayText
+						}) do
+							o.y = (o.offset.y * 2) + game.height - (o.y +
+								(o.getHeight and o:getHeight() or o.height))
+						end
 					end
 				end
+				self.downScroll = downscroll
 			end,
 			["middleScroll"]=function()
 				self.middleScroll = ClientPrefs.data.middleScroll
@@ -968,7 +962,6 @@ function PlayState:goodNoteHit(n, rating)
 			self.combo = self.combo + 1
 			self.score = self.score + rating.score
 
-			self.totalPlayed = self.totalPlayed + 1
 			self.totalHit = self.totalHit + rating.mod
 			self:recalculateRating(rating.name)
 		end
@@ -1026,7 +1019,6 @@ function PlayState:recalculateRating(rating)
 	vars.rating = ratingStr
 
 	self.scoreText.content = self.scoreFormat:gsub("%%(%w+)", vars)
-	self.scoreText:__updateDimension()
 	self.scoreText:screenCenter("x")
 
 	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())

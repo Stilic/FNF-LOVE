@@ -22,7 +22,7 @@ function Notefield.checkDiff(note, time)
 		note.time < time + Notefield.safeZoneOffset * note.earlyHitMult
 end
 
-function Notefield:new(x, y, keys, character, skin)
+function Notefield:new(x, y, keys, skin, character)
 	Notefield.super.new(self, x, y)
 
 	self.noteWidth = math.floor(160 * 0.7)
@@ -32,6 +32,7 @@ function Notefield:new(x, y, keys, character, skin)
 	self.skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound("hitsound")
+	self.downscroll = false -- this just sets scale y backwards
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
@@ -461,7 +462,9 @@ function Notefield:__render(camera)
 	end
 
 	for _, mod in pairs(self.modifiers) do mod:apply(self) end
+	if self.downscroll then self.scale.y = -self.scale.y end
 	Notefield.super.__render(self, camera)
+	if self.downscroll then self.scale.y = -self.scale.y end
 	NoteModifier.discard()
 
 	for _, lane in ipairs(self.lanes) do
