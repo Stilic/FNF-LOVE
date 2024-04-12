@@ -1,13 +1,13 @@
-local NoteModData = NoteModifier:extend("NoteModData")
+local NoteModColumn = NoteModifier:extend("NoteModColumn")
 
-function NoteModData:new(flip, invert)
-	NoteModData.super.new(self)
+function NoteModColumn:new(flip, invert)
+	NoteModColumn.super.new(self)
 	self.flip = flip or 0
 	self.invert = invert or 0
 	self.angle = 0
 end
 
-function NoteModData:apply(notefield)
+function NoteModColumn:apply(notefield)
 	local keys, width, lanes = notefield.keys, notefield.noteWidth, notefield.lanes
 	
 	for i = 1, keys do
@@ -25,4 +25,4 @@ function NoteModData:apply(notefield)
 	end
 end
 
-return NoteModData
+return NoteModColumn

@@ -33,7 +33,7 @@ function Note:new(time, column, sustaintime, skin)
 
 	self.sustainSegments = Note.defaultSustainSegments
 
-	self.column = column
+	self.column, self.data = column, column -- data is for backward compatibilty
 	self:setSkin(skin)
 	self:setSustainTime(sustaintime)
 end
@@ -125,7 +125,7 @@ end
 
 function Note:setColumn(column)
 	if column == self.column then return end
-	self.column = column
+	self.column, self.data = column, column
 
 	local data = self.skin.notes
 	if not data.disableRgb then

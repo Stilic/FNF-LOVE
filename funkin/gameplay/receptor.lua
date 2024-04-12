@@ -33,7 +33,7 @@ function Receptor:new(x, y, column, skin)
 	self.noteAngles = 0
 	self.lane = nil
 
-	self.column = column
+	self.column, self.data = column, column -- data is for backward compatibilty
 	self:setSkin(skin)
 end
 
@@ -113,7 +113,7 @@ end
 
 function Receptor:setColumn(column)
 	if column == self.column then return end
-	self.column = column
+	self.column, self.data = column, column -- data is for backward compatibilty
 
 	local skin = self.skin
 	if skin.glow then
