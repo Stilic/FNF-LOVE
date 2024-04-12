@@ -12,7 +12,7 @@ Notefield.ratings = {
 function Notefield.getRating(a, b, returnShit)
 	local diff = math.abs(a - b)
 	for i, r in ipairs(Notefield.ratings) do
-		if diff <= (r.time == -1 and Notefield.safeZoneOffset or r.time) then return r, i end
+		if diff <= (r.time < 0 and Notefield.safeZoneOffset or r.time) then return r, i end
 	end
 	return returnShit and Notefield.ratings[#Notefield.ratings] or nil
 end
