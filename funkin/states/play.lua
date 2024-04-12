@@ -252,8 +252,13 @@ function PlayState:enter()
 	self.scoreText.antialiasing = false
 	self:add(self.scoreText)
 
+	local songTime = 0
+	if ClientPrefs.data.timeType == "left" then
+		songTime = game.sound.music:getDuration() - songTime
+	end
+
 	local fontTime = paths.getFont("vcr.ttf", 24)
-	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, "0:00", fontTime, {1, 1, 1}, "left")
+	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, util.formatTime(songTime), fontTime, {1, 1, 1}, "left")
 	self.timeText.outline.width = 2
 	self.timeText.antialiasing = false
 	self.timeText.y = (self.timeArc.y + self.timeArc.width) - self.timeText:getHeight()
@@ -733,7 +738,7 @@ function PlayState:update(dt)
 		if game.keys.justPressed.TWO then self:endSong() end
 		if game.keys.justPressed.ONE then self.botPlay = not self.botPlay end
 		if game.keys.justPressed.THREE then
-			local time = (self.conductor.time / 1000) + (self.conductor.crotchet / 1000) * 4
+			local time = (self.conductor.time + self.conductor.crotchet * 4) / 1000
 			self.conductor.time = time * 1000
 			game.sound.music:seek(time)
 			if self.vocals then self.vocals:seek(time) end
@@ -886,11 +891,17 @@ function PlayState:notefieldPress(notefield, time, column)
 	else
 		local receptor = notefield.receptors[column + 1]
 		if receptor then receptor:play("pressed", true) end
+		if not notefield.ghostTap then self:miss(notefield, column) end
 	end
 end
 
 function PlayState:notefieldRelease(notefield, time, column)
 	local hit, rating, gotNote = notefield:release(time, column, true)
+	if notefield == self.playerNotefield and gotNote and gotNote.sustain and gotNote.hit then
+		self.score = self.score + Notefield.getScoreSustain(time, gotNote)
+		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
+		self:recalculateRating()
+	end
 end
 
 function PlayState:noteMiss(n)
@@ -920,11 +931,44 @@ function PlayState:noteMiss(n)
 			self.health = self.health - 0.0475
 
 			if self.health < 0 then self.health = 0 end
-			self:recalculateRating()
+			self:recalculateRating(); self:popUpScore()
 		end
 	end
 
 	self.scripts:call("postNoteMiss", n)
+end
+
+function PlayState:miss(notefield, column)
+	self.scripts:call("miss", notefield)
+
+	local char = notefield.character
+	local event = self.scripts:event("onMiss", Events.Miss(notefield, column, char))
+
+	if not event.cancelled then
+		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
+
+		if not event.cancelledAnim then
+			char:sing(column, "miss")
+		end
+
+		if notefield == self.playerNotefield then
+			if self.combo >= 10 and not event.cancelledSadGF and self.gf.__animations['sad'] then
+				self.gf:playAnim('sad', true)
+				self.gf.lastHit = PlayState.conductor.currentBeat
+			end
+
+			if self.combo > 0 then self.combo = 0 end
+			self.combo = self.combo - 1
+			self.score = self.score - 100
+			self.misses = self.misses + 1
+			self.health = self.health - 0.0475
+
+			if self.health < 0 then self.health = 0 end
+			self:recalculateRating(); self:popUpScore()
+		end
+	end
+
+	self.scripts:call("postMiss", notefield)
 end
 
 function PlayState:goodNoteHit(n, rating)
@@ -935,7 +979,8 @@ function PlayState:goodNoteHit(n, rating)
 	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating))
 
 	if not event.cancelled then
-		if event.unmuteVocals and self.vocals then self.vocals:setVolume(1) end
+		local isPlayer = table.find(self.playerNotefields, notefield)
+		if event.unmuteVocals and self.vocals and isPlayer then self.vocals:setVolume(1) end
 
 		if not event.cancelledAnim and char then
 			local animType = ''
@@ -952,7 +997,7 @@ function PlayState:goodNoteHit(n, rating)
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			if n.sustain then receptor.strokeTime = -1 end
-			if rating.splash and table.find(self.playerNotefields, notefield) then notefield:spawnSplash(n.column) end
+			if rating.splash and isPlayer then notefield:spawnSplash(n.column) end
 		end
 
 		if self.playerNotefield == notefield and not n.ignoreNote then
@@ -962,6 +1007,7 @@ function PlayState:goodNoteHit(n, rating)
 			self.combo = self.combo + 1
 			self.score = self.score + rating.score
 
+			self.totalPlayed = self.totalPlayed + 1
 			self.totalHit = self.totalHit + rating.mod
 			self:recalculateRating(rating.name)
 		end
@@ -970,12 +1016,21 @@ function PlayState:goodNoteHit(n, rating)
 	self.scripts:call("postGoodNoteHit", n, rating)
 end
 
+function PlayState:popUpScore(rating)
+	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
+	if not event.cancelled then
+		self.judgements.ratingVisible = not event.hideRating
+		self.judgements.comboSprVisible = not event.hideCombo
+		self.judgements.comboNumVisible = not event.hideScore
+		self.judgements:spawn(rating, self.combo)
+	end
+end
+
 local ratingFormat, noRating = "(%s) %s", "?"
 function PlayState:recalculateRating(rating)
 	if rating then
 		local ratingAdd = rating .. "s"
-		self.totalPlayed = self.totalPlayed + 1
-		if self[ratingAdd] then self[ratingAdd] = (self[ratingAdd] or 0) + 1 end
+		self[ratingAdd] = (self[ratingAdd] or 0) + 1
 	end
 
 	local ratingStr = noRating
@@ -1021,13 +1076,7 @@ function PlayState:recalculateRating(rating)
 	self.scoreText.content = self.scoreFormat:gsub("%%(%w+)", vars)
 	self.scoreText:screenCenter("x")
 
-	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
-	if not event.cancelled then
-		self.judgements.ratingVisible = not event.hideRating
-		self.judgements.comboSprVisible = not event.hideCombo
-		self.judgements.comboNumVisible = not event.hideScore
-		self.judgements:spawn(rating, self.combo)
-	end
+	if rating then self:popUpScore(rating) end
 end
 
 function PlayState:tryPause()

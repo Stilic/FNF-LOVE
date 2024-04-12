@@ -22,6 +22,10 @@ function Notefield.checkDiff(note, time)
 		note.time < time + Notefield.safeZoneOffset * note.earlyHitMult
 end
 
+function Notefield.getScoreSustain(time, note)
+	return math.min(time - note.time + Notefield.safeZoneOffset, note.sustainTime) * 600
+end
+
 function Notefield:new(x, y, keys, skin, character)
 	Notefield.super.new(self, x, y)
 
@@ -33,6 +37,7 @@ function Notefield:new(x, y, keys, skin, character)
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound("hitsound")
 	self.downscroll = false -- this just sets scale y backwards
+	self.ghostTap = ClientPrefs.data.ghostTap or false
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
@@ -41,7 +46,9 @@ function Notefield:new(x, y, keys, skin, character)
 	self.drawSizeOffset = 0
 	self.maxNotes = 1028
 
-	self.totalHits = 0
+	self.totalPlayed = 0
+	self.totalHit = 0.0
+	self.score = 0
 	self.misses = 0
 	self.perfects = 0
 	self.sicks = 0
@@ -170,7 +177,7 @@ end
 function Notefield:hit(time, note, force)
 	local sus = note.sustain and note.hit
 	local notetime = sus and note.time + note.sustainTime or note.time
-	local rating = Notefield.getRating(notetime, time, sus)
+	local rating = Notefield.getRating(notetime, sus and math.min(time, notetime) or time, sus)
 	if not rating then return self:miss(note, force) end
 	note.pressed = true
 	note.lastPress = time
@@ -180,11 +187,13 @@ function Notefield:hit(time, note, force)
 		note.hit = true
 
 		local name = rating.name .. "s"
-		self.totalHits = self.totalHits + rating.mod
-		self[name] = (self[name] or 0) + 1
-		(self.hitCallback or __NULL__)(rating, note, force)
-	elseif note.sustain then -- for sustains
+		self.totalPlayed, self.totalHit, self[name] = self.totalPlayed + 1, self.totalHit + rating.mod, (self[name] or 0) + 1
+		self.score = self.score + rating.score
 
+		;(self.hitCallback or __NULL__)(rating, note, force)
+	elseif note.sustain then -- for sustains
+		self.score = self.score + Notefield.getScoreSustain(time, note)
+		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
 	end
 
 	if force or not note.sustain then
@@ -196,17 +205,19 @@ function Notefield:hit(time, note, force)
 end
 
 function Notefield:miss(note, force)
-	if not note.tooLate then
-		table.insert(self.missedNotes, note)
-		note.tooLate = true
+	if not note or not note.tooLate then
+		if note then
+			table.insert(self.missedNotes, note)
+			note.tooLate = true
+		end
 
-		if not note.ignoreNote then
-			self.misses = self.misses + 1
+		if not note or not note.ignoreNote then
+			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
 		end
 		(self.missCallback or __NULL__)(note, force)
 	end
 
-	if force or not note.sustain then
+	if note and (force or not note.sustain) then
 		self:removeNote(note, true)
 	end
 end
@@ -252,6 +263,8 @@ function Notefield:press(time, column, play)
 		if play and self.hitsoundVolume > 0 and self.hitsound then
 			game.sound.play(self.hitsound, self.hitsoundVolume)
 		end
+	elseif not self.ghostTap then
+		self:miss()
 	end
 
 	if play then
@@ -302,7 +315,7 @@ function Notefield:release(time, column, play)
 		end
 	end
 
-	return hit, rating, note
+	return hit, rating, hit and note or nil
 end
 
 function Notefield:update(dt)

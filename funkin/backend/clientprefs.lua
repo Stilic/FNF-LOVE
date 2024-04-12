@@ -8,6 +8,7 @@ ClientPrefs.data = {
 	autoPause = true,
 	downScroll = false,
 	middleScroll = false,
+	ghostTap = true,
 	noteSplash = true,
 	backgroundDim = 0,
 	botplayMode = false,

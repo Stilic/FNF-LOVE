@@ -14,6 +14,7 @@ local data = {
 	end, percentvalue},
 	{"downScroll",   "Down Scroll",   "boolean"},
 	{"middleScroll", "Middle Scroll", "boolean"},
+	{"ghostTap", "Ghost Tap", "boolean"},
 	{"noteSplash",   "Note Splash",   "boolean"},
 	{"botplayMode",  "Botplay",       "boolean"},
 	{"playback", "Playback", "number", function(add)
