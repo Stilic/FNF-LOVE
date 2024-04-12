@@ -1235,7 +1235,10 @@ function PlayState:goodNoteHit(n, rating)
 
 	if not event.cancelled then
 		local isPlayer = table.find(self.playerNotefields, notefield)
-		if event.unmuteVocals and self.vocals and isPlayer then self.vocals:setVolume(1) end
+		if event.unmuteVocals and self.vocals
+			and (isPlayer or not self.dadVocals) then
+			self.vocals:setVolume(1)
+		end
 
 		if not event.cancelledAnim and char then
 			local animType = ''
