@@ -924,8 +924,8 @@ function PlayState:noteMiss(n)
 				self.gf.lastHit = PlayState.conductor.currentBeat
 			end
 
-			if self.combo > 0 then self.combo = 0 end
-			self.combo = self.combo - 1
+			self.totalPlayed = self.totalPlayed + 1
+			self.combo = math.max(self.combo - 1, 0)
 			self.score = self.score - 100
 			self.misses = self.misses + 1
 			self.health = self.health - 0.0475
@@ -957,8 +957,8 @@ function PlayState:miss(notefield, column)
 				self.gf.lastHit = PlayState.conductor.currentBeat
 			end
 
-			if self.combo > 0 then self.combo = 0 end
-			self.combo = self.combo - 1
+			self.totalPlayed = self.totalPlayed + 1
+			self.combo = math.max(self.combo - 1, 0)
 			self.score = self.score - 100
 			self.misses = self.misses + 1
 			self.health = self.health - 0.0475
@@ -1003,12 +1003,10 @@ function PlayState:goodNoteHit(n, rating)
 		if self.playerNotefield == notefield and not n.ignoreNote then
 			self.health = math.min(self.health + 0.023, 2)
 
-			if self.combo < 0 then self.combo = 0 end
-			self.combo = self.combo + 1
+			self.combo = math.max(self.combo, 0) + 1
 			self.score = self.score + rating.score
 
-			self.totalPlayed = self.totalPlayed + 1
-			self.totalHit = self.totalHit + rating.mod
+			self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
 			self:recalculateRating(rating.name)
 		end
 	end
