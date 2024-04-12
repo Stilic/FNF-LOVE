@@ -1,3 +1,7 @@
+function onNoteHit(event)
+	event.enableCamZooming = false
+end
+
 local target
 function onCameraMove(event)
 	if event.target == target then return end

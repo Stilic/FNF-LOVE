@@ -824,14 +824,9 @@ function PlayState:update(dt)
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
 	end
 
-	local zoom = false
 	for _, notefield in ipairs(self.enemyNotefields) do
-		zoom = self:doNotefieldBot(notefield) and true or zoom
+		self:doNotefieldBot(notefield)
 	end
-	if zoom then
-		self.camZooming = true
-	end
-
 	if self.botPlay then
 		for _, notefield in ipairs(self.playerNotefields) do
 			self:doNotefieldBot(notefield)
@@ -1230,11 +1225,14 @@ function PlayState:goodNoteHit(n, rating)
 	self.scripts:call("goodNoteHit", n, rating)
 
 	local notefield = n.parent
-	local char = notefield.character
-	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating))
+	local char, isPlayer = notefield.character, table.find(self.playerNotefields, notefield)
+	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating, not isPlayer))
 
 	if not event.cancelled then
-		local isPlayer = table.find(self.playerNotefields, notefield)
+		if event.enableCamZooming then
+			self.camZooming = true
+		end
+
 		if event.unmuteVocals and self.vocals
 			and (isPlayer or not self.dadVocals) then
 			self.vocals:setVolume(1)
