@@ -12,7 +12,7 @@ local axes = {
 }
 Receptor.axes = axes
 
-function Receptor:new(x, y, data, skin)
+function Receptor:new(x, y, column, skin)
 	Receptor.super.new(self, x, y)
 
 	self.holdTime = 0
@@ -33,7 +33,7 @@ function Receptor:new(x, y, data, skin)
 	self.noteAngles = 0
 	self.lane = nil
 
-	self.data = data
+	self.column = column
 	self:setSkin(skin)
 end
 
@@ -102,24 +102,24 @@ end
 function Receptor:setSkin(skin)
 	if skin == self.skin or not skin.receptors then return end
 
-	local col = self.data
-	self.skin, self.data = skin, nil
+	local col = self.column
+	self.skin, self.column = skin, nil
 	Note.loadSkinData(self, skin, "receptors", col)
 	self.__shaderAnimations.static = self.shader
 
-	if col then self:setData(col) end
+	if col then self:setColumn(col) end
 	self:play("static")
 end
 
-function Receptor:setData(data)
-	if data == self.data then return end
-	self.data = data
+function Receptor:setColumn(column)
+	if column == self.column then return end
+	self.column = column
 
 	local skin = self.skin
 	if skin.glow then
 		self.glow = Sprite()
 		self.glow.offset.z, self.glow.origin.z, self.glow.__render = 0, 0, __NIL__
-		Note.loadSkinData(self.glow, skin, "glow", data)
+		Note.loadSkinData(self.glow, skin, "glow", column)
 	end
 
 	table.clear(self.__splashAnimations)
@@ -139,9 +139,9 @@ function Receptor:spawnSplash()
 	if not splash then
 		splash = ActorSprite()
 		splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
-		Note.loadSkinData(splash, self.skin, "splashes", self.data)
+		Note.loadSkinData(splash, self.skin, "splashes", self.column)
 	end
-	splash.data, splash.parent = self.data, self
+	splash.column, splash.parent = self.column, self
 	splash.x, splash.y, splash.z = self._x, self._y, self._z
 
 	Receptor.play(splash, self.__splashAnimations[math.random(1, #self.__splashAnimations)], true)
@@ -193,12 +193,12 @@ function Receptor:update(dt)
 end
 
 function Receptor:play(anim, force, frame, dontShader)
-	local toPlay = anim .. '-note' .. self.data
+	local toPlay = anim .. '-note' .. self.column
 	local realAnim = self.__animations[toPlay] and toPlay or anim
 	Sprite.play(self, realAnim, force, frame)
 
 	if anim == "confirm" and self.glow then
-		local anim, toPlay = 'glow', 'glop-note' .. self.data
+		local anim, toPlay = 'glow', 'glop-note' .. self.column
 		local realAnim = self.glow.__animations[toPlay] and toPlay or anim
 		Sprite.play(self.glow, realAnim, force, frame)
 		Note.updateHitbox(self.glow)

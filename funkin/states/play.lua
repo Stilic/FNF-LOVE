@@ -1026,7 +1026,7 @@ function PlayState:doNotefieldBot(notefield)
 			if note ~= true then
 				local notetime = note.time + math.max(note.sustainTime, 0.14)
 				if contime >= notetime then
-					self:notefieldRelease(notefield, notetime, note.data)
+					self:notefieldRelease(notefield, notetime, note.column)
 				end
 			elseif notefield.lastPress[j] - 0.1 > contime then
 				self:notefieldRelease(notefield, contime, j - 1)
@@ -1040,7 +1040,7 @@ function PlayState:doNotefieldBot(notefield)
 		if not note or contime < note.time then break end
 
 		if not note.hit and not note.tooLate and not note.ignoreNote then
-			self:notefieldPress(notefield, note.time, note.data)
+			self:notefieldPress(notefield, note.time, note.column)
 		end
 
 		local newsize = #notes
@@ -1049,8 +1049,8 @@ function PlayState:doNotefieldBot(notefield)
 	end
 end
 
-function PlayState:notefieldPress(notefield, time, data)
-	local hit, rating, gotNotes = notefield:press(time, data, false)
+function PlayState:notefieldPress(notefield, time, column)
+	local hit, rating, gotNotes = notefield:press(time, column, false)
 	local isPlayer = table.find(self.playerNotefields, notefield)
 	if hit then
 		if notefield.hitsound and notefield.hitsoundVolume > 0 then
@@ -1058,15 +1058,15 @@ function PlayState:notefieldPress(notefield, time, data)
 		end
 		for _, n in ipairs(gotNotes) do self:goodNoteHit(n, rating) end
 	else
-		local receptor = notefield.receptors[data + 1]
+		local receptor = notefield.receptors[column + 1]
 		if receptor then receptor:play("pressed", true) end
-		if not notefield.ghostTap then self:miss(notefield, data) end
+		if not notefield.ghostTap then self:miss(notefield, column) end
 	end
 	return hit
 end
 
-function PlayState:notefieldRelease(notefield, time, data)
-	local hit, rating, gotNote = notefield:release(time, data, true)
+function PlayState:notefieldRelease(notefield, time, column)
+	local hit, rating, gotNote = notefield:release(time, column, true)
 	if notefield == self.playerNotefield and gotNote and gotNote.sustain and gotNote.hit then
 		self.score = self.score + Notefield.getScoreSustain(time, gotNote)
 		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
@@ -1085,7 +1085,7 @@ function PlayState:noteMiss(n)
 		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
 
 		if not event.cancelledAnim then
-			char:sing(n.data, "miss")
+			char:sing(n.column, "miss")
 		end
 
 		if notefield == self.playerNotefield then
@@ -1108,17 +1108,17 @@ function PlayState:noteMiss(n)
 	self.scripts:call("postNoteMiss", n)
 end
 
-function PlayState:miss(notefield, data)
+function PlayState:miss(notefield, column)
 	self.scripts:call("miss", notefield)
 
 	local char = notefield.character
-	local event = self.scripts:event("onMiss", Events.Miss(notefield, data, char))
+	local event = self.scripts:event("onMiss", Events.Miss(notefield, column, char))
 
 	if not event.cancelled then
 		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
 
 		if not event.cancelledAnim then
-			char:sing(data, "miss")
+			char:sing(column, "miss")
 		end
 
 		if notefield == self.playerNotefield then
@@ -1165,15 +1165,15 @@ function PlayState:goodNoteHit(n, rating)
 				animType = 'alt'
 			end
 
-			char:sing(n.data, animType)
+			char:sing(n.column, animType)
 			if n.sustain then char.strokeTime = -1 end
 		end
 
-		local receptor = notefield.receptors[n.data + 1]
+		local receptor = notefield.receptors[n.column + 1]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			if n.sustain then receptor.strokeTime = -1 end
-			if rating.splash and isPlayer then notefield:spawnSplash(n.data) end
+			if rating.splash and isPlayer then notefield:spawnSplash(n.column) end
 		end
 
 		if self.playerNotefield == notefield and not n.ignoreNote then

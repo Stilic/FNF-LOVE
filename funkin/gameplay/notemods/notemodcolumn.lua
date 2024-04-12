@@ -9,7 +9,7 @@ end
 
 function NoteModColumn:apply(notefield)
 	local keys, width, lanes = notefield.keys, notefield.noteWidth, notefield.lanes
-
+	
 	for i = 1, keys do
 		local lane = lanes[i]
 		NoteModifier.prepare(lane, "x", lane.x)

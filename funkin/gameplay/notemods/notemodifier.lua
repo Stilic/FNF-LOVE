@@ -2,17 +2,11 @@ local NoteModifier = Classic:extend("NoteModifier")
 
 local ocache, prepare = {}
 function prepare(o, i, v)
-	if v == nil then
-		for i, v in pairs(i) do prepare(o, i, v) end
-		return
-	end
+	if v == nil then for i, v in pairs(i) do prepare(o, i, v) end return end
 	local c = ocache[o]
-	if not c then
-		c = {}; ocache[o] = c
-	end
+	if not c then c = {}; ocache[o] = c end
 	if not c[i] then c[i] = v end
 end
-
 NoteModifier.prepare = prepare
 
 function NoteModifier.discard()
@@ -37,10 +31,7 @@ function NoteModifier:new()
 end
 
 function NoteModifier:update(curBeat)
-	if self.dontUpdatePercent then
-		self._lastBeat = nil
-		return
-	end
+	if self.dontUpdatePercent then self._lastBeat = nil return end
 	if self._lastBeat then
 		if self.percent > self.strength then
 			self.percent = math.max(self.percent - (curBeat - self._lastBeat) * self.approach, self.strength)
@@ -56,7 +47,7 @@ function NoteModifier:apply(notefield)
 	
 end
 
-function NoteModifier:applyPath(path, curBeat, pos, notefield, data)
+function NoteModifier:applyPath(path, curBeat, pos, notefield, column)
 	
 end
 ]]
