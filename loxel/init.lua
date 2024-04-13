@@ -27,7 +27,7 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		restrictedfs = true
 
 		local lovefs = love.filesystem
-		love.filesystem = setmetatable(require "lib.nativefs", {
+		love.filesystem = setmetatable(require "loxel.lib.nativefs", {
 			__index = lovefs
 		})
 
