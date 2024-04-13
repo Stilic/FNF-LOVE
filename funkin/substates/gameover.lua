@@ -1,4 +1,5 @@
 local GameOverSubstate = Substate:extend("GameOverSubstate")
+GameOverSubstate.deaths = 0
 
 function GameOverSubstate.resetVars()
 	GameOverSubstate.characterName = 'bf-dead'
@@ -93,6 +94,7 @@ function GameOverSubstate:update(dt)
 			self.scripts:call("gameOverQuit")
 
 			util.playMenuMusic()
+			GameOverSubstate.deaths = 0
 			game.switchState(FreeplayState())
 		end
 

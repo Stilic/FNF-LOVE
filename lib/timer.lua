@@ -118,7 +118,7 @@ function Timer:script(f)
 end
 
 local function func_tween(tween, self, len, subject, target, method, after,
-						  setters_and_getters, ...)
+						  setters_and_getters, delay, ...)
 	-- recursively collects fields that are defined in both subject and target into a flat list
 	-- re-use of ref is confusing
 	local to_func_tween = {}
@@ -169,26 +169,29 @@ local function func_tween(tween, self, len, subject, target, method, after,
 		{...}
 
 	local last_s = 0
-	local handle = self:during(len, function(dt)
-		t = t + dt
-		local s = method(math.min(1, t / len), unpack(args))
-		local ds = s - last_s
-		last_s = s
-		for _, info in ipairs(payload) do
-			local ref, key, delta = unpack(info)
-			ref[key] = ref[key] + delta * ds
-		end
-		for ref, t in pairs(to_func_tween) do
-			for key, value in pairs(t) do
-				local setter_args, setter = unpack(value)
-				if not pcall(function()
-						setter(ref, unpack(setter_args))
-					end) then
-					setter(unpack(setter_args))
+	local handle
+	handle = self:after((delay or 0), function()
+		handle.timer = self:during(len, function(dt)
+			t = t + dt
+			local s = method(math.min(1, t / len), unpack(args))
+			local ds = s - last_s
+			last_s = s
+			for _, info in ipairs(payload) do
+				local ref, key, delta = unpack(info)
+				ref[key] = ref[key] + delta * ds
+			end
+			for ref, t in pairs(to_func_tween) do
+				for key, value in pairs(t) do
+					local setter_args, setter = unpack(value)
+					if not pcall(function()
+							setter(ref, unpack(setter_args))
+						end) then
+						setter(unpack(setter_args))
+					end
 				end
 			end
-		end
-	end, after)
+		end, after)
+	end)
 	handle.subject = subject
 	return handle
 end

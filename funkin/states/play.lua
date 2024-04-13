@@ -1070,7 +1070,7 @@ function PlayState:miss(notefield, column)
 			end
 
 			self.totalPlayed = self.totalPlayed + 1
-			self.combo = math.min(self.combo - 1, 0)
+			self.combo = math.min(self.combo - 1, 0) - 1
 			self.score = self.score - 100
 			self.misses = self.misses + 1
 			self.health = self.health - 0.0475
@@ -1428,12 +1428,14 @@ function PlayState:endSong(skip)
 		else
 			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
 			game.switchState(StoryMenuState())
+			GameOverSubstate.deaths = 0
 
 			util.playMenuMusic()
 		end
 	else
 		game.camera:unfollow()
 		game.switchState(FreeplayState())
+		GameOverSubstate.deaths = 0
 
 		util.playMenuMusic()
 	end

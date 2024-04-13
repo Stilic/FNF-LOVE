@@ -26,6 +26,24 @@ function PauseSubstate:new()
 		item.targetY = i
 		self.grpShitMenu:add(item)
 	end
+
+	local txt, font = PlayState.getSongName() or "?", paths.getFont("vcr.ttf", 32)
+	self.songText = Text(0, 15, txt, font)
+	self.songText.x = game.width - self.songText:getWidth() - 28
+	self.songText.alpha = 0
+	self:add(self.songText)
+
+	txt = (PlayState.songDifficulty or "?"):upper()
+	self.diffText = Text(0, 47, txt, font)
+	self.diffText.x = game.width - self.diffText:getWidth() - 28
+	self.diffText.alpha = 0
+	self:add(self.diffText)
+
+	txt = "Blue balled: " .. tostring(GameOverSubstate.deaths)
+	self.deathsText = Text(0, 79, txt, font)
+	self.deathsText.x = game.width - self.deathsText:getWidth() - 28
+	self.deathsText.alpha = 0
+	self:add(self.deathsText)
 end
 
 function PauseSubstate:loadMusic()
@@ -38,6 +56,12 @@ function PauseSubstate:enter()
 	self.music:fade(6, 0, ClientPrefs.data.menuMusicVolume / 100)
 
 	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
+	Timer.tween(0.4, self.songText, {y = self.songText.y + 5, alpha = 1},
+		'in-out-quart')
+	Timer.tween(0.4, self.diffText, {y = self.diffText.y + 5, alpha = 1},
+		'in-out-quart', nil, 0.4)
+	Timer.tween(0.4, self.deathsText, {y = self.deathsText.y + 5, alpha = 1},
+		'in-out-quart', nil, 0.8)
 
 	self.throttles = {}
 	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
@@ -123,6 +147,7 @@ function PauseSubstate:update(dt)
 				else
 					game.switchState(FreeplayState())
 				end
+				GameOverSubstate.deaths = 0
 			end
 		})
 	end
