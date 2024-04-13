@@ -2,7 +2,7 @@
 
 ![](art/funkin_logo.png)
 
-<center>A port of <a href="https://funkin.me">Friday Night Funkin'</a> to the <a href="https://love2d.org">LÔVE</a> game engine.</center>
+<p align="center">A port of <a href="https://funkin.me">Friday Night Funkin'</a> to the <a href="https://love2d.org">LÔVE</a> game engine.</p>
 
 ## <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="18"> Discord Server
 
