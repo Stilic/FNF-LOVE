@@ -1009,7 +1009,7 @@ end
 
 function PlayState:notefieldRelease(notefield, time, column)
 	local hit, rating, gotNote = notefield:release(time, column, true)
-	if notefield == self.playerNotefield and gotNote and gotNote.sustain and gotNote.hit then
+	if notefield == self.playerNotefield and rating and gotNote and gotNote.sustain and gotNote.hit then
 		self.score = self.score + Notefield.getScoreSustain(time, gotNote)
 		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
 		self:recalculateRating()
@@ -1114,10 +1114,10 @@ function PlayState:goodNoteHit(n, rating)
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			if n.sustain then receptor.strokeTime = -1 end
-			if rating.splash and isPlayer then notefield:spawnSplash(n.column) end
+			if rating and rating.splash and isPlayer then notefield:spawnSplash(n.column) end
 		end
 
-		if self.playerNotefield == notefield and not n.ignoreNote then
+		if rating and self.playerNotefield == notefield and not n.ignoreNote then
 			self.health = math.min(self.health + 0.023, 2)
 
 			self.combo = math.max(self.combo, 0) + 1

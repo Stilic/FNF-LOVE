@@ -162,8 +162,8 @@ function Notefield:getNotes(time, column)
 	while i > 1 and offset < notes[i - 1].time do i = i - 1 end
 	while i <= size do
 		local n = notes[i]
-		local dont = n.tooLate or n.hit
-		if not Notefield.checkDiff(n, time) and not dont then break end
+		local dont = n.tooLate or n.wasGoodHit
+		if (n.lastPress or n.time) > time and not Notefield.checkDiff(n, time) and not dont then break end
 		if not dont and n.column == column then
 			table.insert(gotNotes, n)
 		end
@@ -176,8 +176,8 @@ end
 function Notefield:hit(time, note, force)
 	local sus = note.sustain and note.hit
 	local notetime = sus and note.time + note.sustainTime or note.time
-	local rating = Notefield.getRating(notetime, sus and math.min(time, notetime) or time, sus)
-	if not rating then return self:miss(note, force) end
+	local rating = Notefield.getRating(notetime, sus and math.min(time, notetime) or time)
+	if not rating and not sus then return self:miss(note, force) end
 	note.pressed = true
 	note.lastPress = time
 
@@ -189,8 +189,9 @@ function Notefield:hit(time, note, force)
 		self.totalPlayed, self.totalHit, self[name] = self.totalPlayed + 1, self.totalHit + rating.mod, (self[name] or 0) + 1
 		self.score = self.score + rating.score
 
-		; (self.hitCallback or __NULL__)(rating, note, force)
+		;(self.hitCallback or __NULL__)(rating, note, force)
 	elseif note.sustain then -- for sustains
+		if not rating then return end
 		self.score = self.score + Notefield.getScoreSustain(time, note)
 		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
 	end
@@ -258,6 +259,9 @@ function Notefield:press(time, column, play)
 		rating = self:hit(time, coolNote)
 		isSustain = coolNote.sustain ~= nil
 		self.pressed[fixedColumn] = coolNote
+		if coolNote.sustain and coolNote.wasGoodHit then
+			rating = nil
+		end
 
 		if play and self.hitsoundVolume > 0 and self.hitsound then
 			game.sound.play(self.hitsound, self.hitsoundVolume)
@@ -345,6 +349,7 @@ function Notefield:update(dt)
 
 	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
 
+	-- this looks shit please rewrite this
 	local notes = self.notes
 	local offset, i = time - Notefield.safeZoneOffset, 1
 	while i <= #notes do
@@ -353,11 +358,15 @@ function Notefield:update(dt)
 
 		if not note.hit and not note.tooLate then
 			self:miss(note)
-		elseif note.sustain and offset > note.time + note.sustainTime then
-			if note.hit then
-				self:hit(offset, note, true)
+		elseif not note.pressed and note.sustain and offset > (note.lastPress or note.time) then
+			local yeah = time > note.time + note.sustainTime
+			if not note.tooLate and note.hit and yeah then
+				self:hit(time, note, true)
 			else
-				self:miss(note, true)
+				self:miss(note, yeah)
+			end
+			if not yeah then
+				i = i + 1
 			end
 		else
 			i = i + 1

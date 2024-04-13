@@ -27,9 +27,10 @@ function Note:new(time, column, sustaintime, skin)
 	self.canBeHit, self.wasGoodHit, self.tooLate, self.ignoreNote = true, false, false, false
 	self.priority, self.earlyHitMult, self.lateHitMult = 0, 1, 1
 	self.showNote, self.showNoteOnHit = true, false
-	self.hit = false
 	self.type = ""
 	self.group = nil
+
+	self.hit, self.pressed, self.lastPress = false, false, nil
 
 	self.sustainSegments = Note.defaultSustainSegments
 
@@ -254,10 +255,10 @@ function Note:__render(camera)
 		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
-	local v = values.size
+	local v, almult = values.size, self.tooLate and .6 or 1
 	rot.x, rot.y, rot.z = rot.x + values.rotX, rot.y + values.rotY, rot.z + values.rotZ
 	sc.x, sc.y, sc.z = sc.x * values.sizeX * v, sc.y * values.sizeY * v, sc.z * values.sizeZ * v
-	self.alpha = pal * values.alpha
+	self.alpha = pal * values.alpha * almult
 
 	--[[
 		I'm aware that if the texture size height or scale are too small, it'll be huge draw calls
@@ -299,7 +300,7 @@ function Note:__render(camera)
 
 				tex:setFilter(susend.antialiasing and "linear" or "nearest")
 				love.graphics.setShader(susend.shader or defaultShader); love.graphics.setBlendMode(susend.blend)
-				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha)
+				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha * almult)
 				susMesh:setTexture(tex)
 
 				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, col)
@@ -360,7 +361,7 @@ function Note:__render(camera)
 
 				tex:setFilter(sus.antialiasing and "linear" or "nearest")
 				love.graphics.setShader(sus.shader or defaultShader); love.graphics.setBlendMode(sus.blend)
-				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha)
+				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha * almult)
 				susMesh:setTexture(tex)
 
 				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, col)
