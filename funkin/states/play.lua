@@ -114,20 +114,7 @@ function PlayState:enter()
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs", "songs/" .. songName)
 
-	if Discord then
-		local detailsText = "Freeplay"
-		if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-		local diff = PlayState.defaultDifficulty
-		if PlayState.songDifficulty ~= "" then
-			diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-		end
-
-		Discord.changePresence({
-			details = detailsText,
-			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
-		})
-	end
+	if Discord then self:updateDiscordRPC() end
 
 	self.scripts:set("bpm", PlayState.conductor.bpm)
 	self.scripts:set("crotchet", PlayState.conductor.crotchet)
@@ -580,25 +567,7 @@ end
 function PlayState:step(s)
 	if not self.startingSong then
 		if Discord and self.startedCountdown and game.sound.music:isPlaying() then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local startTimestamp = os.time(os.date("*t"))
-			local endTimestamp = startTimestamp +
-				game.sound.music:getDuration()
-			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = detailsText,
-				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
-				startTimestamp = math.floor(startTimestamp),
-				endTimestamp = math.floor(endTimestamp)
-			})
+			coroutine.wrap(self.updateDiscordRPC)(self)
 		end
 
 		self.scripts:set("curStep", s)
@@ -649,42 +618,7 @@ function PlayState:section(s)
 end
 
 function PlayState:focus(f)
-	if Discord then
-		if f then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local startTimestamp = os.time(os.date("*t"))
-			local endTimestamp = startTimestamp +
-				game.sound.music:getDuration()
-			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = detailsText,
-				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
-				startTimestamp = math.floor(startTimestamp),
-				endTimestamp = math.floor(endTimestamp)
-			})
-		else
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = "Paused - " .. detailsText,
-				state = PlayState.getSongName() .. ' - [' .. diff .. ']'
-			})
-		end
-	end
+	if Discord then self:updateDiscordRPC(not f) end
 end
 
 function PlayState:executeCutsceneEvent(event, isEnd)
@@ -1390,27 +1324,7 @@ function PlayState:closeSubstate()
 
 		PlayState.conductor.time = game.sound.music:tell() * 1000
 
-		if Discord then
-			local detailsText = "Freeplay"
-			if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
-
-			local startTimestamp = os.time(os.date("*t"))
-			local endTimestamp = startTimestamp +
-				game.sound.music:getDuration()
-			endTimestamp = endTimestamp - PlayState.conductor.time / 1000
-
-			local diff = PlayState.defaultDifficulty
-			if PlayState.songDifficulty ~= "" then
-				diff = PlayState.songDifficulty:gsub("^%l", string.upper)
-			end
-
-			Discord.changePresence({
-				details = detailsText,
-				state = PlayState.getSongName() .. ' - [' .. diff .. ']',
-				startTimestamp = math.floor(startTimestamp),
-				endTimestamp = math.floor(endTimestamp)
-			})
-		end
+		if Discord then self:updateDiscordRPC() end
 	end
 
 	if self.buttons then
@@ -1492,7 +1406,7 @@ function PlayState:endSong(skip)
 			}
 			game.sound.music:stop()
 
-			if love.system.getDevice() == 'Desktop' then
+			if Discord then
 				local detailsText = "Freeplay"
 				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
@@ -1518,6 +1432,40 @@ function PlayState:endSong(skip)
 	end
 
 	self.scripts:call("postEndSong")
+end
+
+function PlayState:updateDiscordRPC(paused)
+	local detailsText = "Freeplay"
+	if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+
+	local diff = PlayState.defaultDifficulty
+	if PlayState.songDifficulty ~= "" then
+		diff = PlayState.songDifficulty:gsub("^%l", string.upper)
+	end
+
+	if paused then
+		Discord.changePresence({
+			details = "Paused - " .. detailsText,
+			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+		})
+		return
+	end
+
+	if self.startingSong or not game.sound.music or not game.sound.music:isPlaying() then
+		Discord.changePresence({
+			details = detailsText,
+			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+		})
+	else
+		local startTimestamp = os.time(os.date("*t"))
+		local endTimestamp = (startTimestamp + game.sound.music:getDuration()) - PlayState.conductor.time / 1000
+		Discord.changePresence({
+			details = detailsText,
+			state = PlayState.getSongName() .. ' - [' .. diff .. ']',
+			startTimestamp = math.floor(startTimestamp),
+			endTimestamp = math.floor(endTimestamp)
+		})
+	end
 end
 
 function PlayState:leave()
