@@ -11,13 +11,13 @@ ActorSprite:implement(Sprite)
 ActorSprite.vertexFormat = {
 	{"VertexPosition", "float", 2},
 	{"VertexTexCoord", "float", 3},
-	{"VertexColor", "byte", 4}
+	{"VertexColor",    "byte",  4}
 }
 
 local defaultShader
 function ActorSprite.init()
 	if defaultShader then return end
-	defaultShader = love.graphics.newShader[[
+	defaultShader = love.graphics.newShader [[
 		uniform Image MainTex;
 		void effect() {
 			love_PixelColor = Texel(MainTex, VaryingTexCoord.xy / VaryingTexCoord.z) * VaryingColor;

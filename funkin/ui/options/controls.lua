@@ -36,7 +36,7 @@ if Project.DEBUG_MODE then
 end
 
 local Controls = Settings:base("Controls", data)
-Controls.binds = 2--3
+Controls.binds = 2 --3
 Controls.titleWidth = 1 / 3
 
 function Controls:onLeaveTab(id)

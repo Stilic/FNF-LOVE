@@ -42,7 +42,7 @@ function ActorGroup:__drawNestGroup(members, camera, list, x2, y2, sf, force, zo
 				local x, y, w, h, sx, sy, ox, oy = member:_getBoundary()
 
 				if member:_isOnScreen(x, y, w, h, sx, sy, ox, oy,
-					sf2 and sf2.x or 1, sf2 and sf2.y or 1, camera)
+						sf2 and sf2.x or 1, sf2 and sf2.y or 1, camera)
 				then
 					table.insert(list, member)
 				end
@@ -99,8 +99,11 @@ function ActorGroup:__render(camera)
 				pmrx, pmry, pmrz = mmmr.x, mmmr.y, mmmr.z
 				mmmr.x, mmmr.y, mmmr.z = pmrx + mmrx, pmry + mmry, pmrz + mmrz
 			end
-			if pma then member.memberAngles = pma + mma
-			else member.angle = pa + mma end
+			if pma then
+				member.memberAngles = pma + mma
+			else
+				member.angle = pa + mma
+			end
 			if affectAngle then
 				if mrot then
 					prx, pry, prz = mrot.x, mrot.y, mrot.z
@@ -116,7 +119,9 @@ function ActorGroup:__render(camera)
 			if mmms then
 				pmsx, pmsy, pmsz = mmms.x, mmms.y, mmms.z
 				mmms.x, mmms.y, mmms.z = pmsx * mmsx, pmsy * mmsy, pmsz * mmsz
-			else msc.x, msc.y, msc.z = psx * mmsx, psy * mmsy, psz * mmsz end
+			else
+				msc.x, msc.y, msc.z = psx * mmsx, psy * mmsy, psz * mmsz
+			end
 			if affectScale then
 				msc.x, msc.y, msc.z = msc.x * sx, msc.y * sy, msc.z * sz
 			end

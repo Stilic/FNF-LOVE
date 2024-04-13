@@ -6,8 +6,8 @@ function NoteMissEvent:new(note, character)
 	NoteMissEvent.super.new(self)
 
 	self.cancelledAnim = false
-    self.muteVocals = true
-    self.cancelledSadGF = false
+	self.muteVocals = true
+	self.cancelledSadGF = false
 
 	self.note = note
 	self.character = character
@@ -22,7 +22,7 @@ function NoteMissEvent:cancelMuteVocals()
 end
 
 function NoteMissEvent:cancelSadGF()
-    self.cancelledSadGF = true
+	self.cancelledSadGF = true
 end
 
 return NoteMissEvent

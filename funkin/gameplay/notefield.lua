@@ -2,11 +2,11 @@ local Notefield = ActorGroup:extend("Notefield")
 
 Notefield.safeZoneOffset = 10 / 60
 Notefield.ratings = {
-	{name = "perfect",	time = 0.021,			score = 400, splash = true,  mod = 1.0},
-	{name = "sick",		time = 0.033,			score = 350, splash = true,  mod = 0.98},
-	{name = "good",		time = 0.091,			score = 200, splash = false, mod = 0.7},
-	{name = "bad",		time = 0.133,			score = 100, splash = false, mod = 0.4},
-	{name = "shit",		time = -1,				score = 50,  splash = false, mod = 0.2}
+	{name = "perfect", time = 0.021, score = 400, splash = true,  mod = 1.0},
+	{name = "sick",    time = 0.033, score = 350, splash = true,  mod = 0.98},
+	{name = "good",    time = 0.091, score = 200, splash = false, mod = 0.7},
+	{name = "bad",     time = 0.133, score = 100, splash = false, mod = 0.4},
+	{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
 }
 
 function Notefield.getRating(a, b, returnShit)
@@ -189,7 +189,7 @@ function Notefield:hit(time, note, force)
 		self.totalPlayed, self.totalHit, self[name] = self.totalPlayed + 1, self.totalHit + rating.mod, (self[name] or 0) + 1
 		self.score = self.score + rating.score
 
-		;(self.hitCallback or __NULL__)(rating, note, force)
+		; (self.hitCallback or __NULL__)(rating, note, force)
 	elseif note.sustain then -- for sustains
 		self.score = self.score + Notefield.getScoreSustain(time, note)
 		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod

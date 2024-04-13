@@ -18,7 +18,7 @@ function Actor:new(x, y, z)
 	self.origin.z = 0
 	self.scale.z = 1
 	self.zoom.z = 1
- 
+
 	self.moves = false
 	self.velocity.z = 0
 	self.acceleration.z = 0

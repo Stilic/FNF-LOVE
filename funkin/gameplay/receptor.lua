@@ -91,11 +91,13 @@ function Receptor:setSpline(axis, idx, value, position, tween, ease)
 	}
 
 	local splineAxis = self.noteSplines[axis] or table.new(idx, 0)
-	for i = 1, idx - 1 do splineAxis[i] = splineAxis[i] or {
-		value = Receptor.getDefaultValue(axis, position),
-		position = 0,
-		tween = "linear"
-	} end
+	for i = 1, idx - 1 do
+		splineAxis[i] = splineAxis[i] or {
+			value = Receptor.getDefaultValue(axis, position),
+			position = 0,
+			tween = "linear"
+		}
+	end
 	self.noteSplines[axis], splineAxis[idx] = splineAxis, spline
 end
 
@@ -160,8 +162,8 @@ function Receptor:update(dt)
 
 	if self.strokeTime ~= 0 and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
 		self.__strokeDelta = self.__strokeDelta + dt
-		 if self.__strokeDelta >= 0.13 then
-		 	local time = self.__strokeTime
+		if self.__strokeDelta >= 0.13 then
+			local time = self.__strokeTime
 			self.curFrame, self.animFinished = 1, false
 			if self.glow then
 				self.glow.curFrame, self.glow.animFinished = 1, false
@@ -215,8 +217,12 @@ end
 function Receptor:destroy()
 	Receptor.super.destroy(self)
 	if self.glow then self.glow:destroy() end
-	if self.splashes then for i, splash in ipairs(self.splashes) do splash:destroy(); self.splashes[i] = nil end end
-	if self.__splashCaches then for i, splash in ipairs(self.__splashCaches) do splash:destroy(); self.__splashCaches[i] = nil end end
+	if self.splashes then for i, splash in ipairs(self.splashes) do
+			splash:destroy(); self.splashes[i] = nil
+		end end
+	if self.__splashCaches then for i, splash in ipairs(self.__splashCaches) do
+			splash:destroy(); self.__splashCaches[i] = nil
+		end end
 	self.splashes, self.__splashCaches, self.__splashAnimations = nil
 end
 

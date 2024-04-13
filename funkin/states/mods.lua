@@ -16,7 +16,7 @@ function ModsState:enter()
 	self.bg:screenCenter()
 	self:add(self.bg)
 
-	self.bd = BackDrop(0, 0, game.width, game.height, 72, nil, {0,0,0,0}, 26)
+	self.bd = BackDrop(0, 0, game.width, game.height, 72, nil, {0, 0, 0, 0}, 26)
 	self.bd:setScrollFactor()
 	self.bd.alpha = 0.5
 	self:add(self.bd)

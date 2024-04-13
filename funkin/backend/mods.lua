@@ -33,8 +33,10 @@ function Mods.getMetadata(mods)
 			return json
 		end
 		return {
-			name = "unknown", color = "#1F1F1F",
-			description = "unknown", version = 1
+			name = "unknown",
+			color = "#1F1F1F",
+			description = "unknown",
+			version = 1
 		}
 	end
 

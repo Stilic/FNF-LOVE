@@ -41,7 +41,7 @@ function ProgressArc:update(dt)
 	if self.width ~= self.height then self.height = self.width end
 
 	if self.size ~= self.bg.width or self.size ~= self.bg.height or
-			self.linesize ~= self.bg.line.size then
+		self.linesize ~= self.bg.line.size then
 		self:__updateDimensions()
 	end
 end

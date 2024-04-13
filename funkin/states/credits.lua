@@ -6,54 +6,66 @@ CreditsState.defaultData = {
 		header = "Engine Team",
 		credits = {
 			{
-				name = "Stilic", icon = "stilic", color = "#FFCA45",
+				name = "Stilic",
+				icon = "stilic",
+				color = "#FFCA45",
 				description = "something",
 				social = {
-					{name = "X", text = "@stilic_dev"},
+					{name = "X",      text = "@stilic_dev"},
 					{name = "Github", text = "/Stilic"}
 				}
 			},
 			{
-				name = "Raltyro", icon = "ralty", color = "#FF4545",
+				name = "Raltyro",
+				icon = "ralty",
+				color = "#FF4545",
 				description = "something",
 				social = {
-					{name = "X", text = "@raltyro"},
+					{name = "X",       text = "@raltyro"},
 					{name = "Youtube", text = "@Raltyro"},
-					{name = "Github", text = "/Raltyro"}
+					{name = "Github",  text = "/Raltyro"}
 				}
 			},
 			{
-				name = "Fellyn", icon = "fellyn", color = "#E49CFA",
+				name = "Fellyn",
+				icon = "fellyn",
+				color = "#E49CFA",
 				description = "something",
 				social = {
-					{name = "X", text = "@FellynnLol_"},
+					{name = "X",       text = "@FellynnLol_"},
 					{name = "Youtube", text = "@FellynnMusic_"},
-					{name = "Github", text = "/FellynYukira"}
+					{name = "Github",  text = "/FellynYukira"}
 				}
 			},
 			{
-				name = "Victor Kaoy", icon = "vickaoy", color = "#D1794D",
+				name = "Victor Kaoy",
+				icon = "vickaoy",
+				color = "#D1794D",
 				description = "something",
 				social = {
 					{name = "X", text = "@vk15_"}
 				}
 			},
 			{
-				name = "Blue Colorsin", icon = "bluecolorsin", color = "#2B56FF",
+				name = "Blue Colorsin",
+				icon = "bluecolorsin",
+				color = "#2B56FF",
 				description = "something",
 				social = {
-					{name = "X", text = "@BlueColorsin"},
+					{name = "X",       text = "@BlueColorsin"},
 					{name = "Youtube", text = "@BlueColorsin"},
-					{name = "Github", text = "/BlueColorsin"}
+					{name = "Github",  text = "/BlueColorsin"}
 				}
 			},
 			{
-				name = "Ralsin", icon = "ralsin", color = "#383838",
+				name = "Ralsin",
+				icon = "ralsin",
+				color = "#383838",
 				description = "something",
 				social = {
-					{name = "X", text = "@ralsi_"},
+					{name = "X",       text = "@ralsi_"},
 					{name = "Youtube", text = "@ralsin"},
-					{name = "Github", text = "/Ralsin"}
+					{name = "Github",  text = "/Ralsin"}
 				}
 			}
 		}
@@ -62,34 +74,42 @@ CreditsState.defaultData = {
 		header = "Funkin' Team",
 		credits = {
 			{
-				name = "Ninjamuffin99", icon = "ninjamuffin", color = "#FF392B",
+				name = "Ninjamuffin99",
+				icon = "ninjamuffin",
+				color = "#FF392B",
 				description = "Programmer of Friday Night Funkin'",
 				social = {
-					{name = "X", text = "@ninja_muffin99"},
+					{name = "X",       text = "@ninja_muffin99"},
 					{name = "Youtube", text = "@camerontaylor5970"},
-					{name = "Github", text = "/ninjamuffin99"}
+					{name = "Github",  text = "/ninjamuffin99"}
 				}
 			},
 			{
-				name = "Phantom Arcade", icon = "phantomarcade", color = "#EBC73B",
+				name = "Phantom Arcade",
+				icon = "phantomarcade",
+				color = "#EBC73B",
 				description = "Animator of Friday Night Funkin'",
 				social = {
-					{name = "X", text = "@PhantomArcade3K"},
+					{name = "X",       text = "@PhantomArcade3K"},
 					{name = "Youtube", text = "@PhantomArcade"}
 				}
 			},
 			{
-				name = "EvilSk8r", icon = "evilsk8r", color = "#5EED3E",
+				name = "EvilSk8r",
+				icon = "evilsk8r",
+				color = "#5EED3E",
 				description = "Artist of Friday Night Funkin'",
 				social = {
 					{name = "X", text = "@evilsk8r"}
 				}
 			},
 			{
-				name = "Kawai Sprite", icon = "kawaisprite", color = "#4185FA",
+				name = "Kawai Sprite",
+				icon = "kawaisprite",
+				color = "#4185FA",
 				description = "Musician of Friday Night Funkin'",
 				social = {
-					{name = "X", text = "@kawaisprite"},
+					{name = "X",       text = "@kawaisprite"},
 					{name = "Youtube", text = "@KawaiSprite"}
 				}
 			}
@@ -116,7 +136,7 @@ function CreditsState:enter()
 	self.bg:setScrollFactor()
 	self:add(self.bg)
 
-	self.bd = BackDrop(0, 0, game.width, game.height, 72, nil, {0,0,0,0}, 26)
+	self.bd = BackDrop(0, 0, game.width, game.height, 72, nil, {0, 0, 0, 0}, 26)
 	self.bd:setScrollFactor()
 	self.bd.alpha = 0.5
 	self:add(self.bd)
@@ -180,7 +200,7 @@ function CreditsState:enter()
 
 	u.userDesc = Text(
 		u.infoBox.x + 10, u.infoBox.y + 10, "Description",
-			paths.getFont("vcr.ttf", 32), nil, nil, u.infoBox.width - 20)
+		paths.getFont("vcr.ttf", 32), nil, nil, u.infoBox.width - 20)
 	u.userDesc.antialiasing = false
 	u.userDesc:setScrollFactor()
 	u.infoMenu:add(u.userDesc)

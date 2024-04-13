@@ -136,7 +136,7 @@ function Character:update(dt)
 		if self.strokeTime ~= 0 and self.curAnim.name:startsWith("sing") then
 			self.__strokeDelta = self.__strokeDelta + dt
 			if self.__strokeDelta >= 0.13 then
-			 	self.lastHit = PlayState.conductor.currentBeat
+				self.lastHit = PlayState.conductor.currentBeat
 				self.curFrame, self.animFinished = 1, false
 				self.__strokeDelta = 0
 			end
@@ -168,15 +168,15 @@ function Character:playAnim(anim, force, frame)
 	self.__strokeDelta, self.strokeTime, self.columnAnim = 0, 0, nil
 
 	local offset = self.animOffsets[anim]
-    if offset then
+	if offset then
 		local rot = math.pi * self.angle / 180
 		local offX, offY = self.__reverseDraw and -offset.x or offset.x, offset.y
-        local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
+		local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
 		local rotOffY = offX * math.sin(rot) + offY * math.cos(rot)
 		self.offset.x, self.offset.y = rotOffX, rotOffY
-    else
-        self.offset.x, self.offset.y = 0, 0
-    end
+	else
+		self.offset.x, self.offset.y = 0, 0
+	end
 end
 
 function Character:sing(dir, type)

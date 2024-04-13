@@ -1217,7 +1217,7 @@ function PlayState:tryPause()
 		game.camera:freeze()
 		self.camNotes:freeze()
 		self.camHUD:freeze()
-	
+
 		game.sound.music:pause()
 		if self.vocals then self.vocals:pause() end
 		if self.dadVocals then self.dadVocals:pause() end

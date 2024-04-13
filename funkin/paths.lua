@@ -7,7 +7,8 @@ end
 
 local function excludeAssets(path)
 	local i, n = path:find("assets/")
-	if i == 1 then return path:sub(n + 1)
+	if i == 1 then
+		return path:sub(n + 1)
 	elseif path:find("mods/") == 1 then
 		i = path:find("/", 6)
 		if i then return path:sub(i + 1) end

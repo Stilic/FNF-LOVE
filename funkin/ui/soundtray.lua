@@ -92,7 +92,6 @@ function SoundTray:update(dt)
 	self.adjust()
 end
 
-
 function SoundTray:adjustVolume(amount)
 	self.canSpawn = true
 	self.timer = 0

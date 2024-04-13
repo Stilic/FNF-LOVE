@@ -1,5 +1,5 @@
 local CalibrationState = State:extend("CalibrationState")
-local grayColor = {24/100, 24/100, 24/100}
+local grayColor = {24 / 100, 24 / 100, 24 / 100}
 
 CalibrationState.transOut = TransitionData(0.4, grayColor)
 function CalibrationState.transOut:start()

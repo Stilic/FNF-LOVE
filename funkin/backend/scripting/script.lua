@@ -3,8 +3,8 @@ local Script = Classic:extend("Script")
 
 local chunkMt = {__index = _G}
 local closedenv = setmetatable({}, {
-	__index = function()error("closed")end,
-	__newindex = function()error("closed")end,
+	__index = function() error("closed") end,
+	__newindex = function() error("closed") end,
 })
 
 Script.Event_Continue = 1

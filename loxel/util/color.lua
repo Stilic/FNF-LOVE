@@ -21,12 +21,18 @@ function Color.HSLtoRGB(h, s, l)
 		local h = (h % 1.0) * 6.0
 		local x = c * (1 - math.abs(h % 2 - 1))
 		c, x = c + m, x + m
-		if     h < 1 then r, g, b = c, x, m
-		elseif h < 2 then r, g, b = x, c, m
-		elseif h < 3 then r, g, b = m, c, x
-		elseif h < 4 then r, g, b = m, x, c
-		elseif h < 5 then r, g, b = x, m, c
-		else			  r, g, b = c, m, x
+		if h < 1 then
+			r, g, b = c, x, m
+		elseif h < 2 then
+			r, g, b = x, c, m
+		elseif h < 3 then
+			r, g, b = m, c, x
+		elseif h < 4 then
+			r, g, b = m, x, c
+		elseif h < 5 then
+			r, g, b = x, m, c
+		else
+			r, g, b = c, m, x
 		end
 	end
 	return r, g, b
@@ -82,14 +88,14 @@ end
 
 function Color.lerp(x, y, i)
 	return {math.lerp(x[1], y[1], i),
-			math.lerp(x[2], y[2], i),
-			math.lerp(x[3], y[3], i)}
+		math.lerp(x[2], y[2], i),
+		math.lerp(x[3], y[3], i)}
 end
 
 function Color.lerpDelta(x, y, i, delta)
 	return {math.lerp(y[1], x[1], math.exp(-(delta or game.dt) * i)),
-			math.lerp(y[2], x[2], math.exp(-(delta or game.dt) * i)),
-			math.lerp(y[3], x[3], math.exp(-(delta or game.dt) * i))}
+		math.lerp(y[2], x[2], math.exp(-(delta or game.dt) * i)),
+		math.lerp(y[3], x[3], math.exp(-(delta or game.dt) * i))}
 end
 
 setmetatable(Color, {

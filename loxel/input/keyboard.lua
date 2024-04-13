@@ -218,8 +218,11 @@ function Keyboard.onPressed(key)
 
 	if not table.find(invalidKeys, key) then
 		local key = key
-		if key == 'space' then key = ' '
-		elseif key:startsWith('kp') and not Keyboard.modifierActive.NUMLOCK then key = key:gsub('kp', '') end
+		if key == 'space' then
+			key = ' '
+		elseif key:startsWith('kp') and not Keyboard.modifierActive.NUMLOCK then
+			key = key:gsub('kp', '')
+		end
 		if Keyboard.pressed.SHIFT and shiftKeys[key] then
 			key = shiftKeys[key]
 		end
@@ -258,8 +261,11 @@ function Keyboard.onReleased(key)
 
 	if not table.find(invalidKeys, key) then
 		local key = key
-		if key == 'space' then key = ' '
-		elseif key:startsWith('kp') and not Keyboard.modifierActive.NUMLOCK then key = key:gsub('kp', '') end
+		if key == 'space' then
+			key = ' '
+		elseif key:startsWith('kp') and not Keyboard.modifierActive.NUMLOCK then
+			key = key:gsub('kp', '')
+		end
 		if Keyboard.pressed.SHIFT and shiftKeys[key] then
 			key = shiftKeys[key]
 		end

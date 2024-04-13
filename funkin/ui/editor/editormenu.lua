@@ -10,7 +10,7 @@ function EditorMenu:new(completionCallback)
 	self.optionShit = {
 		{"charter",   "Chart Editor"},
 		{"character", "Character Editor"},
-		{"charter", "Cutscene Editor"}
+		{"charter",   "Cutscene Editor"}
 	}
 	self.curSelected = 1
 

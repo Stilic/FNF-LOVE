@@ -13,20 +13,20 @@ local data = {
 		ClientPrefs.data.backgroundDim = value
 	end, percentvalue},
 	{"notesBelowHUD", "Notes Below HUD", "boolean"},
-	{"downScroll",   "Down Scroll",   "boolean"},
-	{"middleScroll", "Middle Scroll", "boolean"},
-	{"ghostTap", "Ghost Tap", "boolean"},
-	{"noteSplash",   "Note Splash",   "boolean"},
-	{"botplayMode",  "Botplay",       "boolean"},
+	{"downScroll",    "Down Scroll",     "boolean"},
+	{"middleScroll",  "Middle Scroll",   "boolean"},
+	{"ghostTap",      "Ghost Tap",       "boolean"},
+	{"noteSplash",    "Note Splash",     "boolean"},
+	{"botplayMode",   "Botplay",         "boolean"},
 	{"playback", "Playback", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.playback + (add * 0.05), 0.1, 5)
 		ClientPrefs.data.playback = value
 	end, function(value) return "x" .. value end},
-	{"timeType",   "Song Time Type", "string", {"left", "elapsed"}},
+	{"timeType",      "Song Time Type",               "string", {"left", "elapsed"}},
 	{"gameOverInfos", "Show game infos in Game Over", "boolean"},
 
 	{"AUDIO"},
-	{"pauseMusic", "Pause Music",    "string", {"railways", "breakfast"}},
+	{"pauseMusic",    "Pause Music",                  "string", {"railways", "breakfast"}},
 	{"hitSound", "Hit Sound", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.hitSound + add, 0, 100)
 		ClientPrefs.data.hitSound = value
@@ -50,7 +50,7 @@ local data = {
 		local value = math.clamp(ClientPrefs.data.sfxVolume + add, 0, 100)
 		ClientPrefs.data.sfxVolume = value
 	end, percentvalue},
-	{"songOffset", "Song Offset",    "number"},
+	{"songOffset", "Song Offset", "number"},
 	{"calibration", "Calibrate", function(optionsUI)
 		if optionsUI.aboutToGoToCalibration then return end
 		util.playSfx(paths.getSound('scrollMenu'))
@@ -95,7 +95,8 @@ function Gameplay:update(dt, optionsUI)
 				self.waitInputTxt:setScrollFactor()
 				self.waitInputTxt.y = self.waitInputTxt.y - 40
 
-				self.waitInputTxt2 = Text(0, 0, "Press Accept key to Continue, Press Escape key to Nevermind i think", paths.getFont("phantommuff.ttf", 24),
+				self.waitInputTxt2 = Text(0, 0, "Press Accept key to Continue, Press Escape key to Nevermind i think",
+					paths.getFont("phantommuff.ttf", 24),
 					{1, 1, 1}, "center", game.width)
 				self.waitInputTxt2:screenCenter('y')
 				self.waitInputTxt2:setScrollFactor()

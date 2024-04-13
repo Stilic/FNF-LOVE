@@ -11,11 +11,11 @@ local function checkCollisionFast(
 	-- i hate this alot, but fuck it. -ralty
 	-- todo: make it work for origin
 	return abs(x2 + hw2 - x1 - hw1)
-			- hw1 * cos1 * sx1 - hh1 * sin1 * sy1
-			- hw2 * cos2 * sx2 - hh2 * sin2 * sy2 < 0
+		- hw1 * cos1 * sx1 - hh1 * sin1 * sy1
+		- hw2 * cos2 * sx2 - hh2 * sin2 * sy2 < 0
 		and abs(y2 + hh2 - y1 - hh1)
-			- hh1 * cos1 * sy1 - hw1 * sin1 * sx1
-			- hh2 * cos2 * sy2 - hw2 * sin2 * sx2 < 0
+		- hh1 * cos1 * sy1 - hw1 * sin1 * sx1
+		- hh2 * cos2 * sy2 - hw2 * sin2 * sx2 < 0
 end
 
 ---@class Object:Basic

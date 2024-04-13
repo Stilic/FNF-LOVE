@@ -86,7 +86,7 @@ function SpriteGroup:__drawNestGroup(members, camera, list, x2, y2, sf, force, z
 				local x, y, w, h, sx, sy, ox, oy = member:_getBoundary()
 
 				if member:_isOnScreen(x, y, w, h, sx, sy, ox, oy,
-					sf2 and sf2.x or 1, sf2 and sf2.y or 1, camera)
+						sf2 and sf2.x or 1, sf2 and sf2.y or 1, camera)
 				then
 					table.insert(list, member)
 				end
@@ -106,8 +106,11 @@ end
 function SpriteGroup:_prepareCameraDraw(c, force)
 	local list = self.__cameraRenderQueue[c]
 	if list then
-		if force then table.clear(list)
-		else return list end
+		if force then
+			table.clear(list)
+		else
+			return list
+		end
 	else
 		list = table.remove(self.__unusedCameraRenderQueue) or {}
 		self.__cameraRenderQueue[c] = list

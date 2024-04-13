@@ -6,8 +6,8 @@ function MissEvent:new(notefield, character)
 	MissEvent.super.new(self)
 
 	self.cancelledAnim = false
-    self.muteVocals = true
-    self.cancelledSadGF = false
+	self.muteVocals = true
+	self.cancelledSadGF = false
 
 	self.character = character
 end
@@ -21,7 +21,7 @@ function MissEvent:cancelMuteVocals()
 end
 
 function MissEvent:cancelSadGF()
-    self.cancelledSadGF = true
+	self.cancelledSadGF = true
 end
 
 return MissEvent
