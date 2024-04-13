@@ -1257,6 +1257,7 @@ function PlayState:tryGameOver()
 		GameOverSubstate.deathSoundName = event.deathSoundName
 		GameOverSubstate.loopSoundName = event.loopSoundName
 		GameOverSubstate.endSoundName = event.endSoundName
+		GameOverSubstate.deaths = GameOverSubstate.deaths + 1
 
 		self.scripts:call("gameOverCreate")
 
