@@ -285,7 +285,9 @@ local function getSongMetadata(song)
 end
 
 function FreeplayState:loadSongs()
-	local listData, func = nil, Mods.currentMod and paths.getMods or paths.getPath
+	local listData, func = nil, Mods.currentMod and paths.getMods or function(...)
+		return paths.getPath(..., false)
+	end
 	if paths.exists(func('data/freeplayList.txt'), 'file') then
 		listData = paths.getText('freeplayList')
 	elseif paths.exists(func('data/freeplaySonglist.txt'), 'file') then

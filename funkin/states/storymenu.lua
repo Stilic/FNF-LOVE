@@ -385,7 +385,9 @@ function StoryMenuState:checkSongsAssets(songs, diff)
 end
 
 function StoryMenuState:loadWeeks()
-	local func = Mods.currentMod and paths.getMods or paths.getPath
+	local func = Mods.currentMod and paths.getMods or function(...)
+		return paths.getPath(..., false)
+	end
 	if paths.exists(func('data/weekList.txt'), 'file') then
 		for _, week in pairs(paths.getText('weekList'):gsub('\r', ''):split('\n')) do
 			local data = paths.getJSON('data/weeks/weeks/' .. week)
