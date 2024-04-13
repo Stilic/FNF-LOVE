@@ -1,4 +1,4 @@
-# Code style
+# Code Style Guide
 
 - Inline functions when they are used only once. (**if** it's possible)
 - Keep your code simple: don't try to preview every use-case for your code, only the ones that really matters.

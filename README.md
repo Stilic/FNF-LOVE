@@ -1,18 +1,16 @@
-# <img src="art/icon.png" width="20"> FNF-LOVE
+# ![](art/icon.png) FNF Löve
 
 ![](art/funkin_logo.png)
 
-### A LÖVE port of Friday Night Funkin' (still in-dev)
-
-INFO: we made loxel for this game, so this library is similar to <a href="https://haxeflixel.com/"><img src="https://haxeflixel.com/images/haxeflixel.svg" width="18"></a>
-
+<center>A port of <a href="https://funkin.me">Friday Night Funkin'</a> to the <a href="https://love2d.org">LÔVE</a> game engine.</center>
 
 ## <img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/discord-round-color-icon.png" width="18"> Discord Server
-[![DiscordBanner](https://invidget.switchblade.xyz/eFFgHz7X8N)](https://discord.gg/eFFgHz7X8N)
 
-## Dev team
+[![Discord Banner](https://invidget.switchblade.xyz/eFFgHz7X8N)](https://discord.gg/eFFgHz7X8N)
 
-- Stilic
+## Dev Team
+
+- Stilic (owner)
 - Raltyro
 - Fellyn
 - Victor Kaoy
@@ -21,12 +19,14 @@ INFO: we made loxel for this game, so this library is similar to <a href="https:
 
 ## Libraries
 
-- baton > [https://github.com/tesselode/baton](https://github.com/tesselode/baton)
-- classic > [https://github.com/rxi/classic](https://github.com/rxi/classic)
-- gamestate > [https://github.com/vrld/hump/blob/master/gamestate.lua](https://github.com/vrld/hump/blob/master/gamestate.lua)
-- json > [https://github.com/actboy168/json.lua](https://github.com/actboy168/json.lua)
-- lua-discordRPC > [https://github.com/pfirsich/lua-discordRPC](https://github.com/pfirsich/lua-discordRPC)
-- lua-https > [https://github.com/love2d/lua-https](https://github.com/love2d/lua-https)
-- nativefs > [https://github.com/EngineerSmith/nativefs](https://github.com/EngineerSmith/nativefs)
-- timer > [https://github.com/vrld/hump/blob/master/timer.lua](https://github.com/vrld/hump/blob/master/timer.lua)
-- xml > [https://github.com/Cluain/Lua-Simple-XML-Parser](https://github.com/Cluain/Lua-Simple-XML-Parser)
+- [baton](https://github.com/tesselode/baton)\*
+- [classic](https://github.com/rxi/classic)
+- [gamestate](https://github.com/vrld/hump/blob/master/gamestate.lua)\*
+- [json](https://github.com/actboy168/json.lua)\*
+- [lua-discordRPC](https://github.com/pfirsich/lua-discordRPC)
+- [lua-https](https://github.com/love2d/lua-https)
+- [nativefs](https://github.com/EngineerSmith/nativefs)
+- [timer](https://github.com/vrld/hump/blob/master/timer.lua)\*
+- [Lua-Simple-XML-Parser](https://github.com/Cluain/Lua-Simple-XML-Parser)\*
+
+* Was modified for our needs.
