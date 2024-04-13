@@ -78,7 +78,7 @@ ChartingState = require "funkin.states.editors.charting"
 
 RGBShader = require "funkin.shaders.rgb"
 
-local TransitionFade = require "loxel.transition.transitionfade"
+local TransitionFade = loxreq "transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
 
 function love.load()

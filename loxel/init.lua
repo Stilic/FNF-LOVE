@@ -1,5 +1,13 @@
+local __p = (...) .. "."
+loxreq = {}; setmetatable(loxreq, {
+	__call = function(_, f)
+		return require(__p .. f)
+	end
+})
+
 require "love.window"
-require "loxel.lib.override"
+loxreq "lib.override"
+
 Project = require "project"
 
 local isMobile = love.system.getDevice() == "Mobile"
@@ -27,7 +35,7 @@ if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
 		restrictedfs = true
 
 		local lovefs = love.filesystem
-		love.filesystem = setmetatable(require "loxel.lib.nativefs", {
+		love.filesystem = setmetatable(loxreq "lib.nativefs", {
 			__index = lovefs
 		})
 
@@ -226,50 +234,50 @@ function love.errorhandler_quit()
 	pcall(love.quit, true)
 end
 
-local Gamestate = require "loxel.lib.gamestate"
-Classic = require "loxel.lib.classic"
+local Gamestate = loxreq "lib.gamestate"
+Classic = loxreq "lib.classic"
 
-Basic = require "loxel.basic"
-Object = require "loxel.object"
-Sound = require "loxel.sound"
-Graphic = require "loxel.graphic"
-Sprite = require "loxel.sprite"
-Camera = require "loxel.camera"
-Text = require "loxel.text"
-TypeText = require "loxel.typetext"
-Bar = require "loxel.ui.bar"
-Group = require "loxel.group.group"
-SpriteGroup = require "loxel.group.spritegroup"
-TransitionData = require "loxel.transition.transitiondata"
-Transition = require "loxel.transition.transition"
-State = require "loxel.state"
-Substate = require "loxel.substate"
-Flicker = require "loxel.effects.flicker"
-BackDrop = require "loxel.effects.backdrop"
-Trail = require "loxel.effects.trail"
-ParallaxImage = require "loxel.effects.parallax"
-Color = require "loxel.util.color"
-Actor = require "loxel.3d.actor"
-ActorSprite = require "loxel.3d.actorsprite"
-ActorGroup = require "loxel.group.actorgroup"
+Basic = loxreq "basic"
+Object = loxreq "object"
+Sound = loxreq "sound"
+Graphic = loxreq "graphic"
+Sprite = loxreq "sprite"
+Camera = loxreq "camera"
+Text = loxreq "text"
+TypeText = loxreq "typetext"
+Bar = loxreq "ui.bar"
+Group = loxreq "group.group"
+SpriteGroup = loxreq "group.spritegroup"
+TransitionData = loxreq "transition.transitiondata"
+Transition = loxreq "transition.transition"
+State = loxreq "state"
+Substate = loxreq "substate"
+Flicker = loxreq "effects.flicker"
+BackDrop = loxreq "effects.backdrop"
+Trail = loxreq "effects.trail"
+ParallaxImage = loxreq "effects.parallax"
+Color = loxreq "util.color"
+Actor = loxreq "3d.actor"
+ActorSprite = loxreq "3d.actorsprite"
+ActorGroup = loxreq "group.actorgroup"
 
-VirtualPad = require "loxel.virtualpad"
-VirtualPadGroup = require "loxel.group.virtualpadgroup"
+VirtualPad = loxreq "virtualpad"
+VirtualPadGroup = loxreq "group.virtualpadgroup"
 
 ui = {
-	UINavbar = require "loxel.ui.navbar",
-	UIWindow = require "loxel.ui.window",
-	UIButton = require "loxel.ui.button",
-	UICheckbox = require "loxel.ui.checkbox",
-	UIDropDown = require "loxel.ui.dropdown",
-	UIGrid = require "loxel.ui.grid",
-	UIInputTextBox = require "loxel.ui.inputtextbox",
-	UINumericStepper = require "loxel.ui.numericstepper",
-	UISlider = require "loxel.ui.slider"
+	UINavbar = loxreq "ui.navbar",
+	UIWindow = loxreq "ui.window",
+	UIButton = loxreq "ui.button",
+	UICheckbox = loxreq "ui.checkbox",
+	UIDropDown = loxreq "ui.dropdown",
+	UIGrid = loxreq "ui.grid",
+	UIInputTextBox = loxreq "ui.inputtextbox",
+	UINumericStepper = loxreq "ui.numericstepper",
+	UISlider = loxreq "ui.slider"
 }
 
 if isMobile or Project.flags.LoxelShowPrintsInScreen then
-	ScreenPrint = require "loxel.system.screenprint"
+	ScreenPrint = loxreq "system.screenprint"
 end
 
 local function temp() return true end
@@ -285,11 +293,11 @@ game = {
 	isSwitchingState = false,
 	dt = 0,
 
-	keys = require "loxel.input.keyboard",
-	mouse = require "loxel.input.mouse",
-	cameras = require "loxel.managers.cameramanager",
-	sound = require "loxel.managers.soundmanager",
-	save = require "loxel.util.save"
+	keys = loxreq "input.keyboard",
+	mouse = loxreq "input.mouse",
+	cameras = loxreq "managers.cameramanager",
+	sound = loxreq "managers.soundmanager",
+	save = loxreq "util.save"
 }
 Classic.implement(game, Group)
 Classic.implement(game.bound, Group)
@@ -337,7 +345,8 @@ function game.init(app, state, ...)
 		end
 	end
 
-	Sprite.defaultTexture = love.graphics.newImage("loxel/assets/default.png")
+	local path = __p:gsub("%.", "/")
+	Sprite.defaultTexture = love.graphics.newImage(path .. "/assets/default.png")
 
 	Camera.__init()
 	game.cameras.reset()
