@@ -213,8 +213,8 @@ function PlayState:enter()
 
 	self:add(self.stage.foreground)
 
-	self.judgements = Judgement(self.stage.ratingPos.x, self.stage.ratingPos.y)
-	self:add(self.judgements)
+	self.judgeSprites = Judgement(self.stage.ratingPos.x, self.stage.ratingPos.y)
+	self:add(self.judgeSprites)
 
 	self.camFollow = {
 		x = 0,
@@ -1134,10 +1134,10 @@ end
 function PlayState:popUpScore(rating)
 	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
 	if not event.cancelled then
-		self.judgements.ratingVisible = not event.hideRating
-		self.judgements.comboSprVisible = not event.hideCombo
-		self.judgements.comboNumVisible = not event.hideScore
-		self.judgements:spawn(rating, self.combo)
+		self.judgeSprites.ratingVisible = not event.hideRating
+		self.judgeSprites.comboSprVisible = not event.hideCombo
+		self.judgeSprites.comboNumVisible = not event.hideScore
+		self.judgeSprites:spawn(rating, self.combo)
 	end
 end
 
