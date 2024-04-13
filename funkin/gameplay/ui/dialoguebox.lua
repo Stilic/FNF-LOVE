@@ -143,7 +143,7 @@ function DialogueBox:update(dt)
 			if self.dialogueList[2] == nil and self.dialogueList[1] ~= nil then
 				if not self.isEnding then
 					self.isEnding = true
-					util.playSfx(paths.getSound('gameplay/clickText'), 0.8)
+					util.playSfx(paths.getSound('gameplay/clickText'))
 
 					for loop = 1, 5 do
 						Timer.after(0.2 * loop, function()
@@ -167,11 +167,11 @@ function DialogueBox:update(dt)
 			else
 				table.remove(self.dialogueList, 1)
 				self:startDialogue()
-				util.playSfx(paths.getSound('gameplay/clickText'), 0.8)
+				util.playSfx(paths.getSound('gameplay/clickText'))
 			end
 		elseif self.dialogueStarted then
 			self.swagDialogue:forceEnd()
-			util.playSfx(paths.getSound('gameplay/clickText'), 0.8)
+			util.playSfx(paths.getSound('gameplay/clickText'))
 		end
 	end
 

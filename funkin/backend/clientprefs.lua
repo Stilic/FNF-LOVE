@@ -21,10 +21,10 @@ ClientPrefs.data = {
 	pauseMusic = 'railways',
 	hitSound = 0,
 	songOffset = 0,
-	menuMusicVolume = 0.8,
-	musicVolume = 1,
-	vocalVolume = 1,
-	sfxVolume = 0.6,
+	menuMusicVolume = 80,
+	musicVolume = 100,
+	vocalVolume = 100,
+	sfxVolume = 80,
 
 	-- display
 	fps = 0,

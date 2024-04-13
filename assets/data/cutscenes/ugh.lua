@@ -25,7 +25,7 @@ function postCreate()
 	game.camera.zoom = game.camera.zoom * 1.2
 
 	cutsceneTimer:after(0.1, function()
-		game.sound.play(paths.getSound('gameplay/wellWellWell'), ClientPrefs.data.vocalVolume)
+		game.sound.play(paths.getSound('gameplay/wellWellWell'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
 	cutsceneTimer:after(3, function()
@@ -35,7 +35,7 @@ function postCreate()
 
 	cutsceneTimer:after(4.5, function()
 		state.boyfriend:playAnim('singUP', true)
-		game.sound.play(paths.getSound('gameplay/bfBeep'), ClientPrefs.data.vocalVolume)
+		game.sound.play(paths.getSound('gameplay/bfBeep'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
 	cutsceneTimer:after(5.2, function()
@@ -49,7 +49,7 @@ function postCreate()
 		tankman:play('killYou', true)
 		tankman.x = tankman.x - 36
 		tankman.y = tankman.y - 10
-		game.sound.play(paths.getSound('gameplay/killYou'), ClientPrefs.data.vocalVolume)
+		game.sound.play(paths.getSound('gameplay/killYou'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
 	cutsceneTimer:after(12, function()

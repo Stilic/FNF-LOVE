@@ -20,6 +20,8 @@ function GameOverSubstate:new(x, y)
 	self.playingDeathSound = false
 	self.startedDeath = false
 	self.isEnding = false
+	self.followTime = 0.5
+	self._followTime = 0
 
 	self.bg = Graphic(0, 0, 1, 1, {0, 0, 0})
 	self.bg.alpha = 0
@@ -79,80 +81,81 @@ function GameOverSubstate:enter()
 	paths.getMusic(GameOverSubstate.endSoundName)
 	util.playSfx(paths.getSound(GameOverSubstate.deathSoundName))
 
-	local lose, par = self.lose, self.parent
-	if par and lose then
-		lose.cameras = {self.parent.camOther}
-		Timer.after(1, function()
-			if self.parent ~= par then return end
-			lose:play('lose')
-			self:add(lose)
-		end)
-	end
-
 	self.scripts:call("gameOverStart")
 end
 
 function GameOverSubstate:update(dt)
+	self.scripts:call("gameOverUpdate", dt)
 	GameOverSubstate.super.update(self, dt)
 
 	if not self.isEnding then
 		if controls:pressed('back') then
+			self.scripts:call("gameOverQuit")
+
 			util.playMenuMusic()
 			game.switchState(FreeplayState())
 		end
 
 		if controls:pressed('accept') then
+			self.scripts:call("gameOverConfirm")
+
 			self.isEnding = true
 			self.boyfriend:playAnim('deathConfirm', true)
 			game.sound.music:stop()
-			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName), ClientPrefs.data.musicVolume).persist = true
+			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName), ClientPrefs.data.musicVolume / 100).persist = true
 			Timer.after(0.7, function()
-				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear",
-					function()
-						game.resetState()
-						if love.system.getDevice() == "Mobile" then
-							self.buttons:destroy()
-						end
-					end)
+				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear", function()
+					game.resetState()
+					if love.system.getDevice() == "Mobile" then
+						self.buttons:destroy()
+					end
+				end)
 			end)
 			Timer.tween(2, self.bg, {alpha = 1}, 'out-sine')
 			Timer.tween(2, game.camera, {zoom = 0.9}, "out-cubic")
 		end
 	end
 
-	if self.boyfriend.curAnim ~= nil then
-		if self.boyfriend.curAnim.name == 'firstDeath' and
-			self.boyfriend.animFinished and self.startedDeath then
-			self.boyfriend:playAnim('deathLoop')
-		end
+	if self._followTime < self.followTime then
+		self._followTime = self._followTime + dt
+		if self._followTime >= self.followTime then
+			self.scripts:call("gameOverFollow")
 
-		if self.boyfriend.curAnim.name == 'firstDeath' then
-			if self.boyfriend.curFrame >= 12 and not self.isFollowing then
-				game.camera:follow(self.camFollow, nil, 2.4)
-				self.isFollowing = true
-				Timer.tween(1, self.bg, {alpha = 0.7}, 'in-out-sine')
-				Timer.tween(1, game.camera, {zoom = 1.1}, "in-out-cubic")
-			end
+			self.isFollowing = true
+			game.camera:follow(self.camFollow, nil, 2.4)
+			Timer.tween(1, self.bg, {alpha = 0.7}, 'in-out-sine')
+			Timer.tween(1, game.camera, {zoom = 1.1}, "in-out-cubic")
 
-			if self.boyfriend.animFinished then
-				self.startedDeath = true
-				game.sound.playMusic(paths.getMusic(GameOverSubstate.loopSoundName), ClientPrefs.data.musicVolume)
-				if PlayState.SONG.stage == 'tank' then
-					self.playingDeathSound = true
-
-					game.sound.music:setVolume(ClientPrefs.data.musicVolume * 0.2)
-
-					local tankmanLines = 'jeffGameover-' .. love.math.random(1, 25)
-					util.playSfx(paths.getSound('gameplay/jeffGameover/' .. tankmanLines),
-						1, false, true, function()
-							if not self.isEnding then
-								game.sound.music:setVolume(ClientPrefs.data.musicVolume)
-							end
-						end)
-				end
+			local lose, par = self.lose, self.parent
+			if par and lose then
+				lose.cameras = {self.parent.camOther}
+				Timer.after(1 - self.followTime, function()
+					if self.parent ~= par then return end
+					lose:play('lose')
+					self:add(lose)
+				end)
 			end
 		end
 	end
+
+	local curAnim = self.boyfriend.curAnim
+	if curAnim ~= nil then
+		if curAnim.name == 'firstDeath' and self.boyfriend.animFinished then
+			if self.startedDeath then
+				self.boyfriend:playAnim('deathLoop')
+			else
+				self.scripts:call("gameOverStartLoop")
+
+				self.startedDeath = true
+				self.boyfriend:playAnim('deathLoop')
+				game.sound.playMusic(paths.getMusic(GameOverSubstate.loopSoundName), ClientPrefs.data.musicVolume / 100)
+
+				self.scripts:call("postGameOverStartLoop")
+			end
+		end
+	end
+
+	self.scripts:call("postGameOverUpdate", dt)
 end
 
 return GameOverSubstate

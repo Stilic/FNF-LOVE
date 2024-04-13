@@ -150,6 +150,7 @@ function PlayState:enter()
 	if game.sound.music then game.sound.music:reset(true) end
 	game.sound.loadMusic(paths.getInst(songName))
 	game.sound.music:setLooping(false)
+	game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100)
 	game.sound.music.onComplete = function() self:endSong() end
 
 	if PlayState.SONG.needsVoices or PlayState.SONG.needsVoices == nil then
@@ -166,10 +167,12 @@ function PlayState:enter()
 		if dadVocals then
 			self.dadVocals = Sound():load(dadVocals)
 			game.sound.list:add(self.dadVocals)
+			self.dadVocals:setVolume(ClientPrefs.data.vocalVolume / 100)
 		end
 		if bfVocals then
 			self.vocals = Sound():load(bfVocals)
 			game.sound.list:add(self.vocals)
+			self.vocals:setVolume(ClientPrefs.data.vocalVolume / 100)
 		end
 	end
 
@@ -937,6 +940,10 @@ function PlayState:onSettingChange(category, setting)
 				self.timeText.content = util.formatTime(songTime)
 			end
 		})
+
+		game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100)
+		if self.vocals then self.vocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
+		if self.dadVocals then self.dadVocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
 	elseif category == "controls" then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
@@ -1017,7 +1024,7 @@ function PlayState:noteMiss(n)
 	local event = self.scripts:event("onNoteMiss", Events.NoteMiss(n, char))
 
 	if not event.cancelled then
-		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
+		if event.muteVocals and self.vocals and (isPlayer or not self.dadVocals) then self.vocals:setVolume(0) end
 
 		if not event.cancelledAnim then
 			char:sing(n.column, "miss")
@@ -1050,7 +1057,7 @@ function PlayState:miss(notefield, column)
 	local event = self.scripts:event("onMiss", Events.Miss(notefield, column, char))
 
 	if not event.cancelled then
-		if event.muteVocals and self.vocals then self.vocals:setVolume(0) end
+		if event.muteVocals and self.vocals and (isPlayer or not self.dadVocals) then self.vocals:setVolume(0) end
 
 		if not event.cancelledAnim then
 			char:sing(column, "miss")
@@ -1088,9 +1095,8 @@ function PlayState:goodNoteHit(n, rating)
 			self.camZooming = true
 		end
 
-		if event.unmuteVocals and self.vocals
-			and (isPlayer or not self.dadVocals) then
-			self.vocals:setVolume(1)
+		if event.unmuteVocals and self.vocals and (isPlayer or not self.dadVocals) then
+			self.vocals:setVolume(ClientPrefs.data.vocalVolume / 100)
 		end
 
 		if not event.cancelledAnim and char then

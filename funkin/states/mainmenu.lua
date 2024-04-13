@@ -169,6 +169,7 @@ local triggerChoices = {
 				self.buttons:enable()
 			end
 		end)
+		self.optionsUI.applySettings = bind(self, self.onSettingChange)
 		self.optionsUI:setScrollFactor()
 		self.optionsUI:screenCenter()
 		self:add(self.optionsUI)
@@ -179,6 +180,12 @@ local triggerChoices = {
 		return true
 	end}
 }
+
+function MainMenuState:onSettingChange(setting, option)
+	if setting == "gameplay" and option == "menuMusicVolume" then
+		game.sound.music:fade(1, game.sound.music:getVolume(), ClientPrefs.data.menuMusicVolume / 100)
+	end
+end
 
 function MainMenuState:openEditorMenu()
 	self.selectedSomethin = true

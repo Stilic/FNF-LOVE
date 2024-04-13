@@ -35,7 +35,7 @@ end
 
 function PauseSubstate:enter()
 	self.music:play(0, true)
-	self.music:fade(6, 0, ClientPrefs.data.menuMusicVolume)
+	self.music:fade(6, 0, ClientPrefs.data.menuMusicVolume / 100)
 
 	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 
@@ -133,18 +133,22 @@ function PauseSubstate:onSettingChange(setting, option)
 		self.parent:onSettingChange(setting, option)
 	end
 
-	if setting == "gameplay" and option == "pauseMusic" then
-		Timer.after(1, function()
-			if not self.parent or ClientPrefs.data.pauseMusic == self.curPauseMusic then return end
-			self.music:fade(0.7, self.music:getVolume(), 0)
-			Timer.after(0.8, function()
-				self.music:stop()
-				self.music:cancelFade()
-				if not self.parent then return end
-				self:loadMusic()
-				self.music:play(ClientPrefs.data.menuMusicVolume, true)
+	if setting == "gameplay" then
+		if option == "pauseMusic" then
+			Timer.after(1, function()
+				if not self.parent or ClientPrefs.data.pauseMusic == self.curPauseMusic then return end
+				self.music:fade(0.7, self.music:getVolume(), 0)
+				Timer.after(0.8, function()
+					self.music:stop()
+					self.music:cancelFade()
+					if not self.parent then return end
+					self:loadMusic()
+					self.music:play(ClientPrefs.data.menuMusicVolume / 100, true)
+				end)
 			end)
-		end)
+		elseif option == "menuMusicVolume" then
+			self.music:fade(1, self.music:getVolume(), ClientPrefs.data.menuMusicVolume / 100)
+		end
 	end
 end
 
@@ -173,7 +177,8 @@ function PauseSubstate:changeSelection(huh)
 end
 
 function PauseSubstate:close()
-	self.music:kill()
+	self.music:stop()
+	self.music:destroy()
 
 	if self.optionsUI then self.optionsUI:destroy() end
 	self.optionsUI = nil
