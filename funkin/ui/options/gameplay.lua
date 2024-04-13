@@ -53,7 +53,7 @@ local data = {
 	{"songOffset", "Song Offset",    "number"},
 	{"calibration", "Calibrate", function(optionsUI)
 		if optionsUI.aboutToGoToCalibration then return end
-		game.sound.play(paths.getSound('scrollMenu'))
+		util.playSfx(paths.getSound('scrollMenu'))
 		optionsUI.aboutToGoToCalibration = true
 		optionsUI.changingOption = false
 	end}
@@ -65,7 +65,7 @@ function Gameplay:update(dt, optionsUI)
 	if optionsUI.aboutToGoToCalibration and not self.wow then
 		if self.crateThing then
 			if controls:pressed("back") then
-				game.sound.play(paths.getSound('cancelMenu'))
+				util.playSfx(paths.getSound('cancelMenu'))
 
 				optionsUI:remove(self.bg)
 				optionsUI:remove(self.waitInputTxt)

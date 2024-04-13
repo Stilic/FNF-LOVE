@@ -361,7 +361,7 @@ function CharacterEditor:update(dt)
 				CharacterEditor.onPlayState = false
 				game.switchState(PlayState())
 			else
-				game.sound.playMusic(paths.getMusic("freakyMenu"))
+				util.playMenuMusic()
 				game.switchState(MainMenuState())
 			end
 		end

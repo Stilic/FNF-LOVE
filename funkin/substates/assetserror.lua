@@ -35,7 +35,7 @@ function AssetsErrorSubstate:new(filetype, filepath)
 end
 
 function AssetsErrorSubstate:enter()
-	game.sound.play(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)))
+	util.playSfx(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)))
 	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
 	Timer.tween(0.4, self.titleTxt, {y = 40}, 'out-quart')
 	Timer.tween(0.4, self.listTxt, {y = 140}, 'out-quart')

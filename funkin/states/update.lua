@@ -61,7 +61,7 @@ function UpdateState:update(dt)
 		love.system.openURL('https://github.com/Stilic/FNF-LOVE/tree/main')
 		game.switchState(TitleState())
 	elseif controls:pressed('back') then
-		game.sound.play(paths.getSound('cancelMenu'))
+		util.playSfx(paths.getSound('cancelMenu'))
 		self.blackScreen.visible = true
 		game.switchState(TitleState())
 	end

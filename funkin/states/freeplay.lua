@@ -32,8 +32,7 @@ function FreeplayState:enter()
 	self.songsData = {}
 	self:loadSongs()
 
-	FreeplayState.curSelected = math.min(FreeplayState.curSelected,
-		#self.songsData)
+	FreeplayState.curSelected = math.min(FreeplayState.curSelected, #self.songsData)
 
 	self.bg = Sprite()
 	self.bg:loadTexture(paths.getImage('menus/menuDesat'))
@@ -170,7 +169,7 @@ function FreeplayState:update(dt)
 			end
 		end
 		if controls:pressed("back") then
-			game.sound.play(paths.getSound('cancelMenu'))
+			util.playSfx(paths.getSound('cancelMenu'))
 			game.switchState(MainMenuState())
 		end
 	end
@@ -230,7 +229,7 @@ function FreeplayState:changeSelection(change)
 	for _, icon in next, self.iconTable do icon.alpha = 0.6 end
 	self.iconTable[FreeplayState.curSelected].alpha = 1
 
-	if #self.songsData > 1 then game.sound.play(paths.getSound('scrollMenu')) end
+	if #self.songsData > 1 then util.playSfx(paths.getSound('scrollMenu')) end
 
 	self:changeDiff(0)
 end

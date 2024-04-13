@@ -17,29 +17,29 @@ function UIState:enter()
 			if self.windowTest ~= nil then
 				self.windowTest.title = 'File!'
 			end
-			game.sound.play(paths.getSound("beep"))
+			util.playSfx(paths.getSound("beep"))
 		end},
 		{"Edit", function()
 			if self.windowTest ~= nil then
 				self.windowTest.title = 'Edit!'
 			end
-			game.sound.play(paths.getSound("beep"))
+			util.playSfx(paths.getSound("beep"))
 		end},
 		{"View", function()
 			if self.windowTest ~= nil then
 				self.windowTest.title = 'View!'
 			end
-			game.sound.play(paths.getSound("beep"))
+			util.playSfx(paths.getSound("beep"))
 		end},
 		{"Help", function()
 			if self.windowTest ~= nil then
 				self.windowTest.title = 'Help!'
 			end
-			game.sound.play(paths.getSound("beep"))
+			util.playSfx(paths.getSound("beep"))
 		end},
 		{"Window", function()
 			self:add_UIWindow()
-			game.sound.play(paths.getSound("beep"))
+			util.playSfx(paths.getSound("beep"))
 		end}
 	})
 	self:add(self.navbarTest)

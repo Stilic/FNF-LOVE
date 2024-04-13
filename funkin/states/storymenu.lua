@@ -206,7 +206,7 @@ function StoryMenuState:update(dt)
 
 	if controls:pressed("back") and not self.movedBack and not self.selectedWeek and
 		not self.inSubstate then
-		game.sound.play(paths.getSound("cancelMenu"))
+		util.playSfx(paths.getSound("cancelMenu"))
 		self.movedBack = true
 		game.switchState(MainMenuState())
 	end
@@ -242,7 +242,7 @@ function StoryMenuState:selectWeek()
 			PlayState.storyWeekFile = leWeek.file
 
 			if not self.selectedWeek then
-				game.sound.play(paths.getSound('confirmMenu'))
+				util.playSfx(paths.getSound('confirmMenu'))
 				self.grpWeekText.members[StoryMenuState.curWeek]:startFlashing()
 				for _, char in pairs(self.grpWeekCharacters.members) do
 					if char.character ~= '' and char.hasConfirmAnimation then
@@ -255,7 +255,7 @@ function StoryMenuState:selectWeek()
 			Timer.after(1, function() game.switchState(toState) end)
 		end
 	else
-		game.sound.play(paths.getSound('cancelMenu'))
+		util.playSfx(paths.getSound('cancelMenu'))
 	end
 end
 
@@ -314,7 +314,7 @@ function StoryMenuState:changeWeek(change)
 		spr.visible = not leWeek.locked
 	end
 
-	if #self.weeksData > 1 then game.sound.play(paths.getSound('scrollMenu')) end
+	if #self.weeksData > 1 then util.playSfx(paths.getSound('scrollMenu')) end
 
 	self:updateText()
 end

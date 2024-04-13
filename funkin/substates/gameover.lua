@@ -76,6 +76,7 @@ function GameOverSubstate:enter()
 
 	game.sound.music:setPitch(1)
 	paths.getMusic(GameOverSubstate.loopSoundName)
+	paths.getMusic(GameOverSubstate.endSoundName)
 	util.playSfx(paths.getSound(GameOverSubstate.deathSoundName))
 
 	local lose, par = self.lose, self.parent

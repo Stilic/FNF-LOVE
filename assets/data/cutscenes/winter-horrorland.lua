@@ -4,7 +4,7 @@ function create()
 	state.camFollow:set(400, -2050)
 	game.camera:snapToTarget()
 
-	game.sound.play(paths.getSound('gameplay/Lights_Turn_On'))
+	util.playSfx(paths.getSound('gameplay/Lights_Turn_On'))
 	game.camera.zoom = 1.5
 
 	local blackScreen = Sprite()

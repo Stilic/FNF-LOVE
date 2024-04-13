@@ -114,7 +114,7 @@ function PauseSubstate:update(dt)
 			end,
 			["Exit to menu"] = function()
 				game.sound.music:setPitch(1)
-				game.sound.playMusic(paths.getMusic("freakyMenu"))
+				util.playMenuMusic()
 				PlayState.chartingMode = false
 				PlayState.startPos = 0
 				if PlayState.storyMode then
@@ -151,7 +151,7 @@ end
 function PauseSubstate:changeSelection(huh)
 	if huh == nil then huh = 0 end
 
-	game.sound.play(paths.getSound('scrollMenu'))
+	util.playSfx(paths.getSound('scrollMenu'))
 	self.curSelected = self.curSelected + huh
 
 	if self.curSelected > #self.menuItems then

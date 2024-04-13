@@ -13,12 +13,12 @@ function create()
 		close()
 	end
 
-	game.sound.play(paths.getSound('gameplay/ANGRY_TEXT_BOX'))
+	util.playSfx(paths.getSound('gameplay/ANGRY_TEXT_BOX'))
 	game.camera:shake(0.001, 0.8)
 	state.camHUD:shake(0.001, 0.8)
 
 	Timer.after(1.5, function()
-		game.sound.play(paths.getSound('gameplay/ANGRY'))
+		util.playSfx(paths.getSound('gameplay/ANGRY'))
 		game.camera:shake(0.001, 0.1)
 		state.camHUD:shake(0.001, 0.1)
 		state:add(doof)

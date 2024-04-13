@@ -146,14 +146,14 @@ function Options:exitTab()
 	self.onTab = false
 
 	self:changeTab(0, true)
-	game.sound.play(paths.getSound("cancelMenu"))
+	util.playSfx(paths.getSound("cancelMenu"))
 	self.dontPlaySound = false
 end
 
 function Options:changeTab(add, dont)
 	self.curTab = math.wrap(self.curTab + (add or 0), 1, #self.settingsNames + 1)
 
-	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont then util.playSfx(paths.getSound("scrollMenu")) end
 
 	local name = self.settingsNames[self.curTab]
 	self.titleTxt.content = "< " .. name .. " >"
@@ -174,7 +174,7 @@ function Options:changeSelection(add, dont)
 		self.curSelect = math.wrap(self.curSelect + ((add and add < 0) and -1 or 1), 1, #tab.items + 1)
 	end
 
-	if not dont then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont then util.playSfx(paths.getSound("scrollMenu")) end
 	self.dontPlaySound = false
 
 	self.optionsCursor.x = self.tabBG.x
@@ -198,7 +198,7 @@ function Options:changeOption(add, dont)
 		self.applySettings(self.settingsNames[self.curTab]:lower(),
 			self.selectedTab.data.settings[self.curSelect][1])
 	end
-	if not dont and not self.dontPlaySound then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont and not self.dontPlaySound then util.playSfx(paths.getSound("scrollMenu")) end
 	self.dontPlaySound = false
 end
 
@@ -211,7 +211,7 @@ function Options:acceptOption(dont)
 	self.prevVal = nil
 	self.changingOption = false
 
-	if not dont and not self.dontPlaySound then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont and not self.dontPlaySound then util.playSfx(paths.getSound("scrollMenu")) end
 	self.dontPlaySound = false
 end
 
@@ -225,13 +225,13 @@ function Options:cancelChanges()
 	self.changingOption = false
 	self.prevVal = nil
 
-	if not self.dontPlaySound then game.sound.play(paths.getSound("cancelMenu")) end
+	if not self.dontPlaySound then util.playSfx(paths.getSound("cancelMenu")) end
 	self.dontPlaySound = false
 end
 
 function Options:changeBind(add, dont)
 	self.selectedTab.data:changeBind(self.curSelect, add, dont)
-	if not dont and not self.dontPlaySound then game.sound.play(paths.getSound("scrollMenu")) end
+	if not dont and not self.dontPlaySound then util.playSfx(paths.getSound("scrollMenu")) end
 	self.dontPlaySound = false
 end
 
@@ -281,7 +281,7 @@ function Options:update(dt)
 		if self.throttles.right:check() then self:changeTab(1) end
 		if controls:pressed("accept") then self:enterTab() end
 		if controls:pressed("back") then
-			game.sound.play(paths.getSound("cancelMenu"))
+			util.playSfx(paths.getSound("cancelMenu"))
 			return self.parent:remove(self)
 		end
 	end

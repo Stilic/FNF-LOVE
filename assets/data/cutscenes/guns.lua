@@ -23,7 +23,7 @@ function postCreate()
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 
-	game.sound.play(paths.getSound('gameplay/tankSong2'))
+	game.sound.play(paths.getSound('gameplay/tankSong2'), ClientPrefs.data.vocalVolume)
 	Timer.tween(4, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
 
 	cutsceneTimer:after(4, function()

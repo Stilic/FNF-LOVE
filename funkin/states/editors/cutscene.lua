@@ -64,7 +64,7 @@ function CutsceneState:update(dt)
     end
 
     if game.keys.justPressed.ESCAPE then
-        game.sound.playMusic(paths.getMusic("freakyMenu"))
+        util.playMenuMusic()
         game.switchState(MainMenuState())
     end
 end

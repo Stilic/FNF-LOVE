@@ -18,7 +18,7 @@ function Countdown:doCountdown(beat)
 	if not data then return end
 
 	if data.sound then
-		game.sound.play(paths.getSound(data.sound)):setPitch(self.playback)
+		util.playSfx(paths.getSound(data.sound)):setPitch(self.playback)
 	end
 	if data.image then
 		local countdownSprite = Sprite()

@@ -109,7 +109,7 @@ function Controls:changeBind(id, add, dont)
 end
 
 function Controls:setNewBind(key, optionsUI)
-	game.sound.play(paths.getSound('confirmMenu'))
+	util.playSfx(paths.getSound('confirmMenu'))
 	optionsUI:remove(self.bg)
 	optionsUI:remove(self.waitInputTxt)
 	self.onBinding = false

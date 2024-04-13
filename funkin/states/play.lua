@@ -343,6 +343,7 @@ function PlayState:enter()
 	self.bindedKeyRelease = bind(self, self.onKeyRelease)
 	controls:bindRelease(self.bindedKeyRelease)
 
+	self.playerNotefield.hitsoundVolume = ClientPrefs.data.hitSound / 100
 	if self.downScroll then
 		for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
 		for _, o in ipairs({
@@ -567,7 +568,7 @@ end
 function PlayState:step(s)
 	if not self.startingSong then
 		if Discord and self.startedCountdown and game.sound.music:isPlaying() then
-			coroutine.wrap(self.updateDiscordRPC)(self)
+			coroutine.wrap(PlayState.updateDiscordRPC)(self)
 		end
 
 		self.scripts:set("curStep", s)
@@ -618,7 +619,7 @@ function PlayState:section(s)
 end
 
 function PlayState:focus(f)
-	if Discord then self:updateDiscordRPC(not f) end
+	if Discord and love.autoPause then self:updateDiscordRPC(not f) end
 end
 
 function PlayState:executeCutsceneEvent(event, isEnd)
@@ -1435,6 +1436,8 @@ function PlayState:endSong(skip)
 end
 
 function PlayState:updateDiscordRPC(paused)
+	if not Discord then return end
+
 	local detailsText = "Freeplay"
 	if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 

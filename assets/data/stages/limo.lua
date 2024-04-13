@@ -89,7 +89,7 @@ function resetFastCar()
 end
 
 function fastCarDrive()
-	game.sound.play(paths.getSound('gameplay/carPass' .. love.math.random(0, 1)), 0.7)
+	util.playSfx(paths.getSound('gameplay/carPass' .. love.math.random(0, 1)))
 
 	fastCar.velocity.x = (fastCarSpeed / updateElapsed)
 	fastCarCanDrive = false

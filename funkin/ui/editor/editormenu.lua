@@ -89,7 +89,7 @@ function EditorMenu:update(dt)
 		if self.throttles.down:check() then self:changeSelection(shift and 2 or 1) end
 
 		if controls:pressed('back') then
-			game.sound.play(paths.getSound('cancelMenu'))
+			util.playSfx(paths.getSound('cancelMenu'))
 			self.exit = true
 
 			Timer.cancelTweensOf(self.grpText)
@@ -127,7 +127,7 @@ end
 
 function EditorMenu:changeSelection(huh)
 	if huh == nil then huh = 0 end
-	game.sound.play(paths.getSound('scrollMenu'))
+	util.playSfx(paths.getSound('scrollMenu'))
 
 	self.curSelected = self.curSelected + huh
 

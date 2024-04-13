@@ -227,7 +227,7 @@ function CreditsState:update(dt)
 		if self.throttles.down:check() then self:changeSelection(1) end
 	end
 	if controls:pressed("back") then
-		game.sound.play(paths.getSound('cancelMenu'))
+		util.playSfx(paths.getSound('cancelMenu'))
 		game.switchState(MainMenuState())
 	end
 
@@ -245,7 +245,7 @@ end
 
 function CreditsState:changeSelection(n)
 	if n == nil then n = 0 end
-	game.sound.play(paths.getSound('scrollMenu'))
+	util.playSfx(paths.getSound('scrollMenu'))
 
 	local u = self.ui
 	self.curSelected = self.curSelected + n

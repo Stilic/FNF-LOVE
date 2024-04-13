@@ -136,7 +136,7 @@ function ModsState:selectMods()
 		end)
 	end
 
-	game.sound.play(paths.getSound('confirmMenu'))
+	util.playSfx(paths.getSound('confirmMenu'))
 	game.sound.music:fade(1.5, 1, 0)
 
 	game.save.data.currentMod = Mods.currentMod
@@ -157,7 +157,7 @@ function ModsState:changeSelection(change)
 	self.curColor = {color[1] or 1, color[2] or 1, color[3] or 1}
 
 	if #Mods.mods > 0 then
-		game.sound.play(paths.getSound('scrollMenu'))
+		util.playSfx(paths.getSound('scrollMenu'))
 		self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
 	end
 end

@@ -108,7 +108,7 @@ function TitleState:update(dt)
 	if pressedEnter and not self.confirmed and self.skippedIntro then
 		self.confirmed = true
 		self.titleText:play("press")
-		game.sound.play(paths.getSound("confirmMenu"))
+		util.playSfx(paths.getSound("confirmMenu"))
 		game.camera:flash(Color.WHITE, 1.5)
 		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
 	end
