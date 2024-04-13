@@ -292,7 +292,7 @@ function Options:update(dt)
 end
 
 function Options:leave()
-	if self.buttions then
+	if self.buttons then
 		self.buttons:disable()
 	end
 
