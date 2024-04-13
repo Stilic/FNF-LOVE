@@ -20,8 +20,7 @@ function ScriptsHandler:remove(script) table.delete(self.scripts, script) end
 ---@param ... string
 function ScriptsHandler:loadDirectory(...)
 	for _, dir in ipairs({...}) do
-		local path = Mods.currentMod and paths.getMods(dir) or paths.getPath(dir)
-		for _, file in ipairs(love.filesystem.getDirectoryItems(path)) do
+		for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(dir))) do
 			if file:endsWith('.lua') then self:loadScript(string.withoutExt(dir .. "/" .. file)) end
 		end
 	end

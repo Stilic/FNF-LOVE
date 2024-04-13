@@ -28,7 +28,7 @@ function beat()
 		state.boyfriend:playAnim('scared', true)
 		state.gf:playAnim('scared', true)
 
-		state.boyfriend.lastHit = PlayState.conductor.currentBeat
-		state.gf.lastHit = PlayState.conductor.currentBeat
+		state.boyfriend.lastHit = PlayState.conductor.time
+		state.gf.lastHit = PlayState.conductor.time
 	end
 end

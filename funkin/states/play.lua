@@ -1033,7 +1033,7 @@ function PlayState:noteMiss(n)
 		if notefield == self.playerNotefield then
 			if self.combo >= 10 and not event.cancelledSadGF and self.gf.__animations['sad'] then
 				self.gf:playAnim('sad', true)
-				self.gf.lastHit = PlayState.conductor.currentBeat
+				self.gf.lastHit = PlayState.conductor.time
 			end
 
 			self.totalPlayed = self.totalPlayed + 1
@@ -1066,7 +1066,7 @@ function PlayState:miss(notefield, column)
 		if notefield == self.playerNotefield then
 			if self.combo >= 10 and not event.cancelledSadGF and self.gf.__animations['sad'] then
 				self.gf:playAnim('sad', true)
-				self.gf.lastHit = PlayState.conductor.currentBeat
+				self.gf.lastHit = PlayState.conductor.time
 			end
 
 			self.totalPlayed = self.totalPlayed + 1
@@ -1349,10 +1349,12 @@ function PlayState:endSong(skip)
 		PlayState.seenCutscene = true
 
 		local songName = paths.formatToSongPath(PlayState.SONG.song)
-		local cutscenePaths = {paths.getMods('data/cutscenes/' .. songName .. '-end.lua'),
+		local cutscenePaths = {
+			paths.getMods('data/cutscenes/' .. songName .. '-end.lua'),
 			paths.getMods('data/cutscenes/' .. songName .. '-end.json'),
 			paths.getPath('data/cutscenes/' .. songName .. '-end.lua'),
-			paths.getPath('data/cutscenes/' .. songName .. '-end.json')}
+			paths.getPath('data/cutscenes/' .. songName .. '-end.json')
+		}
 
 		local fileExist, cutsceneType
 		for i, path in ipairs(cutscenePaths) do

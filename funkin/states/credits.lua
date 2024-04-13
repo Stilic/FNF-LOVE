@@ -152,11 +152,9 @@ function CreditsState:enter()
 	u.userBox:setScrollFactor(0, 1)
 	u.usersMenu:add(u.userBox)
 
-	if Mods.currentMod then
-		local creditsMod = paths.getJSON('data/credits')
-		if creditsMod then
-			for i = 1, #creditsMod do table.insert(self.data, creditsMod[i]) end
-		end
+	local creditsMod = paths.getJSON('data/credits')
+	if creditsMod then
+		for i = 1, #creditsMod do table.insert(self.data, creditsMod[i]) end
 	end
 
 	for i = 1, #self.defaultData do

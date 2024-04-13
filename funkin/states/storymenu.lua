@@ -385,44 +385,20 @@ function StoryMenuState:checkSongsAssets(songs, diff)
 end
 
 function StoryMenuState:loadWeeks()
-	if Mods.currentMod then
-		if paths.exists(paths.getMods('data/weekList.txt'), 'file') then
-			local listData = paths.getText('weekList'):gsub('\r', '')
-				:split('\n')
-			for _, week in pairs(listData) do
-				local data = paths.getJSON('data/weeks/weeks/' .. week)
-				data.file = week
-				table.insert(self.weeksData, data)
-			end
-		else
-			for _, str in pairs(love.filesystem.getDirectoryItems(paths.getMods(
-				'data/weeks/weeks'))) do
-				local week = str:withoutExt()
-				if str:endsWith('.json') then
-					local data = paths.getJSON('data/weeks/weeks/' .. week)
-					data.file = week
-					table.insert(self.weeksData, data)
-				end
-			end
+	local func = Mods.currentMod and paths.getMods or paths.getPath
+	if paths.exists(func('data/weekList.txt'), 'file') then
+		for _, week in pairs(paths.getText('weekList'):gsub('\r', ''):split('\n')) do
+			local data = paths.getJSON('data/weeks/weeks/' .. week)
+			data.file = week
+			table.insert(self.weeksData, data)
 		end
 	else
-		if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
-			local listData = paths.getText('weekList'):gsub('\r', '')
-				:split('\n')
-			for _, week in pairs(listData) do
+		for _, str in pairs(love.filesystem.getDirectoryItems(func('data/weeks/weeks'))) do
+			if str:endsWith('.json') then
+				local week = str:withoutExt()
 				local data = paths.getJSON('data/weeks/weeks/' .. week)
 				data.file = week
 				table.insert(self.weeksData, data)
-			end
-		else
-			for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-				'data/weeks/weeks'))) do
-				local week = str:withoutExt()
-				if str:endsWith('.json') then
-					local data = paths.getJSON('data/weeks/weeks/' .. week)
-					data.file = week
-					table.insert(self.weeksData, data)
-				end
 			end
 		end
 	end

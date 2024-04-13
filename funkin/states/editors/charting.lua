@@ -379,7 +379,7 @@ function ChartingState:add_UI_Song()
 		end
 	end
 	for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-		'data/characters'))) do
+		'data/characters', false))) do
 		local charName = str:withoutExt()
 		if str:endsWith('.json') and not charName:endsWith('-dead') then
 			table.insert(optionsChar, charName)
@@ -415,7 +415,7 @@ function ChartingState:add_UI_Song()
 		end
 	end
 	for _, str in pairs(love.filesystem.getDirectoryItems(paths.getPath(
-		'data/stages'))) do
+		'data/stages', false))) do
 		local stageName = str:withoutExt()
 		table.insert(optionsStage, stageName)
 	end

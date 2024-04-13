@@ -136,7 +136,7 @@ function Character:update(dt)
 		if self.strokeTime ~= 0 and self.curAnim.name:startsWith("sing") then
 			self.__strokeDelta = self.__strokeDelta + dt
 			if self.__strokeDelta >= 0.13 then
-				self.lastHit = PlayState.conductor.currentBeat
+				self.lastHit = PlayState.conductor.time
 				self.curFrame, self.animFinished = 1, false
 				self.__strokeDelta = 0
 			end
@@ -154,7 +154,7 @@ end
 
 function Character:beat(b)
 	if self.lastHit > 0 then
-		if self.lastHit + math.round(self.holdTime / 4) < b then
+		if self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime < PlayState.conductor.time then
 			self:dance()
 			self.lastHit = math.negative_infinity
 		end
@@ -192,7 +192,7 @@ function Character:sing(dir, type)
 	self:playAnim(anim, true)
 
 	self.columnAnim = dir
-	self.lastHit = PlayState.conductor.currentBeat
+	self.lastHit = PlayState.conductor.time
 end
 
 function Character:dance(force)

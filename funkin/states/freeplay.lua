@@ -285,68 +285,38 @@ local function getSongMetadata(song)
 end
 
 function FreeplayState:loadSongs()
-	if Mods.currentMod then
-		if paths.exists(paths.getMods('data/freeplaySonglist.txt'), 'file') then
-			local listData = paths.getText('freeplaySonglist'):gsub('\r', ''):split(
-				'\n')
-			for _, song in pairs(listData) do
-				table.insert(self.songsData, getSongMetadata(song))
-			end
-		else
-			if paths.exists(paths.getMods('data/weekList.txt'), 'file') then
-				local listData = paths.getText('weekList'):gsub('\r', ''):split(
-					'\n')
-				for _, week in pairs(listData) do
-					local weekData = paths.getJSON('data/weeks/weeks/' .. week)
-					for _, song in ipairs(weekData.songs) do
-						table.insert(self.songsData, getSongMetadata(song))
-					end
-				end
-			else
-				for _, str in pairs(love.filesystem.getDirectoryItems(
-					paths.getMods('data/weeks/weeks'))) do
-					local weekName = str:withoutExt()
-					if str:endsWith('.json') then
-						local weekData = paths.getJSON(
-							'data/weeks/weeks/' .. weekName)
-						for _, song in ipairs(weekData.songs) do
-							table.insert(self.songsData, getSongMetadata(song))
-						end
-					end
-				end
-			end
-		end
+	local listData, func = nil, Mods.currentMod and paths.getMods or paths.getPath
+	if paths.exists(func('data/freeplayList.txt'), 'file') then
+		listData = paths.getText('freeplayList')
+	elseif paths.exists(func('data/freeplaySonglist.txt'), 'file') then
+		listData = paths.getText('freeplaySonglist')
 	else
-		if paths.exists(paths.getPath('data/freeplaySonglist.txt'), 'file') then
-			local listData = paths.getText('freeplaySonglist'):gsub('\r', ''):split(
+		if paths.exists(func('data/weekList.txt'), 'file') then
+			listData = paths.getText('weekList'):gsub('\r', ''):split(
 				'\n')
-			for _, song in pairs(listData) do
-				table.insert(self.songsData, getSongMetadata(song))
+			for _, week in pairs(listData) do
+				local weekData = paths.getJSON('data/weeks/weeks/' .. week)
+				for _, song in ipairs(weekData.songs) do
+					table.insert(self.songsData, getSongMetadata(song))
+				end
 			end
 		else
-			if paths.exists(paths.getPath('data/weekList.txt'), 'file') then
-				local listData = paths.getText('weekList'):gsub('\r', ''):split(
-					'\n')
-				for _, week in pairs(listData) do
-					local weekData = paths.getJSON('data/weeks/weeks/' .. week)
+			for _, str in pairs(love.filesystem.getDirectoryItems(func('data/weeks/weeks'))) do
+				local weekName = str:withoutExt()
+				if str:endsWith('.json') then
+					local weekData = paths.getJSON(
+						'data/weeks/weeks/' .. weekName)
 					for _, song in ipairs(weekData.songs) do
 						table.insert(self.songsData, getSongMetadata(song))
 					end
 				end
-			else
-				for _, str in pairs(love.filesystem.getDirectoryItems(
-					paths.getPath('data/weeks/weeks'))) do
-					local weekName = str:withoutExt()
-					if str:endsWith('.json') then
-						local weekData = paths.getJSON(
-							'data/weeks/weeks/' .. weekName)
-						for _, song in ipairs(weekData.songs) do
-							table.insert(self.songsData, getSongMetadata(song))
-						end
-					end
-				end
 			end
 		end
+		return
+	end
+	listData = listData:gsub('\r', ''):split('\n')
+	for _, song in pairs(listData) do
+		table.insert(self.songsData, getSongMetadata(song))
 	end
 end
 
