@@ -600,10 +600,6 @@ function PlayState:section(s)
 		self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
 	end
 
-	if self.startedCountdown then
-		self:cameraMovement()
-	end
-
 	if self.camZooming and game.camera.zoom < 1.35 then
 		game.camera.zoom = game.camera.zoom + 0.015
 		self.camHUD.zoom = self.camHUD.zoom + 0.03
@@ -758,6 +754,10 @@ function PlayState:update(dt)
 
 	self.scripts:call("update", dt)
 	PlayState.super.update(self, dt)
+
+	if self.startedCountdown then
+		self:cameraMovement()
+	end
 
 	if self.camZooming then
 		game.camera.zoom = util.coolLerp(game.camera.zoom, self.camZoom, 3, dt * self.camZoomSpeed)
