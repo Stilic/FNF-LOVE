@@ -1,13 +1,19 @@
 local Notefield = ActorGroup:extend("Notefield")
 
+-- reset on Playstate enter
 Notefield.safeZoneOffset = 10 / 60
-Notefield.ratings = {
-	{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1.0},
-	{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
-	{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
-	{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
-	{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
-}
+Notefield.sustainSafeZone = 1/2
+function Notefield.resetRating()
+	Notefield.ratings = {
+		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1.0},
+		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
+		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
+		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
+		{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
+	}
+end
+
+Notefield.resetRating()
 
 function Notefield.getRating(a, b, returnShit)
 	local diff = math.abs(a - b)
@@ -23,7 +29,7 @@ function Notefield.checkDiff(note, time)
 end
 
 function Notefield.getScoreSustain(time, note)
-	return math.min(time - note.time + Notefield.safeZoneOffset, note.sustainTime) * 600
+	return math.min(time - note.time + Notefield.safeZoneOffset, note.sustainTime) * 1000
 end
 
 function Notefield:new(x, y, keys, skin, character)
@@ -36,10 +42,11 @@ function Notefield:new(x, y, keys, skin, character)
 	self.skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound("hitsound")
-	self.downscroll = false -- this just sets scale y backwards
-	self.ghostTap = ClientPrefs.data.ghostTap or false
-	self.botPlay = true -- for PlayState
 
+	self.ghostTap = ClientPrefs.data.ghostTap or false
+	self.bot = false
+
+	self.downscroll = false -- this just sets scale y backwards
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
 	self.speed = 1
@@ -55,8 +62,6 @@ function Notefield:new(x, y, keys, skin, character)
 	self.goods = 0
 	self.bads = 0
 	self.shits = 0
-	self.hitCallback = nil
-	self.missCallback = nil
 
 	self.modifiers = {}
 
@@ -75,6 +80,11 @@ function Notefield:new(x, y, keys, skin, character)
 	end
 
 	self:getWidth()
+end
+
+function Notefield:enter(parent)
+	self.parent = parent
+	self.canHitCallbacks = parent.registerHit ~= nil and parent.registerSustain ~= nil
 end
 
 function Notefield:makeLane(direction, y)
@@ -187,10 +197,8 @@ function Notefield:hit(time, note, force)
 		note.hit = true
 
 		local name = rating.name .. "s"
-		self.totalPlayed, self.totalHit, self[name] = self.totalPlayed + 1, self.totalHit + rating.mod, (self[name] or 0) + 1
-		self.score = self.score + rating.score
-
-		; (self.hitCallback or __NULL__)(rating, note, force)
+		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
+		self[name], self.score = (self[name] or 0) + 1, self.score + rating.score
 	elseif note.sustain then -- for sustains
 		if not rating then return end
 		self.score = self.score + Notefield.getScoreSustain(time, note)
@@ -215,7 +223,6 @@ function Notefield:miss(note, force)
 		if not note or not note.ignoreNote then
 			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
 		end
-		(self.missCallback or __NULL__)(note, force)
 	end
 
 	if note and (force or not note.sustain) then
