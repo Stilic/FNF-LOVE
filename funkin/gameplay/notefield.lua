@@ -1,13 +1,17 @@
 local Notefield = ActorGroup:extend("Notefield")
 
 Notefield.safeZoneOffset = 10 / 60
-Notefield.ratings = {
-	{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1.0},
-	{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
-	{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
-	{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
-	{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
-}
+function Notefield.resetRatings()
+	Notefield.ratings = {
+		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1.0},
+		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
+		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
+		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
+		{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
+	}
+end
+
+Notefield.resetRatings()
 
 function Notefield.getRating(a, b, returnShit)
 	local diff = math.abs(a - b)
@@ -37,14 +41,15 @@ function Notefield:new(x, y, keys, skin, character)
 	self.hitsoundVolume = 0
 	self.hitsound = paths.getSound("hitsound")
 	self.downscroll = false -- this just sets scale y backwards
-	self.ghostTap = ClientPrefs.data.ghostTap or false
-	self.botPlay = true -- for PlayState
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
 	self.speed = 1
 	self.drawSize = game.height + self.noteWidth
 	self.drawSizeOffset = 0
+
+	self.ghostTap = ClientPrefs.data.ghostTap or false
+	self.bot = true -- for PlayState
 
 	self.totalPlayed = 0
 	self.totalHit = 0.0
@@ -55,8 +60,6 @@ function Notefield:new(x, y, keys, skin, character)
 	self.goods = 0
 	self.bads = 0
 	self.shits = 0
-	self.hitCallback = nil
-	self.missCallback = nil
 
 	self.modifiers = {}
 
@@ -189,8 +192,6 @@ function Notefield:hit(time, note, force)
 		local name = rating.name .. "s"
 		self.totalPlayed, self.totalHit, self[name] = self.totalPlayed + 1, self.totalHit + rating.mod, (self[name] or 0) + 1
 		self.score = self.score + rating.score
-
-		; (self.hitCallback or __NULL__)(rating, note, force)
 	elseif note.sustain then -- for sustains
 		if not rating then return end
 		self.score = self.score + Notefield.getScoreSustain(time, note)
@@ -211,11 +212,9 @@ function Notefield:miss(note, force)
 			table.insert(self.missedNotes, note)
 			note.tooLate = true
 		end
-
 		if not note or not note.ignoreNote then
 			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
 		end
-		(self.missCallback or __NULL__)(note, force)
 	end
 
 	if note and (force or not note.sustain) then
@@ -395,7 +394,7 @@ end
 function Notefield:destroy()
 	ActorSprite.destroy(self)
 
-	self.modifiers, self.hitCallback, self.missCallback = nil
+	self.modifiers = nil
 	if self.receptors then
 		for _, r in ipairs(self.receptors) do r:destroy() end
 		self.receptors = nil
