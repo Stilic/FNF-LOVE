@@ -24,12 +24,12 @@ function Options:new(showBG, completionCallback)
 
 	self.focus = 0
 
-	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
+	self.bg = Graphic(0, 0, game.width, game.height, Color.BLACK)
 	self.bg:setScrollFactor()
 	self:add(self.bg)
 
 	self.tabBGHeight = game.height - 125
-	self.tabBG = Graphic(0, 105, game.height * 1.45, self.tabBGHeight, {0, 0, 0})
+	self.tabBG = Graphic(0, 105, game.height * 1.45, self.tabBGHeight, Color.BLACK)
 	self.tabBG:screenCenter("x")
 	self.tabBG.alpha = 0.7
 	self:add(self.tabBG)
@@ -39,17 +39,17 @@ function Options:new(showBG, completionCallback)
 	self.selectedTab = nil
 	self:add(self.tabGroup)
 
-	self.optionsCursor = Graphic(0, 0, 0, 0, {1, 1, 1})
+	self.optionsCursor = Graphic(0, 0, 0, 0, Color.WHITE)
 	self.optionsCursor.alpha = 0.1
 	self.optionsCursor.visible = false
 	self:add(self.optionsCursor)
 
-	self.titleTabBG = Graphic(0, 20, game.height * 1.45, 65, {0, 0, 0})
+	self.titleTabBG = Graphic(0, 20, game.height * 1.45, 65, Color.BLACK)
 	self.titleTabBG:screenCenter("x")
 	self.titleTabBG.alpha = 0.7
 	self:add(self.titleTabBG)
 
-	self.titleTxt = Text(0, 30, "", paths.getFont("phantommuff.ttf", 40), {1, 1, 1}, "center", game.width)
+	self.titleTxt = Text(0, 30, "", paths.getFont("phantommuff.ttf", 40), Color.WHITE, "center", game.width)
 	self:add(self.titleTxt)
 
 	if love.system.getDevice() == "Mobile" then

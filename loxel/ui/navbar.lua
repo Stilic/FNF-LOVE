@@ -10,7 +10,7 @@ function Navbar:new(list, position)
 	self.hovered = false
 
 	self.color = {0.3, 0.3, 0.3}
-	self.lineColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
 
 	self.lineSize = 4
 

@@ -20,9 +20,9 @@ function InputTextBox:new(x, y, width, height, font)
 	self.focused = false
 
 	self.color = {0.2, 0.2, 0.2}
-	self.lineColor = {1, 1, 1}
-	self.textColor = {1, 1, 1}
-	self.cursorColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
+	self.textColor = Color.WHITE
+	self.cursorColor = Color.WHITE
 
 	self.lineSize = 0.5
 	self.round = {4, 4}

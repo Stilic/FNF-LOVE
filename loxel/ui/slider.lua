@@ -17,7 +17,7 @@ function Slider:new(x, y, width, height, value, snap, sliderType, min, max)
 	self.sliderType = (type(sliderType) == "string") and sliderType:lower()
 
 	self.color = {0.2, 0.2, 0.2}
-	self.lineColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
 	self.knobColor = {0.4, 0.4, 0.4}
 
 	self.lineSize = 0.5

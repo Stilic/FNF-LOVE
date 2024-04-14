@@ -10,7 +10,7 @@ function Grid:new(x, y, rows, cols, cellSize, color1, color2)
 	self.cellSize = cellSize or 20
 	self.grid = {}
 	self.color1 = color1 or {0.5, 0.5, 0.5}
-	self.color2 = color2 or {1, 1, 1}
+	self.color2 = color2 or Color.WHITE
 	self.scrollFactor = {x = 1, y = 1}
 	self.width = self.cellSize * self.cols
 	self.height = self.cellSize * self.rows

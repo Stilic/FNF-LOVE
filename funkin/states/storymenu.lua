@@ -35,11 +35,11 @@ function StoryMenuState:enter()
 	PlayState.storyMode = true
 
 	self.scoreText = Text(10, 10, "SCORE: 49324858",
-		paths.getFont('vcr.ttf', 36), {1, 1, 1}, 'right')
+		paths.getFont('vcr.ttf', 36), Color.WHITE, 'right')
 	self.scoreText.antialiasing = false
 
 	self.txtWeekTitle = Text(game.width * 0.7, 10, "",
-		paths.getFont('vcr.ttf', 32), {1, 1, 1}, 'right')
+		paths.getFont('vcr.ttf', 32), Color.WHITE, 'right')
 	self.txtWeekTitle.alpha = 0.7
 	self.txtWeekTitle.antialiasing = false
 

@@ -3,9 +3,8 @@ function create()
 		state.camHUD.visible = false
 
 		util.playSfx(paths.getSound('gameplay/Lights_Shut_off'))
-		local blackScreen = Sprite(game.width * -0.5, game.height * -0.5)
-		blackScreen:make(math.floor(game.width * 2), math.floor(game.height * 2),
-			{0, 0, 0})
+		local blackScreen = Graphic(game.width * -0.5, game.height * -0.5,
+			math.floor(game.width * 2), math.floor(game.height * 2), Color.BLACK)
 		blackScreen:setScrollFactor()
 		state:add(blackScreen)
 	end)

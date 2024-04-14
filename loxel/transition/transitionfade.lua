@@ -4,7 +4,7 @@ local TransitionFade = TransitionData:extend("TransitionFade")
 function TransitionFade:new(duration)
 	TransitionFade.super.new(self, duration)
 	if self.gradient == nil then
-		self.gradient = util.newGradient("vertical", {0, 0, 0}, {0, 0, 0}, {0, 0, 0, 0})
+		self.gradient = util.newGradient("vertical", Color.BLACK, Color.BLACK, {0, 0, 0, 0})
 	end
 end
 

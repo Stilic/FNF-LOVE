@@ -14,7 +14,7 @@ function EditorMenu:new(completionCallback)
 	}
 	self.curSelected = 1
 
-	self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
+	self.bg = Graphic(0, 0, game.width, game.height, Color.BLACK)
 	self.bg.alpha = 0
 	self.bg:setScrollFactor()
 	self:add(self.bg)

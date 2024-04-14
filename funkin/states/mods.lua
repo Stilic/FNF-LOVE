@@ -5,7 +5,7 @@ function ModsState:enter()
 	self.prevMods = nil
 	self.curSelected = table.find(Mods.mods, Mods.currentMod) or 1
 	self.switchingMods = false
-	self.curColor = {1, 1, 1}
+	self.curColor = Color.WHITE
 
 	self.bg = Sprite()
 	self.bg:loadTexture(paths.getImage('menus/menuDesat'))

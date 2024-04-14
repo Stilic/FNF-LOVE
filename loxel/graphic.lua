@@ -7,7 +7,7 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 	self.width = width or 120
 	self.height = height or 50
 
-	self.color = color or {0, 0, 0}
+	self.color = color or Color.BLACK
 	self.type = type or "rectangle"
 	self.fill = fill or "fill"
 	self.lined = lined or false

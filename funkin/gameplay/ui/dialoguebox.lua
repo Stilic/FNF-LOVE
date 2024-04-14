@@ -3,10 +3,8 @@ local DialogueBox = SpriteGroup:extend("DialogueBox")
 function DialogueBox:new(dialogueList, delayFirst)
 	DialogueBox.super.new(self)
 
-	local colorBG = Color.convert({179, 223, 216})
-	self.bgFade = Sprite(-200, -200)
-	self.bgFade:make(math.floor(game.width * 1.3),
-		math.floor(game.height * 1.3), colorBG)
+	self.bgFade = Graphic(-200, -200,
+		math.floor(game.width * 1.3), math.floor(game.height * 1.3), Color.convert({179, 223, 216}))
 	self.bgFade:setScrollFactor()
 	self.bgFade.alpha = 0
 	self:add(self.bgFade)

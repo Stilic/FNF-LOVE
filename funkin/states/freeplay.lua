@@ -81,10 +81,10 @@ function FreeplayState:enter()
 	end
 
 	self.scoreText = Text(game.width * 0.7, 5, "", paths.getFont("vcr.ttf", 32),
-		{1, 1, 1}, "right")
+		Color.WHITE, "right")
 	self.scoreText.antialiasing = false
 
-	self.scoreBG = Graphic(self.scoreText.x - 6, 0, 1, 66, {0, 0, 0})
+	self.scoreBG = Graphic(self.scoreText.x - 6, 0, 1, 66, Color.BLACK)
 	self.scoreBG.alpha = 0.6
 	self:add(self.scoreBG)
 

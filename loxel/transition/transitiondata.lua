@@ -3,7 +3,7 @@ local TransitionData = Classic:extend("TransitionData")
 
 function TransitionData:new(duration, color)
 	self.duration = duration
-	self.color = color or {0, 0, 0}
+	self.color = color or Color.BLACK
 end
 
 function TransitionData:start()

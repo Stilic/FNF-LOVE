@@ -4,7 +4,7 @@ local doof, music
 
 function create()
 	local dialogue = love.filesystem.read(paths.getPath('songs/senpai/dialogue.txt')):split('\n')
-	local black = Sprite(-100, -100):make(game.width * 2, game.height * 2, {0, 0, 0})
+	local black = Graphic(-100, -100, game.width * 2, game.height * 2, Color.BLACK)
 
 	music = game.sound.play(paths.getMusic('gameplay/Lunchbox'), 0.8, true, true)
 

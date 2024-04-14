@@ -52,12 +52,12 @@ function Camera:new(x, y, width, height)
 	self.__zoom = {x = 1, y = 1}
 	self.__renderQueue = {}
 
-	self.__flashColor = {1, 1, 1}
+	self.__flashColor = Color.WHITE
 	self.__flashAlpha = 0
 	self.__flashDuration = 0
 	self.__flashComplete = nil
 
-	self.__fadeColor = {1, 1, 1}
+	self.__fadeColor = Color.WHITE
 	self.__fadeAlpha = 0
 	self.__fadeDuration = 0
 	self.__fadeComplete = nil
@@ -86,7 +86,7 @@ end
 function Camera:flash(color, duration, onComplete, force)
 	if not force and (self.__flashAlpha > 0) then return end
 
-	self.__flashColor = color or {1, 1, 1}
+	self.__flashColor = color or Color.WHITE
 	duration = duration or 1
 	if duration <= 0 then duration = 0.000001 end
 	self.__flashDuration = duration
@@ -97,7 +97,7 @@ end
 function Camera:fade(color, duration, fadeIn, onComplete, force)
 	if not force and (self.__fadeDuration > 0) then return end
 
-	self.__fadeColor = color or {0, 0, 0}
+	self.__fadeColor = color or Color.BLACK
 	duration = duration or 1
 	if duration <= 0 then duration = 0.000001 end
 	self.__fadeDuration = duration

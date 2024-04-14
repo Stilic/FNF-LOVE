@@ -24,7 +24,7 @@ function GameOverSubstate:new(x, y)
 	self.followTime = 0.5
 	self._followTime = 0
 
-	self.bg = Graphic(0, 0, 1, 1, {0, 0, 0})
+	self.bg = Graphic(0, 0, 1, 1, Color.BLACK)
 	self.bg.alpha = 0
 	self.bg.scale.x, self.bg.scale.y = game.width * 3, game.height * 3
 	self.bg:screenCenter()

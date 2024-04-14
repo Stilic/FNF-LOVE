@@ -8,7 +8,7 @@ function BackDrop:new(x, y, width, height, size, color, color2, speed)
 	self.width = width or 500
 	self.height = height or 400
 	self.size = size or 50
-	self.color = color or {1, 1, 1}
+	self.color = color or Color.WHITE
 	self.color2 = color2 or {0.5, 0.5, 0.5}
 	self.speed = {
 		x = type(speed) == "table" and speed.x or speed or 0,

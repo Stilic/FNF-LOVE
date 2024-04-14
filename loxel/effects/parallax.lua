@@ -25,7 +25,7 @@ function ParallaxImage:new(x, y, width, height, texture)
 	self.scaleBack = 1
 	self.scaleFront = 1
 
-	self.color = {1, 1, 1}
+	self.color = Color.WHITE
 	self.alpha = 1
 
 	self.mesh = love.graphics.newMesh(self.vertices, "fan")

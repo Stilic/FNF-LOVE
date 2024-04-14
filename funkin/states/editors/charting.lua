@@ -94,8 +94,7 @@ function ChartingState:enter()
 		})
 	end
 
-	local blackLine = Sprite(self.gridBox.x + (self.gridSize * 4) - 1, 0):make(
-		2, game.height, {0, 0, 0})
+	local blackLine = Graphic(self.gridBox.x + (self.gridSize * 4) - 1, 0, 2, game.height, Color.BLACK)
 	blackLine:setScrollFactor(1, 0)
 	self:add(blackLine)
 
@@ -107,22 +106,20 @@ function ChartingState:enter()
 	self:updateSectionLine()
 	self:add(self.sectionLines)
 
-	self.dummyArrow = Sprite():make(self.gridSize, self.gridSize, {1, 1, 1})
+	self.dummyArrow = Graphic(0, 0, self.gridSize, self.gridSize, Color.WHITE)
 	self:add(self.dummyArrow)
 
 	self:generateNotes()
 	self:add(self.allSustains)
 	self:add(self.allNotes)
 
-	local daBlack = Sprite(self.gridBox.x, 0):make(self.gridSize * 8,
-		(self.gridSize * 4),
-		{0, 0, 0})
+	local daBlack = Graphic(self.gridBox.x, 0, self.gridSize * 8,
+		self.gridSize * 4, Color.BLACK)
 	daBlack:setScrollFactor()
 	daBlack.alpha = 0.4
 	self:add(daBlack)
 
-	local curPosLine = Sprite(self.gridBox.x - 5, (self.gridSize * 4) - 2):make(
-		self.gridSize * 8 + 10, 4, {0, 0.5, 1})
+	local curPosLine = Graphic(self.gridBox.x - 5, self.gridSize * 4 - 2, self.gridSize * 8 + 10, 4, {0, 0.5, 1})
 	curPosLine:setScrollFactor()
 	self:add(curPosLine)
 
@@ -286,7 +283,7 @@ function ChartingState:add_UIWindow_Note(note)
 
 				note.step = Conductor.getStepFromBPMChange(lastChange, note.time, 0)
 				local yval = note.step * self.gridSize
-				note.y = yval + note.scrollOffset.y
+				note.y = yval
 			else
 				noteTimeTxt.content = 'Time (invalid number)'
 				noteTimeTxt.color = {1, 0.5, 0.5}
@@ -830,7 +827,7 @@ function ChartingState:update(dt)
 	end
 
 	for _, n in pairs(self.allNotes.members) do
-		n.color = {1, 1, 1}
+		n.color = Color.WHITE
 
 		if self.curSelectedNote ~= nil then
 			local datacheck = n.data
@@ -902,8 +899,8 @@ function ChartingState:generateNotes()
 					local id = (note.mustPress and note.data + 4 or note.data)
 					local yval = note.step * self.gridSize
 					local xval = (self.gridBox.x) + (self.gridSize * id)
-					note.x = xval + note.scrollOffset.x
-					note.y = yval + note.scrollOffset.y
+					note.x = xval
+					note.y = yval
 					self.allNotes:add(note)
 
 					if n[3] ~= nil then
@@ -914,13 +911,8 @@ function ChartingState:generateNotes()
 									ChartingState.conductor
 									.stepCrotchet * 16, 0,
 									(self.gridSize * 16))
-							local susColor = Color.convert(
-								self.sustainColors[note.data +
-								1])
-							local sustain = Sprite(
-								note.x + (self.gridSize / 2) - 4,
-								note.y + (self.gridSize / 2))
-							sustain:make(8, math.floor(susHeight), susColor)
+							local sustain = Graphic(note.x + (self.gridSize / 2) - 4, note.y + (self.gridSize / 2),
+								8, math.floor(susHeight), Color.convert(self.sustainColors[note.data +1]))
 							note.sustainSprite = sustain
 							self.allSustains:add(sustain)
 						end
@@ -942,8 +934,8 @@ function ChartingState:updateNotes(updateTime)
 		local id = (note.mustPress and note.data + 4 or note.data)
 		local yval = note.step * (self.gridSize * 4)
 		local xval = (self.gridBox.x) + (self.gridSize * id)
-		note.x = xval + note.scrollOffset.x
-		note.y = yval + note.scrollOffset.y
+		note.x = xval
+		note.y = yval
 		if note.sustainSprite then
 			note.sustainSprite.y = note.y + (self.gridSize / 2)
 		end
@@ -955,8 +947,8 @@ end
 function ChartingState:updateBeatLine()
 	self.beatLines:clear()
 	for i = 0, 10 do
-		local daLine = Sprite(self.gridBox.x - 4, 0):make(self.gridSize * 8 + 8,
-			2, {1, 1, 1})
+		local daLine = Graphic(self.gridBox.x - 4, 0,
+			self.gridSize * 8 + 8, 2, Color.WHITE)
 		daLine.alpha = 0.6
 		daLine.y = self.gridBox.y + ((self.gridSize * 4) * i) - 1
 		self.beatLines:add(daLine)
@@ -969,8 +961,8 @@ function ChartingState:updateSectionLine()
 	for _, s in ipairs(self.__song.notes) do
 		local beats = 4
 		if s and s.sectionBeats then beats = s.sectionBeats end
-		local daLine = Sprite(self.gridBox.x - 5, 0):make(
-			self.gridSize * 8 + 10, 4, {1, 1, 1})
+		local daLine = Graphic(self.gridBox.x - 5, 0,
+			self.gridSize * 8 + 10, 4, Color.WHITE)
 		daLine.alpha = 0.7
 		daLine.y = (self.gridSize * totalSteps) - 2
 		totalSteps = totalSteps + math.round(beats * 4)
@@ -1167,8 +1159,8 @@ function ChartingState:addNote()
 	local id = (note.mustPress and note.data + 4 or note.data)
 	local yval = note.step * self.gridSize
 	local xval = (self.gridBox.x) + (self.gridSize * id)
-	note.x = xval + note.scrollOffset.x
-	note.y = yval + note.scrollOffset.y
+	note.x = xval
+	note.y = yval
 	self.allNotes:add(note)
 
 	self.curSelectedNote = self.__song.notes[arrowSection + 1].sectionNotes[noteIndex]

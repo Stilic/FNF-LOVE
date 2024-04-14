@@ -34,8 +34,7 @@ function CharacterEditor:enter()
 	bg:setScrollFactor()
 	self:add(bg)
 
-	self.floor = Sprite(0, 840)
-	self.floor:make(game.width, 4)
+	self.floor = Graphic(0, 840, game.width, 4, Color.BLACK)
 	self.floor:setScrollFactor(0, 1)
 	self.floor.cameras = {self.camChar}
 	self:add(self.floor)
@@ -66,11 +65,11 @@ function CharacterEditor:enter()
 
 	self:changeAnim()
 
-	self.camPoint1 = Sprite():make(3, 30, {1, 1, 1})
+	self.camPoint1 = Graphic(0, 0, 3, 30, Color.WHITE)
 	self.camPoint1.cameras = {self.camChar}
 	self:add(self.camPoint1)
 
-	self.camPoint2 = Sprite():make(30, 3, {1, 1, 1})
+	self.camPoint2 = Graphic(0, 0, 30, 3, Color.WHITE)
 	self.camPoint2.cameras = {self.camChar}
 	self:add(self.camPoint2)
 

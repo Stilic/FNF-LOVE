@@ -22,8 +22,8 @@ function Window:new(x, y, width, height, title)
 
 	self.color = {0.3, 0.3, 0.3}
 	self.barColor = {0.4, 0.4, 0.4}
-	self.lineColor = {1, 1, 1}
-	self.textColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
+	self.textColor = Color.WHITE
 
 	self.lineSize = 1
 

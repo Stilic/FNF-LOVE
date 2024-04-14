@@ -265,7 +265,7 @@ function PlayState:enter()
 	self:add(self.timeArc)
 
 	local fontScore = paths.getFont("vcr.ttf", 17)
-	self.scoreText = Text(game.width / 2, self.healthBar.y + 28, "", fontScore, {1, 1, 1}, "center")
+	self.scoreText = Text(game.width / 2, self.healthBar.y + 28, "", fontScore, Color.WHITE, "center")
 	self.scoreText.outline.width = 1
 	self.scoreText.antialiasing = false
 	self:add(self.scoreText)
@@ -276,14 +276,14 @@ function PlayState:enter()
 	end
 
 	local fontTime = paths.getFont("vcr.ttf", 24)
-	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, util.formatTime(songTime), fontTime, {1, 1, 1}, "left")
+	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, util.formatTime(songTime), fontTime, Color.WHITE, "left")
 	self.timeText.outline.width = 2
 	self.timeText.antialiasing = false
 	self.timeText.y = (self.timeArc.y + self.timeArc.width) - self.timeText:getHeight()
 	self:add(self.timeText)
 
 	self.botplayText = Text(0, self.timeText.y, 'BOTPLAY MODE',
-		fontTime, {1, 1, 1})
+		fontTime, Color.WHITE)
 	self.botplayText.x = game.width - self.botplayText:getWidth() - 36
 	self.botplayText.outline.width = 2
 	self.botplayText.antialiasing = false
@@ -797,13 +797,14 @@ function PlayState:update(dt)
 			game.switchState(ChartingState())
 		end
 
-		--[[if controls:pressed("debug_2") then
+		if controls:pressed("debug_2") then
+			game.camera:unfollow()
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
 			if self.dadVocals then self.dadVocals:pause() end
 			CharacterEditor.onPlayState = true
 			game.switchState(CharacterEditor())
-		end]]
+		end
 
 		if controls:pressed("reset") then
 			self.health = 0

@@ -84,12 +84,12 @@ function Controls:enterOption(id, optionsUI)
 	self.dontAcceptYet, self.dontBackYet = true, true
 
 	if not self.bg then
-		self.bg = Graphic(0, 0, game.width, game.height, {0, 0, 0})
+		self.bg = Graphic(0, 0, game.width, game.height, Color.BLACK)
 		self.bg:setScrollFactor()
 		self.bg.alpha = 0.5
 
 		self.waitInputTxt = Text(0, 0, "Rebinding...", paths.getFont("phantommuff.ttf", 40),
-			{1, 1, 1}, "center", game.width)
+			Color.WHITE, "center", game.width)
 		self.waitInputTxt:screenCenter('y')
 		self.waitInputTxt:setScrollFactor()
 	end

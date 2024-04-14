@@ -11,9 +11,9 @@ function Checkbox:new(x, y, size, callback)
 	self.callback = callback
 
 	self.color = {0.2, 0.2, 0.2}
-	self.lineColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
 	self.lineColorHovered = {0.8, 0.8, 0.8}
-	self.checkColor = {1, 1, 1}
+	self.checkColor = Color.WHITE
 
 	self.lineSize = 0.5
 	self.round = {4, 4}

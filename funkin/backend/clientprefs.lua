@@ -65,7 +65,7 @@ ClientPrefs.controls = {
 	pick_mods = {"key:6"},
 
 	debug_1 = {"key:7"},
-	debug_2 = {"key:8"},
+	debug_2 = {"key:6"},
 }
 
 function ClientPrefs.saveData()

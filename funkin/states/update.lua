@@ -44,12 +44,12 @@ function UpdateState:enter()
 		.. "\n\n Press BACK to proceed."
 
 	local textupdate = Text(0, 0, textmoment, paths.getFont('phantommuff.ttf', 30),
-		{1, 1, 1}, 'center')
+		Color.WHITE, 'center')
 	textupdate:screenCenter()
 	textupdate.y = textupdate.y - 40
 	self:add(textupdate)
 
-	self.blackScreen = Sprite():make(game.width, game.height, {0, 0, 0})
+	self.blackScreen = Graphic(0, 0, game.width, game.height, Color.BLACK)
 	self.blackScreen.visible = false
 	self:add(self.blackScreen)
 

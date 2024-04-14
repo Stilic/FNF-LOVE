@@ -1,5 +1,5 @@
 function create()
-	local black = Sprite(-100, -100):make(game.width * 2, game.height * 2, {0, 0, 0})
+	local black = Graphic(-100, -100, game.width * 2, game.height * 2, Color.BLACK)
 	black.alpha = 0
 	black:setScrollFactor()
 	state:add(black)

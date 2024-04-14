@@ -4,9 +4,9 @@ local doof
 local music
 function create()
 	local dialogue = love.filesystem.read(paths.getPath('songs/thorns/dialogue.txt')):split('\n')
-	local red = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.convert({255, 27, 49}))
-	local white = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.WHITE)
-	local black = Sprite(-150, -150):make(game.width * 2, game.height * 2, Color.BLACK)
+	local red = Graphic(-150, -150, game.width * 2, game.height * 2, Color.convert({255, 27, 49}))
+	local white = Graphic(-150, -150, game.width * 2, game.height * 2, Color.WHITE)
+	local black = Graphic(-150, -150, game.width * 2, game.height * 2, Color.BLACK)
 
 	local senpaiEvil = Sprite()
 	senpaiEvil:setFrames(paths.getSparrowAtlas('stages/school-evil/senpaiCrazy'))

@@ -19,9 +19,9 @@ function Dropdown:new(x, y, options)
 	self.onChanged = nil
 
 	self.color = {0.2, 0.2, 0.2}
-	self.lineColor = {1, 1, 1}
-	self.textColor = {1, 1, 1}
-	self.hoverColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
+	self.textColor = Color.WHITE
+	self.hoverColor = Color.WHITE
 
 	self.__canScroll = false
 	self.__curScroll = 0

@@ -128,7 +128,7 @@ function love.load()
 	Mods.loadMods()
 	Highscore.load()
 
-	local color = {0, 0, 0}
+	local color = Color.BLACK
 	State.defaultTransIn = TransitionFade(0.6, color, "vertical")
 	State.defaultTransOut = TransitionFade(0.7, color, "vertical")
 

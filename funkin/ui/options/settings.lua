@@ -29,7 +29,7 @@ end
 function Settings:makeLine(x, starti, endi)
 	if starti > endi then return end
 	local start = self:getY(starti)
-	local line = Graphic(x - 1, start, 2, self:getSize() + self:getY(endi) - start, {1, 1, 1})
+	local line = Graphic(x - 1, start, 2, self:getSize() + self:getY(endi) - start, Color.WHITE)
 	line.alpha = 0.5
 	self.tab.linesGroup:add(line)
 end

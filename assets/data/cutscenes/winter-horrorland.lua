@@ -7,9 +7,8 @@ function create()
 	util.playSfx(paths.getSound('gameplay/Lights_Turn_On'))
 	game.camera.zoom = 1.5
 
-	local blackScreen = Sprite()
-	blackScreen:make(math.floor(game.width * 2), math.floor(game.height * 2),
-		{0, 0, 0})
+	local blackScreen = Graphic(0, 0,
+		math.floor(game.width * 2), math.floor(game.height * 2), Color.BLACK)
 	blackScreen:setScrollFactor()
 	state:add(blackScreen)
 

@@ -15,9 +15,9 @@ function Button:new(x, y, width, height, text, callback)
 	self.callback = callback
 
 	self.color = {0.3, 0.3, 0.3}
-	self.lineColor = {1, 1, 1}
+	self.lineColor = Color.WHITE
 	self.lineColorHovered = {0.8, 0.8, 0.8}
-	self.textColor = {1, 1, 1}
+	self.textColor = Color.WHITE
 
 	self.lineSize = 0.5
 	self.round = {4, 4}

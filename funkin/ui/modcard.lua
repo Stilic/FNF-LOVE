@@ -5,7 +5,7 @@ function ModCard:new(x, y, mods)
 
 	local metadata = Mods.getMetadata(mods)
 
-	self.bg = Graphic(0, 0, 420, 620, {0, 0, 0})
+	self.bg = Graphic(0, 0, 420, 620, Color.BLACK)
 	self.bg.alpha = 0.5
 	self.bg.config.round = {8, 8}
 	self:add(self.bg)
@@ -15,22 +15,22 @@ function ModCard:new(x, y, mods)
 	self.banner:updateHitbox()
 	self:add(self.banner)
 
-	self.titleBG = Graphic(4, 134, 412, 80, {0, 0, 0})
+	self.titleBG = Graphic(4, 134, 412, 80, Color.BLACK)
 	self.titleBG.alpha = 0.3
 	self.titleBG.config.round = {8, 8}
 	self:add(self.titleBG)
 
 	self.titleTxt = Text(6, 136, metadata.name, paths.getFont("phantommuff.ttf", 30),
-		{1, 1, 1}, "center", 410)
+		Color.WHITE, "center", 410)
 	self:add(self.titleTxt)
 
-	self.descBG = Graphic(4, 218, 412, 340, {0, 0, 0})
+	self.descBG = Graphic(4, 218, 412, 340, Color.BLACK)
 	self.descBG.alpha = 0.5
 	self.descBG.config.round = {8, 8}
 	self:add(self.descBG)
 
 	self.descTxt = Text(14, 224, metadata.description, love.graphics.newFont(13),
-		{1, 1, 1}, "left", 392)
+		Color.WHITE, "left", 392)
 	self:add(self.descTxt)
 
 	local enabledColor = (Mods.currentMod == mods and Color.GREEN or Color.RED)

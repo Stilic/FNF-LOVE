@@ -43,7 +43,7 @@ function Object:new(x, y)
 
 	self.shader = nil
 	self.antialiasing = Object.defaultAntialiasing or false
-	self.color = {1, 1, 1}
+	self.color = Color.WHITE
 	self.blend = "alpha"
 
 	self.alpha = 1
