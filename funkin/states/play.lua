@@ -245,8 +245,6 @@ function PlayState:enter()
 	self.enemyNotefield.cameras = {self.camNotes}
 	self.playerNotefield.cameras = {self.camNotes}
 
-	self.enemyNotefields = {self.enemyNotefield}
-	self.playerNotefields = {self.playerNotefield}
 	self.notefields = {self.enemyNotefield, self.playerNotefield}
 	self:generateNotes()
 
@@ -989,7 +987,6 @@ end
 
 function PlayState:notefieldPress(notefield, time, direction)
 	local hit, rating, gotNotes = notefield:press(time, direction, false)
-	local isPlayer = table.find(self.playerNotefields, notefield)
 	if hit then
 		if notefield.hitsound and notefield.hitsoundVolume > 0 then
 			game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
@@ -1083,7 +1080,7 @@ function PlayState:goodNoteHit(n, rating)
 	self.scripts:call("goodNoteHit", n, rating)
 
 	local notefield = n.parent
-	local char, isPlayer = notefield.character, table.find(self.playerNotefields, notefield)
+	local char, isPlayer = notefield.character, not notefield.botPlay
 	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating, not isPlayer))
 
 	if not event.cancelled then
@@ -1110,7 +1107,7 @@ function PlayState:goodNoteHit(n, rating)
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			if n.sustain then receptor.strokeTime = -1 end
-			if rating and rating.splash and isPlayer then notefield:spawnSplash(n.direction) end
+			if isPlayer and rating and rating.splash then notefield:spawnSplash(n.direction) end
 		end
 
 		if rating and self.playerNotefield == notefield and not n.ignoreNote then
@@ -1284,10 +1281,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	self.keysPressed[key] = true
 
 	-- the most closest thing possible to sub-precision ms
-	local time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
-	for _, notefield in ipairs(self.playerNotefields) do
-		self:notefieldPress(notefield, time, key)
-	end
+	self:notefieldPress(self.playerNotefield, PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch(), key)
 end
 
 function PlayState:onKeyRelease(key, type, scancode, time)
@@ -1300,10 +1294,7 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 	if key < 0 then return end
 	self.keysPressed[key] = false
 
-	local time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
-	for _, notefield in ipairs(self.playerNotefields) do
-		self:notefieldRelease(notefield, time, key)
-	end
+	self:notefieldRelease(self.playerNotefield, PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch(), key)
 end
 
 function PlayState:closeSubstate()
