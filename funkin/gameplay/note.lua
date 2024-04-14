@@ -14,7 +14,7 @@ function Note.init()
 	for i = 1, 16 do susVerts[i] = table.new(9, 0) end
 end
 
-function Note:new(time, column, sustaintime, skin)
+function Note:new(time, direction, sustaintime, skin)
 	Note.init()
 	Note.super.new(self)
 	self.ignoreAffectByGroup = true
@@ -34,13 +34,13 @@ function Note:new(time, column, sustaintime, skin)
 
 	self.sustainSegments = Note.defaultSustainSegments
 
-	self.column, self.data = column, column -- data is for backward compatibilty
+	self.direction, self.data = direction, direction -- data is for backward compatibilty
 	self:setSkin(skin)
 	self:setSustainTime(sustaintime)
 end
 
 function Note:clone()
-	local clone = Note(self.time, self.column, self.sustainTime, self.skin)
+	local clone = Note(self.time, self.direction, self.sustainTime, self.skin)
 	clone.scale.x, clone.scale.y, clone.scale.z = self.scale.x, self.scale.y, self.scale.z
 	clone.zoom.x, clone.zoom.y, clone.zoom.z = self.zoom.x, self.zoom.y, self.zoom.z
 	clone.rotation.x, clone.rotation.y, clone.rotation.z = self.rotation.x, self.rotation.y, self.rotation.z
@@ -55,8 +55,8 @@ function Note:_addAnim(...)
 	(type(select(2, ...)) == 'table' and Sprite.addAnim or Sprite.addAnimByPrefix)(self, ...)
 end
 
-function Note:loadSkinData(skinData, name, column, noRgb)
-	column = column + 1
+function Note:loadSkinData(skinData, name, direction, noRgb)
+	direction = direction + 1
 
 	local data = skinData[name]
 	local anims, tex = data.animations, "skins/" .. skinData.skin .. "/" .. data.sprite
@@ -68,7 +68,7 @@ function Note:loadSkinData(skinData, name, column, noRgb)
 		end
 
 		local noteDatas = not noRgb and skinData.notes
-		local noteColor = noteDatas and noteDatas.colors and noteDatas.colors[column]
+		local noteColor = noteDatas and noteDatas.colors and noteDatas.colors[direction]
 		for _, anim in ipairs(anims) do
 			Note._addAnim(self, unpack(anim))
 			if anim[5] and noteColor then
@@ -92,12 +92,12 @@ function Note:loadSkinData(skinData, name, column, noRgb)
 	if data.antialiasing ~= nil then self.antialiasing = data.antialiasing end
 
 	local props = data.properties
-	props = props and props[math.min(column, #props)] or props
+	props = props and props[math.min(direction, #props)] or props
 	if props then for i, v in pairs(props) do self[i] = v end end
 
 	if not noRgb and not data.disableRgb then
 		local color = data.colors
-		color = color and color[math.min(column, #color)] or color
+		color = color and color[math.min(direction, #color)] or color
 		self.shader = color and #color >= 3 and RGBShader.actorCreate(
 			Color.fromString(color[1]),
 			Color.fromString(color[2]),
@@ -110,8 +110,8 @@ end
 
 function Note:setSkin(skin)
 	if skin == self.skin then return end
-	local name, col = skin.skin, self.column
-	self.skin, self.column = skin, nil
+	local name, col = skin.skin, self.direction
+	self.skin, self.direction = skin, nil
 
 	self:loadSkinData(skin, "notes", col, true)
 
@@ -124,13 +124,13 @@ function Note:setSkin(skin)
 	self:play("note")
 end
 
-function Note:setColumn(column)
-	if column == self.column then return end
-	self.column, self.data = column, column
+function Note:setColumn(direction)
+	if direction == self.direction then return end
+	self.direction, self.data = direction, direction
 
 	local data = self.skin.notes
 	if not data.disableRgb then
-		local color = data.colors[column + 1]
+		local color = data.colors[direction + 1]
 		self.shader = color and RGBShader.actorCreate(
 			Color.fromString(color[1]),
 			Color.fromString(color[2]),
@@ -154,7 +154,7 @@ function Note:createSustain()
 	local sustain, susend = Sprite(), Sprite()
 	self.sustain, self.sustainEnd = sustain, susend
 
-	local skin, col = self.skin, self.column
+	local skin, col = self.skin, self.direction
 	Note.loadSkinData(sustain, skin, "sustains", col)
 	Note.loadSkinData(susend, skin, "sustainends", col)
 
@@ -208,13 +208,13 @@ local function getValues(r, pos, values)
 	if r then r:getValues(pos, values) end
 end
 
-local function applyMod(mods, beat, pos, notefield, column)
-	for _, mod in ipairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, column) end end
+local function applyMod(mods, beat, pos, notefield, direction)
+	for _, mod in ipairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, direction) end end
 end
 
 function Note:__render(camera)
 	local grp, px, py, pz, pa, pal, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.alpha, self.rotation, self.scale
-	local col, time, target, speed, psx, psy, psz, prx, pry, prz = self.column, self.time, self._targetTime, self.speed,
+	local col, time, target, speed, psx, psy, psz, prx, pry, prz = self.direction, self.time, self._targetTime, self.speed,
 		sc.x, sc.y, sc.z, rot.x, rot.y, rot.z
 
 	local par, nx, ny, nz, pos, rec, beat, mods = self.parent, px, py, pz, Note.toPos(time - target, speed)

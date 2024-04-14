@@ -56,7 +56,7 @@ function NoteModifier:apply(notefield)
 	
 end
 
-function NoteModifier:applyPath(path, curBeat, pos, notefield, column)
+function NoteModifier:applyPath(path, curBeat, pos, notefield, direction)
 	
 end
 ]]
