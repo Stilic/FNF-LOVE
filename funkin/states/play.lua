@@ -915,6 +915,11 @@ function PlayState:onSettingChange(category, setting)
 					songTime = game.sound.music:getDuration() - songTime
 				end
 				self.timeText.content = util.formatTime(songTime)
+			end,
+			["ghostTap"] = function()
+				for _, n in ipairs(self.notefields) do
+					n.ghostTap = ClientPrefs.data.ghostTap
+				end
 			end
 		})
 
@@ -1003,7 +1008,7 @@ function PlayState:goodNoteHit(notefield, note, addScore, rating)
 	self.scripts:call("goodNoteHit", notefield, note, rating)
 
 	local isPlayer = notefield == self.playerNotefield
-	local event = self.scripts:event("onNoteHit", Events.NoteHit(notefield, note, rating, isPlayer))
+	local event = self.scripts:event("onNoteHit", Events.NoteHit(notefield, note, rating, not isPlayer))
 	if not event.cancelled then
 		if event.enableCamZooming then
 			self.camZooming = true
