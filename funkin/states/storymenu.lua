@@ -120,10 +120,11 @@ function StoryMenuState:enter()
 	self:add(bgYellow)
 	self:add(self.grpWeekCharacters)
 
-	self.noWeeksTxt = Alphabet(0, 210, 'No Weeks Here', true, false)
-	self.noWeeksTxt:screenCenter('x')
-	self:add(self.noWeeksTxt)
-	self.noWeeksTxt.visible = (#self.weeksData == 0)
+	if #self.weeksData == 0 then
+		self.noWeeksTxt = Alphabet(0, 210, 'No weeks here', true, false)
+		self.noWeeksTxt:screenCenter('x')
+		self:add(self.noWeeksTxt)
+	end
 
 	self.txtTrackList = Text(game.width * 0.05,
 		bgYellow.x + bgYellow.height + 100, "TRACKS",

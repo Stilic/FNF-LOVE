@@ -79,8 +79,7 @@ function Judgement:spawn(rating, combo)
 			x, comboNum.x, comboNum.y = x + comboNum.width + 4, x, self.area.height - comboNum.height
 
 			comboNum.visible, comboNum.acceleration.y = self.comboNumVisible, math.random(200, 300)
-			comboNum.velocity.x, comboNum.velocity.y =
-				math.random(-5.0, 5.0),
+			comboNum.velocity.x, comboNum.velocity.y = math.random(-5.0, 5.0),
 				comboNum.velocity.y - math.random(140, 160)
 		end
 	end

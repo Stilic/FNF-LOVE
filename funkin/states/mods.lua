@@ -24,10 +24,11 @@ function ModsState:enter()
 	self.cardGroup = Group()
 	self:add(self.cardGroup)
 
-	self.noModsTxt = Alphabet(0, 0, 'No Mods Here', true, false)
-	self.noModsTxt:screenCenter()
-	self:add(self.noModsTxt)
-	self.noModsTxt.visible = (#Mods.mods == 0)
+	if #Mods.mods == 0 then
+		self.noModsTxt = Alphabet(0, 0, 'No mods here', true, false)
+		self.noModsTxt:screenCenter()
+		self:add(self.noModsTxt)
+	end
 
 	self.camFollow = {x = game.width / 2, y = game.height / 2}
 

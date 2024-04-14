@@ -25,17 +25,17 @@ function Mods.getBanner(mods)
 	return loadedBanner
 end
 
-function Mods.getMetadata(mods)
+function Mods.getMetadata(mod)
 	local function readMetaFile()
-		if paths.exists("mods", "directory") and paths.exists('mods/' .. mods .. '/meta.json', "file") then
+		if paths.exists("mods", "directory") and paths.exists('mods/' .. mod .. '/meta.json', "file") then
 			local json = (require "lib.json").decode(
-				love.filesystem.read('mods/' .. mods .. '/meta.json'))
+				love.filesystem.read('mods/' .. mod .. '/meta.json'))
 			return json
 		end
 		return {
-			name = "unknown",
+			name = mod,
 			color = "#1F1F1F",
-			description = "unknown",
+			description = "No description provided.",
 			version = 1
 		}
 	end

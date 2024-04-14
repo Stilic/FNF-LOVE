@@ -51,6 +51,7 @@ function NoteModifier:update(curBeat)
 	self._lastBeat = curBeat
 end
 
+-- functions you can use in your modifier
 --[[
 function NoteModifier:apply(notefield)
 	

@@ -48,10 +48,11 @@ function FreeplayState:enter()
 	self.grpSongs = Group()
 	self:add(self.grpSongs)
 
-	self.noSongTxt = Alphabet(0, 0, 'No Songs Here', true, false)
-	self.noSongTxt:screenCenter()
-	self:add(self.noSongTxt)
-	self.noSongTxt.visible = (#self.songsData == 0)
+	if #self.songsData == 0 then
+		self.noSongTxt = Alphabet(0, 0, 'No songs here', true, false)
+		self.noSongTxt:screenCenter()
+		self:add(self.noSongTxt)
+	end
 
 	self.iconTable = {}
 	if #self.songsData > 0 then
