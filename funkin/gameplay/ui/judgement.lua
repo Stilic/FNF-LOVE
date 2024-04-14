@@ -56,7 +56,7 @@ function Judgement:spawn(rating, combo)
 		ratingSpr.visible = self.ratingVisible
 	end
 
-	if combo then
+	if combo and (combo > 9 or combo < 0) then
 		local comboSpr = create("combo", PlayState.pixelStage and 4.2 or 0.6,
 			combo > 9 and 1 or 0, accel)
 		comboSpr.x, comboSpr.y = self.area.width - comboSpr.width,
@@ -66,23 +66,22 @@ function Judgement:spawn(rating, combo)
 		comboSpr.velocity.x = comboSpr.velocity.x + math.random(1, 10)
 		comboSpr.visible = self.comboSprVisible
 
-		local absCombo = math.abs(combo)
-		local comboStr = string.format(combo > -1 and "%03d" or "-%03d", absCombo)
+		local negative = combo < 0
+		local comboStr = string.format(negative and "-%03d" or "%03d", math.abs(combo))
 
+		local x = math.min((#comboStr - 3) * -36, 0)
 		for i = 1, #comboStr do
-			local digit = tostring(comboStr:sub(i, i)) or ""
-			if digit == "-" then digit = "negative" end
+			local digit = comboStr:sub(i, i)
+			local isNegative = digit == "-"
+			if isNegative then digit = "negative" end
 
-			local n = i - ((#comboStr + 1) - 3)
-			local comboNum = create("num" .. digit, PlayState.pixelStage and 4.5 or 0.5,
-				(combo > 9 or combo < 0) and 1 or 0, accel * 2)
-			comboNum.x, comboNum.y = n * comboNum.width,
-				self.area.height - comboNum.height
+			local comboNum = create("num" .. digit, PlayState.pixelStage and 4.5 or 0.5, 1, accel * 2)
+			x, comboNum.x, comboNum.y = x + comboNum.width + 4, x, self.area.height - comboNum.height
 
-			comboNum.acceleration.y = math.random(200, 300)
-			comboNum.velocity.y = comboNum.velocity.y - math.random(140, 160)
-			comboNum.velocity.x = math.random(-5.0, 5.0)
-			comboNum.visible = self.comboNumVisible
+			comboNum.visible, comboNum.acceleration.y = self.comboNumVisible, math.random(200, 300)
+			comboNum.velocity.x, comboNum.velocity.y =
+				math.random(-5.0, 5.0),
+				comboNum.velocity.y - math.random(140, 160)
 		end
 	end
 end
