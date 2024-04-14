@@ -24,16 +24,15 @@ local data = {
 	{"MISCELLANEOUS"},
 	{"fullscreen",   "Fullscreen"},
 	{"pick_mods",    "Mods"},
-	{"asyncInput", "Asynchronous Input", "boolean", function()
+	{"asyncInput", "Asynchronous input", "boolean", function()
 		love.asyncInput = not ClientPrefs.data.asyncInput
 		ClientPrefs.data.asyncInput = love.asyncInput
-	end, nil, 0.5}
+	end, nil, 0.5},
+
+	{"DEBUG"},
+	{"debug_1", "Charting"},
+	{"debug_2", "Character"}
 }
-if Project.DEBUG_MODE then
-	table.insert(data, {"DEBUG"})
-	table.insert(data, {"debug_1", "Charting"})
-	table.insert(data, {"debug_2", "Character"})
-end
 
 local Controls = Settings:base("Controls", data)
 Controls.binds = 2 --3

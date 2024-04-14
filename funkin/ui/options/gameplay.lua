@@ -3,54 +3,54 @@ local Settings = require "funkin.ui.options.settings"
 local function percentvalue(value) return value .. "%" end
 local data = {
 	{"GENERAL"},
-	{"autoPause", "Auto Pause On Lost Focus", "boolean", function()
+	{"autoPause", "Auto pause on lost focus", "boolean", function()
 		local value = not ClientPrefs.data.autoPause
 		ClientPrefs.data.autoPause = value
 		love.autoPause = value
 	end},
-	{"backgroundDim", "Background Dim", "number", function(add)
+	{"backgroundDim", "Background dim", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.backgroundDim + add, 0, 100)
 		ClientPrefs.data.backgroundDim = value
 	end, percentvalue},
-	{"notesBelowHUD", "Notes Below HUD", "boolean"},
-	{"downScroll",    "Down Scroll",     "boolean"},
-	{"middleScroll",  "Middle Scroll",   "boolean"},
-	{"ghostTap",      "Ghost Tap",       "boolean"},
-	{"noteSplash",    "Note Splash",     "boolean"},
+	{"notesBelowHUD", "Notes below HUD", "boolean"},
+	{"downScroll",    "Down scroll",     "boolean"},
+	{"middleScroll",  "Middle scroll",   "boolean"},
+	{"ghostTap",      "Ghost tap",       "boolean"},
+	{"noteSplash",    "Note splash",     "boolean"},
 	{"botplayMode",   "Botplay",         "boolean"},
 	{"playback", "Playback", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.playback + (add * 0.05), 0.1, 5)
 		ClientPrefs.data.playback = value
 	end, function(value) return "x" .. value end},
-	{"timeType",      "Song Time Type",               "string", {"left", "elapsed"}},
-	{"gameOverInfos", "Show game infos in Game Over", "boolean"},
+	{"timeType",      "Song time type",      "string", {"left", "elapsed"}},
+	{"gameOverInfos", "Show game over info", "boolean"},
 
 	{"AUDIO"},
-	{"pauseMusic",    "Pause Music",                  "string", {"railways", "breakfast"}},
-	{"hitSound", "Hit Sound", "number", function(add)
+	{"pauseMusic",    "Pause music",         "string", {"railways", "breakfast"}},
+	{"hitSound", "Hit sound volume", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.hitSound + add, 0, 100)
 		ClientPrefs.data.hitSound = value
 
 		game.sound.play(paths.getSound('hitsound'), value / 100)
 		return nil, true
 	end, percentvalue},
-	{"menuMusicVolume", "Menu Music Volume", "number", function(add)
-		local value = math.clamp(ClientPrefs.data.menuMusicVolume + add, 0, 100)
-		ClientPrefs.data.menuMusicVolume = value
-	end, percentvalue},
-	{"musicVolume", "Music Volume", "number", function(add)
-		local value = math.clamp(ClientPrefs.data.musicVolume + add, 0, 100)
-		ClientPrefs.data.musicVolume = value
-	end, percentvalue},
-	{"vocalVolume", "Vocal Volume", "number", function(add)
-		local value = math.clamp(ClientPrefs.data.vocalVolume + add, 0, 100)
-		ClientPrefs.data.vocalVolume = value
-	end, percentvalue},
-	{"sfxVolume", "SFX Volume", "number", function(add)
+	{"sfxVolume", "SFX volume", "number", function(add)
 		local value = math.clamp(ClientPrefs.data.sfxVolume + add, 0, 100)
 		ClientPrefs.data.sfxVolume = value
 	end, percentvalue},
-	{"songOffset", "Song Offset", "number"},
+	{"menuMusicVolume", "Menu's music volume", "number", function(add)
+		local value = math.clamp(ClientPrefs.data.menuMusicVolume + add, 0, 100)
+		ClientPrefs.data.menuMusicVolume = value
+	end, percentvalue},
+	{"musicVolume", "Instrumental volume", "number", function(add)
+		local value = math.clamp(ClientPrefs.data.musicVolume + add, 0, 100)
+		ClientPrefs.data.musicVolume = value
+	end, percentvalue},
+	{"vocalVolume", "Vocals volume", "number", function(add)
+		local value = math.clamp(ClientPrefs.data.vocalVolume + add, 0, 100)
+		ClientPrefs.data.vocalVolume = value
+	end, percentvalue},
+	{"songOffset", "Song offset", "number"},
 	{"calibration", "Calibrate", function(optionsUI)
 		if optionsUI.aboutToGoToCalibration then return end
 		util.playSfx(paths.getSound('scrollMenu'))

@@ -11,8 +11,8 @@ local data = {
 		ClientPrefs.data.antialiasing = value
 		Object.defaultAntialiasing = value
 	end},
-	{"lowQuality", "Low Quality", "boolean"},
-	{"shader",     "Shader",      "boolean"},
+	{"lowQuality", "Low quality", "boolean"},
+	{"shader",     "Shaders",     "boolean"},
 
 	{"WINDOW"},
 	{"fullscreen", "Fullscreen", "boolean", function()
@@ -40,6 +40,7 @@ local data = {
 
 		ClientPrefs.data.resolution = value
 		Camera.defaultResolution = value
+		---@diagnostic disable-next-line: missing-parameter
 		love.window.updateMode(Project.width * value, Project.height * value)
 		for _, camera in ipairs(game.cameras.list) do
 			if camera then camera:resize(camera.width, camera.height, value) end
@@ -54,12 +55,12 @@ local data = {
 		return resolutionf:format(tostring(math.truncate(value, 4)),
 			math.ceil(Project.width * value), height)
 	end},
-	{"parallelUpdate", "Parallel Update", "boolean", function()
+	{"parallelUpdate", "Parallel update", "boolean", function()
 		local value = not ClientPrefs.data.parallelUpdate
 		ClientPrefs.data.parallelUpdate = value
 		love.parallelUpdate = value
 	end},
-	{"fps", "Framerate Limit", "number", function(add)
+	{"fps", "Framerate limit", "number", function(add)
 		local value = math.floor(ClientPrefs.data.fps)
 		local _, _, modes = love.window.getMode()
 		local expect, diff = value + add, value - modes.refreshrate
@@ -92,17 +93,17 @@ local data = {
 		ClientPrefs.data.showFps = value
 		game.statsCounter.showFps = value
 	end},
-	{"showMemory", "Show Memory", "boolean", function()
+	{"showMemory", "Show memory", "boolean", function()
 		local value = not ClientPrefs.data.showMemory
 		ClientPrefs.data.showMemory = value
 		game.statsCounter.showMemory = value
 	end},
-	{"showRender", "Show Renderer", "boolean", function()
+	{"showRender", "Show renderer", "boolean", function()
 		local value = not ClientPrefs.data.showRender
 		ClientPrefs.data.showRender = value
 		game.statsCounter.showRender = value
 	end},
-	{"showDraws", "Show Draws", "boolean", function()
+	{"showDraws", "Show draws", "boolean", function()
 		local value = not ClientPrefs.data.showDraws
 		ClientPrefs.data.showDraws = value
 		game.statsCounter.showDraws = value

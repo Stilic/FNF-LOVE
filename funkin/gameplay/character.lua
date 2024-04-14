@@ -149,16 +149,17 @@ function Character:update(dt)
 			end
 		end
 	end
+	if self.lastHit > 0
+		and self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime
+		< PlayState.conductor.time then
+		self:dance()
+		self.lastHit = math.negative_infinity
+	end
 	Character.super.update(self, dt)
 end
 
 function Character:beat(b)
-	if self.lastHit > 0 then
-		if self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime < PlayState.conductor.time then
-			self:dance()
-			self.lastHit = math.negative_infinity
-		end
-	elseif b % self.danceSpeed == 0 then
+	if self.lastHit <= 0 and b % self.danceSpeed == 0 then
 		self:dance(self.danceSpeed < 2)
 	end
 end

@@ -189,7 +189,7 @@ function Notefield:hit(time, note, force)
 		self.totalPlayed, self.totalHit, self[name] = self.totalPlayed + 1, self.totalHit + rating.mod, (self[name] or 0) + 1
 		self.score = self.score + rating.score
 
-		;(self.hitCallback or __NULL__)(rating, note, force)
+		; (self.hitCallback or __NULL__)(rating, note, force)
 	elseif note.sustain then -- for sustains
 		if not rating then return end
 		self.score = self.score + Notefield.getScoreSustain(time, note)
