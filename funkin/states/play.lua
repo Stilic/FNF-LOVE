@@ -758,7 +758,7 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
-		if notefield.botPlay then
+		if notefield.bot then
 			self:doNotefieldBot(notefield, noteTime)
 		end
 	end
@@ -1248,7 +1248,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	if key < 0 then return end
 	self.keysPressed[key] = true
 
-	local time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
+	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, n in ipairs(self.notefields) do
 		if not n.bot then n:press(time, key) end
 	end
@@ -1264,7 +1264,7 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 	if key < 0 then return end
 	self.keysPressed[key] = false
 
-	local time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
+	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, n in ipairs(self.notefields) do
 		if not n.bot then n:release(time, key) end
 	end
