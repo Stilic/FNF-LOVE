@@ -394,8 +394,8 @@ function Notefield:update(dt)
 
 		if not note.hit and not note.tooLate then
 			self:missNote(note)
-		elseif not note.pressed and note.sustain and offset > (note.lastPress or note.time) then
-			local yeah = time > note.time + note.sustainTime
+		elseif not note.pressed and note.sustain and time - Notefield.sustainSafeZone > (note.lastPress or note.time) then
+			local yeah = time + Notefield.safeZoneOffset > note.time + note.sustainTime
 			if not note.tooLate and note.hit and yeah then
 				self:hit(time, note, true)
 			else
