@@ -109,11 +109,11 @@ function Receptor:setSkin(skin)
 	Note.loadSkinData(self, skin, "receptors", col)
 	self.__shaderAnimations.static = self.shader
 
-	if col then self:setColumn(col) end
+	if col then self:setDirection(col) end
 	self:play("static")
 end
 
-function Receptor:setColumn(direction)
+function Receptor:setDirection(direction)
 	if direction == self.direction then return end
 	self.direction, self.data = direction, direction -- data is for backward compatibilty
 

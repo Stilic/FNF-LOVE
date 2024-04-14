@@ -235,11 +235,11 @@ end
 function Notefield:press(time, direction, play)
 	time = time or self.time
 
-	local fixedColumn, gotNotes = direction + 1, self:getNotes(time, direction)
+	local fixedDirection, gotNotes = direction + 1, self:getNotes(time, direction)
 	local missed = #gotNotes == 0
 
-	self.lastPress[fixedColumn] = time
-	self.pressed[fixedColumn] = true
+	self.lastPress[fixedDirection] = time
+	self.pressed[fixedDirection] = true
 	local isSustain, rating
 	if not missed then
 		local coolNote = gotNotes[1]
@@ -258,7 +258,7 @@ function Notefield:press(time, direction, play)
 
 		rating = self:hit(time, coolNote)
 		isSustain = coolNote.sustain ~= nil
-		self.pressed[fixedColumn] = coolNote
+		self.pressed[fixedDirection] = coolNote
 		if coolNote.sustain and coolNote.wasGoodHit then
 			rating = nil
 		end
@@ -271,7 +271,7 @@ function Notefield:press(time, direction, play)
 	end
 
 	if play then
-		local receptor = self.receptors[fixedColumn]
+		local receptor = self.receptors[fixedDirection]
 		if receptor then
 			receptor:play(missed and "pressed" or "confirm", true)
 			if not missed and isSustain then receptor.strokeTime = -1 end
@@ -289,9 +289,9 @@ function Notefield:press(time, direction, play)
 end
 
 function Notefield:release(time, direction, play)
-	local fixedColumn = direction + 1
-	local note = self.pressed[fixedColumn]
-	self.pressed[fixedColumn] = nil
+	local fixedDirection = direction + 1
+	local note = self.pressed[fixedDirection]
+	self.pressed[fixedDirection] = nil
 	if not note then return end
 
 	local hit, rating = note ~= true
@@ -305,14 +305,14 @@ function Notefield:release(time, direction, play)
 	end
 
 	if play then
-		local receptor = self.receptors[fixedColumn]
+		local receptor = self.receptors[fixedDirection]
 		if receptor then
 			receptor:play("static", true)
 		end
 
 		if hit then
 			local char = self.character
-			if char and char.columnAnim == direction then
+			if char and char.dirAnim == direction then
 				char.strokeTime = 0
 			end
 		end
@@ -333,7 +333,7 @@ function Notefield:update(dt)
 			end
 
 			local char = self.character
-			if char and char.columnAnim == note.direction then
+			if char and char.dirAnim == note.direction then
 				char.strokeTime = 0
 			end
 		end

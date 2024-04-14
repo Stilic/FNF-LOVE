@@ -119,12 +119,12 @@ function Note:setSkin(skin)
 		Note.loadSkinData(self.sustain, skin, "sustains", col)
 		Note.loadSkinData(self.sustainEnd, skin, "sustainends", col)
 	end
-	if col then self:setColumn(col) end
+	if col then self:setDirection(col) end
 
 	self:play("note")
 end
 
-function Note:setColumn(direction)
+function Note:setDirection(direction)
 	if direction == self.direction then return end
 	self.direction, self.data = direction, direction
 
