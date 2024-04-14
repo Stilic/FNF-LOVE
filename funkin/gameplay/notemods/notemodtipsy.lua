@@ -3,19 +3,22 @@ local NoteModTipsy = NoteModifier:extend("NoteModTipsy")
 function NoteModTipsy:new(tipsy, drunk)
 	NoteModTipsy.super.new(self)
 
+	self:set(tipsy or 1, tipsy or 0)
 	self.offset = 0
 	self.spacing = 1
 	self.speed = 1
 
-	self.tipsy = tipsy or 0
 	self.tipsyOffset = 0
 	self.tipsySpacing = 1
 	self.tipsySpeed = 1
 
-	self.drunk = drunk or 1
 	self.drunkOffset = 0
 	self.drunkSpacing = 1
 	self.drunkSpeed = 1
+end
+
+function NoteModifier:set(tipsy, drunk)
+	self.tipsy, self.drunk = tipsy or self.tipsy, drunk or self.drunk
 end
 
 function NoteModTipsy:apply(notefield)

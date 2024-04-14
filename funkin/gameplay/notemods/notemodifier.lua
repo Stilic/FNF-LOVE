@@ -27,13 +27,19 @@ function NoteModifier.reset()
 	table.clear(ocache)
 end
 
-function NoteModifier:new()
-	self.approach = 1 --in beats
-	self.strength = 1
-	self.time = 0
-	self.duration = nil
+function NoteModifier:new(beatTime, beatDuration, strength, approach, dontUpdatePercent)
+	self:setModifier(strength or 1, approach or 1, dontUpdatePercent)
+	self.beatTime = 0
+	self.beatDuration = nil
 	self.percent = 0
-	self.dontUpdatePercent = false
+end
+
+function NoteModifier:setModifier(strength, approach, dontUpdatePercent)
+	self.strength = strength
+	self.approach = approach or self.approach
+	if dontUpdatePercent ~= nil then self.dontUpdatePercent = dontUpdatePercent end
+
+	return self
 end
 
 function NoteModifier:update(curBeat)
