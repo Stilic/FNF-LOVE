@@ -518,7 +518,7 @@ function Notefield:__render(camera)
 		self:__prepareLane(i - 1, lane, time)
 	end
 
-	for _, mod in pairs(self.modifiers) do mod:apply(self) end
+	for _, mod in pairs(self.modifiers) do if mod.apply then mod:apply(self) end end
 	if self.downscroll then self.scale.y = -self.scale.y end
 	Notefield.super.__render(self, camera)
 	if self.downscroll then self.scale.y = -self.scale.y end

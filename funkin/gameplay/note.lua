@@ -222,7 +222,6 @@ function Note:__render(camera)
 
 	if par then
 		beat, mods = par.beat or 0, par.modifiers
-		applyMod(mods, beat, pos, par, dir)
 	end
 
 	local gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -243,7 +242,7 @@ function Note:__render(camera)
 			self.angle = self.angle + rec.noteAngles
 		end
 
-		getValues(rec, pos, values)
+		getValues(rec, pos, values); applyMod(mods, beat, pos, par, dir)
 		local vx, vy, vz = worldSpin(
 			(nx + values.x) * gsx,
 			(ny + values.y) * gsy,
@@ -252,6 +251,7 @@ function Note:__render(camera)
 
 		self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
 	else
+		applyMod(mods, beat, pos, par, dir)
 		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
