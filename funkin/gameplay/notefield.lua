@@ -38,6 +38,7 @@ function Notefield:new(x, y, keys, skin, character)
 	self.hitsound = paths.getSound("hitsound")
 	self.downscroll = false -- this just sets scale y backwards
 	self.ghostTap = ClientPrefs.data.ghostTap or false
+	self.botPlay = true -- for PlayState
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0

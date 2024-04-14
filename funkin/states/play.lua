@@ -127,7 +127,7 @@ function PlayState:enter()
 	self.doCountdownAtBeats = nil
 	self.lastCountdownBeats = nil
 
-	self.botPlay = ClientPrefs.data.botplayMode
+	self.usedBotPlay = ClientPrefs.data.botplayMode
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 	self.playback = 1
@@ -240,6 +240,7 @@ function PlayState:enter()
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
 	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend)
 	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
+	self.playerNotefield.botPlay = false
 
 	self.enemyNotefield.cameras = {self.camNotes}
 	self.playerNotefield.cameras = {self.camNotes}
@@ -287,7 +288,7 @@ function PlayState:enter()
 	self.botplayText.x = game.width - self.botplayText:getWidth() - 36
 	self.botplayText.outline.width = 2
 	self.botplayText.antialiasing = false
-	self.botplayText.visible = self.botPlay
+	self.botplayText.visible = self.usedBotPlay
 	self:add(self.botplayText)
 
 	for _, o in ipairs({
@@ -760,13 +761,7 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
-	end
-
-	for _, notefield in ipairs(self.enemyNotefields) do
-		self:doNotefieldBot(notefield)
-	end
-	if self.botPlay then
-		for _, notefield in ipairs(self.playerNotefields) do
+		if notefield.botPlay then
 			self:doNotefieldBot(notefield)
 		end
 	end
@@ -832,8 +827,8 @@ function PlayState:update(dt)
 	if self.health <= 0 and not self.isDead then self:tryGameOver() end
 
 	if Project.DEBUG_MODE then
+		if game.keys.justPressed.ONE then self.playerNotefield.botPlay = not self.playerNotefield.botPlay end
 		if game.keys.justPressed.TWO then self:endSong() end
-		if game.keys.justPressed.ONE then self.botPlay = not self.botPlay end
 		if game.keys.justPressed.THREE then
 			local time = (self.conductor.time + self.conductor.crotchet * 4) / 1000
 			self.conductor.time = time * 1000
@@ -909,8 +904,8 @@ function PlayState:onSettingChange(category, setting)
 				end
 			end,
 			["botplayMode"] = function()
-				self.botPlay = ClientPrefs.data.botplayMode
-				self.botplayText.visible = self.botPlay
+				self.playerNotefield.botPlay = ClientPrefs.data.botplayMode
+				self.botplayText.visible = ClientPrefs.data.botplayMode
 			end,
 			["backgroundDim"] = function()
 				self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
@@ -1279,7 +1274,7 @@ function PlayState:getKeyFromEvent(controls)
 end
 
 function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
-	if self.botPlay or (self.substate and not self.persistentUpdate) then return end
+	if self.playerNotefield.botPlay or (self.substate and not self.persistentUpdate) then return end
 	local controls = controls:getControlsFromSource(type .. ":" .. key)
 
 	if not controls then return end
@@ -1296,7 +1291,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 end
 
 function PlayState:onKeyRelease(key, type, scancode, time)
-	if self.botPlay or (self.substate and not self.persistentUpdate) then return end
+	if self.playerNotefield.botPlay or (self.substate and not self.persistentUpdate) then return end
 	local controls = controls:getControlsFromSource(type .. ":" .. key)
 
 	if not controls then return end
