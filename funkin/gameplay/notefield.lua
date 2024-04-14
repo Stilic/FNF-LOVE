@@ -2,7 +2,8 @@ local Notefield = ActorGroup:extend("Notefield")
 
 -- reset on Playstate enter
 Notefield.safeZoneOffset = 10 / 60
-Notefield.sustainSafeZone = 1/2
+Notefield.sustainSafeZone = 1 / 2 -- not implemented yet
+
 function Notefield.resetRating()
 	Notefield.ratings = {
 		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1.0},
@@ -32,19 +33,19 @@ function Notefield.getScoreSustain(time, note)
 	return math.min(time - note.time + Notefield.safeZoneOffset, note.sustainTime) * 1000
 end
 
-function Notefield:new(x, y, keys, skin, character)
+function Notefield:new(x, y, keys, skin, character, vocals)
 	Notefield.super.new(self, x, y)
 
 	self.noteWidth = math.floor(160 * 0.7)
 	self.height = 500
 	self.keys = keys
-	self.character = character
 	self.skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
-	self.hitsoundVolume = 0
-	self.hitsound = paths.getSound("hitsound")
+	self.character, self.vocals = character, vocals
 
+	self.hitsoundVolume, self.hitsound = 0, paths.getSound("hitsound")
 	self.ghostTap = ClientPrefs.data.ghostTap or false
-	self.bot = false
+	self.canSpawnSplash, self.bot = true, false
+	self.vocalVolume = 1
 
 	self.downscroll = false -- this just sets scale y backwards
 	self.time, self.beat = 0, 0
@@ -84,7 +85,11 @@ end
 
 function Notefield:enter(parent)
 	self.parent = parent
-	self.canHitCallbacks = parent.registerHit ~= nil and parent.registerSustain ~= nil
+	self.canHitCallbacks = parent.miss ~= nil and parent.goodNoteHit ~= nil and parent.goodHoldHit ~= nil
+end
+
+function Notefield:leave()
+	self.parent, self.canHitCallbacks = nil
 end
 
 function Notefield:makeLane(direction, y)
@@ -188,9 +193,14 @@ function Notefield:hit(time, note, force)
 	local sus = note.sustain and note.hit
 	local notetime = sus and note.time + note.sustainTime or note.time
 	local rating = Notefield.getRating(notetime, sus and math.min(time, notetime) or time)
-	if not rating and not sus then return self:miss(note, force) end
+	if not rating and not sus then return self:missNote(note, force) end
 	note.pressed = true
 	note.lastPress = time
+
+	if force or not note.sustain then
+		self:removeNote(note, true)
+		note.wasGoodHit = true
+	end
 
 	if not note.hit then
 		table.insert(self.hitNotes, note)
@@ -199,38 +209,52 @@ function Notefield:hit(time, note, force)
 		local name = rating.name .. "s"
 		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
 		self[name], self.score = (self[name] or 0) + 1, self.score + rating.score
+
+		if self.canHitCallbacks then
+			self.parent:goodNoteHit(self, note, rating.score, rating)
+		end
 	elseif note.sustain then -- for sustains
 		if not rating then return end
-		self.score = self.score + Notefield.getScoreSustain(time, note)
+		local addScore = Notefield.getScoreSustain(time, note)
 		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
-	end
+		self.score = self.score + addScore
 
-	if force or not note.sustain then
-		self:removeNote(note, true)
-		note.wasGoodHit = true
+		if self.canHitCallbacks then
+			self.parent:goodHoldHit(self, note, addScore, rating)
+		end
 	end
 
 	return rating
 end
 
-function Notefield:miss(note, force)
-	if not note or not note.tooLate then
-		if note then
-			table.insert(self.missedNotes, note)
-			note.tooLate = true
-		end
+function Notefield:miss(direction, note)
+	local addScore = -100
+	self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
+	self.score = self.score + addScore
 
-		if not note or not note.ignoreNote then
-			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
-		end
+	if self.canHitCallbacks then
+		self.parent:miss(self, direction, addScore, note)
+	end
+end
+
+function Notefield:missNote(note, force, play)
+	if force or not note.sustain then
+		self:removeNote(note, true)
 	end
 
-	if note and (force or not note.sustain) then
-		self:removeNote(note, true)
+	if not note.tooLate then
+		table.insert(self.missedNotes, note)
+		note.tooLate = true
+
+		if not note.ignoreNote then
+			self:miss(note.direction, note, play)
+		end
 	end
 end
 
 function Notefield:spawnSplash(direction)
+	if not self.canSpawnSplash then return end
+
 	local receptor = self.receptors[direction + 1]
 	if receptor then
 		local splash = receptor:spawnSplash()
@@ -245,6 +269,10 @@ function Notefield:press(time, direction, play)
 
 	local fixedDirection, gotNotes = direction + 1, self:getNotes(time, direction)
 	local missed = #gotNotes == 0
+
+	if self.pressed[fixedDirection] then
+		self:release(time, direction, false)
+	end
 
 	self.lastPress[fixedDirection] = time
 	self.pressed[fixedDirection] = true
@@ -275,7 +303,7 @@ function Notefield:press(time, direction, play)
 			game.sound.play(self.hitsound, self.hitsoundVolume)
 		end
 	elseif not self.ghostTap then
-		self:miss()
+		self:miss(direction, nil, play)
 	end
 
 	if play then
@@ -283,12 +311,12 @@ function Notefield:press(time, direction, play)
 		if receptor then
 			receptor:play(missed and "pressed" or "confirm", true)
 			if not missed and isSustain then receptor.strokeTime = -1 end
-			if rating.splash then self:spawnSplash(direction) end
+			if rating and rating.splash then self:spawnSplash(direction) end
 		end
 
 		local char = self.character
-		if char then
-			char:sing(direction)
+		if char and (not missed or not self.ghostTap) then
+			char:sing(direction, missed and "missed" or nil)
 			if not missed and isSustain then char.strokeTime = -1 end
 		end
 	end
@@ -365,13 +393,13 @@ function Notefield:update(dt)
 		if offset <= note.time then break end
 
 		if not note.hit and not note.tooLate then
-			self:miss(note)
+			self:missNote(note)
 		elseif not note.pressed and note.sustain and offset > (note.lastPress or note.time) then
 			local yeah = time > note.time + note.sustainTime
 			if not note.tooLate and note.hit and yeah then
 				self:hit(time, note, true)
 			else
-				self:miss(note, yeah)
+				self:missNote(note, yeah)
 			end
 			if not yeah then
 				i = i + 1
@@ -402,7 +430,7 @@ end
 function Notefield:destroy()
 	ActorSprite.destroy(self)
 
-	self.modifiers, self.hitCallback, self.missCallback = nil
+	self.modifiers = nil
 	if self.receptors then
 		for _, r in ipairs(self.receptors) do r:destroy() end
 		self.receptors = nil

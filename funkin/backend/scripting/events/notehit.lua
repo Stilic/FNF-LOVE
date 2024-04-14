@@ -2,7 +2,7 @@ local CancellableEvent = require "funkin.backend.scripting.events.cancellable"
 
 local NoteHitEvent = CancellableEvent:extend("NoteHitEvent")
 
-function NoteHitEvent:new(note, character, rating, zooming)
+function NoteHitEvent:new(notefield, note, rating, zooming)
 	NoteHitEvent.super.new(self)
 
 	self.cancelledAnim = false
@@ -10,8 +10,8 @@ function NoteHitEvent:new(note, character, rating, zooming)
 	self.unmuteVocals = true
 	self.enableCamZooming = zooming
 
+	self.notefield = notefield
 	self.note = note
-	self.character = character
 	self.rating = rating
 end
 
