@@ -1,10 +1,13 @@
 local Note = ActorSprite:extend("Note")
 
-Note.defaultSustainSegments = 1 -- also resets on play.create
+Note.safeZoneOffset = 10 / 60
+Note.sustainSafeZone = 1 / 2
 
 function Note.toPos(time, speed)
 	return time * 450 * speed
 end
+
+Note.defaultSustainSegments = 1 -- also resets on play.create
 
 local susMesh, susVerts
 function Note.init()
@@ -24,7 +27,7 @@ function Note:new(time, direction, sustaintime, skin)
 	self.time = time
 	self._targetTime = 0
 
-	self.canBeHit, self.wasGoodHit, self.tooLate, self.ignoreNote = true, false, false, false
+	self.wasGoodHit, self.tooLate, self.ignoreNote = false, false, false
 	self.priority, self.earlyHitMult, self.lateHitMult = 0, 1, 1
 	self.showNote, self.showNoteOnHit = true, false
 	self.type = ""
@@ -44,11 +47,16 @@ function Note:clone()
 	clone.scale.x, clone.scale.y, clone.scale.z = self.scale.x, self.scale.y, self.scale.z
 	clone.zoom.x, clone.zoom.y, clone.zoom.z = self.zoom.x, self.zoom.y, self.zoom.z
 	clone.rotation.x, clone.rotation.y, clone.rotation.z = self.rotation.x, self.rotation.y, self.rotation.z
-	clone.canBeHit, clone.ignoreNote, clone.priority, clone.type = self.canBeHit, self.ignoreNote, self.priority, self.type
+	clone.ignoreNote, clone.priority, clone.type = self.ignoreNote, self.priority, self.type
 	clone.earlyHitMult, clone.lateHitMult, clone.hit = self.earlyHitMult, self.lateHitMult, self.hit
 	clone.speed, clone.sustainSegments = self.speed, self.sustainSegments
 
 	return clone
+end
+
+function Note:checkDiff(time)
+	return self.time > time - Note.safeZoneOffset * self.lateHitMult and
+		self.time < time + Note.safeZoneOffset * self.earlyHitMult
 end
 
 function Note:_addAnim(...)

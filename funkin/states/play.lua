@@ -96,8 +96,6 @@ function PlayState:enter()
 	if PlayState.SONG == nil then PlayState.loadSong('test') end
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
-	Notefield.resetRatings()
-
 	local conductor = Conductor():setSong(PlayState.SONG)
 	conductor.time = self.startPos - (conductor.crotchet * 5)
 	conductor.onStep = bind(self, self.step)
@@ -299,17 +297,22 @@ function PlayState:enter()
 	self.score = 0
 	self.combo = 0
 	self.misses = 0
-	self.accuracy = 0
 	self.health = 1
 
-	-- for ratings
+	self.accuracy = 0
 	self.totalPlayed = 0
 	self.totalHit = 0
-	self.perfects = 0
-	self.sicks = 0
-	self.goods = 0
-	self.bads = 0
-	self.shits = 0
+
+	self.ratings = {
+		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
+		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
+		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
+		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
+		{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
+	}
+	for _, r in ipairs(self.ratings) do
+		self[r.name .. "s"] = 0
+	end
 
 	if love.system.getDevice() == "Mobile" then
 		local w, h = game.width / 4, game.height
@@ -347,7 +350,6 @@ function PlayState:enter()
 	self.bindedKeyRelease = bind(self, self.onKeyRelease)
 	controls:bindRelease(self.bindedKeyRelease)
 
-	self.playerNotefield.hitsoundVolume = ClientPrefs.data.hitSound / 100
 	if self.downScroll then
 		for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
 		for _, o in ipairs({
@@ -416,6 +418,13 @@ function PlayState:enter()
 	collectgarbage()
 
 	self.scripts:call("postCreate")
+end
+
+function PlayState:getRating(a, b)
+	local diff = math.abs(a - b)
+	for _, r in ipairs(self.ratings) do
+		if diff <= (r.time < 0 and Note.safeZoneOffset or r.time) then return r end
+	end
 end
 
 function PlayState:generateNote(n, s)
@@ -760,8 +769,22 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
-		if notefield.bot then
-			self:doNotefieldBot(notefield)
+		if not notefield.bot then
+			local offset = noteTime - Note.safeZoneOffset
+			for _, note in ipairs(notefield.notes) do
+				if offset <= note.time then break end
+
+				if not note.wasGoodHit and not note.tooLate and offset > note.time then
+					self:noteMiss(note)
+					-- elseif note.sustain then
+					-- 	local yeah = noteTime - Note.sustainSafeZone > (note.lastPress or note.time)
+					-- 	if not note.tooLate and yeah then
+					-- 		self:goodNoteHit(time, note, true)
+					-- 	else
+					-- 		self:noteMiss(note, yeah)
+					-- 	end
+				end
+			end
 		end
 	end
 
@@ -803,11 +826,6 @@ function PlayState:update(dt)
 		if controls:pressed("reset") then
 			self.health = 0
 		end
-	end
-
-	for _, note in ipairs(self.playerNotefield.missedNotes) do
-		self:noteMiss(note)
-		table.delete(self.playerNotefield.missedNotes, note)
 	end
 
 	self.healthBar.value = self.health
@@ -953,63 +971,6 @@ function PlayState:onSettingChange(category, setting)
 	self.scripts:call("onSettingChange", category, setting)
 end
 
-function PlayState:doNotefieldBot(notefield)
-	local i, contime, notes = 1, PlayState.conductor.time / 1000, notefield.notes
-	local size = #notes
-
-	for j = 1, notefield.keys do
-		local note = notefield.pressed[j]
-		if note then
-			if note ~= true then
-				local notetime = note.time + math.max(note.sustainTime, 0.14)
-				if contime >= notetime then
-					self:notefieldRelease(notefield, notetime, note.direction)
-				end
-			elseif notefield.lastPress[j] - 0.1 > contime then
-				self:notefieldRelease(notefield, contime, j - 1)
-			end
-		end
-	end
-
-	if size == 0 then return end
-	while i <= size do
-		local note = notes[i]
-		if not note or contime < note.time then break end
-
-		if not note.hit and not note.tooLate and not note.ignoreNote then
-			self:notefieldPress(notefield, note.time, note.direction)
-		end
-
-		local newsize = #notes
-		if newsize == size then i = i + 1 end
-		size = newsize
-	end
-end
-
-function PlayState:notefieldPress(notefield, time, direction)
-	local hit, rating, gotNotes = notefield:press(time, direction, false)
-	if hit then
-		if notefield.hitsound and notefield.hitsoundVolume > 0 then
-			game.sound.play(notefield.hitsound, notefield.hitsoundVolume)
-		end
-		for _, n in ipairs(gotNotes) do self:goodNoteHit(n, rating) end
-	else
-		local receptor = notefield.receptors[direction + 1]
-		if receptor then receptor:play("pressed", true) end
-		if not notefield.ghostTap then self:miss(notefield, direction) end
-	end
-	return hit
-end
-
-function PlayState:notefieldRelease(notefield, time, direction)
-	local hit, rating, gotNote = notefield:release(time, direction, true)
-	if notefield == self.playerNotefield and rating and gotNote and gotNote.sustain and gotNote.hit then
-		self.score = self.score + Notefield.getScoreSustain(time, gotNote)
-		self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
-		self:recalculateRating()
-	end
-end
-
 function PlayState:noteMiss(n)
 	self.scripts:call("noteMiss", n)
 
@@ -1018,6 +979,12 @@ function PlayState:noteMiss(n)
 	local event = self.scripts:event("onNoteMiss", Events.NoteMiss(n, char))
 
 	if not event.cancelled then
+		n.tooLate = true
+
+		if not n.sustain then
+			notefield:removeNote(n, true)
+		end
+
 		if event.muteVocals and self.vocals and (isPlayer or not self.dadVocals) then self.vocals:setVolume(0) end
 
 		if not event.cancelledAnim then
@@ -1077,7 +1044,7 @@ function PlayState:miss(notefield, direction)
 	self.scripts:call("postMiss", notefield)
 end
 
-function PlayState:goodNoteHit(n, rating)
+function PlayState:goodNoteHit(n, time)
 	self.scripts:call("goodNoteHit", n, rating)
 
 	local notefield = n.parent
@@ -1085,6 +1052,13 @@ function PlayState:goodNoteHit(n, rating)
 	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating, not isPlayer))
 
 	if not event.cancelled then
+		n.wasGoodHit = true
+		n.lastPress = time
+
+		if not n.sustain then
+			notefield:removeNote(n, true)
+		end
+
 		if event.enableCamZooming then
 			self.camZooming = true
 		end
@@ -1104,14 +1078,18 @@ function PlayState:goodNoteHit(n, rating)
 			if n.sustain then char.strokeTime = -1 end
 		end
 
+		local rating = self:getRating(n.time, time)
+
 		local receptor = notefield.receptors[n.direction + 1]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			if n.sustain then receptor.strokeTime = -1 end
-			if isPlayer and rating and rating.splash then notefield:spawnSplash(n.direction) end
+			if isPlayer and rating.splash then
+				notefield:spawnSplash(n.direction)
+			end
 		end
 
-		if rating and self.playerNotefield == notefield and not n.ignoreNote then
+		if self.playerNotefield == notefield then
 			self.health = math.min(self.health + 0.023, 2)
 
 			self.combo = math.max(self.combo, 0) + 1
@@ -1284,7 +1262,24 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			self:notefieldPress(self.playerNotefield, time, key)
+			local hitNotes = notefield:getNotes(time, key)
+			local i, l, note = 1, #hitNotes
+			while i <= l do
+				note = hitNotes[i]
+				self:goodNoteHit(note, time)
+				i = i + 1
+
+				local stackNote = hitNotes[i]
+				while stackNote and math.abs(note.time - stackNote.time) < 10 do
+					i = i + 1
+					stackNote = hitNotes[i]
+				end
+			end
+
+			local receptor = notefield.receptors[key + 1]
+			if receptor and receptor.curAnim.name ~= "confirm" then
+				receptor:play("pressed")
+			end
 		end
 	end
 end
@@ -1299,10 +1294,13 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 	if key < 0 then return end
 	self.keysPressed[key] = false
 
-	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			self:notefieldRelease(self.playerNotefield, time, key)
+			local receptor = notefield.receptors[key + 1]
+			if receptor then
+				receptor:play("static")
+				receptor.strokeTime = -1
+			end
 		end
 	end
 end
