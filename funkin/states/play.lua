@@ -771,8 +771,14 @@ function PlayState:update(dt)
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
 		local isPlayer, offset = not notefield.bot, noteTime - Note.safeZoneOffset
 		for _, note in ipairs(notefield.notes) do
+			-- sustain clipping
+			if note.wasGoodHit and note.sustain then
+				note.lastPress = noteTime
+			end
+
 			if isPlayer and offset <= note.time then break end
 
+			-- note misses / botplay
 			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
 				if isPlayer then
 					self:noteMiss(note)
@@ -1055,7 +1061,6 @@ function PlayState:goodNoteHit(n, time)
 
 	if not event.cancelled then
 		n.wasGoodHit = true
-		n.lastPress = time
 
 		if not n.sustain then
 			notefield:removeNote(n, true)
