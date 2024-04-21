@@ -1,8 +1,5 @@
-local __p = (...) .. "."
-loxreq = {}; setmetatable(loxreq, {
-	__call = function(_, f)
-		return require(__p .. f)
-	end
+loxreq = {path = (...) .. "."}; setmetatable(loxreq, {
+	__call = function(_, f) return require(loxreq.path .. f) end
 })
 
 require "love.window"
@@ -345,7 +342,7 @@ function game.init(app, state, ...)
 		end
 	end
 
-	local path = __p:gsub("%.", "/")
+	local path = loxreq.path:gsub("%.", "/")
 	Sprite.defaultTexture = love.graphics.newImage(path .. "/assets/default.png")
 
 	Camera.__init()
