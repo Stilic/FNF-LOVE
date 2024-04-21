@@ -769,12 +769,12 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
-		if not notefield.bot then
-			local offset = noteTime - Note.safeZoneOffset
-			for _, note in ipairs(notefield.notes) do
-				if offset <= note.time then break end
+		local isPlayer, offset = not notefield.bot, noteTime - Note.safeZoneOffset
+		for _, note in ipairs(notefield.notes) do
+			if isPlayer and offset <= note.time then break end
 
-				if not note.wasGoodHit and not note.tooLate and offset > note.time then
+			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
+				if isPlayer then
 					self:noteMiss(note)
 					-- elseif note.sustain then
 					-- 	local yeah = noteTime - Note.sustainSafeZone > (note.lastPress or note.time)
@@ -783,6 +783,8 @@ function PlayState:update(dt)
 					-- 	else
 					-- 		self:noteMiss(note, yeah)
 					-- 	end
+				elseif note.time <= noteTime then
+					self:goodNoteHit(note, noteTime)
 				end
 			end
 		end
@@ -1083,7 +1085,11 @@ function PlayState:goodNoteHit(n, time)
 		local receptor = notefield.receptors[n.direction + 1]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
-			if n.sustain then receptor.strokeTime = -1 end
+			if n.sustain then
+				receptor.strokeTime = -1
+			elseif not isPlayer then
+				receptor.holdTime = 0.15
+			end
 			if isPlayer and rating.splash then
 				notefield:spawnSplash(n.direction)
 			end
@@ -1299,7 +1305,12 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 			local receptor = notefield.receptors[key + 1]
 			if receptor then
 				receptor:play("static")
-				receptor.strokeTime = -1
+				receptor.strokeTime = 0
+			end
+
+			local char = notefield.character
+			if char and char.dirAnim == key then
+				char.strokeTime = 0
 			end
 		end
 	end
