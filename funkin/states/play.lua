@@ -801,8 +801,10 @@ function PlayState:update(dt)
 					and note.time + (isPlayer and math.max(note.sustainTime - 0.125, 0) or note.sustainTime) <= note.lastPress then
 					note.wasGoodHoldHit = true
 
-					self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
-					self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+          if self.playerNotefield == notefield then
+  					self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
+  					self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+  				end
 
 					self:resetInput(notefield, note.direction, notefield.bot)
 				end
