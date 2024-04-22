@@ -103,6 +103,20 @@ function Notefield:removeNote(note)
 	end
 end
 
+function Notefield:setSkin(skin)
+	if self.skin.skin == skin then return end
+
+	skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
+	self.skin = skin
+
+	for _, rep in ipairs(self.receptors) do
+		rep:setSkin(skin)
+	end
+	for _, note in ipairs(self.notes) do
+		note:setSkin(skin)
+	end
+end
+
 function Notefield:getNotes(time, direction)
 	local notes = self.notes
 	if #notes == 0 then return {} end
