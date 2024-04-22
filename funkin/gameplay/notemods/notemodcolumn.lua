@@ -2,9 +2,12 @@ local NoteModColumn = NoteModifier:extend("NoteModColumn")
 
 function NoteModColumn:new(flip, invert)
 	NoteModColumn.super.new(self)
-	self.flip = flip or 0
-	self.invert = invert or 0
+	self:set(flip or 0, invert or 0)
 	self.angle = 0
+end
+
+function NoteModBeat:set(flip, invert)
+	self.flip, self.invert = flip or self.flip, invert or self.invert
 end
 
 function NoteModColumn:apply(notefield)

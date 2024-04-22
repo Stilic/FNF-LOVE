@@ -116,22 +116,25 @@ function PlayState:enter()
 
 	if Discord then self:updateDiscordRPC() end
 
-	self.scripts:set("bpm", PlayState.conductor.bpm)
-	self.scripts:set("crotchet", PlayState.conductor.crotchet)
-	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
-
-	self.scripts:call("create")
-
 	self.startingSong = true
 	self.startedCountdown = false
 	self.doCountdownAtBeats = nil
 	self.lastCountdownBeats = nil
+
+	self.isDead = false
+	GameOverSubstate.resetVars()
 
 	self.usedBotPlay = ClientPrefs.data.botplayMode
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 	self.playback = 1
 	Timer.setSpeed(1)
+
+	self.scripts:set("bpm", PlayState.conductor.bpm)
+	self.scripts:set("crotchet", PlayState.conductor.crotchet)
+	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
+
+	self.scripts:call("create")
 
 	self.camNotes = Camera() --ActorCamera() Will be changed to ActorCamera once thats class is done
 	self.camHUD = Camera()
@@ -177,9 +180,6 @@ function PlayState:enter()
 	end
 
 	self.keysPressed = {}
-
-	self.isDead = false
-	GameOverSubstate.resetVars()
 
 	PlayState.pixelStage = false
 	PlayState.SONG.stage = self:loadStageWithSongName(songName)
@@ -227,23 +227,26 @@ function PlayState:enter()
 		end
 	}
 	self:cameraMovement()
+	self.camZoom, self.camZoomSpeed, self.camSpeed = self.stage.camZoom, self.stage.camZoomSpeed, self.stage.camSpeed
 
 	if PlayState.prevCamFollow ~= nil then
 		self.camFollow:set(PlayState.prevCamFollow.x, PlayState.prevCamFollow.y)
 		PlayState.prevCamFollow = nil
 	end
-	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 	game.camera:snapToTarget()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = false
 
 	local y, center, keys, skin = game.height / 2, game.width / 2, 4, self.pixelStage and "pixel" or nil
-	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad)
+	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
-	self.enemyNotefield.allowNoteSplashes = false
-	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend)
+	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
+	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
 	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
-	self.playerNotefield.bot = ClientPrefs.data.botplayMode
+
+	local vocalVolume = ClientPrefs.data.vocalVolume / 100
+	self.enemyNotefield.vocalVolume, self.playerNotefield.vocalVolume = vocalVolume, vocalVolume
 
 	self.enemyNotefield.cameras = {self.camNotes}
 	self.playerNotefield.cameras = {self.camNotes}
@@ -479,17 +482,14 @@ function PlayState:loadStageWithSongName(songName)
 		elseif songName == 'winter-horrorland' then
 			curStage = 'mall-evil'
 		elseif songName == "senpai" or songName == "roses" then
-			curStage = "school"
+			curStage, PlayState.pixelStage = "school", true
 		elseif songName == "thorns" then
-			curStage = "school-evil"
+			curStage, PlayState.pixelStage = "school-evil", true
 		elseif songName == "ugh" or songName == "guns" or songName == "stress" then
 			curStage = "tank"
 		else
 			curStage = "stage"
 		end
-	end
-	if songName == "senpai" or songName == "roses" or songName == "thorns" then
-		PlayState.pixelStage = true
 	end
 	return curStage
 end
@@ -517,9 +517,7 @@ function PlayState:loadGfWithStage(song, stage)
 end
 
 function PlayState:startCountdown()
-	if self.buttons then
-		self.buttons:enable()
-	end
+	if self.buttons then self.buttons:enable() end
 
 	local event = self.scripts:call("startCountdown")
 	if event == Script.Event_Cancel then return end
@@ -584,46 +582,40 @@ function PlayState:cameraMovement()
 end
 
 function PlayState:step(s)
-	if not self.startingSong then
-		if Discord and self.startedCountdown and game.sound.music:isPlaying() then
-			coroutine.wrap(PlayState.updateDiscordRPC)(self)
-		end
+	if Discord and not self.startingSong and self.startedCountdown and game.sound.music:isPlaying() then
+		coroutine.wrap(PlayState.updateDiscordRPC)(self)
+	end
 
-		self.scripts:set("curStep", s)
+	self.scripts:set("curStep", s)
+	if not self.startingSong then
 		self.scripts:call("step")
 		self.scripts:call("postStep")
 	end
 end
 
 function PlayState:beat(b)
-	local songStarted = not self.startingSong
-
-	if songStarted then
-		self.scripts:set("curBeat", b)
-		self.scripts:call("beat")
-	end
+	self.scripts:set("curBeat", b)
+	if not self.startingSong then self.scripts:call("beat") end
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	if songStarted then
+	if not self.startingSong then
 		self.healthBar:scaleIcons(1.2)
 		self.scripts:call("postBeat", b)
 	end
 end
 
 function PlayState:section(s)
-	local songStarted = not self.startingSong
+	self.scripts:set("curSection", s)
+	if not self.startingSong then self.scripts:call("section") end
 
-	if songStarted then
-		self.scripts:set("curSection", s)
-		self.scripts:call("section")
-		if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
-			self.scripts:set("bpm", PlayState.conductor.bpm)
-			self.scripts:set("crotchet", PlayState.conductor.crotchet)
-			self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
-		end
+	local sec = math.max(s + 1, 1)
+	if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
+		self.scripts:set("bpm", PlayState.conductor.bpm)
+		self.scripts:set("crotchet", PlayState.conductor.crotchet)
+		self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
 	end
 
 	if self.camZooming and game.camera.zoom < 1.35 then
@@ -631,9 +623,7 @@ function PlayState:section(s)
 		self.camHUD.zoom = self.camHUD.zoom + 0.03
 	end
 
-	if songStarted then
-		self.scripts:call("postSection")
-	end
+	if not self.startingSong then self.scripts:call("postSection") end
 end
 
 function PlayState:focus(f)
@@ -652,7 +642,7 @@ function PlayState:executeCutsceneEvent(event, isEnd)
 				self.timer:tween(time, self.camFollow, {x = xCam, y = yCam}, ease)
 			else
 				self.camFollow:set(xCam, yCam)
-				game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+				game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 			end
 		end,
 		['Camera Zoom'] = function()
@@ -820,7 +810,7 @@ function PlayState:update(dt)
 					if not note.wasGoodHit
 						or (not note.wasGoodHoldHit and not self.keysPressed[note.direction]
 							and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time)) then
-						self:noteMiss(note)
+						self:miss(note)
 					end
 				elseif not note.wasGoodHit and note.time <= noteTime then
 					-- regular notes auto hit
@@ -838,8 +828,8 @@ function PlayState:update(dt)
 	end
 
 	if self.camZooming then
-		game.camera.zoom = util.coolLerp(game.camera.zoom, self.stage.camZoom, 3, dt)
-		self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 3, dt)
+		game.camera.zoom = util.coolLerp(game.camera.zoom, self.camZoom, 3, dt * self.camZoomSpeed)
+		self.camHUD.zoom = util.coolLerp(self.camHUD.zoom, 1, 3, dt * self.camZoomSpeed)
 	end
 	self.camNotes.zoom = self.camHUD.zoom
 
@@ -877,8 +867,7 @@ function PlayState:update(dt)
 		songTime = game.sound.music:getDuration() - songTime
 	end
 
-	if PlayState.conductor.time > 0 and
-		PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+	if PlayState.conductor.time > 0 and PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
 		self.timeText.content = util.formatTime(songTime)
 		self.timeArc.tracker = PlayState.conductor.time / 1000
 	end
@@ -889,8 +878,8 @@ function PlayState:update(dt)
 		if game.keys.justPressed.ONE then self.playerNotefield.bot = not self.playerNotefield.bot end
 		if game.keys.justPressed.TWO then self:endSong() end
 		if game.keys.justPressed.THREE then
-			local time = (self.conductor.time + self.conductor.crotchet * 4) / 1000
-			self.conductor.time = time * 1000
+			local time = (PlayState.conductor.time + PlayState.conductor.crotchet * (game.keys.pressed.SHIFT and 8 or 4)) / 1000
+			PlayState.conductor.time = time * 1000
 			game.sound.music:seek(time)
 			if self.vocals then self.vocals:seek(time) end
 			if self.dadVocals then self.dadVocals:seek(time) end
@@ -996,9 +985,9 @@ function PlayState:onSettingChange(category, setting)
 			end
 		})
 
+		local vocalVolume = ClientPrefs.data.vocalVolume / 100
 		game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100)
-		if self.vocals then self.vocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
-		if self.dadVocals then self.dadVocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
+		self.enemyNotefield.vocalVolume, self.playerNotefield.vocalVolume = vocalVolume, vocalVolume
 	elseif category == "controls" then
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
@@ -1013,88 +1002,62 @@ function PlayState:onSettingChange(category, setting)
 	self.scripts:call("onSettingChange", category, setting)
 end
 
-function PlayState:noteMiss(n, isSustain)
-	self.scripts:call("noteMiss", n)
-
-	local notefield = n.parent
-	local char = notefield.character
-	local event = self.scripts:event("onNoteMiss", Events.NoteMiss(n, char))
-
-	if not event.cancelled and not n.tooLate then
-		n.tooLate = true
-
-		if not n.sustain then
-			notefield:removeNote(n, true)
-		else
-			print(isSustain)
-		end
-
-		if event.muteVocals and self.vocals and (isPlayer or not self.dadVocals) then self.vocals:setVolume(0) end
-
-		if not event.cancelledAnim then
-			char:sing(n.direction, "miss")
-		end
-
-		if notefield == self.playerNotefield then
-			if self.combo >= 10 and not event.cancelledSadGF and self.gf.__animations['sad'] then
-				self.gf:playAnim('sad', true)
-				self.gf.lastHit = PlayState.conductor.time
-			end
-
-			self.totalPlayed = self.totalPlayed + 1
-			self.combo = math.min(self.combo - 1, -1)
-			self.score = self.score - 100
-			self.misses = self.misses + 1
-			self.health = self.health - 0.0475
-
-			if self.health < 0 then self.health = 0 end
-			self:recalculateRating(); self:popUpScore()
-		end
+-- note can be nil for non-ghost-tap
+function PlayState:miss(note, direction)
+	local ghostMiss = direction ~= nil
+	if not ghostMiss then
+		direction = note.direction
 	end
 
-	self.scripts:call("postNoteMiss", n)
-end
+	local funcParam = ghostMiss and direction or note
+	self.scripts:call(ghostMiss and "miss" or "noteMiss", funcParam)
 
-function PlayState:miss(notefield, direction)
-	self.scripts:call("miss", notefield)
+	local notefield = ghostMiss and note or note.parent
+	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
+		Events.Miss(notefield, direction, ghostMiss and nil or note))
+	if not event.cancelled and (ghostMiss or not note.tooLate) then
+		if not ghostMiss then
+			note.tooLate = true
+			if not note.sustain then
+				notefield:removeNote(note, true)
+			end
+		end
 
-	local char = notefield.character
-	local event = self.scripts:event("onMiss", Events.Miss(notefield, direction, char))
+		if event.muteVocals and notefield.vocals then
+			notefield.vocals:setVolume(0)
+		end
 
-	if not event.cancelled then
-		if event.muteVocals and self.vocals and (isPlayer or not self.dadVocals) then self.vocals:setVolume(0) end
-
+		local char = notefield.character
 		if not event.cancelledAnim then
 			char:sing(direction, "miss")
 		end
 
 		if notefield == self.playerNotefield then
-			if self.combo >= 10 and not event.cancelledSadGF and self.gf.__animations['sad'] then
+			if not event.cancelledSadGF and self.combo >= 10
+				and self.gf.__animations.sad then
 				self.gf:playAnim('sad', true)
 				self.gf.lastHit = PlayState.conductor.time
 			end
 
-			self.totalPlayed = self.totalPlayed + 1
-			self.combo = math.min(self.combo - 1, -1)
-			self.score = self.score - 100
-			self.misses = self.misses + 1
-			self.health = self.health - 0.0475
+			self.combo = math.min(self.combo, 0) - 1
+			self.health = math.max(self.health - 0.0475, 0)
 
-			if self.health < 0 then self.health = 0 end
+			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
+			self.score = self.score - 100
 			self:recalculateRating(); self:popUpScore()
 		end
 	end
 
-	self.scripts:call("postMiss", notefield)
+	self.scripts:call(ghostMiss and "postMiss" or "postNoteMiss", funcParam)
 end
 
 function PlayState:goodNoteHit(n, time)
 	self.scripts:call("goodNoteHit", n, rating)
 
 	local notefield = n.parent
-	local char, isPlayer = notefield.character, not notefield.bot
-	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating, not isPlayer))
-
+	local isPlayer = not notefield.bot
+	local event = self.scripts:event("onNoteHit",
+		Events.NoteHit(notefield, n, rating, not isPlayer))
 	if not event.cancelled and not n.wasGoodHit then
 		n.wasGoodHit = true
 
@@ -1106,16 +1069,14 @@ function PlayState:goodNoteHit(n, time)
 			self.camZooming = true
 		end
 
-		if event.unmuteVocals and self.vocals and (isPlayer or not self.dadVocals) then
-			self.vocals:setVolume(ClientPrefs.data.vocalVolume / 100)
+		if event.unmuteVocals and notefield.vocals then
+			notefield.vocals:setVolume(notefield.vocalVolume)
 		end
 
+		local char = notefield.character
 		if not event.cancelledAnim and char then
-			local animType = ''
-			local section = PlayState.SONG.notes[PlayState.conductor.currentSection + 1]
-			if section and section.altAnim then
-				animType = 'alt'
-			end
+			local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
+			if section and section.altAnim then animType = 'alt' end
 
 			char:sing(n.direction, animType)
 			if n.sustain then char.strokeTime = -1 end
@@ -1132,7 +1093,7 @@ function PlayState:goodNoteHit(n, time)
 			elseif not isPlayer then
 				receptor.holdTime = 0.15
 			end
-			if ClientPrefs.data.noteSplash and notefield.allowNoteSplashes and rating.splash then
+			if ClientPrefs.data.noteSplash and rating.splash then
 				notefield:spawnSplash(n.direction)
 			end
 		end
@@ -1362,20 +1323,22 @@ function PlayState:closeSubstate()
 	self.camNotes:unfreeze()
 	self.camHUD:unfreeze()
 
-	game.camera:follow(self.camFollow, nil, 2.4 * self.stage.camSpeed)
+	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 
 	if not self.startingSong then
 		game.sound.music:play()
+		local time = game.sound.music:tell()
+
 		if self.vocals then
-			self.vocals:seek(game.sound.music:tell())
+			self.vocals:seek(time)
 			self.vocals:play()
 		end
 		if self.dadVocals then
-			self.dadVocals:seek(game.sound.music:tell())
+			self.dadVocals:seek(time)
 			self.dadVocals:play()
 		end
 
-		PlayState.conductor.time = game.sound.music:tell() * 1000
+		PlayState.conductor.time = time * 1000
 
 		if Discord then self:updateDiscordRPC() end
 	end
@@ -1447,6 +1410,7 @@ function PlayState:endSong(skip)
 		return
 	end
 
+	game.sound.music:reset(true)
 	if self.vocals then self.vocals:stop() end
 	if self.dadVocals then self.dadVocals:stop() end
 	if self.storyMode then

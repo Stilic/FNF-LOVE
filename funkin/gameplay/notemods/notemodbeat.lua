@@ -13,12 +13,14 @@ NoteModBeat.getAmplitude = getAmplitude
 
 function NoteModBeat:new(x, y, z)
 	NoteModBeat.super.new(self)
-	self.x = x or 1
-	self.y = y or 0
-	self.z = z or 0
+	self:set(x or 1, y or 0, z or 0)
 	self.beat = 1
+	self.speed = 1
 	self.beatOffset = 0
-	self.scrollSpeed = 1
+end
+
+function NoteModBeat:set(x, y, z)
+	self.x, self.y, self.z = x or self.x, y or self.y, z or self.z
 end
 
 function NoteModBeat:apply(notefield)
@@ -37,8 +39,9 @@ function NoteModBeat:apply(notefield)
 end
 
 function NoteModBeat:applyPath(path, curBeat, pos, notefield, direction)
-	local x = getAmplitude(curBeat / self.beat + self.beatOffset) * math.fastcos(pos / 45 * self.scrollSpeed) * notefield.noteWidth / 2 *
-		self.percent
+	local x = getAmplitude(curBeat / self.beat + self.beatOffset)
+		* math.fastcos(pos / 45 * self.speed) * notefield.noteWidth / 2 * self.percent
+
 	path.x = path.x + x * self.x
 	path.y = path.y + x * self.y
 	path.z = path.z + x * self.z

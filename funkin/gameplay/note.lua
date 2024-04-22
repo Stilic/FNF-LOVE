@@ -216,12 +216,12 @@ local function getValues(r, pos, values)
 end
 
 local function applyMod(mods, beat, pos, notefield, direction)
-	for _, mod in ipairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, direction) end end
+	for _, mod in pairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, direction) end end
 end
 
 function Note:__render(camera)
 	local grp, px, py, pz, pa, pal, rot, sc = self.group, self.x, self.y, self.z, self.angle, self.alpha, self.rotation, self.scale
-	local col, time, target, speed, psx, psy, psz, prx, pry, prz = self.direction, self.time, self._targetTime, self.speed,
+	local dir, time, target, speed, psx, psy, psz, prx, pry, prz = self.direction, self.time, self._targetTime, self.speed,
 		sc.x, sc.y, sc.z, rot.x, rot.y, rot.z
 
 	local par, nx, ny, nz, pos, rec, beat, mods = self.parent, px, py, pz, Note.toPos(time - target, speed)
@@ -229,7 +229,6 @@ function Note:__render(camera)
 
 	if par then
 		beat, mods = par.beat or 0, par.modifiers
-		applyMod(mods, beat, pos, par, col)
 	end
 
 	local gx, gy, gz, gsx, gsy, gsz, grx, gry, grz, gox, goy, goz = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -250,7 +249,7 @@ function Note:__render(camera)
 			self.angle = self.angle + rec.noteAngles
 		end
 
-		getValues(rec, pos, values)
+		getValues(rec, pos, values); applyMod(mods, beat, pos, par, dir)
 		local vx, vy, vz = worldSpin(
 			(nx + values.x) * gsx,
 			(ny + values.y) * gsy,
@@ -259,6 +258,7 @@ function Note:__render(camera)
 
 		self.x, self.y, self.z = vx + gx, vy + gy, vz + gz
 	else
+		applyMod(mods, beat, pos, par, dir)
 		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
@@ -310,7 +310,7 @@ function Note:__render(camera)
 				love.graphics.setColor(susend.color[1], susend.color[2], susend.color[3], susend.alpha * almult)
 				susMesh:setTexture(tex)
 
-				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, col)
+				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, dir)
 				vx, vy, vz = worldSpin(
 					(snx + values.x) * gsx,
 					(sny + values.y) * gsy,
@@ -320,7 +320,7 @@ function Note:__render(camera)
 				local pvx, pvy = toScreen(vx + gx, vy + gy, vz + gz, fov)
 				local enduv, vert, aa, as, ac
 				for vi = 1, vertLens, 2 do
-					getValues(rec, suspos, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos, par, col)
+					getValues(rec, suspos, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos, par, dir)
 					vx, vy, vz = worldSpin(
 						(snx + values.x) * gsx,
 						(sny + values.y) * gsy,
@@ -371,7 +371,7 @@ function Note:__render(camera)
 				love.graphics.setColor(sus.color[1], sus.color[2], sus.color[3], sus.alpha * almult)
 				susMesh:setTexture(tex)
 
-				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, col)
+				getValues(rec, suspos + 1, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos + 1, par, dir)
 				suspos, vertLens, vx, vy, vz = math.min(suspos, maxbound), math.min(2 + segments * 2, 16), worldSpin(
 					(snx + values.x) * gsx,
 					(sny + values.y) * gsy,
@@ -397,7 +397,7 @@ function Note:__render(camera)
 				end
 
 				while true do
-					getValues(rec, suspos, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos, par, col)
+					getValues(rec, suspos, Receptor.getDefaultValues(values)); applyMod(mods, beat, suspos, par, dir)
 					vx, vy, vz = worldSpin(
 						(snx + values.x) * gsx,
 						(sny + values.y) * gsy,

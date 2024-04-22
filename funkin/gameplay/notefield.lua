@@ -1,13 +1,16 @@
 local Notefield = ActorGroup:extend("Notefield")
 
-function Notefield:new(x, y, keys, skin, character)
+function Notefield:new(x, y, keys, skin, character, vocals)
 	Notefield.super.new(self, x, y)
 
 	self.noteWidth = math.floor(160 * 0.7)
 	self.height = 500
 	self.keys = keys
-	self.character = character
 	self.skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
+	self.character, self.vocals = character, vocals
+
+	-- self.hitsoundVolume, self.hitsound = 0, paths.getSound("hitsound")
+	self.vocalVolume = 1
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
@@ -15,10 +18,8 @@ function Notefield:new(x, y, keys, skin, character)
 	self.drawSize = game.height + self.noteWidth
 	self.drawSizeOffset = 0
 	self.downscroll = false -- this just sets scale y backwards
-
-	-- for PlayState
-	self.bot = true
-	self.allowNoteSplashes = true
+	self.bot = false
+	self.canSpawnSplash = true
 
 	self.modifiers = {}
 
@@ -122,6 +123,8 @@ function Notefield:getNotes(time, direction)
 end
 
 function Notefield:spawnSplash(direction)
+	if not self.canSpawnSplash then return end
+
 	local receptor = self.receptors[direction + 1]
 	if receptor then
 		local splash = receptor:spawnSplash()
@@ -253,7 +256,7 @@ function Notefield:__render(camera)
 		self:__prepareLane(i - 1, lane, time)
 	end
 
-	for _, mod in pairs(self.modifiers) do mod:apply(self) end
+	for _, mod in pairs(self.modifiers) do if mod.apply then mod:apply(self) end end
 	if self.downscroll then self.scale.y = -self.scale.y end
 	Notefield.super.__render(self, camera)
 	if self.downscroll then self.scale.y = -self.scale.y end
