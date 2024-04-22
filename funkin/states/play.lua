@@ -439,7 +439,7 @@ function PlayState:generateNote(n, s)
 
 	local sustime = tonumber(n[3]) or 0
 	-- fix sustain time (make it more accurate to how it looks in the charter)
-	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.075, 0.2) end
+	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.1, 0.15) end
 
 	local notefield = hit and self.playerNotefield or self.enemyNotefield
 	local note = notefield:makeNote(time / 1000, col, sustime)
