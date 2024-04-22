@@ -217,12 +217,16 @@ end
 function Receptor:destroy()
 	Receptor.super.destroy(self)
 	if self.glow then self.glow:destroy() end
-	if self.splashes then for i, splash in ipairs(self.splashes) do
+	if self.splashes then
+		for i, splash in ipairs(self.splashes) do
 			splash:destroy(); self.splashes[i] = nil
-		end end
-	if self.__splashCaches then for i, splash in ipairs(self.__splashCaches) do
+		end
+	end
+	if self.__splashCaches then
+		for i, splash in ipairs(self.__splashCaches) do
 			splash:destroy(); self.__splashCaches[i] = nil
-		end end
+		end
+	end
 	self.splashes, self.__splashCaches, self.__splashAnimations = nil
 end
 

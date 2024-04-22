@@ -912,7 +912,7 @@ function ChartingState:generateNotes()
 									.stepCrotchet * 16, 0,
 									(self.gridSize * 16))
 							local sustain = Graphic(note.x + (self.gridSize / 2) - 4, note.y + (self.gridSize / 2),
-								8, math.floor(susHeight), Color.convert(self.sustainColors[note.data +1]))
+								8, math.floor(susHeight), Color.convert(self.sustainColors[note.data + 1]))
 							note.sustainSprite = sustain
 							self.allSustains:add(sustain)
 						end
