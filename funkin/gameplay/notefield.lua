@@ -18,6 +18,7 @@ function Notefield:new(x, y, keys, skin, character)
 
 	-- for PlayState
 	self.bot = true
+	self.allowNoteSplashes = true
 
 	self.modifiers = {}
 
