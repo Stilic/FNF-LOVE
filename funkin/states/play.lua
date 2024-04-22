@@ -240,9 +240,10 @@ function PlayState:enter()
 	local y, center, keys, skin = game.height / 2, game.width / 2, 4, self.pixelStage and "pixel" or nil
 	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad)
 	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
+	self.enemyNotefield.allowNoteSplashes = false
 	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend)
 	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
-	self.playerNotefield.bot = false
+	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	self.enemyNotefield.cameras = {self.camNotes}
 	self.playerNotefield.cameras = {self.camNotes}
@@ -1130,7 +1131,7 @@ function PlayState:goodNoteHit(n, time)
 			elseif not isPlayer then
 				receptor.holdTime = 0.15
 			end
-			if isPlayer and rating.splash then
+			if ClientPrefs.data.noteSplash and notefield.allowNoteSplashes and rating.splash then
 				notefield:spawnSplash(n.direction)
 			end
 		end
