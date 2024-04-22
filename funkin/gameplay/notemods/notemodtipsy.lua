@@ -17,7 +17,7 @@ function NoteModTipsy:new(tipsy, drunk)
 	self.drunkSpeed = 1
 end
 
-function NoteModifier:set(tipsy, drunk)
+function NoteModTipsy:set(tipsy, drunk)
 	self.tipsy, self.drunk = tipsy or self.tipsy, drunk or self.drunk
 end
 

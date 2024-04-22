@@ -1,3 +1,5 @@
+local NoteModBeat = require "funkin.gameplay.notemods.notemodscroll"
+
 local NoteModColumn = NoteModifier:extend("NoteModColumn")
 
 function NoteModColumn:new(flip, invert)
@@ -6,7 +8,7 @@ function NoteModColumn:new(flip, invert)
 	self.angle = 0
 end
 
-function NoteModBeat:set(flip, invert)
+function NoteModColumn:set(flip, invert)
 	self.flip, self.invert = flip or self.flip, invert or self.invert
 end
 

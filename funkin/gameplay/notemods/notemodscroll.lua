@@ -14,7 +14,7 @@ end
 function NoteModScroll:apply(notefield)
 	local per = self.percent
 	local halfKeys, split, alternate, cross = notefield.keys / 2,
-		self.split * per, self.alternate * per, self.cross * per, self.center * per, self.reverse * per, self.centerPath * per
+		self.split * per, self.alternate * per, self.cross * per --, self.center * per, self.reverse * per, self.centerPath * per
 
 	for i, r in ipairs(notefield.receptors) do
 		NoteModifier.prepare(r, "y", r.y); i = i - 1

@@ -19,7 +19,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.drawSizeOffset = 0
 	self.downscroll = false -- this just sets scale y backwards
 	self.bot = false
-	self.canSpawnSplash = true
+	self.canSpawnSplash = ClientPrefs.data.noteSplash
 
 	self.modifiers = {}
 

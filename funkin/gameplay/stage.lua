@@ -19,12 +19,14 @@ function Stage:new(name)
 
 	self.foreground = Group()
 
-	local path = "stages/" .. name
-	self.script = Script("data/" .. path)
-	self.script:set("SCRIPT_PATH", path .. "/")
-	self.script:set("self", self)
+	if name ~= "" then
+		local path = "stages/" .. name
+		self.script = Script("data/" .. path)
+		self.script:set("SCRIPT_PATH", path .. "/")
+		self.script:set("self", self)
 
-	self.script:call("create")
+		self.script:call("create")
+	end
 end
 
 function Stage:add(obj, foreground)

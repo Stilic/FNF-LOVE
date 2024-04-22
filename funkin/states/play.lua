@@ -244,6 +244,7 @@ function PlayState:enter()
 	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
 	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
 	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
+	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	local vocalVolume = ClientPrefs.data.vocalVolume / 100
 	self.enemyNotefield.vocalVolume, self.playerNotefield.vocalVolume = vocalVolume, vocalVolume
