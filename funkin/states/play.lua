@@ -176,6 +176,8 @@ function PlayState:enter()
 		end
 	end
 
+	self.keysPressed = {}
+
 	self.isDead = false
 	GameOverSubstate.resetVars()
 
@@ -435,7 +437,8 @@ function PlayState:generateNote(n, s)
 	col = col % 4
 
 	local sustime = tonumber(n[3]) or 0
-	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.075, 0.1) end
+	-- fix sustain time (make it more accurate to how it looks in the charter)
+	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.075, 0.2) end
 
 	local notefield = hit and self.playerNotefield or self.enemyNotefield
 	local note = notefield:makeNote(time / 1000, col, sustime)
@@ -789,13 +792,13 @@ function PlayState:update(dt)
 
 		local isPlayer, offset = not notefield.bot, noteTime - Note.safeZoneOffset
 		for _, note in ipairs(notefield.notes) do
-			if note.wasGoodHit and note.sustain then
+			if note.sustain and note.wasGoodHit and not note.tooLate then
 				-- sustain clipping
 				note.lastPress = noteTime
 
 				-- end of sustain hit
-				if not note.sustainHit and note.time + note.sustainTime <= note.lastPress then
-					note.sustainHit = true
+				if not note.wasGoodHoldHit and note.time + note.sustainTime <= note.lastPress then
+					note.wasGoodHoldHit = true
 					self:resetInput(notefield, note.direction, notefield.bot)
 				end
 			end
@@ -803,9 +806,16 @@ function PlayState:update(dt)
 			if isPlayer and offset <= note.time then break end
 
 			-- note misses / botplay
-			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
+			if not note.tooLate and not note.ignoreNote then
 				if isPlayer then
-					self:noteMiss(note)
+					if note.wasGoodHit then
+						if not note.wasGoodHoldHit and not self.keysPressed[note.direction]
+							and noteTime - Note.safeZoneOffset <= (note.lastPress or note.time) then
+							self:noteMiss(note, true)
+						end
+					else
+						self:noteMiss(note)
+					end
 					-- elseif note.sustain then
 					-- 	local yeah = noteTime - Note.sustainSafeZone > (note.lastPress or note.time)
 					-- 	if not note.tooLate and yeah then
@@ -813,7 +823,7 @@ function PlayState:update(dt)
 					-- 	else
 					-- 		self:noteMiss(note, yeah)
 					-- 	end
-				elseif note.time <= noteTime then
+				elseif not note.wasGoodHit and note.time <= noteTime then
 					-- regular notes auto hit
 					self:goodNoteHit(note, noteTime)
 				end
@@ -1004,7 +1014,7 @@ function PlayState:onSettingChange(category, setting)
 	self.scripts:call("onSettingChange", category, setting)
 end
 
-function PlayState:noteMiss(n)
+function PlayState:noteMiss(n, isSustain)
 	self.scripts:call("noteMiss", n)
 
 	local notefield = n.parent
@@ -1016,6 +1026,8 @@ function PlayState:noteMiss(n)
 
 		if not n.sustain then
 			notefield:removeNote(n, true)
+		else
+			print(isSustain)
 		end
 
 		if event.muteVocals and self.vocals and (isPlayer or not self.dadVocals) then self.vocals:setVolume(0) end
@@ -1291,7 +1303,9 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 
 	if not controls then return end
 	key = self:getKeyFromEvent(controls)
+
 	if key < 0 then return end
+	self.keysPressed[key] = true
 
 	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
@@ -1330,7 +1344,9 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 
 	if not controls then return end
 	key = self:getKeyFromEvent(controls)
+
 	if key < 0 then return end
+	self.keysPressed[key] = false
 
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
