@@ -17,7 +17,6 @@ function Notefield:new(x, y, keys, skin, character)
 	self.downscroll = false -- this just sets scale y backwards
 
 	-- for PlayState
-	self.ghostTap = ClientPrefs.data.ghostTap or false
 	self.bot = true
 
 	self.modifiers = {}

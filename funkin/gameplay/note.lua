@@ -33,7 +33,7 @@ function Note:new(time, direction, sustaintime, skin)
 	self.type = ""
 	self.group = nil
 
-	self.hit, self.pressed, self.lastPress = false, false, nil
+	self.sustainHit, self.lastPress = false, nil
 
 	self.sustainSegments = Note.defaultSustainSegments
 
@@ -447,7 +447,7 @@ function Note:__render(camera)
 		love.graphics.setBlendMode(blendMode, alphaMode)
 	end
 
-	if self.showNote and (not self.hit or self.showNoteOnHit) then
+	if self.showNote and (not self.wasGoodHit or self.showNoteOnHit) then
 		ActorSprite.__render(self, camera)
 	end
 

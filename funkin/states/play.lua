@@ -341,7 +341,6 @@ function PlayState:enter()
 
 	if self.buttons then self:add(self.buttons) end
 
-	self.keysPressed = {}
 	self.lastTick = love.timer.getTime()
 
 	self.bindedKeyPress = bind(self, self.onKeyPress)
@@ -435,8 +434,11 @@ function PlayState:generateNote(n, s)
 	if col > 3 then hit = not hit end
 	col = col % 4
 
+	local sustime = tonumber(n[3]) or 0
+	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.075, 0.1) end
+
 	local notefield = hit and self.playerNotefield or self.enemyNotefield
-	local note = notefield:makeNote(time / 1000, col, (tonumber(n[3]) or 0) / 1000)
+	local note = notefield:makeNote(time / 1000, col, sustime)
 	note.type = n[4]
 end
 
@@ -709,6 +711,21 @@ function PlayState:doCountdown(beat)
 	end
 end
 
+function PlayState:resetInput(notefield, dir, resetAnim)
+	local receptor = notefield.receptors[dir + 1]
+	if receptor then
+		if resetAnim then
+			receptor:play("static")
+		end
+		receptor.strokeTime = 0
+	end
+
+	local char = notefield.character
+	if char and char.dirAnim == dir then
+		char.strokeTime = 0
+	end
+end
+
 function PlayState:update(dt)
 	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
@@ -769,11 +786,18 @@ function PlayState:update(dt)
 	local noteTime = PlayState.conductor.time / 1000
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
+
 		local isPlayer, offset = not notefield.bot, noteTime - Note.safeZoneOffset
 		for _, note in ipairs(notefield.notes) do
-			-- sustain clipping
 			if note.wasGoodHit and note.sustain then
+				-- sustain clipping
 				note.lastPress = noteTime
+
+				-- end of sustain hit
+				if not note.sustainHit and note.time + note.sustainTime <= note.lastPress then
+					note.sustainHit = true
+					self:resetInput(notefield, note.direction, notefield.bot)
+				end
 			end
 
 			if isPlayer and offset <= note.time then break end
@@ -790,6 +814,7 @@ function PlayState:update(dt)
 					-- 		self:noteMiss(note, yeah)
 					-- 	end
 				elseif note.time <= noteTime then
+					-- regular notes auto hit
 					self:goodNoteHit(note, noteTime)
 				end
 			end
@@ -986,7 +1011,7 @@ function PlayState:noteMiss(n)
 	local char = notefield.character
 	local event = self.scripts:event("onNoteMiss", Events.NoteMiss(n, char))
 
-	if not event.cancelled then
+	if not event.cancelled and not n.tooLate then
 		n.tooLate = true
 
 		if not n.sustain then
@@ -1059,7 +1084,7 @@ function PlayState:goodNoteHit(n, time)
 	local char, isPlayer = notefield.character, not notefield.bot
 	local event = self.scripts:event("onNoteHit", Events.NoteHit(n, char, rating, not isPlayer))
 
-	if not event.cancelled then
+	if not event.cancelled and not n.wasGoodHit then
 		n.wasGoodHit = true
 
 		if not n.sustain then
@@ -1266,24 +1291,28 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 
 	if not controls then return end
 	key = self:getKeyFromEvent(controls)
-
 	if key < 0 then return end
-	self.keysPressed[key] = true
 
 	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
 			local hitNotes = notefield:getNotes(time, key)
 			local i, l, note = 1, #hitNotes
-			while i <= l do
-				note = hitNotes[i]
-				self:goodNoteHit(note, time)
-				i = i + 1
-
-				local stackNote = hitNotes[i]
-				while stackNote and math.abs(note.time - stackNote.time) < 10 do
+			if l == 0 then
+				if not ClientPrefs.data.ghostTap then
+					self:miss(notefield, key)
+				end
+			else
+				while i <= l do
+					note = hitNotes[i]
+					self:goodNoteHit(note, time)
 					i = i + 1
-					stackNote = hitNotes[i]
+
+					local stackNote = hitNotes[i]
+					while stackNote and math.abs(note.time - stackNote.time) < 10 do
+						i = i + 1
+						stackNote = hitNotes[i]
+					end
 				end
 			end
 
@@ -1301,22 +1330,11 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 
 	if not controls then return end
 	key = self:getKeyFromEvent(controls)
-
 	if key < 0 then return end
-	self.keysPressed[key] = false
 
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			local receptor = notefield.receptors[key + 1]
-			if receptor then
-				receptor:play("static")
-				receptor.strokeTime = 0
-			end
-
-			local char = notefield.character
-			if char and char.dirAnim == key then
-				char.strokeTime = 0
-			end
+			self:resetInput(notefield, key, true)
 		end
 	end
 end
