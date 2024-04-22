@@ -809,12 +809,9 @@ function PlayState:update(dt)
 			-- note misses / botplay
 			if not note.tooLate and not note.ignoreNote then
 				if isPlayer then
-					if note.wasGoodHit then
-						if not note.wasGoodHoldHit and not self.keysPressed[note.direction]
-							and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time) then
-							self:noteMiss(note, true)
-						end
-					else
+					if not note.wasGoodHit
+						or (not note.wasGoodHoldHit and not self.keysPressed[note.direction]
+						and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time)) then
 						self:noteMiss(note)
 					end
 				elseif not note.wasGoodHit and note.time <= noteTime then
