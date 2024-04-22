@@ -38,7 +38,7 @@ end
 
 function NoteModBeat:applyPath(path, curBeat, pos, notefield, direction)
 	local x = getAmplitude(curBeat / self.beat + self.beatOffset) * math.fastcos(pos / 45 * self.scrollSpeed) * notefield.noteWidth / 2 *
-	self.percent
+		self.percent
 	path.x = path.x + x * self.x
 	path.y = path.y + x * self.y
 	path.z = path.z + x * self.z

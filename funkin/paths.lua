@@ -21,6 +21,7 @@ local paths = {
 	audio = {},
 	atlases = {},
 	fonts = {},
+	noteskins = {},
 	persistantAssets = {"music/freakyMenu.ogg"}
 }
 
@@ -59,15 +60,19 @@ function paths.clearCache()
 			paths.atlases[k] = nil
 		end
 	end
+	for k, o in pairs(paths.noteskins) do
+		if not paths.isPersistant(k) then
+			paths.noteskins[k] = nil
+		end
+	end
 	collectgarbage()
 end
 
 function paths.getMods(key)
 	if Mods.currentMod then
 		return "mods/" .. Mods.currentMod .. "/" .. key
-	else
-		return "mods/" .. key
 	end
+	return "mods/" .. key
 end
 
 function paths.getPath(key, allowMods)
@@ -82,20 +87,29 @@ function paths.exists(path, type)
 end
 
 function paths.getText(key)
-	return readFile(paths.getPath("data/" .. key .. ".txt"))
+	local path = paths.getPath("data/" .. key .. ".txt")
+	return readFile(path), path
 end
 
 function paths.getJSON(key)
-	local data = readFile(paths.getPath(key .. ".json"))
-	if data then return decodeJson(data) end
+	local path = paths.getPath(key .. ".json")
+	local data = readFile(path)
+	if data then return decodeJson(data), path end
+	return nil, path
 end
 
-function paths.getNoteskin(skin)
-	local data = paths.getJSON("data/notes/" .. skin)
-	if data then
-		data.skin = skin
-		return data
+function paths.getNoteskin(key)
+	local obj = paths.noteskins[key]
+	if obj then return obj end
+	obj = paths.getJSON("data/notes/" .. key)
+	if obj then
+		obj.skin = key
+		paths.noteskins[key] = obj
+		return obj
 	end
+
+	print('oh no its returning "noteskin" null NOOOO: ' .. key)
+	return nil
 end
 
 function paths.getFont(key, size)

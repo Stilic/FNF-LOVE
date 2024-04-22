@@ -155,9 +155,6 @@ function DialogueBox:update(dt)
 					end
 
 					Timer.after(1, function()
-						if love.system.getDevice() == "Mobile" then
-							self.buttons:destroy()
-						end
 						self.finishThing()
 						self:kill()
 					end)

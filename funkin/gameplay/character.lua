@@ -194,6 +194,7 @@ function Character:sing(dir, type)
 
 	self.dirAnim = dir
 	self.lastHit = PlayState.conductor.time
+	self.strokeTime = 0
 end
 
 function Character:dance(force)

@@ -439,7 +439,7 @@ function PlayState:generateNote(n, s)
 
 	local sustime = tonumber(n[3]) or 0
 	-- fix sustain time (make it more accurate to how it looks in the charter)
-	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.1, 0.15) end
+	if sustime > 0 then sustime = math.max(sustime / 1000 - 0.1, 0.13125) end
 
 	local notefield = hit and self.playerNotefield or self.enemyNotefield
 	local note = notefield:makeNote(time / 1000, col, sustime)
@@ -799,14 +799,14 @@ function PlayState:update(dt)
 
 				-- end of sustain hit
 				if not note.wasGoodHoldHit
-					and note.time + (isPlayer and math.max(note.sustainTime - 0.125, 0) or note.sustainTime) <= note.lastPress then
+					and note.time + (isPlayer and math.max(note.sustainTime - 0.1125, 0) or note.sustainTime) <= note.lastPress then
 					note.wasGoodHoldHit = true
 
-          if self.playerNotefield == notefield then
-  					self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
-  					self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
-  					self:recalculateRating()
-  				end
+					if self.playerNotefield == notefield then
+						self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
+						self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+						self:recalculateRating()
+					end
 
 					self:resetInput(notefield, note.direction, notefield.bot)
 				end
@@ -819,7 +819,7 @@ function PlayState:update(dt)
 				if isPlayer then
 					if not note.wasGoodHit
 						or (not note.wasGoodHoldHit and not self.keysPressed[note.direction]
-						and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time)) then
+							and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time)) then
 						self:noteMiss(note)
 					end
 				elseif not note.wasGoodHit and note.time <= noteTime then
@@ -1126,6 +1126,7 @@ function PlayState:goodNoteHit(n, time)
 		local receptor = notefield.receptors[n.direction + 1]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
+			receptor.holdTime, receptor.strokeTime = 0, 0
 			if n.sustain then
 				receptor.strokeTime = -1
 			elseif not isPlayer then
