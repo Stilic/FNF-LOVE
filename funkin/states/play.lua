@@ -804,6 +804,7 @@ function PlayState:update(dt)
           if self.playerNotefield == notefield then
   					self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
   					self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+  					self:recalculateRating()
   				end
 
 					self:resetInput(notefield, note.direction, notefield.bot)
