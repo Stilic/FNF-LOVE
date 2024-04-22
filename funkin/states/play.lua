@@ -678,6 +678,7 @@ function PlayState:executeCutsceneEvent(event, isEnd)
 			if character then character:playAnim(animation, true) end
 		end,
 		['End Cutscene'] = function()
+			game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 			if isEnd then
 				self:endSong(true)
 			else

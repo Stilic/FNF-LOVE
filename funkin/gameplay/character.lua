@@ -178,6 +178,17 @@ function Character:playAnim(anim, force, frame)
 	else
 		self.offset.x, self.offset.y = 0, 0
 	end
+
+	if self.__animations["danceLeft"] and self.__animations["danceRight"] then
+		if anim == "singLEFT" then
+			self.danced = true
+		elseif anim == "singRIGHT" then
+			self.danced = false
+		end
+		if anim == "singUP" or anim == "singDOWN" then
+			self.danced = not self.danced
+		end
+	end
 end
 
 function Character:sing(dir, type)
