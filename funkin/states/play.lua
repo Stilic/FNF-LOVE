@@ -797,7 +797,8 @@ function PlayState:update(dt)
 				note.lastPress = noteTime
 
 				-- end of sustain hit
-				if not note.wasGoodHoldHit and note.time + note.sustainTime <= note.lastPress then
+				if not note.wasGoodHoldHit
+					and note.time + (isPlayer and math.max(note.sustainTime - 0.125, 0) or note.sustainTime) <= note.lastPress then
 					note.wasGoodHoldHit = true
 					self:resetInput(notefield, note.direction, notefield.bot)
 				end
@@ -810,19 +811,12 @@ function PlayState:update(dt)
 				if isPlayer then
 					if note.wasGoodHit then
 						if not note.wasGoodHoldHit and not self.keysPressed[note.direction]
-							and noteTime - Note.safeZoneOffset <= (note.lastPress or note.time) then
+							and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time) then
 							self:noteMiss(note, true)
 						end
 					else
 						self:noteMiss(note)
 					end
-					-- elseif note.sustain then
-					-- 	local yeah = noteTime - Note.sustainSafeZone > (note.lastPress or note.time)
-					-- 	if not note.tooLate and yeah then
-					-- 		self:goodNoteHit(time, note, true)
-					-- 	else
-					-- 		self:noteMiss(note, yeah)
-					-- 	end
 				elseif not note.wasGoodHit and note.time <= noteTime then
 					-- regular notes auto hit
 					self:goodNoteHit(note, noteTime)
