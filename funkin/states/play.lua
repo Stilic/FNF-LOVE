@@ -1300,8 +1300,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					i = i + 1
 
 					local stackNote = hitNotes[i]
-					while stackNote and math.abs(note.time - stackNote.time) < 1 do
-						notefield:removeNote(stackNote)
+					while stackNote and math.abs(note.time - stackNote.time) < 10 do
 						i = i + 1
 						stackNote = hitNotes[i]
 					end
