@@ -801,15 +801,18 @@ function PlayState:update(dt)
 		end
 
 		local held = notefield.held
-		local i, l, note = 1, #held
+		local i, l, note, dir = 1, #held
 		while i <= l do
 			note = held[i]
 
 			if not note.tooLate then
+				dir = note.direction
+
 				-- sustain hitting / clipping
-				if not isPlayer or self.keysPressed[note.direction] then
+				if not isPlayer or self.keysPressed[dir] then
 					note.lastPress = noteTime
 				end
+
 				if not note.wasGoodHoldHit then
 					if note.time + note.sustainTime <= note.lastPress then
 						-- end of sustain hit
@@ -821,7 +824,7 @@ function PlayState:update(dt)
 							self:recalculateRating()
 						end
 
-						self:resetInput(notefield, note.direction, notefield.bot)
+						self:resetInput(notefield, dir, notefield.bot)
 
 						table.remove(held, i)
 						i = i - 1
