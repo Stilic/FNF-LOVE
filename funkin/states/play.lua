@@ -1288,23 +1288,27 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
 			local hitNotes = notefield:getNotesToHit(time, key)
-			local i, l, note = 1, #hitNotes
+			local l = #hitNotes
 			if l == 0 then
 				if not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
 			else
+				local firstNote = hitNotes[1]
+
+				-- remove stacked notes (this is dedicated to spam songs)
+				local i, note = 2
 				while i <= l do
 					note = hitNotes[i]
-					self:goodNoteHit(note, time)
-					i = i + 1
-
-					local stackNote = hitNotes[i]
-					while stackNote and math.abs(note.time - stackNote.time) < 10 do
-						i = i + 1
-						stackNote = hitNotes[i]
+					if note and note.time - firstNote.time < 0.1 then
+						notefield:removeNote(note)
+					else
+						break
 					end
+					i = i + 1
 				end
+
+				self:goodNoteHit(firstNote, time)
 			end
 
 			local receptor = notefield.receptors[key + 1]
