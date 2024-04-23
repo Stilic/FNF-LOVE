@@ -810,7 +810,6 @@ function PlayState:update(dt)
 				if not isPlayer or self.keysPressed[note.direction] then
 					note.lastPress = noteTime
 				end
-
 				if not note.wasGoodHoldHit then
 					if note.time + note.sustainTime <= note.lastPress then
 						-- end of sustain hit
@@ -1301,7 +1300,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					i = i + 1
 
 					local stackNote = hitNotes[i]
-					while stackNote and math.abs(note.time - stackNote.time) < 10 do
+					while stackNote and math.abs(note.time - stackNote.time) < 1 do
 						notefield:removeNote(stackNote)
 						i = i + 1
 						stackNote = hitNotes[i]
