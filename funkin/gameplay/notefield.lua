@@ -26,6 +26,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.lanes = {}
 	self.receptors = {}
 	self.notes = {}
+	self.held = {}
 	self.splashes = {}
 
 	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
@@ -117,16 +118,24 @@ function Notefield:setSkin(skin)
 	end
 end
 
-function Notefield:getNotes(time, direction)
+function Notefield:getNotesToHit(time, direction)
 	local notes = self.notes
 	if #notes == 0 then return {} end
 
-	local hitNotes, started = {}, false
+	local hitNotes, i, started = {}, 1, false
 	for _, note in ipairs(notes) do
-		if note.direction == direction and note:checkDiff(time) then
+		if (direction == nil or note.direction == direction) and note:checkDiff(time) then
 			if not note.ignoreNote and not note.wasGoodHit and not note.tooLate then
+			  local prevIdx = i - 1
+			  local prev = hitNotes[prevIdx]
+			  if prev and note.time == prev.time and note.sustainTime > prev.sustainTime then
+			    hitNotes[i] = prev
+			    hitNotes[prevIdx] = note
+			  else
+			    hitNotes[i] = note
+			  end
+				i = i + 1
 				started = true
-				table.insert(hitNotes, note)
 			end
 		elseif started then
 			break

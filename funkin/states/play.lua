@@ -780,45 +780,62 @@ function PlayState:update(dt)
 	end
 
 	local noteTime = PlayState.conductor.time / 1000
+	local missOffset = noteTime - Note.safeZoneOffset / 1.25
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
 
-		local isPlayer, offset = not notefield.bot, noteTime - Note.safeZoneOffset
-		for _, note in ipairs(notefield.notes) do
-			if note.sustain and note.wasGoodHit and not note.tooLate then
-				-- sustain clipping
-				note.lastPress = noteTime
+		local isPlayer = not notefield.bot
 
-				-- end of sustain hit
-				if not note.wasGoodHoldHit
-					and note.time + (isPlayer and math.max(note.sustainTime - 0.1125, 0) or note.sustainTime) <= note.lastPress then
-					note.wasGoodHoldHit = true
-
-					if self.playerNotefield == notefield then
-						self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
-						self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
-						self:recalculateRating()
-					end
-
-					self:resetInput(notefield, note.direction, notefield.bot)
-				end
-			end
-
-			if isPlayer and offset <= note.time then break end
-
-			-- note misses / botplay
-			if not note.tooLate and not note.ignoreNote then
+		for _, note in ipairs(notefield:getNotesToHit(noteTime)) do
+			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
 				if isPlayer then
-					if not note.wasGoodHit
-						or (not note.wasGoodHoldHit and not self.keysPressed[note.direction]
-							and noteTime - Note.sustainSafeZone <= (note.lastPress or note.time)) then
+					-- regular note miss
+					if note.time <= missOffset then
 						self:miss(note)
 					end
-				elseif not note.wasGoodHit and note.time <= noteTime then
-					-- regular notes auto hit
+				elseif note.time <= noteTime then
+					-- botplay hit
 					self:goodNoteHit(note, noteTime)
 				end
 			end
+		end
+
+		local held = notefield.held
+		local i, l, note = 1, #held
+		while i <= l do
+			note = held[i]
+
+			if not note.tooLate then
+				-- sustain clipping
+				if not isPlayer or self.keysPressed[note.direction] then
+					note.lastPress = noteTime
+				end
+
+				if not note.wasGoodHoldHit then
+					if note.time + note.sustainTime <= note.lastPress then
+						-- full sustain hit
+						note.wasGoodHoldHit = true
+
+						if self.playerNotefield == notefield then
+							self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
+							self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+							self:recalculateRating()
+						end
+
+						self:resetInput(notefield, note.direction, notefield.bot)
+
+						table.remove(held, i)
+						i = i - 1
+						l = l - 1
+					elseif note.lastPress + Note.safeZoneOffset / 4 <= missOffset then
+						-- sustain miss after parent note hit
+						-- TODO: make the time offset consistant
+						self:miss(note)
+					end
+				end
+			end
+
+			i = i + 1
 		end
 	end
 
@@ -1020,9 +1037,6 @@ function PlayState:miss(note, direction)
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
 		if not ghostMiss then
 			note.tooLate = true
-			if not note.sustain then
-				notefield:removeNote(note, true)
-			end
 		end
 
 		if event.muteVocals and notefield.vocals then
@@ -1063,8 +1077,10 @@ function PlayState:goodNoteHit(n, time)
 	if not event.cancelled and not n.wasGoodHit then
 		n.wasGoodHit = true
 
-		if not n.sustain then
-			notefield:removeNote(n, true)
+		if n.sustain then
+			table.insert(notefield.held, n)
+		else
+			notefield:removeNote(n)
 		end
 
 		if event.enableCamZooming then
@@ -1273,7 +1289,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			local hitNotes = notefield:getNotes(time, key)
+			local hitNotes = notefield:getNotesToHit(time, key)
 			local i, l, note = 1, #hitNotes
 			if l == 0 then
 				if not ClientPrefs.data.ghostTap then
@@ -1287,6 +1303,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 
 					local stackNote = hitNotes[i]
 					while stackNote and math.abs(note.time - stackNote.time) < 10 do
+						notefield:removeNote(stackNote)
 						i = i + 1
 						stackNote = hitNotes[i]
 					end
