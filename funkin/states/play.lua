@@ -811,6 +811,18 @@ function PlayState:update(dt)
 				-- sustain hitting / clipping
 				if not isPlayer or self.keysPressed[dir] then
 					note.lastPress = noteTime
+
+					local receptor = notefield.receptors[dir + 1]
+					if receptor.strokeTime ~= -1 then
+						receptor:play("confirm")
+						receptor.strokeTime = -1
+					end
+
+					local char = notefield.character
+					if char and char.dirAnim ~= dir then
+						char:sing(dir)
+						char.strokeTime = -1
+					end
 				end
 
 				if not note.wasGoodHoldHit then
@@ -1023,18 +1035,18 @@ function PlayState:onSettingChange(category, setting)
 end
 
 -- note can be nil for non-ghost-tap
-function PlayState:miss(note, direction)
-	local ghostMiss = direction ~= nil
+function PlayState:miss(note, dir)
+	local ghostMiss = dir ~= nil
 	if not ghostMiss then
-		direction = note.direction
+		dir = note.direction
 	end
 
-	local funcParam = ghostMiss and direction or note
+	local funcParam = ghostMiss and dir or note
 	self.scripts:call(ghostMiss and "miss" or "noteMiss", funcParam)
 
 	local notefield = ghostMiss and note or note.parent
 	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
-		Events.Miss(notefield, direction, ghostMiss and nil or note))
+		Events.Miss(notefield, dir, ghostMiss and nil or note))
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
 		if not ghostMiss then
 			note.tooLate = true
@@ -1046,7 +1058,7 @@ function PlayState:miss(note, direction)
 
 		local char = notefield.character
 		if not event.cancelledAnim then
-			char:sing(direction, "miss")
+			char:sing(dir, "miss")
 		end
 
 		if notefield == self.playerNotefield then
@@ -1068,20 +1080,20 @@ function PlayState:miss(note, direction)
 	self.scripts:call(ghostMiss and "postMiss" or "postNoteMiss", funcParam)
 end
 
-function PlayState:goodNoteHit(n, time)
-	self.scripts:call("goodNoteHit", n, rating)
+function PlayState:goodNoteHit(note, time)
+	self.scripts:call("goodNoteHit", note, rating)
 
-	local notefield = n.parent
-	local isPlayer = not notefield.bot
+	local notefield, dir = note.parent, note.direction
+	local isPlayer, fixedDir = not notefield.bot, dir + 1
 	local event = self.scripts:event("onNoteHit",
-		Events.NoteHit(notefield, n, rating, not isPlayer))
-	if not event.cancelled and not n.wasGoodHit then
-		n.wasGoodHit = true
+		Events.NoteHit(notefield, note, rating, not isPlayer))
+	if not event.cancelled and not note.wasGoodHit then
+		note.wasGoodHit = true
 
-		if n.sustain then
-			table.insert(notefield.held, n)
+		if note.sustain then
+			table.insert(notefield.held, note)
 		else
-			notefield:removeNote(n)
+			notefield:removeNote(note)
 		end
 
 		if event.enableCamZooming then
@@ -1097,23 +1109,23 @@ function PlayState:goodNoteHit(n, time)
 			local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
 			if section and section.altAnim then animType = 'alt' end
 
-			char:sing(n.direction, animType)
-			if n.sustain then char.strokeTime = -1 end
+			char:sing(dir, animType)
+			if note.sustain then char.strokeTime = -1 end
 		end
 
-		local rating = self:getRating(n.time, time)
+		local rating = self:getRating(note.time, time)
 
-		local receptor = notefield.receptors[n.direction + 1]
+		local receptor = notefield.receptors[fixedDir]
 		if not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			receptor.holdTime, receptor.strokeTime = 0, 0
-			if n.sustain then
+			if note.sustain then
 				receptor.strokeTime = -1
 			elseif not isPlayer then
 				receptor.holdTime = 0.15
 			end
 			if ClientPrefs.data.noteSplash and rating.splash then
-				notefield:spawnSplash(n.direction)
+				notefield:spawnSplash(dir)
 			end
 		end
 
@@ -1128,7 +1140,7 @@ function PlayState:goodNoteHit(n, time)
 		end
 	end
 
-	self.scripts:call("postGoodNoteHit", n, rating)
+	self.scripts:call("postGoodNoteHit", note, rating)
 end
 
 function PlayState:popUpScore(rating)
@@ -1293,6 +1305,11 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			local hitNotes = notefield:getNotesToHit(time, key)
 			local l = #hitNotes
 			if l == 0 then
+				local receptor = notefield.receptors[key + 1]
+				if receptor then
+					receptor:play("pressed")
+				end
+
 				if not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
@@ -1312,11 +1329,6 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 				end
 
 				self:goodNoteHit(firstNote, time)
-			end
-
-			local receptor = notefield.receptors[key + 1]
-			if receptor and receptor.curAnim.name ~= "confirm" then
-				receptor:play("pressed")
 			end
 		end
 	end
