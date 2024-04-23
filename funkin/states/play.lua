@@ -789,8 +789,8 @@ function PlayState:update(dt)
 		for _, note in ipairs(notefield:getNotesToHit(noteTime)) do
 			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
 				if isPlayer then
-					-- regular note miss
 					if note.time <= missOffset then
+						-- regular note miss
 						self:miss(note)
 					end
 				elseif note.time <= noteTime then
@@ -806,14 +806,14 @@ function PlayState:update(dt)
 			note = held[i]
 
 			if not note.tooLate then
-				-- sustain clipping
+				-- sustain hitting / clipping
 				if not isPlayer or self.keysPressed[note.direction] then
 					note.lastPress = noteTime
 				end
 
 				if not note.wasGoodHoldHit then
 					if note.time + note.sustainTime <= note.lastPress then
-						-- full sustain hit
+						-- end of sustain hit
 						note.wasGoodHoldHit = true
 
 						if self.playerNotefield == notefield then
@@ -827,9 +827,8 @@ function PlayState:update(dt)
 						table.remove(held, i)
 						i = i - 1
 						l = l - 1
-					elseif note.lastPress + Note.safeZoneOffset / 4 <= missOffset then
+					elseif note.lastPress <= missOffset then
 						-- sustain miss after parent note hit
-						-- TODO: make the time offset consistant
 						self:miss(note)
 					end
 				end

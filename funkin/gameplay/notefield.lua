@@ -126,14 +126,14 @@ function Notefield:getNotesToHit(time, direction)
 	for _, note in ipairs(notes) do
 		if (direction == nil or note.direction == direction) and note:checkDiff(time) then
 			if not note.ignoreNote and not note.wasGoodHit and not note.tooLate then
-			  local prevIdx = i - 1
-			  local prev = hitNotes[prevIdx]
-			  if prev and note.time == prev.time and note.sustainTime > prev.sustainTime then
-			    hitNotes[i] = prev
-			    hitNotes[prevIdx] = note
-			  else
-			    hitNotes[i] = note
-			  end
+				local prevIdx = i - 1
+				local prev = hitNotes[prevIdx]
+				if prev and note.time == prev.time and note.sustainTime > prev.sustainTime then
+					hitNotes[i] = prev
+					hitNotes[prevIdx] = note
+				else
+					hitNotes[i] = note
+				end
 				i = i + 1
 				started = true
 			end
