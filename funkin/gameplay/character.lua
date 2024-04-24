@@ -191,7 +191,7 @@ function Character:playAnim(anim, force, frame)
 	end
 end
 
-function Character:sing(dir, type)
+function Character:sing(dir, type, force)
 	local anim = "sing" .. string.upper(Character.directions[dir + 1])
 	local suffix
 	if type then
@@ -201,7 +201,7 @@ function Character:sing(dir, type)
 		})
 	end
 	if suffix and self.__animations[anim .. suffix] then anim = anim .. suffix end
-	self:playAnim(anim, true)
+	self:playAnim(anim, force == nil and true or force)
 
 	self.dirAnim = dir
 	self.lastHit = PlayState.conductor.time

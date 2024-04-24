@@ -1303,7 +1303,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					if notefield.held[fixedKey] then
 						local char = notefield.character
 						if char and char.dirAnim == key then
-							char:sing(key)
+							char:sing(key, nil, false)
 							char.strokeTime = -1
 						end
 
