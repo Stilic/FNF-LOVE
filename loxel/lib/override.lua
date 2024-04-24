@@ -48,11 +48,11 @@ local table_remove = table.remove or function(t, pos)
 	local v = t[pos]; if pos < n then table_move(t, pos + 1, n, pos) end;
 	t[n] = nil; return v
 end
-function table.remove(list, idx)
-	if idx == nil or type(idx) == __number__ then return table_remove(list, idx) end
+function table.remove(list, pos)
+	if pos == nil or type(pos) == __number__ then return table_remove(list, pos) end
 	local j, v = 1
 	for i = j, #list do
-		if list[i] and idx(list, i, j) then
+		if list[i] and pos(list, i, j) then
 			v, list[i] = list[i]
 		else
 			if i ~= j then list[j], list[i] = list[i] end

@@ -32,6 +32,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	for i = 1, keys do
 		self:makeLane(i).x = startx + self.noteWidth * i
+		self.held[i] = {}
 	end
 
 	self:getWidth()

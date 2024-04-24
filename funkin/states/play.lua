@@ -799,42 +799,61 @@ function PlayState:update(dt)
 			end
 		end
 
-		local held, note, dir = notefield.held
-		for i = 1, notefield.keys do
-			note = held[i]
-			if note and not note.tooLate then
-				dir = note.direction
+		local j, l, note, dir, press
+		for i, held in ipairs(notefield.held) do
+			j, l = 1, #held
 
-				if not isPlayer or note.wasGoodHoldHit or self.keysPressed[dir] then
-					-- sustain hitting
-					note.lastPress = noteTime
-
-					-- make sure the character is really holding
-					local char = notefield.character
-					if char and char.strokeTime ~= -1 then
-						char.strokeTime = -1
-					end
+			dir = i - 1
+			if l ~= 0 and (not isPlayer or self.keysPressed[dir]) then
+				-- safety checks
+				local receptor = notefield.receptors[i]
+				if receptor.strokeTime ~= -1 then
+					receptor:play("confirm")
+					receptor.strokeTime = -1
 				end
 
-				if not note.wasGoodHoldHit then
-					if note.time + note.sustainTime <= note.lastPress then
-						-- end of sustain hit
-						note.wasGoodHoldHit = true
+				local char = notefield.character
+				if char and char.strokeTime ~= -1 then
+					if char.dirAnim == dir then
+						char:sing(dir, nil, false)
+					end
+					char.strokeTime = -1
+				end
+			end
 
-						if self.playerNotefield == notefield then
-							self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
-							self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
-							self:recalculateRating()
+			while j <= l do
+				note = held[j]
+				if not note.tooLate then
+					dir = note.direction
+
+					if not isPlayer or self.keysPressed[dir] then
+						-- sustain hitting
+						note.lastPress = noteTime
+					end
+
+					if not note.wasGoodHoldHit then
+						if note.time + note.sustainTime <= note.lastPress then
+							-- end of sustain hit
+							note.wasGoodHoldHit = true
+
+							if self.playerNotefield == notefield then
+								self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
+								self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+								self:recalculateRating()
+							end
+
+							self:resetInput(notefield, dir, notefield.bot)
+
+							table.remove(held, j)
+							j = j - 1
+							l = l - 1
+						elseif note.lastPress <= missOffset then
+							-- sustain miss after parent note hit
+							self:miss(note)
 						end
-
-						self:resetInput(notefield, dir, notefield.bot)
-
-						held[i] = nil
-					elseif note.lastPress <= missOffset then
-						-- sustain miss after parent note hit
-						self:miss(note)
 					end
 				end
+				j = j + 1
 			end
 		end
 	end
@@ -1035,7 +1054,7 @@ function PlayState:miss(note, dir)
 	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
 		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
-		notefield.held[dir + 1] = nil
+		table.delete(notefield.held[dir + 1], note)
 		if not ghostMiss then
 			note.tooLate = true
 		end
@@ -1084,9 +1103,8 @@ function PlayState:goodNoteHit(note, time)
 		note.wasGoodHit = true
 
 		if note.sustain then
-			notefield.held[fixedDir] = note
+			table.insert(notefield.held[fixedDir], note)
 		else
-			notefield.held[fixedDir] = nil
 			notefield:removeNote(note)
 		end
 
@@ -1304,7 +1322,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			if l == 0 then
 				local receptor = notefield.receptors[fixedKey]
 				if receptor then
-					if notefield.held[fixedKey] then
+					if #notefield.held[fixedKey] > 0 then
 						if receptor.strokeTime ~= -1 then
 							receptor:play("confirm")
 							receptor.strokeTime = -1
