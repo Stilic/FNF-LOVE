@@ -823,6 +823,7 @@ function PlayState:update(dt)
 
 			while j <= l do
 				note = held[j]
+
 				if not note.tooLate then
 					dir = note.direction
 
@@ -853,6 +854,7 @@ function PlayState:update(dt)
 						end
 					end
 				end
+
 				j = j + 1
 			end
 		end
