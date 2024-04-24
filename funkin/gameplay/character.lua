@@ -15,7 +15,7 @@ function Character:new(x, y, char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
-	self.dirAnim = 0
+	self.dirAnim = nil
 
 	self.__reverseDraw = false
 

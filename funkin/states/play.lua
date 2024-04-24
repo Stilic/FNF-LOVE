@@ -812,8 +812,7 @@ function PlayState:update(dt)
 
 					-- make sure the character is really holding
 					local char = notefield.character
-					if char and char.dirAnim ~= dir then
-						char:sing(dir)
+					if char and char.strokeTime ~= -1 then
 						char.strokeTime = -1
 					end
 				end
@@ -1047,7 +1046,7 @@ function PlayState:miss(note, dir)
 
 		if event.triggerSound then
 			util.playSfx(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)),
-				love.math.random(0.1, 0.2))
+				love.math.random(1, 2) / 10)
 		end
 
 		local char = notefield.character
@@ -1297,21 +1296,15 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 
 	time = PlayState.conductor.time / 1000
 		+ (time - self.lastTick) * game.sound.music:getActualPitch()
+	local fixedKey = key + 1
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
 			local hitNotes = notefield:getNotesToHit(time, key)
 			local l = #hitNotes
 			if l == 0 then
-				local fixedKey = key + 1
 				local receptor = notefield.receptors[fixedKey]
 				if receptor then
 					if notefield.held[fixedKey] then
-						local char = notefield.character
-						if char and char.dirAnim == key then
-							char:sing(key, nil, false)
-							char.strokeTime = -1
-						end
-
 						if receptor.strokeTime ~= -1 then
 							receptor:play("confirm")
 							receptor.strokeTime = -1
