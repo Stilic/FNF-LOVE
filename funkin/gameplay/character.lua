@@ -196,14 +196,14 @@ function Character:sing(dir, type, force)
 	local suffix
 	if type then
 		switch(type:lower(), {
-			['miss'] = function() suffix = "miss" end,
-			['alt'] = function() suffix = "-alt" end
+			["miss"] = function() suffix = "miss" end,
+			["alt"] = function() suffix = "-alt" end
 		})
 	end
 	if suffix and self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, force == nil and true or force)
 
-	self.dirAnim = dir
+	self.dirAnim = type == "miss" and nil or dir
 	self.lastHit = PlayState.conductor.time
 	self.strokeTime = 0
 end

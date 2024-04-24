@@ -799,27 +799,9 @@ function PlayState:update(dt)
 			end
 		end
 
-		local j, l, note, dir, press
+		local j, l, note, dir
 		for i, held in ipairs(notefield.held) do
 			j, l = 1, #held
-
-			dir = i - 1
-			if l ~= 0 and (not isPlayer or self.keysPressed[dir]) then
-				-- safety checks
-				local receptor = notefield.receptors[i]
-				if receptor.strokeTime ~= -1 then
-					receptor:play("confirm")
-					receptor.strokeTime = -1
-				end
-
-				local char = notefield.character
-				if char and char.strokeTime ~= -1 then
-					if char.dirAnim == dir then
-						char:sing(dir, nil, false)
-					end
-					char.strokeTime = -1
-				end
-			end
 
 			while j <= l do
 				note = held[j]
@@ -839,7 +821,8 @@ function PlayState:update(dt)
 
 							if self.playerNotefield == notefield then
 								self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
-								self.score = self.score + math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+								self.score = self.score
+									+ math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
 								self:recalculateRating()
 							end
 
@@ -852,6 +835,23 @@ function PlayState:update(dt)
 							-- sustain miss after parent note hit
 							self:miss(note)
 						end
+					end
+				end
+
+				dir = i - 1
+				if l ~= 0 and (not isPlayer or self.keysPressed[dir]) then
+					local receptor = notefield.receptors[i]
+					if receptor.strokeTime ~= -1 then
+						receptor:play("confirm")
+						receptor.strokeTime = -1
+					end
+
+					local char = notefield.character
+					if char and char.strokeTime ~= -1 then
+						if char.dirAnim == dir then
+							char:sing(dir, nil, false)
+						end
+						char.strokeTime = -1
 					end
 				end
 
