@@ -1035,6 +1035,7 @@ function PlayState:miss(note, dir)
 	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
 		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
+		notefield.held[dir + 1] = nil
 		if not ghostMiss then
 			note.tooLate = true
 		end
