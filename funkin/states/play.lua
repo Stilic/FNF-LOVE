@@ -800,24 +800,17 @@ function PlayState:update(dt)
 			end
 		end
 
-		local held = notefield.held
-		local i, l, note, dir = 1, #held
-		while i <= l do
+		local held, note, dir = notefield.held
+		for i = 1, notefield.keys do
 			note = held[i]
-
-			if not note.tooLate then
+			if note and not note.tooLate then
 				dir = note.direction
 
-				-- sustain hitting / clipping
 				if not isPlayer or self.keysPressed[dir] then
+					-- sustain hitting
 					note.lastPress = noteTime
 
-					local receptor = notefield.receptors[dir + 1]
-					if receptor.strokeTime ~= -1 then
-						receptor:play("confirm")
-						receptor.strokeTime = -1
-					end
-
+					-- make sure the character is really holding
 					local char = notefield.character
 					if char and char.dirAnim ~= dir then
 						char:sing(dir)
@@ -838,17 +831,13 @@ function PlayState:update(dt)
 
 						self:resetInput(notefield, dir, notefield.bot)
 
-						table.remove(held, i)
-						i = i - 1
-						l = l - 1
+						held[i] = nil
 					elseif note.lastPress <= missOffset then
 						-- sustain miss after parent note hit
 						self:miss(note)
 					end
 				end
 			end
-
-			i = i + 1
 		end
 	end
 
@@ -1091,8 +1080,9 @@ function PlayState:goodNoteHit(note, time)
 		note.wasGoodHit = true
 
 		if note.sustain then
-			table.insert(notefield.held, note)
+			notefield.held[fixedDir] = note
 		else
+			notefield.held[fixedDir] = nil
 			notefield:removeNote(note)
 		end
 
@@ -1273,7 +1263,8 @@ function PlayState:tryGameOver()
 
 		self.scripts:call("gameOverCreate")
 
-		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y))
+		self:openSubstate(GameOverSubstate(self.stage.boyfriendPos.x,
+			self.stage.boyfriendPos.y))
 		self.isDead = true
 
 		self.scripts:call("postGameOverCreate")
@@ -1299,15 +1290,30 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	if key < 0 then return end
 	self.keysPressed[key] = true
 
-	time = PlayState.conductor.time / 1000 + (time - self.lastTick) * game.sound.music:getActualPitch()
+	time = PlayState.conductor.time / 1000
+		+ (time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
 			local hitNotes = notefield:getNotesToHit(time, key)
 			local l = #hitNotes
 			if l == 0 then
-				local receptor = notefield.receptors[key + 1]
+				local fixedKey = key + 1
+				local receptor = notefield.receptors[fixedKey]
 				if receptor then
-					receptor:play("pressed")
+					if notefield.held[fixedKey] then
+						local char = notefield.character
+						if char and char.dirAnim == key then
+							char:sing(key)
+							char.strokeTime = -1
+						end
+
+						if receptor.strokeTime ~= -1 then
+							receptor:play("confirm")
+							receptor.strokeTime = -1
+						end
+					else
+						receptor:play("pressed")
+					end
 				end
 
 				if not ClientPrefs.data.ghostTap then
