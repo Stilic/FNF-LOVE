@@ -11,7 +11,7 @@ function HealthIcon:new(icon, flip)
 end
 
 function HealthIcon:changeIcon(icon, ignoreDefault)
-	if paths.getImage("icons/" .. icon) == nil then
+	if not icon or icon == "" or not paths.getImage("icons/" .. icon) then
 		if ignoreDefault then return false end
 		icon = HealthIcon.defaultIcon
 	end
