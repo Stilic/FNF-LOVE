@@ -1035,7 +1035,7 @@ function PlayState:miss(note, dir)
 
 	local notefield = ghostMiss and note or note.parent
 	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
-		Events.Miss(notefield, dir, ghostMiss and nil or note))
+		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
 		if not ghostMiss then
 			note.tooLate = true
@@ -1043,6 +1043,11 @@ function PlayState:miss(note, dir)
 
 		if event.muteVocals and notefield.vocals then
 			notefield.vocals:setVolume(0)
+		end
+
+		if event.triggerSound then
+			util.playSfx(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)),
+				love.math.random(0.1, 0.2))
 		end
 
 		local char = notefield.character
@@ -1058,7 +1063,7 @@ function PlayState:miss(note, dir)
 			end
 
 			self.combo = math.min(self.combo, 0) - 1
-			self.health = math.max(self.health - 0.0475, 0)
+			self.health = math.max(self.health - (ghostMiss and 0.04 or 0.0475), 0)
 
 			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
 			self.score = self.score - 100
