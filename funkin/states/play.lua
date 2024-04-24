@@ -805,7 +805,7 @@ function PlayState:update(dt)
 			if note and not note.tooLate then
 				dir = note.direction
 
-				if not isPlayer or self.keysPressed[dir] then
+				if not isPlayer or note.wasGoodHoldHit or self.keysPressed[dir] then
 					-- sustain hitting
 					note.lastPress = noteTime
 
