@@ -1344,7 +1344,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 				local i, note = 2
 				while i <= l do
 					note = hitNotes[i]
-					if note and note.time - firstNote.time < 0.1 then
+					if note and note.time - firstNote.time < 0.05 then
 						notefield:removeNote(note)
 					else
 						break
