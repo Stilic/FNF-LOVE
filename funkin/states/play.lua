@@ -849,7 +849,7 @@ function PlayState:update(dt)
 					local char = notefield.character
 					if char and char.strokeTime ~= -1 then
 						local dirAnim = char.dirAnim
-						if dirAnim == dir or #heldNotes[dirAnim + 1] == 0 then
+						if dirAnim == nil or dirAnim == dir or #heldNotes[dirAnim + 1] == 0 then
 							char:sing(dir, nil, false)
 						end
 						char.strokeTime = -1
@@ -1095,7 +1095,7 @@ function PlayState:miss(note, dir)
 	self.scripts:call(ghostMiss and "postMiss" or "postNoteMiss", funcParam)
 end
 
-function PlayState:goodNoteHit(note, time)
+function PlayState:goodNoteHit(note, time, blockAnimation)
 	self.scripts:call("goodNoteHit", note, rating)
 
 	local notefield, dir = note.parent, note.direction
@@ -1107,8 +1107,10 @@ function PlayState:goodNoteHit(note, time)
 
 		if note.sustain then
 			table.insert(notefield.held[fixedDir], note)
+			notefield.lastPress = note
 		else
 			notefield:removeNote(note)
+			notefield.lastPress = nil
 		end
 
 		if event.enableCamZooming then
@@ -1119,13 +1121,15 @@ function PlayState:goodNoteHit(note, time)
 			notefield.vocals:setVolume(notefield.vocalVolume)
 		end
 
-		local char = notefield.character
-		if not event.cancelledAnim and char then
-			local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
-			if section and section.altAnim then animType = 'alt' end
+		if not event.cancelledAnim and (blockAnimation == nil or not blockAnimation) then
+			local char = notefield.character
+			if char then
+				local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
+				if section and section.altAnim then animType = 'alt' end
 
-			char:sing(dir, animType)
-			if note.sustain then char.strokeTime = -1 end
+				char:sing(dir, animType)
+				if note.sustain then char.strokeTime = -1 end
+			end
 		end
 
 		local rating = self:getRating(note.time, time)
@@ -1353,7 +1357,18 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					i = i + 1
 				end
 
-				self:goodNoteHit(firstNote, time)
+				local lastPress = notefield.lastPress
+				local blockAnim = lastPress and lastPress.sustainTime < firstNote.sustainTime
+				if blockAnim then
+					local char = notefield.character
+					if char then
+						local dir = lastPress.direction
+						if char.dirAnim ~= dir then
+							char:sing(dir, nil, false)
+						end
+					end
+				end
+				self:goodNoteHit(firstNote, time, blockAnim)
 			end
 		end
 	end
