@@ -469,28 +469,29 @@ end
 function PlayState:loadStageWithSongName(songName)
 	local curStage = PlayState.SONG.stage
 	if curStage == nil then
-		if songName == 'test' then
-			curStage = 'test'
-		elseif songName == 'spookeez' or songName == 'south' or songName == 'monster' then
-			curStage = 'spooky'
-		elseif songName == 'pico' or songName == 'philly-nice' or songName == 'blammed' then
-			curStage = 'philly'
-		elseif songName == 'satin-panties' or songName == 'high' or songName == 'milf' then
-			curStage = 'limo'
-		elseif songName == 'cocoa' or songName == 'eggnog' then
-			curStage = 'mall'
-		elseif songName == 'winter-horrorland' then
-			curStage = 'mall-evil'
+		if songName == "test" then
+			curStage = "test"
+		elseif songName == "spookeez" or songName == "south" or songName == "monster" then
+			curStage = "spooky"
+		elseif songName == "pico" or songName == "philly-nice" or songName == "blammed" then
+			curStage = "philly"
+		elseif songName == "satin-panties" or songName == "high" or songName == "milf" then
+			curStage = "limo"
+		elseif songName == "cocoa" or songName == "eggnog" then
+			curStage = "mall"
+		elseif songName == "winter-horrorland" then
+			curStage = "mall-evil"
 		elseif songName == "senpai" or songName == "roses" then
-			curStage, PlayState.pixelStage = "school", true
+			curStage = "school"
 		elseif songName == "thorns" then
-			curStage, PlayState.pixelStage = "school-evil", true
+			curStage = "school-evil"
 		elseif songName == "ugh" or songName == "guns" or songName == "stress" then
 			curStage = "tank"
 		else
 			curStage = "stage"
 		end
 	end
+	PlayState.pixelStage = curStage == "school" or curStage == "school-evil"
 	return curStage
 end
 
@@ -504,7 +505,7 @@ function PlayState:loadGfWithStage(song, stage)
 			["school"] = function() gfVersion = "gf-pixel" end,
 			["school-evil"] = function() gfVersion = "gf-pixel" end,
 			["tank"] = function()
-				if song == 'stress' then
+				if song == "stress" then
 					gfVersion = "pico-speaker"
 				else
 					gfVersion = "gf-tankmen"
