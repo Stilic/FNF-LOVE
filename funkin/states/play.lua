@@ -799,8 +799,8 @@ function PlayState:update(dt)
 			end
 		end
 
-		local j, l, note, dir
-		for i, held in ipairs(notefield.held) do
+		local heldNotes, j, l, note, dir = notefield.held
+		for i, held in ipairs(heldNotes) do
 			j, l = 1, #held
 
 			while j <= l do
@@ -848,7 +848,8 @@ function PlayState:update(dt)
 
 					local char = notefield.character
 					if char and char.strokeTime ~= -1 then
-						if char.dirAnim == dir then
+						local dirAnim = char.dirAnim
+						if dirAnim == dir or #heldNotes[dirAnim + 1] == 0 then
 							char:sing(dir, nil, false)
 						end
 						char.strokeTime = -1

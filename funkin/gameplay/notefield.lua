@@ -129,7 +129,7 @@ function Notefield:getNotesToHit(time, direction)
 			if not note.ignoreNote and not note.wasGoodHit and not note.tooLate then
 				local prevIdx = i - 1
 				local prev = hitNotes[prevIdx]
-				if prev and note.time - prev.time <= 0.001 and note.sustainTime < prev.sustainTime then
+				if prev and note.time - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
 					hitNotes[i] = prev
 					hitNotes[prevIdx] = note
 				else
