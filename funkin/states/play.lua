@@ -1358,7 +1358,8 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 				end
 
 				local lastPress = notefield.lastPress
-				local blockAnim = lastPress and lastPress.sustainTime < firstNote.sustainTime
+				local blockAnim = lastPress and firstNote.sustain
+					and lastPress.sustainTime < firstNote.sustainTime
 				if blockAnim then
 					local char = notefield.character
 					if char then
