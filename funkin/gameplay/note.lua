@@ -216,7 +216,7 @@ local function getValues(r, pos, values)
 end
 
 local function applyMod(mods, beat, pos, notefield, direction)
-	for _, mod in pairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, direction) end end
+	if mods then for _, mod in pairs(mods) do if mod.applyPath then mod:applyPath(values, beat, pos, notefield, direction) end end end
 end
 
 function Note:__render(camera)
