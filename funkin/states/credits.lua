@@ -182,8 +182,7 @@ function CreditsState:enter()
 	u.infoBox:setScrollFactor()
 	u.infoMenu:add(u.infoBox)
 
-	u.userIcon = HealthIcon()
-	u.userIcon.x, u.userIcon.y = u.userBox.x + u.userBox.width + 10, 10
+	u.userIcon = Sprite(u.userBox.x + u.userBox.width + 10, 10)
 	u.userIcon:setGraphicSize(100)
 	u.userIcon:updateHitbox()
 	u.userIcon:setScrollFactor()
@@ -293,7 +292,7 @@ function CreditsState:changeSelection(n)
 	u.userName.content = d.name
 	u.userDesc.content = d.description
 
-	u.userIcon:changeIcon(d.icon)
+	u.userIcon:loadTexture(paths.getImage("menus/credits/icons/" .. d.icon))
 	u.userIcon:setGraphicSize(100)
 	u.userIcon:updateHitbox()
 
@@ -322,22 +321,22 @@ function CreditsState:addUsers(name, people, i)
 	card:add(title)
 
 	local function makeCard(name, icon, i)
-		local icon = HealthIcon(icon)
-		icon.x, icon.y = 10, box.y + (64 * i + 10)
-		icon:setGraphicSize(54)
-		icon:updateHitbox()
-		icon:setScrollFactor(0, 1)
-		card:add(icon)
+		local img = Sprite(10, box.y +
+			(64 * i + 10), paths.getImage("menus/credits/icons/" .. icon))
+		img:setGraphicSize(54)
+		img:updateHitbox()
+		img:setScrollFactor(0, 1)
+		card:add(img)
 
-		local txt = Text(icon.x + icon.width + 10, 0,
+		local txt = Text(img.x + img.width + 10, 0,
 			name, paths.getFont("vcr.ttf", 36))
-		txt.y = icon.y + (icon.height - txt:getHeight()) / 2
-		txt.limit = box.width - icon.width - 30
+		txt.y = img.y + (img.height - txt:getHeight()) / 2
+		txt.limit = box.width - img.width - 30
 		txt:setScrollFactor(0, 1)
 		txt.antialiasing = false
 		card:add(txt)
 
-		return icon, txt
+		return img, txt
 	end
 
 	for i = 1, #people do
