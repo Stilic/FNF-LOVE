@@ -716,7 +716,7 @@ function PlayState:resetStroke(notefield, dir, delayReceptor)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
 		if delayReceptor then
-			receptor.holdTime = 0.15 - receptor.__strokeDelta
+			receptor.holdTime = 0.14 - receptor.__strokeDelta
 		end
 		receptor.strokeTime = 0
 	end
