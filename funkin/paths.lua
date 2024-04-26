@@ -142,7 +142,7 @@ function paths.getImage(key)
 	return nil
 end
 
-function paths.getAudio(key, stream, ignore)
+function paths.getAudio(key, stream, logError)
 	local path = paths.getPath(key .. ".ogg")
 	local obj = paths.audio[path]
 	if obj then return obj end
@@ -153,7 +153,7 @@ function paths.getAudio(key, stream, ignore)
 		return obj
 	end
 
-	if not ignore then print('oh no its returning "audio" null NOOOO: ' .. key) end
+	if not logError then print('oh no its returning "audio" null NOOOO: ' .. key) end
 	return nil
 end
 
@@ -166,9 +166,9 @@ function paths.getInst(song)
 	return paths.getAudio("songs/" .. daSong .. "/Inst", true)
 end
 
-function paths.getVoices(song, suffix, ignore)
+function paths.getVoices(song, suffix, logError)
 	local daSong = paths.formatToSongPath(song)
-	return paths.getAudio("songs/" .. daSong .. "/Voices" .. (suffix and "-" .. suffix or ""), true, ignore)
+	return paths.getAudio("songs/" .. daSong .. "/Voices" .. (suffix and "-" .. suffix or ""), true, logError)
 end
 
 function paths.getSparrowAtlas(key)

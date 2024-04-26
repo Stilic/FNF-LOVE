@@ -320,7 +320,7 @@ function game.switchState(state, force)
 		if game.getState() == stateOnCall then
 			requestedState = state
 		else
-			print("startOutro callback was called after the state was switched. This will be ignored")
+			print("startOutro callback was called after the state was switched. This will be ignored.")
 		end
 	end)
 end

@@ -4,14 +4,14 @@ local updateVersion = ''
 
 function UpdateState.check(goToState)
 	if Project.flags.CheckForUpdates and not UpdateState.closed then
-		print('Checking for updates..')
+		print('Checking for updates...')
 
 		local code, response = Https.request("https://raw.githubusercontent.com/Stilic/FNF-LOVE/main/project.lua")
 		if code == 200 then
 			local curVersion = Project.version
 			local githubVersion = load(response)().version
-			print('Github Version: ' .. githubVersion)
-			print('Your Version: ' .. curVersion)
+			print('Github version: ' .. githubVersion)
+			print('Your version: ' .. curVersion)
 			if curVersion ~= githubVersion then
 				if goToState then game.switchState(UpdateState(githubVersion), true) end
 				return false

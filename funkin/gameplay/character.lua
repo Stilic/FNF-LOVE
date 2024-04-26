@@ -19,13 +19,10 @@ function Character:new(x, y, char, isPlayer)
 
 	self.__reverseDraw = false
 
-	self.holdTime = 4
-	self.lastHit = math.negative_infinity
-	self.strokeTime = 0
-	self.__strokeDelta = 0
-
-	self.danceSpeed = 2
-	self.danced = false
+	self.holdTime, self.lastHit,
+	self.waitReleaseAfterSing = 4, math.negative_infinity, false
+	self.strokeTime, self.__strokeDelta = 0, 0
+	self.danceSpeed, self.danced = 2, false
 
 	local jsonData = paths.getJSON("data/characters/" .. self.char)
 	if jsonData == nil then jsonData = paths.getJSON("data/characters/bf") end
@@ -149,7 +146,8 @@ function Character:update(dt)
 			end
 		end
 	end
-	if self.lastHit > 0
+	if self.lastHit > 0 and (not self.waitReleaseAfterSing or self.dirAnim == nil
+		or not controls:down(PlayState.dirsToControls[self.dirAnim]))
 		and self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime
 		< PlayState.conductor.time then
 		self:dance()

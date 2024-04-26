@@ -12,12 +12,16 @@ local PauseSubstate = require "funkin.substates.pause"
 local PlayState = State:extend("PlayState")
 PlayState.defaultDifficulty = "normal"
 
-PlayState.controlDirs = {
+PlayState.controlsToDirs = {
 	note_left = 0,
 	note_down = 1,
 	note_up = 2,
 	note_right = 3
 }
+PlayState.dirsToControls = {}
+for control, i in pairs(PlayState.controlsToDirs) do
+	PlayState.dirsToControls[i] = control
+end
 
 PlayState.SONG = nil
 PlayState.songDifficulty = ""
@@ -202,6 +206,7 @@ function PlayState:enter()
 	self.boyfriend = Character(self.stage.boyfriendPos.x,
 		self.stage.boyfriendPos.y, self.SONG.player1,
 		true)
+	self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode
 	self.scripts:add(self.boyfriend.script)
 
 	self:add(self.gf)
@@ -707,11 +712,11 @@ function PlayState:doCountdown(beat)
 	end
 end
 
-function PlayState:resetInput(notefield, dir, resetAnim)
+function PlayState:resetStroke(notefield, dir, delayReceptor)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
-		if resetAnim then
-			receptor:play("static")
+		if delayReceptor then
+			receptor.holdTime = 0.13 - receptor.__strokeDelta
 		end
 		receptor.strokeTime = 0
 	end
@@ -720,6 +725,8 @@ function PlayState:resetInput(notefield, dir, resetAnim)
 	if char and char.dirAnim == dir then
 		char.strokeTime = 0
 	end
+
+	return receptor, char
 end
 
 function PlayState:update(dt)
@@ -827,7 +834,7 @@ function PlayState:update(dt)
 								self:recalculateRating()
 							end
 
-							self:resetInput(notefield, dir, notefield.bot)
+							self:resetStroke(notefield, dir, not isPlayer)
 
 							table.remove(held, j)
 							j = j - 1
@@ -994,6 +1001,7 @@ function PlayState:onSettingChange(category, setting)
 				end
 			end,
 			["botplayMode"] = function()
+				self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode
 				self.playerNotefield.bot = ClientPrefs.data.botplayMode
 				self.botplayText.visible = ClientPrefs.data.botplayMode
 			end,
@@ -1303,8 +1311,8 @@ end
 
 function PlayState:getKeyFromEvent(controls)
 	for _, control in pairs(controls) do
-		if PlayState.controlDirs[control] then
-			return PlayState.controlDirs[control]
+		if PlayState.controlsToDirs[control] then
+			return PlayState.controlsToDirs[control]
 		end
 	end
 	return -1
@@ -1388,7 +1396,10 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			self:resetInput(notefield, key, true)
+			local receptor = self:resetStroke(notefield, key)
+			if receptor then
+				receptor:play("static")
+			end
 		end
 	end
 end

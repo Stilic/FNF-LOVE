@@ -196,8 +196,8 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 		frameWidth = (frameWidth > self.texture:getWidth()) or
 			self.texture:getWidth() or frameWidth
 	elseif frameWidth > self.texture:getWidth() then
-		print('frameWidth:' .. frameWidth ..
-			' is larger than the graphic\'s width:' ..
+		print('frameWidth: ' .. frameWidth ..
+			' is larger than the graphic\'s width: ' ..
 			self.texture:getWidth())
 	end
 	self.width = frameWidth
@@ -208,8 +208,8 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 		frameHeight = (frameHeight > self.texture:getHeight()) or
 			self.texture:getHeight() or frameHeight
 	elseif frameHeight > self.texture:getHeight() then
-		print('frameHeight:' .. frameHeight ..
-			' is larger than the graphic\'s height:' ..
+		print('frameHeight: ' .. frameHeight ..
+			' is larger than the graphic\'s height: ' ..
 			self.texture:getHeight())
 	end
 	self.height = frameHeight
