@@ -1354,6 +1354,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					end
 				end
 
+				-- GET OUT OF MY HEAD!
 				if notSussy and not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
