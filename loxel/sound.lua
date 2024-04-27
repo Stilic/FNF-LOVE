@@ -28,6 +28,7 @@ function Sound:reset(cleanup, x, y)
 	self.looped = false
 	self.autoDestroy = false
 	self.radius = 0
+	self:setPitch(1)
 
 	--[[
 	self.__amplitudeLeft = 0.0

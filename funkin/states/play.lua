@@ -1042,10 +1042,10 @@ function PlayState:onSettingChange(category, setting)
 		controls:unbindPress(self.bindedKeyPress)
 		controls:unbindRelease(self.bindedKeyRelease)
 
-		self.bindedKeyPress = function(...) self:onKeyPress(...) end
+		self.bindedKeyPress = bind(self, self.onKeyPress)
 		controls:bindPress(self.bindedKeyPress)
 
-		self.bindedKeyRelease = function(...) self:onKeyRelease(...) end
+		self.bindedKeyRelease = bind(self, self.onKeyRelease)
 		controls:bindRelease(self.bindedKeyRelease)
 	end
 
