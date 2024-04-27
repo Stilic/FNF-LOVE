@@ -45,15 +45,13 @@ function Bar:__render(camera)
 	love.graphics.push()
 	love.graphics.rotate(math.rad(self.angle))
 	if self.filled then
-		local color = self.flipX and self.color.bg or self.color
-		love.graphics.setColor(color[1], color[2], color[3], self.alpha)
-		love.graphics.rectangle("fill", x + self.fillWidth, y,
+		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+		love.graphics.rectangle("fill", x + (self.flipX and 0 or self.fillWidth), y,
 			self.width - self.fillWidth, self.height)
 	end
 
-	local color = self.flipX and self.color or self.color.bg
-	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
-	love.graphics.rectangle("fill", x, y, self.fillWidth, self.height)
+	love.graphics.setColor(self.color.bg[1], self.color.bg[2], self.color.bg[3], self.alpha)
+	love.graphics.rectangle("fill", x + (self.flipX and self.width - self.fillWidth or 0), y, self.fillWidth, self.height)
 	love.graphics.pop()
 
 	love.graphics.setColor(r, g, b, a)
