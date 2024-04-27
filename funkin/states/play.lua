@@ -808,6 +808,7 @@ function PlayState:update(dt)
 		end
 
 		local heldNotes, j, l, note, dir = notefield.held
+		local resetVolume = false
 		for i, held in ipairs(heldNotes) do
 			j, l = 1, #held
 
@@ -820,6 +821,7 @@ function PlayState:update(dt)
 					if not isPlayer or self.keysPressed[dir] then
 						-- sustain hitting
 						note.lastPress = noteTime
+						resetVolume = true
 					end
 
 					if not note.wasGoodHoldHit then
@@ -866,6 +868,9 @@ function PlayState:update(dt)
 
 				j = j + 1
 			end
+		end
+		if resetVolume and notefield.vocals then
+			notefield.vocals:setVolume(notefield.vocalVolume)
 		end
 	end
 
@@ -1358,7 +1363,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 				local i, note = 2
 				while i <= l do
 					note = hitNotes[i]
-					if note and math.abs(note.time - firstNote.time) < 0.05 then
+					if note and math.abs(note.time - firstNote.time) < 0.01 then
 						notefield:removeNote(note)
 					else
 						break
