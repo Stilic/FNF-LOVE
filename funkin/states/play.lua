@@ -1341,9 +1341,10 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			local hitNotes = notefield:getNotesToHit(time, key)
 			local l = #hitNotes
 			if l == 0 then
-				local receptor = notefield.receptors[fixedKey]
+				local receptor, notSussy = notefield.receptors[fixedKey],
+					#notefield.held[fixedKey] == 0
 				if receptor then
-					if #notefield.held[fixedKey] > 0 then
+					if not notSussy then
 						if receptor.strokeTime ~= -1 then
 							receptor:play("confirm")
 							receptor.strokeTime = -1
@@ -1353,7 +1354,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					end
 				end
 
-				if not ClientPrefs.data.ghostTap then
+				if notSussy and not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
 			else
