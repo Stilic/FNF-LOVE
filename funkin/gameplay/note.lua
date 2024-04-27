@@ -7,7 +7,7 @@ function Note.toPos(time, speed)
 	return time * 450 * speed
 end
 
-Note.defaultSustainSegments = 1 -- also resets on play.create
+Note.defaultSustainSegments = 3 -- also resets on PlayState.create
 
 local susMesh, susVerts
 function Note.init()
@@ -17,7 +17,7 @@ function Note.init()
 	for i = 1, 16 do susVerts[i] = table.new(9, 0) end
 end
 
-function Note:new(time, direction, sustaintime, skin)
+function Note:new(time, direction, sustainTime, skin)
 	Note.init()
 	Note.super.new(self)
 	self.ignoreAffectByGroup = true
@@ -38,7 +38,7 @@ function Note:new(time, direction, sustaintime, skin)
 
 	self.direction, self.data = direction, direction -- data is for backward compatibilty
 	self:setSkin(skin)
-	self:setSustainTime(sustaintime)
+	self:setSustainTime(sustainTime)
 end
 
 function Note:clone()
@@ -148,11 +148,11 @@ function Note:setDirection(direction)
 	end
 end
 
-function Note:setSustainTime(sustaintime)
-	if sustaintime == self.sustainTime then return end
-	self.sustainTime = sustaintime
+function Note:setSustainTime(sustainTime)
+	if sustainTime == self.sustainTime then return end
+	self.sustainTime = sustainTime
 
-	if sustaintime > 0.01 then return self:createSustain() end
+	if sustainTime > 0.01 then return self:createSustain() end
 	return self:destroySustain()
 end
 

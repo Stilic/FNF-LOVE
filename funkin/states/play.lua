@@ -107,7 +107,7 @@ function PlayState:enter()
 	conductor.onSection = bind(self, self.section)
 	PlayState.conductor = conductor
 
-	Note.defaultSustainSegments = 1
+	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
 	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
@@ -824,7 +824,7 @@ function PlayState:update(dt)
 						resetVolume = true
 					end
 
-					if not note.wasGoodHoldHit then
+					if note.lastPress and not note.wasGoodHoldHit then
 						if note.time + note.sustainTime <= note.lastPress then
 							-- end of sustain hit
 							note.wasGoodHoldHit = true
