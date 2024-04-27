@@ -404,7 +404,7 @@ function love.errorhandler(msg)
 	}
 
 	local __step__, name, a, b = "step"
-	if love.system.getDevice() == "Mobile" then
+	--[[ if love.system.getDevice() == "Mobile" then
 		dontDraw = true
 
 		local first, done = true, false
@@ -431,7 +431,7 @@ function love.errorhandler(msg)
 			collectgarbage(__step__)
 			sleep(0.1)
 		end
-	end
+	end]]
 
 	firstPass()
 	eventhandlers.displayrotated(true)
