@@ -858,6 +858,22 @@ function ChartingState:update(dt)
 				colorSine = colorSine + dt
 				local colorVal = 0.7 + math.sin(math.pi * colorSine) * 0.3
 				n.color = {colorVal, colorVal, colorVal}
+
+				if game.keys.justPressed.Q or game.keys.justPressed.E then
+					local stepCrot = ChartingState.conductor.stepCrotchet
+					local susLength = self.curSelectedNote[3] +
+						(game.keys.justPressed.E and stepCrot or -stepCrot)
+					if susLength < 0 then
+						n.sustainSprite.height = 0
+						self.curSelectedNote[3] = 0
+					else
+						local susHeight = math.remapToRange(susLength, 0,
+							ChartingState.conductor.stepCrotchet * 16, 0,
+							(self.gridSize * 16))
+						n.sustainSprite.height = susHeight
+						self.curSelectedNote[3] = susLength
+					end
+				end
 			end
 		end
 
@@ -921,6 +937,11 @@ function ChartingState:generateNotes()
 					note.y = yval
 					self.allNotes:add(note)
 
+					local sustain = Graphic(note.x + (self.gridSize / 2) - 4, note.y + (self.gridSize / 2),
+						8, 0, Color.convert(self.sustainColors[note.data + 1]))
+					note.sustainSprite = sustain
+					self.allSustains:add(sustain)
+
 					if n[3] ~= nil then
 						local susLength = tonumber(n[3])
 						if susLength ~= nil and susLength > 0 then
@@ -929,10 +950,7 @@ function ChartingState:generateNotes()
 									ChartingState.conductor
 									.stepCrotchet * 16, 0,
 									(self.gridSize * 16))
-							local sustain = Graphic(note.x + (self.gridSize / 2) - 4, note.y + (self.gridSize / 2),
-								8, math.floor(susHeight), Color.convert(self.sustainColors[note.data + 1]))
-							note.sustainSprite = sustain
-							self.allSustains:add(sustain)
+							sustain.height = math.floor(susHeight)
 						end
 					end
 				end
@@ -1112,6 +1130,7 @@ function ChartingState:deleteNote(note)
 					self.curSelectedNote = nil
 				end
 				table.delete(self.__song.notes[note.section].sectionNotes, n)
+				self.allSustains:remove(note.sustainSprite):destroy()
 				self.allNotes:remove(note):destroy()
 				break
 			end
@@ -1179,6 +1198,11 @@ function ChartingState:addNote()
 	note.x = xval
 	note.y = yval
 	self.allNotes:add(note)
+
+	local sustain = Graphic(note.x + (self.gridSize / 2) - 4, note.y + (self.gridSize / 2),
+		8, 0, Color.convert(self.sustainColors[note.data + 1]))
+	note.sustainSprite = sustain
+	self.allSustains:add(sustain)
 
 	self.curSelectedNote = self.__song.notes[arrowSection + 1].sectionNotes[noteIndex]
 
