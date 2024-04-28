@@ -231,17 +231,12 @@ function ChartingState:add_UIWindow_Song()
 			tostring(self.vocals:getVolume() * 100))
 	end
 
-	self.UISongWindow:add(rectline)
-	self.UISongWindow:add(vocTxt)
-	self.UISongWindow:add(vocVolTxt)
-	self.UISongWindow:add(vocVolSlider)
-
 	local format = 'Playback - {val}%'
-	local playbackTxt = Text(10, rectline.y + 30, '')
+	local playbackTxt = Text(10, rectline.y + 110, '')
 	playbackTxt.content = format:gsub('{val}', '1')
 	playbackTxt.antialiasing = false
 
-	local playbackSlider = ui.UISlider(10, rectline.y + 50, 380, 10,
+	local playbackSlider = ui.UISlider(10, rectline.y + 130, 380, 10,
 		1, 0.05, nil, 0.2, 2)
 	playbackSlider.onChanged = function(value)
 		self.playback = value
@@ -250,6 +245,10 @@ function ChartingState:add_UIWindow_Song()
 		playbackTxt.content = format:gsub('{val}', tostring(value))
 	end
 
+	self.UISongWindow:add(rectline)
+	self.UISongWindow:add(vocTxt)
+	self.UISongWindow:add(vocVolTxt)
+	self.UISongWindow:add(vocVolSlider)
 	self.UISongWindow:add(playbackTxt)
 	self.UISongWindow:add(playbackSlider)
 end
