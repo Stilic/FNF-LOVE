@@ -681,8 +681,8 @@ function ChartingState:update(dt)
 	local mouseX, mouseY = (game.mouse.x + game.camera.scroll.x),
 		(game.mouse.y + game.camera.scroll.y)
 	if not isHovered and mouseX > self.gridBox.x and mouseX < self.gridBox.x +
-		self.gridBox.width and mouseY > self.strumLine.y - (self.gridSize * 5) and
-		mouseY < self.gridBox.y + (self.gridSize * 4 * 4) + (self.gridSize * 17) then
+		self.gridBox.width and mouseY > self.strumLine.y - (self.gridSize * 4) and
+		mouseY < self.strumLine.y + (self.gridSize * 18) then
 		self.dummyArrow.visible = true
 		self.dummyArrow.x = math.floor(mouseX / self.gridSize) * self.gridSize
 		if game.keys.pressed.SHIFT then
@@ -734,7 +734,7 @@ function ChartingState:update(dt)
 			end
 		end
 
-		if game.keys.pressed.W or game.keys.pressed.S then
+		if game.mouse.wheel ~= 0 or (game.keys.pressed.W or game.keys.pressed.S) then
 			game.sound.music:pause()
 
 			local shiftMult = 1
@@ -744,7 +744,8 @@ function ChartingState:update(dt)
 				shiftMult = 4
 			end
 
-			local daTime = 700 * dt * shiftMult
+			local addTime = (game.keys.pressed.W or game.keys.pressed.S) and 700 or 4000
+			local daTime = addTime * dt * shiftMult
 
 			if game.keys.pressed.W then
 				local checkTime = game.sound.music:tell() -
@@ -753,7 +754,7 @@ function ChartingState:update(dt)
 					game.sound.music:seek(
 						game.sound.music:tell() - (daTime / 1000))
 				end
-			else
+			elseif game.keys.pressed.W then
 				local checkLimit = game.sound.music:tell() +
 					(daTime / 1000)
 				if checkLimit < game.sound.music:getDuration() then
@@ -761,6 +762,24 @@ function ChartingState:update(dt)
 						game.sound.music:tell() + (daTime / 1000))
 				else
 					game.sound.music:seek(0)
+				end
+			else
+				if game.mouse.wheel > 0 then
+					local checkTime = game.sound.music:tell() -
+						(daTime / 1000)
+					if checkTime > 0 then
+						game.sound.music:seek(
+							game.sound.music:tell() - (daTime / 1000))
+					end
+				else
+					local checkLimit = game.sound.music:tell() +
+						(daTime / 1000)
+					if checkLimit < game.sound.music:getDuration() then
+						game.sound.music:seek(
+							game.sound.music:tell() + (daTime / 1000))
+					else
+						game.sound.music:seek(0)
+					end
 				end
 			end
 
@@ -888,7 +907,7 @@ function ChartingState:generateNotes()
 					lastChange = Conductor.getBPMChangeFromTime(bpmChanges, daStrumTime,
 						lastChange.id) or lastChange
 
-					local note = Note(daStrumTime, daNoteData)
+					local note = ChartingNote(daStrumTime, daNoteData)
 					note.section = section_num
 					note.index = note_num
 					note.step = Conductor.getStepFromBPMChange(lastChange, daStrumTime, 0)
@@ -971,15 +990,14 @@ function ChartingState:updateSectionLine()
 end
 
 function ChartingState:strumPosUpdate()
-	self.strumLine.y = (self.gridSize * 5) +
-		(ChartingState.conductor.currentStepFloat *
-			self.gridSize)
+	self.strumLine.y = (ChartingState.conductor.currentStepFloat *
+			self.gridSize) - (self.gridSize * 4)
 	self.gridBox.y = (self.gridSize * -8) + (self.gridSize * 8 *
 		(math.floor(
 			(ChartingState.conductor.currentStepFloat / 8) -
 			(ChartingState.conductor.stepCrotchet / 16) /
 			self.gridSize)))
-	game.camera.target = self.strumLine
+	game.camera.scroll.y = self.strumLine.y
 	self:updateBeatLine()
 end
 
@@ -1148,7 +1166,7 @@ function ChartingState:addNote()
 
 	local noteIndex = #self.__song.notes[arrowSection + 1].sectionNotes
 
-	local note = Note(noteStrumTime, noteData % 4)
+	local note = ChartingNote(noteStrumTime, noteData % 4)
 	note.section = arrowSection + 1
 	note.index = noteIndex
 	note.step = Conductor.getStepFromBPMChange(lastChange, noteStrumTime, 0)

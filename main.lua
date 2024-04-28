@@ -74,7 +74,9 @@ GameOverSubstate = require "funkin.substates.gameover"
 
 CutsceneState = require "funkin.states.editors.cutscene"
 CharacterEditor = require "funkin.states.editors.character"
+
 ChartingState = require "funkin.states.editors.charting"
+ChartingNote = require "funkin.ui.editor.charting.chartingnote"
 
 RGBShader = require "funkin.shaders.rgb"
 
@@ -142,7 +144,7 @@ function love.load()
 	game:add(SoundTray)
 	SoundTray.new()
 
-	game.init(Project, SplashScreen)
+	game.init(Project, ChartingState)
 
 	if ClientPrefs.data.resolution == -1 then
 		Camera.defaultResolution = love.graphics.getFixedScale()
