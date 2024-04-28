@@ -163,7 +163,7 @@ function NumericStepper:update(dt)
 	end
 
 	if self.focused and game.keys.justPressed.ANY then
-		if not self.__removePressed and #game.keys.input.justPressed > 0 then
+		if not self.__removePressed then
 			for key in pairs(game.keys.input.justPressed) do
 				if isNumber(key) then
 					self.__insertPressed = true
