@@ -1,4 +1,5 @@
 io.stdout:setvbuf("no")
+__print = print
 
 require "loxel"
 
@@ -164,6 +165,15 @@ function love.load()
 
 	if Discord then
 		Discord.init()
+	end
+
+	function print(...)
+		local v = {...}
+		for i = 1, #v do v[i] = tostring(v[i]) end
+		if ClientPrefs.data.toastPrints then
+			Toast.new(table.concat(v, ", "))
+		end
+		__print(...)
 	end
 end
 
@@ -406,7 +416,7 @@ function love.errorhandler(msg)
 	}
 
 	local __step__, name, a, b = "step"
-	if love.system.getDevice() == "Mobile" then
+	--[[ if love.system.getDevice() == "Mobile" then
 		dontDraw = true
 
 		local first, done = true, false
@@ -433,7 +443,7 @@ function love.errorhandler(msg)
 			collectgarbage(__step__)
 			sleep(0.1)
 		end
-	end
+	end]]
 
 	firstPass()
 	eventhandlers.displayrotated(true)

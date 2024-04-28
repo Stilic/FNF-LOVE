@@ -107,7 +107,7 @@ function PlayState:enter()
 	conductor.onSection = bind(self, self.section)
 	PlayState.conductor = conductor
 
-	Note.defaultSustainSegments = 1
+	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
 	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
@@ -162,13 +162,13 @@ function PlayState:enter()
 
 	if PlayState.SONG.needsVoices or PlayState.SONG.needsVoices == nil then
 		local bfVocals, dadVocals =
-			paths.getVoices(songName, self.SONG.player1, true) or paths.getVoices(songName, "bf", true),
+			paths.getVoices(songName, self.SONG.player1, true) or paths.getVoices(songName, "Player", true),
 			paths.getVoices(songName, self.SONG.player2, true)
 
 		if not bfVocals then
-			bfVocals, dadVocals = paths.getVoices(songName), paths.getVoices(songName, "dad", true)
+			bfVocals, dadVocals = paths.getVoices(songName), paths.getVoices(songName, "Opponent", true)
 		elseif not dadVocals then
-			dadVocals = paths.getVoices(songName, "dad")
+			dadVocals = paths.getVoices(songName, "Opponent")
 		end
 
 		if dadVocals then
@@ -808,6 +808,7 @@ function PlayState:update(dt)
 		end
 
 		local heldNotes, j, l, note, dir = notefield.held
+		local resetVolume = false
 		for i, held in ipairs(heldNotes) do
 			j, l = 1, #held
 
@@ -820,9 +821,10 @@ function PlayState:update(dt)
 					if not isPlayer or self.keysPressed[dir] then
 						-- sustain hitting
 						note.lastPress = noteTime
+						resetVolume = true
 					end
 
-					if not note.wasGoodHoldHit then
+					if note.lastPress and not note.wasGoodHoldHit then
 						if note.time + note.sustainTime <= note.lastPress then
 							-- end of sustain hit
 							note.wasGoodHoldHit = true
@@ -866,6 +868,9 @@ function PlayState:update(dt)
 
 				j = j + 1
 			end
+		end
+		if resetVolume and notefield.vocals then
+			notefield.vocals:setVolume(notefield.vocalVolume)
 		end
 	end
 
@@ -1336,9 +1341,10 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			local hitNotes = notefield:getNotesToHit(time, key)
 			local l = #hitNotes
 			if l == 0 then
-				local receptor = notefield.receptors[fixedKey]
+				local receptor, notSussy = notefield.receptors[fixedKey],
+					#notefield.held[fixedKey] == 0
 				if receptor then
-					if #notefield.held[fixedKey] > 0 then
+					if not notSussy then
 						if receptor.strokeTime ~= -1 then
 							receptor:play("confirm")
 							receptor.strokeTime = -1
@@ -1348,7 +1354,8 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					end
 				end
 
-				if not ClientPrefs.data.ghostTap then
+				-- GET OUT OF MY HEAD!
+				if notSussy and not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
 			else
@@ -1358,7 +1365,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 				local i, note = 2
 				while i <= l do
 					note = hitNotes[i]
-					if note and math.abs(note.time - firstNote.time) < 0.05 then
+					if note and math.abs(note.time - firstNote.time) < 0.01 then
 						notefield:removeNote(note)
 					else
 						break

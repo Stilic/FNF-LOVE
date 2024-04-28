@@ -18,7 +18,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.drawSize = game.height + self.noteWidth
 	self.drawSizeOffset = 0
 	self.downscroll = false -- this just sets scale y backwards
-	self.canSpawnSplash = ClientPrefs.data.noteSplash
+	self.canSpawnSplash = true
 
 	-- for PlayState
 	self.bot = false
@@ -149,7 +149,7 @@ function Notefield:getNotesToHit(time, direction)
 end
 
 function Notefield:spawnSplash(direction)
-	if not self.canSpawnSplash then return end
+	if not self.canSpawnSplash or not ClientPrefs.data.noteSplash then return end
 
 	local receptor = self.receptors[direction + 1]
 	if receptor then

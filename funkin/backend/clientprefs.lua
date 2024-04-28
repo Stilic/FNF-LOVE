@@ -33,6 +33,7 @@ ClientPrefs.data = {
 	shader = true,
 	fullscreen = false,
 	resolution = 1,
+	toastPrints = false,
 
 	-- stats
 	showFps = false,

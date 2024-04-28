@@ -144,11 +144,10 @@ function CreditsState:enter()
 	self.ui = {}
 	local u = self.ui
 
-	u.usersMenu = Group()
+	u.usersMenu = SpriteGroup()
 
 	u.userBox = Graphic(10, 10, 426, 0, Color.fromRGB(10, 12, 26))
 	u.userBox.alpha = 0.4
-	u.userBox.config.round = {16, 16}
 	u.userBox:setScrollFactor(0, 1)
 	u.usersMenu:add(u.userBox)
 
@@ -206,7 +205,13 @@ function CreditsState:enter()
 	u.socials = Group()
 	u.infoMenu:add(u.socials)
 
-	self:add(u.usersMenu)
+	local stencilObject = Graphic(10, 10, 426, game.height - 20, Color.fromRGB(10, 12, 26))
+	stencilObject.config.round = {16, 16}
+	stencilObject:setScrollFactor()
+	local stencil = Stencil(u.usersMenu)
+	stencil.stencilObject = stencilObject
+
+	self:add(stencil)
 	self:add(u.infoMenu)
 
 	self:changeSelection()

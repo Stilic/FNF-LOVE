@@ -242,6 +242,8 @@ Sprite = loxreq "sprite"
 Camera = loxreq "camera"
 Text = loxreq "text"
 TypeText = loxreq "typetext"
+Stencil = loxreq "stencil"
+
 Bar = loxreq "ui.bar"
 Group = loxreq "group.group"
 SpriteGroup = loxreq "group.spritegroup"
@@ -261,6 +263,8 @@ ActorGroup = loxreq "group.actorgroup"
 VirtualPad = loxreq "virtualpad"
 VirtualPadGroup = loxreq "group.virtualpadgroup"
 
+Toast = loxreq "system.toast"
+
 ui = {
 	UINavbar = loxreq "ui.navbar",
 	UIWindow = loxreq "ui.window",
@@ -272,10 +276,6 @@ ui = {
 	UINumericStepper = loxreq "ui.numericstepper",
 	UISlider = loxreq "ui.slider"
 }
-
-if isMobile or Project.flags.LoxelShowPrintsInScreen then
-	ScreenPrint = loxreq "system.screenprint"
-end
 
 local function temp() return true end
 local metatemp = setmetatable(table, {__index = function() return temp end})
@@ -329,18 +329,8 @@ function game.init(app, state, ...)
 	local width, height = app.width, app.height
 	game.width, game.height = width, height
 
-	if ScreenPrint then
-		ScreenPrint.init(love.graphics.getDimensions())
-		game:add(ScreenPrint)
-
-		local ogprint = print
-		function print(...)
-			local v = {...}
-			for i = 1, #v do v[i] = tostring(v[i]) end
-			ScreenPrint.new(table.concat(v, ", "))
-			ogprint(...)
-		end
-	end
+	Toast.init(love.graphics.getDimensions())
+	game:add(Toast)
 
 	local path = loxreq.path:gsub("%.", "/")
 	Sprite.defaultTexture = love.graphics.newImage(path .. "/assets/default.png")
