@@ -31,7 +31,7 @@ function Character:new(x, y, char, isPlayer)
 
 	self.imageFile = jsonData.sprite
 	self.jsonScale = 1
-	if jsonData.scale ~= 1 then
+	if jsonData.scale and jsonData.scale ~= 1 then
 		self.jsonScale = jsonData.scale
 		self:setGraphicSize(math.floor(self.width * self.jsonScale))
 		self:updateHitbox()
@@ -41,16 +41,21 @@ function Character:new(x, y, char, isPlayer)
 		self.holdTime = jsonData.sing_duration
 	end
 
-	self.positionTable = {x = jsonData.position[1], y = jsonData.position[2]}
-	self.cameraPosition = {
-		x = jsonData.camera_points[1],
-		y = jsonData.camera_points[2]
-	}
+	self.positionTable = {x = 0, y = 0}
+	if jsonData.position then
+		self.positionTable.x = jsonData.position[1]
+		self.positionTable.y = jsonData.position[2]
+	end
+	self.cameraPosition = {x = 0, y = 0}
+	if jsonData.camera_points then
+		self.cameraPosition.x = jsonData.camera_points[1]
+		self.cameraPosition.y = jsonData.camera_points[2]
+	end
 
 	self.icon = jsonData.icon
 	self.iconColor = jsonData.color == nil and nil or jsonData.color
 
-	self.flipX = (jsonData.flip_x == true)
+	self.flipX = jsonData.flip_x == true
 	self.jsonFlipX = self.flipX
 
 	self.jsonAntialiasing = jsonData.antialiasing or false
@@ -147,7 +152,7 @@ function Character:update(dt)
 		end
 	end
 	if self.lastHit > 0 and (not self.waitReleaseAfterSing or self.dirAnim == nil
-		or not controls:down(PlayState.dirsToControls[self.dirAnim]))
+			or not controls:down(PlayState.dirsToControls[self.dirAnim]))
 		and self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime
 		< PlayState.conductor.time then
 		self:dance()
