@@ -41,7 +41,7 @@ function ChartingState:enter()
 	self.playback = 1
 	self.focused = true
 
-	self.bgMusic = game.sound.play(paths.getMusic('chart_loop'), 0.4, true)
+	self.bgMusic = game.sound.play(paths.getMusic('chartEditorLoop'), 0.4, true)
 	game.sound.list:add(self.bgMusic)
 
 	if PlayState.SONG ~= nil then
@@ -51,7 +51,7 @@ function ChartingState:enter()
 			song = 'Test',
 			bpm = 150.0,
 			speed = 1,
-			needsVoices = false,
+			needsVoices = true,
 			stage = 'stage',
 			player1 = 'bf',
 			player2 = 'dad',

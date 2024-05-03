@@ -47,7 +47,7 @@ function PauseSubstate:new()
 end
 
 function PauseSubstate:loadMusic()
-	self.curPauseMusic = ClientPrefs.data.pauseMusic
+	self.curPauseMusic = self:loadPauseMusic()
 	self.music = game.sound.load(paths.getMusic('pause/' .. self.curPauseMusic))
 end
 
@@ -175,6 +175,19 @@ function PauseSubstate:onSettingChange(setting, option)
 			self.music:fade(1, self.music:getVolume(), ClientPrefs.data.menuMusicVolume / 100)
 		end
 	end
+end
+
+function PauseSubstate:loadPauseMusic()
+	local pauseMusic = ClientPrefs.data.pauseMusic
+	if pauseMusic == "breakfast" then
+		local songName = PlayState.getSongName():lower()
+		if songName == "pico" or songName == "philly nice" or songName == "blammed" then
+			pauseMusic = pauseMusic .. "-pico"
+		elseif songName == "senpai" or songName == "roses" or songName == "thorns" then
+			pauseMusic = pauseMusic .. "-pixel"
+		end
+	end
+	return pauseMusic
 end
 
 function PauseSubstate:changeSelection(huh)
