@@ -19,7 +19,7 @@ function MainMenuState:enter()
 		Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 	end
 
-	self.optionShit = {'story_mode', 'freeplay', 'donate', 'options'}
+	self.optionShit = {'storymode', 'freeplay', 'credits', 'options', 'donate'}
 
 	self.selectedSomethin = false
 
@@ -52,16 +52,16 @@ function MainMenuState:enter()
 		local menuItem = Sprite(0, (i * 140) + offset)
 		menuItem.scale = {x = scale, y = scale}
 		menuItem:setFrames(paths.getSparrowAtlas(
-			'menus/mainmenu/menu_' .. self.optionShit[i + 1]))
-		menuItem:addAnimByPrefix('idle', self.optionShit[i + 1] .. ' basic', 24)
-		menuItem:addAnimByPrefix('selected', self.optionShit[i + 1] .. ' white',
+			'menus/mainmenu/' .. self.optionShit[i + 1]))
+		menuItem:addAnimByPrefix('idle', self.optionShit[i + 1] .. ' idle', 24)
+		menuItem:addAnimByPrefix('selected', self.optionShit[i + 1] .. ' selected',
 			24)
 		menuItem:play('idle')
 		menuItem.ID = (i + 1)
 		menuItem:screenCenter('x')
 		self.menuItems:add(menuItem)
 		local scr = (#self.optionShit - 4) * 0.135
-		if #self.optionShit < 6 then scr = 0 end
+		if #self.optionShit < 4 then scr = 0 end
 		menuItem:setScrollFactor(0, scr)
 		menuItem:updateHitbox()
 	end
@@ -69,7 +69,7 @@ function MainMenuState:enter()
 	self.camFollow = {x = 0, y = 0}
 	game.camera:follow(self.camFollow, nil, 10)
 
-	self.versionFormat = "FNF LÖVE v%version\nFriday Night Funkin' v0.2.8"
+	self.versionFormat = "FNF LÖVE v%version\nFriday Night Funkin' v0.3.0"
 	self.versionText = Text(12, 0, self.versionFormat:gsub("%%version", Project.version),
 		paths.getFont("vcr.ttf", 16))
 	self.versionText.y = game.height - self.versionText:getHeight() - 8
@@ -135,10 +135,6 @@ function MainMenuState:update(dt)
 		if controls:pressed("debug_1") then
 			self:openEditorMenu()
 		end
-
-		if game.keys.justPressed.TAB then
-			game.switchState(CreditsState())
-		end
 	end
 
 	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
@@ -149,11 +145,14 @@ function MainMenuState:update(dt)
 end
 
 local triggerChoices = {
-	story_mode = {true, function(self)
+	storymode = {true, function(self)
 		game.switchState(StoryMenuState())
 	end},
 	freeplay = {true, function(self)
 		game.switchState(FreeplayState())
+	end},
+	credits = {true, function(self)
+		game.switchState(CreditsState())
 	end},
 	options = {false, function(self)
 		if self.buttons then
