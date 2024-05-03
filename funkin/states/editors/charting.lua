@@ -48,8 +48,8 @@ function ChartingState:enter()
 		self.__song = PlayState.SONG
 	else
 		self.__song = {
-			song = 'Coldteenbucks',
-			bpm = 151.0,
+			song = 'Test',
+			bpm = 150.0,
 			speed = 1,
 			needsVoices = false,
 			stage = 'stage',
