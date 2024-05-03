@@ -13,6 +13,7 @@ function Slider:new(x, y, width, height, value, snap, sliderType, min, max)
 	self.snap = snap or nil
 
 	self.dragging = false
+	self.disabled = false
 	self.onChanged = nil
 	self.sliderType = (type(sliderType) == "string") and sliderType:lower()
 
@@ -56,7 +57,7 @@ function Slider:update()
 
 	if game.mouse.justPressedLeft then
 		self.dragging = (mx >= self.x and mx <= self.x + self.width and my >=
-			self.y and my <= self.y + self.height)
+			self.y and my <= self.y + self.height) and not self.disabled
 	end
 	if game.mouse.justReleasedLeft then
 		self.dragging = false

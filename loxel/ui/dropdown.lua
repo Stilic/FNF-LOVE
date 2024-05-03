@@ -15,6 +15,7 @@ function Dropdown:new(x, y, options)
 	self.selectedLabel = self.options[1]
 
 	self.hovered = false
+	self.disabled = false
 	self.isOpen = false
 	self.onChanged = nil
 

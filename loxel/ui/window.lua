@@ -17,6 +17,7 @@ function Window:new(x, y, width, height, title)
 	self.hovered = false
 	self.minimized = false
 	self.dragging = false
+	self.focused = true
 	self.onClosed = nil
 	self.onMinimized = nil
 
@@ -86,13 +87,16 @@ function Window:update(dt)
 		self.dragging = true
 		self.prevMouseX = mx
 		self.prevMouseY = my
+		self.focused = true
+	elseif not self.hovered and game.mouse.justPressedLeft then
+		self.focused = false
 	end
 
 	if game.mouse.justReleasedLeft then
 		self.dragging = false
 	end
 
-	if self.dragging then
+	if self.focused and self.dragging then
 		local dx = mx - self.prevMouseX
 		local dy = my - self.prevMouseY
 
@@ -108,9 +112,11 @@ function Window:update(dt)
 	end
 
 	self.exitButton:setPosition(self.x + self.width - 28, self.y - 29)
+	self.exitButton.disabled = not self.focused
 	self.exitButton:update()
 
 	self.minButton:setPosition(self.x + self.width - 54, self.y - 29)
+	self.minButton.disabled = not self.focused
 	self.minButton:update()
 end
 

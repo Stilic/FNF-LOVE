@@ -19,12 +19,12 @@ function ChartingState:enter()
 	self.curSelectedNote = nil
 
 	self.saveData = {
-		metronome = false,
-		playerTick = false,
-		opponentTick = false
+		metronome = true,
+		playerTick = true,
+		opponentTick = true
 	}
 	if game.save.data.chartingData then
-		self.saveData = game.save.data.chartingData
+		--self.saveData = game.save.data.chartingData
 	end
 
 	self.metronome = self.saveData.metronome
@@ -48,10 +48,10 @@ function ChartingState:enter()
 		self.__song = PlayState.SONG
 	else
 		self.__song = {
-			song = 'Test',
-			bpm = 150.0,
+			song = 'Coldteenbucks',
+			bpm = 151.0,
 			speed = 1,
-			needsVoices = true,
+			needsVoices = false,
 			stage = 'stage',
 			player1 = 'bf',
 			player2 = 'dad',
@@ -142,26 +142,16 @@ function ChartingState:enter()
 	self:add(self.infoTxt)
 
 	self.blockInput = {}
+	self.UI_Windows = {}
+	self.curWindow = nil
 
 	self.navbarChart = ui.UINavbar({
 		{"File", function()
 		end},
 		{"Chart", function()
 		end},
-		{"Song", function()
-			if self.UISongWindow and self.UISongWindow.alive then
-				self.UISongWindow:kill()
-			else
-				self:add_UIWindow_Song()
-			end
-		end},
-		{"Note", function()
-			if self.UINoteWindow and self.UINoteWindow.alive then
-				self.UINoteWindow:kill()
-			else
-				self:add_UIWindow_Note()
-			end
-		end},
+		{"Song", function() self:add_UIWindow_Song() end},
+		{"Note", function() self:add_UIWindow_Note() end},
 		{"Events", function()
 		end}
 	})
@@ -173,12 +163,24 @@ end
 
 function ChartingState:add_UIWindow_Song()
 	if self.UISongWindow then
-		self.UISongWindow:clear()
-		self.UISongWindow:revive()
+		if self.UISongWindow.alive then
+			self.UISongWindow:kill()
+			table.delete(self.UI_Windows, self.UISongWindow)
+			if self.UI_Windows.selected == self.UISongWindow then
+				self.UI_Windows.selected = nil
+			end
+		else
+			self.UISongWindow:clear()
+			self.UISongWindow:revive()
+			self:add(self.UISongWindow)
+			table.insert(self.UI_Windows, self.UISongWindow)
+		end
 	else
 		self.UISongWindow = ui.UIWindow(4, 84, nil, 300, "Song")
 		self.UISongWindow.cameras = {self.camHUD}
+		self.UISongWindow.onClosed = function() self:remove(self.UISongWindow) end
 		self:add(self.UISongWindow)
+		table.insert(self.UI_Windows, self.UISongWindow)
 	end
 
 	local rectline = Graphic(10, 10, 380, 100, {0.15, 0.15, 0.15},
@@ -214,21 +216,28 @@ function ChartingState:add_UIWindow_Song()
 	rectline.line.width = 1
 	rectline.config.round = {4, 4}
 
-	local vocTxt = Text(rectline.x + 18, rectline.y - 6, ' Voices ')
-	vocTxt.bgColor = {0.3, 0.3, 0.3}
-	vocTxt.antialiasing = false
+	if self.__song.needsVoices then
+		local vocTxt = Text(rectline.x + 18, rectline.y - 6, ' Voices ')
+		vocTxt.bgColor = {0.3, 0.3, 0.3}
+		vocTxt.antialiasing = false
 
-	local vocVolTxt = Text(rectline.x + 15, rectline.y + 14, '')
-	vocVolTxt.content = format:gsub('{val}',
-		tostring(self.vocals:getVolume() * 100))
-	vocVolTxt.antialiasing = false
-
-	local vocVolSlider = ui.UISlider(rectline.x + 15, rectline.y + 35, 150, 10,
-		self.vocals:getVolume(), 0.1)
-	vocVolSlider.onChanged = function(value)
-		self.vocals:setVolume(value)
+		local vocVolTxt = Text(rectline.x + 15, rectline.y + 14, '')
 		vocVolTxt.content = format:gsub('{val}',
 			tostring(self.vocals:getVolume() * 100))
+		vocVolTxt.antialiasing = false
+
+		local vocVolSlider = ui.UISlider(rectline.x + 15, rectline.y + 35, 150, 10,
+			self.vocals:getVolume(), 0.1)
+		vocVolSlider.onChanged = function(value)
+			self.vocals:setVolume(value)
+			vocVolTxt.content = format:gsub('{val}',
+				tostring(self.vocals:getVolume() * 100))
+		end
+
+		self.UISongWindow:add(rectline)
+		self.UISongWindow:add(vocTxt)
+		self.UISongWindow:add(vocVolTxt)
+		self.UISongWindow:add(vocVolSlider)
 	end
 
 	local format = 'Playback - {val}%'
@@ -241,26 +250,34 @@ function ChartingState:add_UIWindow_Song()
 	playbackSlider.onChanged = function(value)
 		self.playback = value
 		game.sound.music:setPitch(value)
-		self.vocals:setPitch(value)
+		if self.__song.needsVoices then self.vocals:setPitch(value) end
 		playbackTxt.content = format:gsub('{val}', tostring(value))
 	end
 
-	self.UISongWindow:add(rectline)
-	self.UISongWindow:add(vocTxt)
-	self.UISongWindow:add(vocVolTxt)
-	self.UISongWindow:add(vocVolSlider)
 	self.UISongWindow:add(playbackTxt)
 	self.UISongWindow:add(playbackSlider)
 end
 
 function ChartingState:add_UIWindow_Note(note)
 	if self.UINoteWindow then
-		self.UINoteWindow:clear()
-		self.UINoteWindow:revive()
+		if self.UINoteWindow.alive then
+			self.UINoteWindow:kill()
+			table.delete(self.UI_Windows, self.UINoteWindow)
+			if self.UI_Windows.selected == self.UINoteWindow then
+				self.UI_Windows.selected = nil
+			end
+		else
+			self.UINoteWindow:clear()
+			self.UINoteWindow:revive()
+			self:add(self.UINoteWindow)
+			table.insert(self.UI_Windows, self.UINoteWindow)
+		end
 	else
 		self.UINoteWindow = ui.UIWindow(4, 84, nil, nil, "Note")
 		self.UINoteWindow.cameras = {self.camHUD}
+		self.UINoteWindow.onClosed = function() self:remove(self.UINoteWindow) end
 		self:add(self.UINoteWindow)
+		table.insert(self.UI_Windows, self.UINoteWindow)
 	end
 
 	if note then
@@ -620,8 +637,18 @@ function ChartingState:update_UI_Section()
 end
 
 function ChartingState:UI_isHovered()
-	if self.UINoteWindow and self.UINoteWindow.exists and self.UINoteWindow.hovered then
-		return true
+	for i, u in pairs(self.UI_Windows) do
+		if u.hovered and game.mouse.justPressedLeft then
+			self.curWindow = u
+			self:remove(u)
+			table.delete(self.UI_Windows, u)
+			self:add(u)
+			table.insert(self.UI_Windows, 1, u)
+		end
+		if u.alive then
+			if u ~= self.curWindow then u.focused = false end
+			if u.hovered then return true end
+		end
 	end
 	return false
 end
@@ -695,6 +722,9 @@ function ChartingState:update(dt)
 	end
 
 	if not self.leavingState and not isHovered and not isTyping then
+		if game.keys.justPressed.S and game.keys.pressed.CONTROL then
+			self:saveJson()
+		end
 		if game.mouse.justPressed then
 			for _, n in ipairs(self.allNotes.members) do
 				if game.mouse.overlaps(n) then
