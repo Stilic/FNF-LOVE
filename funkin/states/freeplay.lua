@@ -257,11 +257,8 @@ function FreeplayState:checkSongAssets(song, diff)
 	if paths.getInst(song) == nil then
 		table.insert(errorList, 'songs/' .. song .. '/Inst.ogg')
 	end
-	if hasVocals and paths.getVoices(song, jsonFile.song.player1) == nil then
-		table.insert(errorList, 'songs/' .. song .. '/Voices-' .. jsonFile.song.player1 .. '.ogg')
-	end
-	if hasVocals and paths.getVoices(song, jsonFile.song.player2) == nil then
-		table.insert(errorList, 'songs/' .. song .. '/Voices-' .. jsonFile.song.player2 .. '.ogg')
+	if hasVocals and paths.getVoices(song) == nil then
+		table.insert(errorList, 'songs/' .. song .. '/Voices.ogg')
 	end
 	if #errorList <= 0 then return true end
 
