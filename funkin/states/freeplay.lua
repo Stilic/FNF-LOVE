@@ -158,7 +158,16 @@ function FreeplayState:update(dt)
 					.name)
 				local diff =
 					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]:lower()
-				if self:checkSongAssets(daSong, diff) then
+
+				if game.keys.pressed.SHIFT then
+					PlayState.loadSong(daSong, diff)
+					PlayState.storyDifficulty = diff
+					game.switchState(ChartingState())
+				else
+					game.switchState(PlayState(false, daSong, diff))
+				end
+
+				--[[if self:checkSongAssets(daSong, diff) then
 					if game.keys.pressed.SHIFT then
 						PlayState.loadSong(daSong, diff)
 						PlayState.storyDifficulty = diff
@@ -166,7 +175,7 @@ function FreeplayState:update(dt)
 					else
 						game.switchState(PlayState(false, daSong, diff))
 					end
-				end
+				end]]
 			end
 		end
 		if controls:pressed("back") then
@@ -242,6 +251,7 @@ function FreeplayState:positionHighscore()
 	self.diffText.x = math.floor(self.scoreBG.x + (self.scoreBG.width - self.diffText:getWidth()) / 2)
 end
 
+--[[ rewriting this thing....
 function FreeplayState:checkSongAssets(song, diff)
 	local title = "Assets"
 	local errorList = {}
@@ -266,6 +276,7 @@ function FreeplayState:checkSongAssets(song, diff)
 	self:openSubstate(AssetsErrorSubstate(title, errorList))
 	return false
 end
+]]
 
 local function getSongMetadata(song)
 	local song_metadata = paths.getJSON(
