@@ -162,13 +162,13 @@ function PlayState:enter()
 
 	if PlayState.SONG.needsVoices or PlayState.SONG.needsVoices == nil then
 		local bfVocals, dadVocals =
-			paths.getVoices(songName, self.SONG.player1, true) or paths.getVoices(songName, "Player", true),
-			paths.getVoices(songName, self.SONG.player2, true)
+			paths.getVoices(songName, "Player", true) or paths.getVoices(songName, self.SONG.player1, true),
+			paths.getVoices(songName, "Opponent", true) or paths.getVoices(songName, self.SONG.player2, true)
 
 		if not bfVocals then
-			bfVocals, dadVocals = paths.getVoices(songName), paths.getVoices(songName, "Opponent", true)
+			bfVocals = dadVocals
 		elseif not dadVocals then
-			dadVocals = paths.getVoices(songName, "Opponent")
+			dadVocals = bfVocals
 		end
 
 		if dadVocals then
