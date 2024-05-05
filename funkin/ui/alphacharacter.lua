@@ -15,13 +15,13 @@ function AlphaCharacter:new(x, y, textSize)
 end
 
 function AlphaCharacter:createBoldLetter(letter)
-	self:addAnimByPrefix(letter, letter:upper() .. " bold", 24)
+	self:addAnimByPrefix(letter, letter:lower() .. " bold instance", 24)
 	self:play(letter)
 	self:updateHitbox()
 end
 
 function AlphaCharacter:createBoldNumber(letter)
-	self:addAnimByPrefix(letter, "bold" .. letter, 24)
+	self:addAnimByPrefix(letter, letter .. ' bold instance', 24)
 	self:play(letter)
 	self:updateHitbox()
 end
@@ -29,49 +29,49 @@ end
 function AlphaCharacter:createBoldSymbol(letter)
 	switch(letter, {
 		["."] = function()
-			self:addAnimByPrefix(letter, 'PERIOD bold', 24)
+			self:addAnimByPrefix(letter, 'period bold instance', 24)
 		end,
-		["\'"] = function()
-			self:addAnimByPrefix(letter, 'APOSTRAPHIE bold', 24)
+		['"'] = function()
+			self:addAnimByPrefix(letter, 'quote bold instance', 24)
 		end,
-		["?"] = function()
-			self:addAnimByPrefix(letter, 'QUESTION MARK bold', 24)
+		[","] = function()
+			self:addAnimByPrefix(letter, 'comma bold instance', 24)
+		end,
+		["\\"] = function()
+			self:addAnimByPrefix(letter, 'back slash bold instance', 24)
+		end,
+		["/"] = function()
+			self:addAnimByPrefix(letter, 'forward slash bold instance', 24)
+		end,
+		["'"] = function()
+			self:addAnimByPrefix(letter, 'apostrophe bold instance', 24)
 		end,
 		["!"] = function()
-			self:addAnimByPrefix(letter, 'EXCLAMATION POINT bold', 24)
+			self:addAnimByPrefix(letter, 'exclamation bold instance', 24)
 		end,
-		["("] = function() self:addAnimByPrefix(letter, 'bold (', 24) end,
-		[")"] = function() self:addAnimByPrefix(letter, 'bold )', 24) end,
+		["?"] = function()
+			self:addAnimByPrefix(letter, 'question bold instance', 24)
+		end,
+		["¡"] = function()
+			self:addAnimByPrefix(letter, 'inverted exclamation bold instance', 24)
+		end,
+		["¿"] = function()
+			self:addAnimByPrefix(letter, 'inverted question bold instance', 24)
+		end,
+		["•"] = function()
+			self:addAnimByPrefix(letter, 'bullet bold instance', 24)
+		end,
 		default = function()
-			self:addAnimByPrefix(letter, 'bold ' .. letter, 24)
+			self:addAnimByPrefix(letter, letter .. ' bold instance', 24)
 		end
 	})
 	self:play(letter)
 	self:updateHitbox()
-	switch(letter, {
-		["\'"] = function() self.y = self.y - 20 * self.textSize end,
-		["-"] = function() self.y = self.y + 20 * self.textSize end,
-		["("] = function()
-			self.x = self.x - 65 * self.textSize
-			self.y = self.y - 5 * self.textSize
-			self.offset.x = -58 * self.textSize
-		end,
-		[")"] = function()
-			self.x = self.x - 20 / self.textSize
-			self.y = self.y - 5 * self.textSize
-			self.offset.x = 12 * self.textSize
-		end,
-		["."] = function()
-			self.y = self.y + 45 * self.textSize
-			self.x = self.x + 5 * self.textSize
-			self.offset.x = self.offset.x + 3 * self.textSize
-		end
-	})
 end
 
 function AlphaCharacter:createLetter(letter)
 	local letterCase = "lowercase"
-	if letter:lower() ~= letter then letterCase = "capital" end
+	if letter:lower() ~= letter then letterCase = "" end
 
 	self:addAnimByPrefix(letter, letter .. " " .. letterCase, 24)
 	self:play(letter)
@@ -93,18 +93,6 @@ end
 
 function AlphaCharacter:createSymbol(letter)
 	switch(letter, {
-		["#"] = function() self:addAnimByPrefix(letter, 'hashtag', 24) end,
-		["."] = function() self:addAnimByPrefix(letter, 'period', 24) end,
-		["\'"] = function()
-			self:addAnimByPrefix(letter, 'apostraphie', 24)
-		end,
-		["?"] = function()
-			self:addAnimByPrefix(letter, 'question mark', 24)
-		end,
-		["!"] = function()
-			self:addAnimByPrefix(letter, 'exclamation point', 24)
-		end,
-		[","] = function() self:addAnimByPrefix(letter, 'comma', 24) end,
 		default = function() self:addAnimByPrefix(letter, letter, 24) end
 	})
 	self:play(letter)

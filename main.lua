@@ -67,6 +67,7 @@ ModsState = require "funkin.states.mods"
 StoryMenuState = require "funkin.states.storymenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
+AlphaTestState = require "funkin.states.alphatest"
 
 EditorMenu = require "funkin.ui.editor.editormenu"
 
