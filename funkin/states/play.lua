@@ -1211,7 +1211,7 @@ function PlayState:recalculateRating(rating)
 	-- end
 	-- self.rating = ratingStr
 
-	self.scoreText.content = "Score:" .. self.score
+	self.scoreText.content = "Score:" .. math.floor(self.score)
 
 	if rating then
 		local ratingAdd = rating .. "s"
