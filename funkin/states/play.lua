@@ -264,7 +264,7 @@ function PlayState:enter()
 	self:add(self.countdown)
 
 	self.healthBar = HealthBar(self.boyfriend, self.dad)
-	self.healthBar:screenCenter("x").y = game.height * 0.91
+	self.healthBar:screenCenter("x").y = game.height * 0.9
 	self:add(self.healthBar)
 
 	-- self.timeArc = ProgressArc(36, game.height - 81, 64, 20,
