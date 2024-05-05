@@ -18,8 +18,7 @@ function HealthBar:new(bfData, dadData, skin)
 	self.iconP1 = HealthIcon(bfData.icon, true)
 	self.iconP2 = HealthIcon(dadData.icon)
 
-	self.iconP1.y = self.bar.y + (self.bar.height - self.iconP1.height) / 2
-	self.iconP2.y = self.bar.y + (self.bar.height - self.iconP2.height) / 2
+	self:updateIconsPosition()
 
 	self.bar.color = bfData.iconColor ~= nil and Color.fromString(bfData.iconColor) or Color.GREEN
 	self.bar.color.bg = dadData.iconColor ~= nil and Color.fromString(dadData.iconColor) or Color.RED
@@ -30,6 +29,11 @@ function HealthBar:new(bfData, dadData, skin)
 	self.value = 1
 	self.bar:setValue(1)
 	self:scaleIcons(1)
+end
+
+function HealthBar:updateIconsPosition()
+	self.iconP1.y = self.bar.y + (self.bar.height - self.iconP1.height) / 2
+	self.iconP2.y = self.bar.y + (self.bar.height - self.iconP2.height) / 2
 end
 
 function HealthBar:update(dt)
@@ -52,11 +56,13 @@ function HealthBar:update(dt)
 			(math.remapToRange(self.bar.percent, 0, 100, 100,
 				0) * 0.01)) -
 		(self.iconP2.width - iconOffset)
+	
+	self:updateIconsPosition()
 
 	local perc1, perc2 = self.bar.percent <= 10, self.bar.percent >= 90
 
-	self.iconP1:setState((perc1 and 2 or 1))
-	self.iconP2:setState((perc2 and 2 or 1))
+	self.iconP1:setState(perc1 and 2 or 1)
+	self.iconP2:setState(perc2 and 2 or 1)
 end
 
 function HealthBar:scaleIcons(val)
