@@ -905,7 +905,7 @@ function PlayState:update(dt)
 		end
 	end
 
-	self.healthBar.value = self.health
+	self.healthBar.value = util.coolLerp(self.healthBar.value, self.health, 15, dt)
 
 	-- local songTime = PlayState.conductor.time / 1000
 	-- if ClientPrefs.data.timeType == "left" then
@@ -917,7 +917,7 @@ function PlayState:update(dt)
 	-- 	self.timeArc.tracker = PlayState.conductor.time / 1000
 	-- end
 
-	if self.health <= 0 and not self.isDead then self:tryGameOver() end
+	if self.healthBar.value <= 0 and not self.isDead then self:tryGameOver() end
 
 	if Project.DEBUG_MODE then
 		if game.keys.justPressed.ONE then self.playerNotefield.bot = not self.playerNotefield.bot end
