@@ -165,7 +165,10 @@ function PlayState:enter()
 			paths.getVoices(songName, "Player", true) or paths.getVoices(songName, self.SONG.player1, true),
 			paths.getVoices(songName, "Opponent", true) or paths.getVoices(songName, self.SONG.player2, true)
 
-		if not bfVocals then
+		if not bfVocals and not dadVocals then
+			bfVocals = paths.getVoices(songName, nil, true)
+			dadVocals = bfVocals
+		elseif not bfVocals then
 			bfVocals = dadVocals
 		elseif not dadVocals then
 			dadVocals = bfVocals
