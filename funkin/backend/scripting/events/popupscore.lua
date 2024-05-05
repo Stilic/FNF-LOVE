@@ -7,7 +7,7 @@ function NoteHitEvent:new()
 
 	self.hideRating = false
 	self.hideScore = false
-	self.hideCombo = false
+	self.hideCombo = true
 end
 
 function NoteHitEvent:cancelRating()
