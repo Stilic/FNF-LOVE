@@ -76,9 +76,9 @@ function Object:getMidpoint()
 end
 
 function Object:screenCenter(axes)
-	if axes == nil then axes = "xy" end
-	if axes:find("x") then self.x = (game.width - self.width) / 2 end
-	if axes:find("y") then self.y = (game.height - self.height) / 2 end
+	local centerAll = axes == nil or axes == "xy"
+	if centerAll or axes == "x" then self.x = (game.width - self.width) / 2 end
+	if centerAll or axes == "y" then self.y = (game.height - self.height) / 2 end
 	return self
 end
 
