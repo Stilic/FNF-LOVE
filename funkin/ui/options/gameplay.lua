@@ -12,7 +12,7 @@ local data = {
 		local value = math.clamp(ClientPrefs.data.backgroundDim + add, 0, 100)
 		ClientPrefs.data.backgroundDim = value
 	end, percentvalue},
-	{"notesBelowHUD", "Notes below HUD", "boolean"},
+	-- {"notesBelowHUD", "Notes below HUD", "boolean"},
 	{"downScroll",    "Down scroll",     "boolean"},
 	{"middleScroll",  "Middle scroll",   "boolean"},
 	{"ghostTap",      "Ghost tap",       "boolean"},
@@ -22,7 +22,7 @@ local data = {
 		local value = math.clamp(ClientPrefs.data.playback + (add * 0.05), 0.1, 5)
 		ClientPrefs.data.playback = value
 	end, function(value) return "x" .. value end},
-	{"timeType",      "Song time type",      "string", {"left", "elapsed"}},
+	-- {"timeType",      "Song time type",      "string", {"left", "elapsed"}},
 	{"gameOverInfos", "Show game over info", "boolean"},
 
 	{"AUDIO"},

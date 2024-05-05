@@ -110,9 +110,6 @@ function PlayState:enter()
 	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
-	self.scoreFormat = "Score: %score // Combo Breaks: %misses // %accuracy% - %rating"
-	self.scoreFormatVariables = {score = 0, misses = 0, accuracy = 0, rating = 0}
-
 	self.timer = Timer.new()
 
 	self.scripts = ScriptsHandler()
@@ -143,13 +140,8 @@ function PlayState:enter()
 	self.camNotes = Camera() --ActorCamera() Will be changed to ActorCamera once thats class is done
 	self.camHUD = Camera()
 	self.camOther = Camera()
-	if ClientPrefs.data.notesBelowHUD then
-		game.cameras.add(self.camNotes, false)
-		game.cameras.add(self.camHUD, false)
-	else
-		game.cameras.add(self.camHUD, false)
-		game.cameras.add(self.camNotes, false)
-	end
+	game.cameras.add(self.camHUD, false)
+	game.cameras.add(self.camNotes, false)
 	game.cameras.add(self.camOther, false)
 
 	self.camNotes.bgColor[4] = ClientPrefs.data.backgroundDim / 100
@@ -223,7 +215,8 @@ function PlayState:enter()
 
 	self:add(self.stage.foreground)
 
-	self.judgeSprites = Judgement(self.stage.ratingPos.x, self.stage.ratingPos.y)
+	self.judgeSprites = Judgement()
+	self.judgeSprites:screenCenter()
 	self:add(self.judgeSprites)
 
 	self.camFollow = {
@@ -274,39 +267,38 @@ function PlayState:enter()
 	self.healthBar:screenCenter("x").y = game.height * 0.91
 	self:add(self.healthBar)
 
-	self.timeArc = ProgressArc(36, game.height - 81, 64, 20,
-		{Color.BLACK, Color.WHITE}, 0, game.sound.music:getDuration() / 1000)
-	self:add(self.timeArc)
+	-- self.timeArc = ProgressArc(36, game.height - 81, 64, 20,
+	-- 	{Color.BLACK, Color.WHITE}, 0, game.sound.music:getDuration() / 1000)
+	-- self:add(self.timeArc)
 
-	local fontScore = paths.getFont("vcr.ttf", 17)
-	self.scoreText = Text(game.width / 2, self.healthBar.y + 28, "", fontScore, Color.WHITE, "center")
+	local fontScore = paths.getFont("vcr.ttf", 16)
+	self.scoreText = Text(self.healthBar.x + self.healthBar.bg.width - 190,
+		self.healthBar.y + 30, "", fontScore, Color.WHITE, "right")
 	self.scoreText.outline.width = 1
 	self.scoreText.antialiasing = false
 	self:add(self.scoreText)
 
-	local songTime = 0
-	if ClientPrefs.data.timeType == "left" then
-		songTime = game.sound.music:getDuration() - songTime
-	end
+	-- local songTime = 0
+	-- if ClientPrefs.data.timeType == "left" then
+	-- 	songTime = game.sound.music:getDuration() - songTime
+	-- end
 
-	local fontTime = paths.getFont("vcr.ttf", 24)
-	self.timeText = Text((self.timeArc.x + self.timeArc.width) + 4, 0, util.formatTime(songTime), fontTime, Color.WHITE, "left")
-	self.timeText.outline.width = 2
-	self.timeText.antialiasing = false
-	self.timeText.y = (self.timeArc.y + self.timeArc.width) - self.timeText:getHeight()
-	self:add(self.timeText)
+	-- local fontTime = paths.getFont("vcr.ttf", 24)
+	-- self.timeText = Text(self.timeArc.x + self.timeArc.width + 4, 0, util.formatTime(songTime), fontTime, Color.WHITE, "left")
+	-- self.timeText.outline.width = 2
+	-- self.timeText.antialiasing = false
+	-- self.timeText.y = self.timeArc.y + self.timeArc.width - self.timeText:getHeight()
+	-- self:add(self.timeText)
 
-	self.botplayText = Text(0, self.timeText.y, 'BOTPLAY MODE',
-		fontTime, Color.WHITE)
+	self.botplayText = Text(0, self.scoreText.y, "BOTPLAY", fontScore, Color.WHITE)
 	self.botplayText.x = game.width - self.botplayText:getWidth() - 36
-	self.botplayText.outline.width = 2
+	self.botplayText.outline.width = 1
 	self.botplayText.antialiasing = false
 	self.botplayText.visible = self.usedBotPlay
 	self:add(self.botplayText)
 
 	for _, o in ipairs({
-		self.countdown, self.healthBar, self.timeArc,
-		self.scoreText, self.timeText, self.botplayText,
+		self.judgeSprites, self.countdown, self.healthBar, self.scoreText, self.botplayText
 	}) do o.cameras = {self.camHUD} end
 
 	self.score = 0
@@ -314,9 +306,9 @@ function PlayState:enter()
 	self.misses = 0
 	self.health = 1
 
-	self.accuracy = 0
-	self.totalPlayed = 0
-	self.totalHit = 0
+	-- self.accuracy = 0
+	-- self.totalPlayed = 0
+	-- self.totalHit = 0
 
 	self.ratings = {
 		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
@@ -367,8 +359,7 @@ function PlayState:enter()
 	if self.downScroll then
 		for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
 		for _, o in ipairs({
-			self.healthBar, self.timeArc,
-			self.scoreText, self.timeText, self.botplayText
+			self.healthBar, self.scoreText, self.botplayText
 		}) do
 			o.y = -o.y + (o.offset.y * 2) + game.height - (
 				o.getHeight and o:getHeight() or o.height)
@@ -596,24 +587,21 @@ function PlayState:step(s)
 	end
 
 	self.scripts:set("curStep", s)
-	if not self.startingSong then
-		self.scripts:call("step")
-		self.scripts:call("postStep")
-	end
+	self.scripts:call("step")
+	self.scripts:call("postStep")
 end
 
 function PlayState:beat(b)
 	self.scripts:set("curBeat", b)
-	if not self.startingSong then self.scripts:call("beat") end
+	self.scripts:call("beat")
 
 	self.boyfriend:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	if not self.startingSong then
-		self.healthBar:scaleIcons(1.2)
-		self.scripts:call("postBeat", b)
-	end
+	self.healthBar:scaleIcons(1.2)
+
+	self.scripts:call("postBeat", b)
 end
 
 function PlayState:section(s)
@@ -833,7 +821,7 @@ function PlayState:update(dt)
 							note.wasGoodHoldHit = true
 
 							if self.playerNotefield == notefield then
-								self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
+								-- self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
 								self.score = self.score
 									+ math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
 								self:recalculateRating()
@@ -919,15 +907,15 @@ function PlayState:update(dt)
 
 	self.healthBar.value = self.health
 
-	local songTime = PlayState.conductor.time / 1000
-	if ClientPrefs.data.timeType == "left" then
-		songTime = game.sound.music:getDuration() - songTime
-	end
+	-- local songTime = PlayState.conductor.time / 1000
+	-- if ClientPrefs.data.timeType == "left" then
+	-- 	songTime = game.sound.music:getDuration() - songTime
+	-- end
 
-	if PlayState.conductor.time > 0 and PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
-		self.timeText.content = util.formatTime(songTime)
-		self.timeArc.tracker = PlayState.conductor.time / 1000
-	end
+	-- if PlayState.conductor.time > 0 and PlayState.conductor.time < game.sound.music:getDuration() * 1000 then
+	-- 	self.timeText.content = util.formatTime(songTime)
+	-- 	self.timeArc.tracker = PlayState.conductor.time / 1000
+	-- end
 
 	if self.health <= 0 and not self.isDead then self:tryGameOver() end
 
@@ -966,8 +954,7 @@ function PlayState:onSettingChange(category, setting)
 
 					if downscroll ~= self.downScroll then
 						for _, o in ipairs({
-							self.healthBar, self.timeArc,
-							self.scoreText, self.timeText, self.botplayText
+							self.healthBar, self.scoreText, self.botplayText
 						}) do
 							o.y = -o.y + (o.offset.y * 2) + game.height - (
 								o.getHeight and o:getHeight() or o.height)
@@ -978,8 +965,7 @@ function PlayState:onSettingChange(category, setting)
 
 					if downscroll ~= self.downScroll then
 						for _, o in ipairs({
-							self.healthBar, self.timeArc,
-							self.scoreText, self.timeText, self.botplayText
+							self.healthBar, self.scoreText, self.botplayText
 						}) do
 							o.y = (o.offset.y * 2) + game.height - (o.y +
 								(o.getHeight and o:getHeight() or o.height))
@@ -1016,17 +1002,6 @@ function PlayState:onSettingChange(category, setting)
 			["backgroundDim"] = function()
 				self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 			end,
-			["notesBelowHUD"] = function()
-				local camGameIdx = table.find(game.cameras.list, game.camera)
-
-				table.delete(game.cameras.list, self.camNotes)
-				table.delete(game.cameras.list, self.camHUD)
-
-				table.insert(game.cameras.list, camGameIdx + 1,
-					ClientPrefs.data.notesBelowHUD and self.camNotes or self.camHUD)
-				table.insert(game.cameras.list, camGameIdx + 2,
-					ClientPrefs.data.notesBelowHUD and self.camHUD or self.camNotes)
-			end,
 			["playback"] = function()
 				self.playback = ClientPrefs.data.playback
 				Timer.setSpeed(self.playback)
@@ -1034,13 +1009,13 @@ function PlayState:onSettingChange(category, setting)
 				if self.vocals then self.vocals:setPitch(self.playback) end
 				if self.dadVocals then self.dadVocals:setPitch(self.playback) end
 			end,
-			["timeType"] = function()
-				local songTime = PlayState.conductor.time / 1000
-				if ClientPrefs.data.timeType == "left" then
-					songTime = game.sound.music:getDuration() - songTime
-				end
-				self.timeText.content = util.formatTime(songTime)
-			end
+			-- ["timeType"] = function()
+			-- 	local songTime = PlayState.conductor.time / 1000
+			-- 	if ClientPrefs.data.timeType == "left" then
+			-- 		songTime = game.sound.music:getDuration() - songTime
+			-- 	end
+			-- 	self.timeText.content = util.formatTime(songTime)
+			-- end
 		})
 
 		local vocalVolume = ClientPrefs.data.vocalVolume / 100
@@ -1103,8 +1078,8 @@ function PlayState:miss(note, dir)
 			self.combo = math.min(self.combo, 0) - 1
 			self.health = math.max(self.health - (ghostMiss and 0.04 or 0.0475), 0)
 
-			self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
-			self.score = self.score - 100
+			-- self.totalPlayed, self.misses = self.totalPlayed + 1, self.misses + 1
+			self.score, self.misses = self.score - 100, self.misses + 1
 			self:recalculateRating(); self:popUpScore()
 		end
 	end
@@ -1171,7 +1146,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			self.combo = math.max(self.combo, 0) + 1
 			self.score = self.score + rating.score
 
-			self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
+			-- self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + rating.mod
 			self:recalculateRating(rating.name)
 		end
 	end
@@ -1189,73 +1164,61 @@ function PlayState:popUpScore(rating)
 	end
 end
 
-local ratingFormat, noRating = "(%s) %s", "?"
+-- local ratingFormat, noRating = "(%s) %s", "?"
 function PlayState:recalculateRating(rating)
+	-- local ratingStr = noRating
+	-- if self.totalPlayed > 0 then
+	-- 	local accuracy, class = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
+	-- 	if accuracy >= 1 then
+	-- 		class = "X"
+	-- 	elseif accuracy >= 0.99 then
+	-- 		class = "S+"
+	-- 	elseif accuracy >= 0.95 then
+	-- 		class = "S"
+	-- 	elseif accuracy >= 0.90 then
+	-- 		class = "A"
+	-- 	elseif accuracy >= 0.80 then
+	-- 		class = "B"
+	-- 	elseif accuracy >= 0.70 then
+	-- 		class = "C"
+	-- 	elseif accuracy >= 0.60 then
+	-- 		class = "D"
+	-- 	elseif accuracy >= 0.50 then
+	-- 		class = "E"
+	-- 	else
+	-- 		class = "F"
+	-- 	end
+	-- 	self.accuracy = accuracy
+
+	-- 	local fc
+	-- 	if self.misses < 1 then
+	-- 		if self.bads > 0 or self.shits > 0 then
+	-- 			fc = "FC"
+	-- 		elseif self.goods > 0 then
+	-- 			fc = "GFC"
+	-- 		elseif self.sicks > 0 then
+	-- 			fc = "SFC"
+	-- 		elseif self.perfects > 0 then
+	-- 			fc = "PFC"
+	-- 		else
+	-- 			fc = "FC"
+	-- 		end
+	-- 	else
+	-- 		fc = self.misses >= 10 and "Clear" or "SDCB"
+	-- 	end
+
+	-- 	ratingStr = ratingFormat:format(fc, class)
+	-- end
+	-- self.rating = ratingStr
+
+	self.scoreText.content = "Score:" .. self.score
+
 	if rating then
 		local ratingAdd = rating .. "s"
 		self[ratingAdd] = (self[ratingAdd] or 0) + 1
+
+		self:popUpScore(rating)
 	end
-
-	local ratingStr = noRating
-	if self.totalPlayed > 0 then
-		local accuracy, class = math.min(1, math.max(0, self.totalHit / self.totalPlayed))
-		if accuracy >= 1 then
-			class = "X"
-		elseif accuracy >= 0.99 then
-			class = "S+"
-		elseif accuracy >= 0.95 then
-			class = "S"
-		elseif accuracy >= 0.90 then
-			class = "A"
-		elseif accuracy >= 0.80 then
-			class = "B"
-		elseif accuracy >= 0.70 then
-			class = "C"
-		elseif accuracy >= 0.60 then
-			class = "D"
-		elseif accuracy >= 0.50 then
-			class = "E"
-		else
-			class = "F"
-		end
-		self.accuracy = accuracy
-
-		local fc
-		if self.misses < 1 then
-			if self.bads > 0 or self.shits > 0 then
-				fc = "FC"
-			elseif self.goods > 0 then
-				fc = "GFC"
-			elseif self.sicks > 0 then
-				fc = "SFC"
-			elseif self.perfects > 0 then
-				fc = "PFC"
-			else
-				fc = "FC"
-			end
-		else
-			fc = self.misses >= 10 and "Clear" or "SDCB"
-		end
-
-		ratingStr = ratingFormat:format(fc, class)
-	end
-
-	self.rating = ratingStr
-
-	local vars = self.scoreFormatVariables
-	if not vars then
-		vars = table.new(0, 4)
-		self.scoreFormatVariables = vars
-	end
-	vars.score = math.floor(self.score)
-	vars.misses = math.floor(self.misses)
-	vars.accuracy = math.truncate(self.accuracy * 100, 2)
-	vars.rating = ratingStr
-
-	self.scoreText.content = self.scoreFormat:gsub("%%(%w+)", vars)
-	self.scoreText:screenCenter("x")
-
-	if rating then self:popUpScore(rating) end
 end
 
 function PlayState:tryPause()
