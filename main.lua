@@ -35,7 +35,7 @@ end
 Receptor = require "funkin.gameplay.receptor"
 Note = require "funkin.gameplay.note"
 Notefield = require "funkin.gameplay.notefield"
-Countdown = require "funkin.gameplay.ui.Countdown"
+Countdown = require "funkin.gameplay.ui.countdown"
 
 HealthIcon = require "funkin.gameplay.ui.healthicon"
 HealthBar = require "funkin.gameplay.ui.healthbar"
