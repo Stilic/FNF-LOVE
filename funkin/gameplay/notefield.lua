@@ -31,11 +31,12 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.held = {}
 	self.splashes = {}
 
-	local center = self.noteWidth / 2
+	self.__offsetX = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	for i = 1, keys do
-		self:makeLane(i).x = center + self.noteWidth * (i - 1)
+		self:makeLane(i).x = self.__offsetX + self.noteWidth * i
 		self.held[i] = {}
 	end
+	self.__offsetX = self.__offsetX / (1 + 1 / keys)
 
 	self:getWidth()
 end
@@ -276,7 +277,9 @@ function Notefield:__render(camera)
 
 	for _, mod in pairs(self.modifiers) do if mod.apply then mod:apply(self) end end
 	if self.downscroll then self.scale.y = -self.scale.y end
+	self.x = self.x - self.__offsetX
 	Notefield.super.__render(self, camera)
+	self.x = self.x + self.__offsetX
 	if self.downscroll then self.scale.y = -self.scale.y end
 	NoteModifier.discard()
 
