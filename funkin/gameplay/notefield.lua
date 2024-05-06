@@ -175,6 +175,14 @@ function Notefield:update(dt)
 	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
 end
 
+function Notefield:screenCenter(axes)
+	if axes == nil then axes = "xy" end
+	if axes:find("x") then self.x = (game.width - self.width) / 2 end
+	if axes:find("y") then self.y = game.height / 2 end
+	if axes:find("z") then self.z = 0 end
+	return self
+end
+
 function Notefield:getWidth()
 	self.width = self.noteWidth * self.keys
 	return self.width
