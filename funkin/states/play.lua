@@ -239,12 +239,10 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = false
 
-	local y, center, keys, skin = game.height / 2, game.width / 2, 4, self.pixelStage and "pixel" or nil
+	local y, keys, skin = game.height / 2, 4, self.pixelStage and "pixel" or nil
 	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
-	self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.25))
 	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
 	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
-	self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5, math.lerp(0, game.width, 0.75))
 	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	local vocalVolume = ClientPrefs.data.vocalVolume / 100
@@ -254,6 +252,7 @@ function PlayState:enter()
 	self.playerNotefield.cameras = {self.camNotes}
 
 	self.notefields = {self.enemyNotefield, self.playerNotefield}
+	self:centerNotefields()
 	self:generateNotes()
 
 	self:add(self.enemyNotefield)
@@ -272,8 +271,7 @@ function PlayState:enter()
 	-- self:add(self.timeArc)
 
 	local fontScore = paths.getFont("vcr.ttf", 16)
-	self.scoreText = Text(self.healthBar.x + self.healthBar.bg.width - 190,
-		self.healthBar.y + 30, "", fontScore, Color.WHITE, "right")
+	self.scoreText = Text(0, 0, "", fontScore, Color.WHITE, "right")
 	self.scoreText.outline.width = 1
 	self.scoreText.antialiasing = false
 	self:add(self.scoreText)
@@ -290,8 +288,7 @@ function PlayState:enter()
 	-- self.timeText.y = self.timeArc.y + self.timeArc.width - self.timeText:getHeight()
 	-- self:add(self.timeText)
 
-	self.botplayText = Text(0, self.scoreText.y, "BOTPLAY", fontScore, Color.WHITE)
-	self.botplayText.x = game.width - self.botplayText:getWidth() - 36
+	self.botplayText = Text(0, 0, "BOTPLAY", fontScore, Color.WHITE)
 	self.botplayText.outline.width = 1
 	self.botplayText.antialiasing = false
 	self.botplayText.visible = self.usedBotPlay
@@ -358,22 +355,10 @@ function PlayState:enter()
 
 	if self.downScroll then
 		for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
-		for _, o in ipairs({
-			self.healthBar, self.scoreText, self.botplayText
-		}) do
-			o.y = -o.y + (o.offset.y * 2) + game.height - (
-				o.getHeight and o:getHeight() or o.height)
-		end
+		self.healthBar.y = -self.healthBar.y + self.healthBar.offset.y * 2 +
+			(game.height - self.healthBar:getHeight())
 	end
-	if self.middleScroll then
-		for _, notefield in ipairs(self.notefields) do
-			if notefield ~= self.playerNotefield then
-				notefield.visible = false
-			else
-				notefield:screenCenter("x")
-			end
-		end
-	end
+	self:positionText()
 
 	if self.storyMode and not PlayState.seenCutscene then
 		PlayState.seenCutscene = true
@@ -423,6 +408,30 @@ function PlayState:enter()
 	collectgarbage()
 
 	self.scripts:call("postCreate")
+end
+
+function PlayState:centerNotefields()
+	if self.middleScroll then
+		self.playerNotefield:screenCenter("x")
+
+		for _, notefield in ipairs(self.notefields) do
+			if notefield ~= self.playerNotefield then
+				notefield.visible = false
+			end
+		end
+	else
+		local halfW = game.width / 2
+		local startX = game.width / 1.5 -
+			(self.enemyNotefield:getWidth() + halfW + self.playerNotefield:getWidth()) / 2
+		self.enemyNotefield.x, self.playerNotefield.x = startX, startX + halfW
+
+		for _, notefield in ipairs(self.notefields) do notefield.visible = true end
+	end
+end
+
+function PlayState:positionText()
+	self.scoreText.x, self.scoreText.y = self.healthBar.x + self.healthBar.bg.width - 190, self.healthBar.y + 30
+	self.botplayText.x, self.botplayText.y = game.width - self.botplayText:getWidth() - 36, self.scoreText.y
 end
 
 function PlayState:getRating(a, b)
@@ -950,48 +959,23 @@ function PlayState:onSettingChange(category, setting)
 				local downscroll = ClientPrefs.data.downScroll
 				if downscroll then
 					for _, notefield in ipairs(self.notefields) do notefield.downscroll = true end
-
 					if downscroll ~= self.downScroll then
-						for _, o in ipairs({
-							self.healthBar, self.scoreText, self.botplayText
-						}) do
-							o.y = -o.y + (o.offset.y * 2) + game.height - (
-								o.getHeight and o:getHeight() or o.height)
-						end
+						self.healthBar.y = -self.healthBar.y + self.healthBar.offset.y * 2 +
+							(game.height - self.healthBar:getHeight())
 					end
 				else
 					for _, notefield in ipairs(self.notefields) do notefield.downscroll = false end
-
 					if downscroll ~= self.downScroll then
-						for _, o in ipairs({
-							self.healthBar, self.scoreText, self.botplayText
-						}) do
-							o.y = (o.offset.y * 2) + game.height - (o.y +
-								(o.getHeight and o:getHeight() or o.height))
-						end
+						self.healthBar.y = self.healthBar.offset.y * 2 + game.height -
+							(self.healthBar.y + self.healthBar:getHeight())
 					end
 				end
+				self:positionText()
 				self.downScroll = downscroll
 			end,
 			["middleScroll"] = function()
 				self.middleScroll = ClientPrefs.data.middleScroll
-
-				for _, notefield in ipairs(self.notefields) do
-					if self.middleScroll then
-						if notefield ~= self.playerNotefield then
-							notefield.visible = false
-						else
-							notefield:screenCenter("x")
-						end
-					else
-						local center, keys = game.width / 2, 4
-						self.enemyNotefield.x = math.max(center - self.enemyNotefield:getWidth() / 1.5,
-							math.lerp(0, game.width, 0.25))
-						self.enemyNotefield.visible = true
-						self.playerNotefield.x = math.min(center + self.playerNotefield:getWidth() / 1.5,
-							math.lerp(0, game.width, 0.75))
-					end
-				end
+				self:centerNotefields()
 			end,
 			["botplayMode"] = function()
 				self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode

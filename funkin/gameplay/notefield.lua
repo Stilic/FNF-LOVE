@@ -4,7 +4,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	Notefield.super.new(self, x, y)
 
 	self.noteWidth = math.floor(160 * 0.7)
-	self.height = 500
+	self.height = 514
 	self.keys = keys
 	self.skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
 	self.character, self.vocals = character, vocals
@@ -15,7 +15,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
 	self.speed = 1
-	self.drawSize = game.height + self.noteWidth
+	self.drawSize = game.height * 2 + self.noteWidth
 	self.drawSizeOffset = 0
 	self.downscroll = false -- this just sets scale y backwards
 	self.canSpawnSplash = true
@@ -31,9 +31,9 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.held = {}
 	self.splashes = {}
 
-	local startx = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
+	local center = self.noteWidth / 2
 	for i = 1, keys do
-		self:makeLane(i).x = startx + self.noteWidth * i
+		self:makeLane(i).x = center + self.noteWidth * (i - 1)
 		self.held[i] = {}
 	end
 
@@ -172,14 +172,6 @@ function Notefield:update(dt)
 	end
 
 	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
-end
-
-function Notefield:screenCenter(axes)
-	if axes == nil then axes = "xy" end
-	if axes:find("x") then self.x = game.width / 2 end
-	if axes:find("y") then self.y = game.height / 2 end
-	if axes:find("z") then self.z = 0 end
-	return self
 end
 
 function Notefield:getWidth()
