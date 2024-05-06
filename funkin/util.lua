@@ -1,7 +1,8 @@
 local util = {}
 
 function util.coolLerp(x, y, i, delta)
-	return y == 0 and 0 or math.lerp(y, x, math.exp(-(delta or game.dt) * i))
+	local v = math.lerp(y, x, math.exp(-(delta or game.dt) * i))
+	return v > x and 0 or v
 end
 
 function util.newGradient(dir, ...)
