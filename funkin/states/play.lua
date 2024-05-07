@@ -12,16 +12,12 @@ local PauseSubstate = require "funkin.substates.pause"
 local PlayState = State:extend("PlayState")
 PlayState.defaultDifficulty = "normal"
 
-PlayState.controlsToDirs = {
+PlayState.inputDirections = {
 	note_left = 0,
 	note_down = 1,
 	note_up = 2,
 	note_right = 3
 }
-PlayState.dirsToControls = {}
-for control, i in pairs(PlayState.controlsToDirs) do
-	PlayState.dirsToControls[i] = control
-end
 
 PlayState.SONG = nil
 PlayState.songDifficulty = ""
@@ -1261,8 +1257,8 @@ end
 
 function PlayState:getKeyFromEvent(controls)
 	for _, control in pairs(controls) do
-		if PlayState.controlsToDirs[control] then
-			return PlayState.controlsToDirs[control]
+		if PlayState.inputDirections[control] then
+			return PlayState.inputDirections[control]
 		end
 	end
 	return -1
@@ -1392,6 +1388,7 @@ function PlayState:endSong(skip)
 	if skip == nil then skip = false end
 	PlayState.seenCutscene = false
 	self.startedCountdown = false
+	self.boyfriend.waitReleaseAfterSing = false
 
 	if self.storyMode and not PlayState.seenCutscene and not skip then
 		PlayState.seenCutscene = true

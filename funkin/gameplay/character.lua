@@ -150,12 +150,22 @@ function Character:update(dt)
 			end
 		end
 	end
-	if self.lastHit > 0 and (not self.waitReleaseAfterSing or self.dirAnim == nil
-			or not controls:down(PlayState.dirsToControls[self.dirAnim]))
-		and self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime
+	if self.lastHit > 0 and self.lastHit +
+		PlayState.conductor.stepCrotchet * self.holdTime
 		< PlayState.conductor.time then
-		self:dance()
-		self.lastHit = math.negative_infinity
+		local okay = true
+		if self.waitReleaseAfterSing then
+			for input, _ in pairs(PlayState.inputDirections) do
+				if controls:down(input) then
+					okay = false
+					break
+				end
+			end
+		end
+		if okay then
+			self:dance()
+			self.lastHit = math.negative_infinity
+		end
 	end
 	Character.super.update(self, dt)
 end
@@ -173,7 +183,8 @@ function Character:playAnim(anim, force, frame)
 	local offset = self.animOffsets[anim]
 	if offset then
 		local rot = math.pi * self.angle / 180
-		local offX, offY = self.__reverseDraw and -offset.x or offset.x, offset.y
+		local offX, offY = offset.x, offset.y
+		if self.__reverseDraw then offX = -offX end
 		local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
 		local rotOffY = offX * math.sin(rot) + offY * math.cos(rot)
 		self.offset.x, self.offset.y = rotOffX, rotOffY
