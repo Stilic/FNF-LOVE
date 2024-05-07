@@ -19,8 +19,7 @@ function Character:new(x, y, char, isPlayer)
 
 	self.__reverseDraw = false
 
-	self.holdTime, self.lastHit,
-	self.waitReleaseAfterSing = 4, math.negative_infinity, false
+	self.holdTime, self.lastHit, self.waitReleaseAfterSing = 4, math.negative_infinity, false
 	self.strokeTime, self.__strokeDelta = 0, 0
 	self.danceSpeed, self.danced = 2, false
 
