@@ -237,7 +237,7 @@ function PlayState:enter()
 	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 	game.camera:snapToTarget()
 	game.camera.zoom = self.stage.camZoom
-	self.camZooming = false
+	self.camZooming = true
 
 	local y, keys, skin = game.height / 2, 4, self.pixelStage and "pixel" or nil
 	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
@@ -1076,7 +1076,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 	local notefield, dir = note.parent, note.direction
 	local isPlayer, fixedDir = not notefield.bot, dir + 1
 	local event = self.scripts:event("onNoteHit",
-		Events.NoteHit(notefield, note, rating, not isPlayer))
+		Events.NoteHit(notefield, note, rating))
 	if not event.cancelled and not note.wasGoodHit then
 		note.wasGoodHit = true
 
@@ -1086,10 +1086,6 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 		else
 			notefield:removeNote(note)
 			notefield.lastPress = nil
-		end
-
-		if event.enableCamZooming then
-			self.camZooming = true
 		end
 
 		if event.unmuteVocals and notefield.vocals then

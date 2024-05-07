@@ -181,7 +181,7 @@ function StoryMenuState:update(dt)
 	if self.notCreated then return end
 
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 30, dt)
-	self.scoreText.content = 'WEEK SCORE:' .. math.round(self.lerpScore)
+	self.scoreText.content = 'LEVEL SCORE:' .. math.round(self.lerpScore)
 
 	if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and
 		not self.inSubstate and self.throttles then
@@ -237,7 +237,7 @@ function StoryMenuState:selectWeek()
 		local diff = (leWeek.difficulties and leWeek.difficulties[StoryMenuState.curDifficulty] or
 			self.diffs[StoryMenuState.curDifficulty]):lower()
 
-		if self:checkSongsAssets(songTable, diff) then
+		--[[if self:checkSongsAssets(songTable, diff) then
 			local toState = PlayState(true, songTable, diff)
 			PlayState.storyWeek = leWeek.name
 			PlayState.storyWeekFile = leWeek.file
@@ -254,7 +254,24 @@ function StoryMenuState:selectWeek()
 			end
 
 			Timer.after(1, function() game.switchState(toState) end)
+		end]]
+
+		local toState = PlayState(true, songTable, diff)
+		PlayState.storyWeek = leWeek.name
+		PlayState.storyWeekFile = leWeek.file
+
+		if not self.selectedWeek then
+			util.playSfx(paths.getSound('confirmMenu'))
+			self.grpWeekText.members[StoryMenuState.curWeek]:startFlashing()
+			for _, char in pairs(self.grpWeekCharacters.members) do
+				if char.character ~= '' and char.hasConfirmAnimation then
+					char:play('confirm')
+				end
+			end
+			self.selectedWeek = true
 		end
+
+		Timer.after(1, function() game.switchState(toState) end)
 	else
 		util.playSfx(paths.getSound('cancelMenu'))
 	end
@@ -344,6 +361,7 @@ function StoryMenuState:closeSubstate()
 	StoryMenuState.super.closeSubstate(self)
 end
 
+--[[
 function StoryMenuState:checkSongsAssets(songs, diff)
 	local title = "Assets"
 	local errorList = {}
@@ -384,6 +402,7 @@ function StoryMenuState:checkSongsAssets(songs, diff)
 	self:openSubstate(AssetsErrorSubstate(title, errorList))
 	return false
 end
+]]
 
 function StoryMenuState:loadWeeks()
 	local func = Mods.currentMod and paths.getMods or function(...)
