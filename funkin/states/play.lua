@@ -101,7 +101,7 @@ function PlayState:enter()
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
 	local conductor = Conductor():setSong(PlayState.SONG)
-	conductor.time = self.startPos - (conductor.crotchet * 5)
+	conductor.time = self.startPos - conductor.crotchet * 5
 	conductor.onStep = bind(self, self.step)
 	conductor.onBeat = bind(self, self.beat)
 	conductor.onSection = bind(self, self.section)
@@ -539,7 +539,7 @@ function PlayState:startCountdown()
 	if self.dadVocals then self.dadVocals:setPitch(self.playback) end
 
 	self.startedCountdown = true
-	self.doCountdownAtBeats = (PlayState.startPos / PlayState.conductor.crotchet) - 4
+	self.doCountdownAtBeats = PlayState.startPos / PlayState.conductor.crotchet - 4
 
 	self.countdown.duration = PlayState.conductor.crotchet / 1000
 	self.countdown.playback = 1
@@ -617,7 +617,6 @@ function PlayState:section(s)
 	self.scripts:set("curSection", s)
 	if not self.startingSong then self.scripts:call("section") end
 
-	local sec = math.max(s + 1, 1)
 	if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
 		self.scripts:set("bpm", PlayState.conductor.bpm)
 		self.scripts:set("crotchet", PlayState.conductor.crotchet)
@@ -759,6 +758,7 @@ function PlayState:update(dt)
 				self.dadVocals:play()
 			end
 
+			self:section(0)
 			self.scripts:call("songStart")
 		elseif game.sound.music:isPlaying() then
 			local rate = math.max(self.playback, 1)
