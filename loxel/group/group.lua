@@ -57,11 +57,13 @@ function Group:recycle(class, factory, revive)
 		end
 	end
 	if obj then
+		self:remove(obj)
 		if revive then obj:revive() end
 	else
 		obj = factory()
-		self:add(obj)
 	end
+	self:add(obj)
+
 	return obj
 end
 
