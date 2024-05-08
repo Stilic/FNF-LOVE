@@ -137,7 +137,6 @@ function postCreate()
 				local tankman = tankmanRun:recycle(TankmenBG)
 				tankman.time = TankmenBG.animationNotes[i][1]
 				tankman:resetShit(500, 200 + love.math.random(50, 100), TankmenBG.animationNotes[i][2] < 2)
-				tankmanRun:add(tankman)
 			end
 		end
 	end

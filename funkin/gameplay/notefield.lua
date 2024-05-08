@@ -29,7 +29,6 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.receptors = {}
 	self.notes = {}
 	self.held = {}
-	self.splashes = {}
 
 	self.__offsetX = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	for i = 1, keys do
@@ -153,25 +152,11 @@ function Notefield:spawnSplash(direction)
 	if not self.canSpawnSplash or not ClientPrefs.data.noteSplash then return end
 
 	local receptor = self.receptors[direction + 1]
-	if receptor then
-		local splash = receptor:spawnSplash()
-		if not splash then return end
-		table.insert(self.splashes, splash)
-		self:add(splash)
-	end
+	if receptor then receptor:spawnSplash() end
 end
 
 function Notefield:update(dt)
 	Notefield.super.update(self, dt)
-
-	for i = #self.splashes, 1, -1 do
-		local splash = self.splashes[i]
-		if splash.animFinished then
-			table.remove(self.splashes, i)
-			self:remove(splash)
-		end
-	end
-
 	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
 end
 

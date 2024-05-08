@@ -49,22 +49,20 @@ function Group:recycle(class, factory, revive)
 	if factory == nil then factory = class end
 	if revive == nil then revive = true end
 
-	local newObject
+	local obj
 	for _, member in ipairs(self.members) do
 		if not member.exists and member.is and member:is(class) then
-			newObject = member
+			obj = member
 			break
 		end
 	end
-	if newObject then
-		self:remove(newObject)
-		if revive then newObject:revive() end
+	if obj then
+		if revive then obj:revive() end
 	else
-		newObject = factory()
+		obj = factory()
+		self:add(obj)
 	end
-	self:add(newObject)
-
-	return newObject
+	return obj
 end
 
 function Group:_canDraw()
@@ -88,6 +86,7 @@ function Group:draw()
 end
 
 local f
+
 function Group:update(dt)
 	if not (self.exists and self.active) then return end
 	for _, member in ipairs(self.members) do

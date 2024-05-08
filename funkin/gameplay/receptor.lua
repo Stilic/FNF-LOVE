@@ -20,11 +20,15 @@ function Receptor:new(x, y, direction, skin)
 	self.__strokeDelta = 0
 
 	self.__shaderAnimations = {}
-	self.__splashAnimations = {}
-	self.__splashCaches = {}
-	self.splashes = {}
 	self.hideReceptor = false
+
 	self.glow = nil
+	self.splashes, self.__splashAnimations, self.splashFactory = Group(), {}, function()
+		local splash = ActorSprite()
+		splash.__shaderAnimations = {}
+		Note.loadSkinData(splash, self.skin, "splashes", self.direction)
+		return splash
+	end
 
 	self.directions = {x = 0, y = 0, z = 0}
 	self.noteRotations = {x = 0, y = 0, z = 0}
@@ -135,19 +139,12 @@ function Receptor:setDirection(direction)
 end
 
 function Receptor:spawnSplash()
-	if not self.skin or not self.skin.splashes or #self.splashes > 4 then return end
+	if not self.skin or not self.skin.splashes then return end
 
-	local splash = table.remove(self.__splashCaches)
-	if not splash then
-		splash = ActorSprite()
-		splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
-		Note.loadSkinData(splash, self.skin, "splashes", self.direction)
-	end
+	local splash = self.splashes:recycle(ActorSprite, self.splashFactory)
 	splash.direction, splash.parent = self.direction, self
-	splash.x, splash.y, splash.z = self._x, self._y, self._z
-
+	splash.x, splash.y, splash.z = self.x, self.y, self.z
 	Receptor.play(splash, self.__splashAnimations[math.random(1, #self.__splashAnimations)], true)
-	table.insert(self.splashes, splash)
 	return splash
 end
 
@@ -185,11 +182,14 @@ function Receptor:update(dt)
 
 	ActorSprite.update(self, dt)
 
-	for i = #self.splashes, 1, -1 do
-		local splash = self.splashes[i]
-		if splash.animFinished then
-			table.remove(self.splashes, i)
-			table.insert(self.__splashCaches, splash)
+	if self.splashes.exists and self.splashes.active then
+		for _, splash in ipairs(self.splashes.members) do
+			if splash.exists and splash.active then
+				splash:update(dt)
+				if splash.animFinished then
+					splash:kill()
+				end
+			end
 		end
 	end
 end
@@ -217,21 +217,11 @@ end
 function Receptor:destroy()
 	Receptor.super.destroy(self)
 	if self.glow then self.glow:destroy() end
-	if self.splashes then
-		for i, splash in ipairs(self.splashes) do
-			splash:destroy(); self.splashes[i] = nil
-		end
-	end
-	if self.__splashCaches then
-		for i, splash in ipairs(self.__splashCaches) do
-			splash:destroy(); self.__splashCaches[i] = nil
-		end
-	end
-	self.splashes, self.__splashCaches, self.__splashAnimations = nil
+	self.splashes:destroy()
+	self.__splashAnimations = nil
 end
 
 function Receptor:__render(camera)
-	self._x, self._y, self._z = self.x, self.y, self.z
 	if not self.hideReceptor then
 		ActorSprite.__render(self, camera)
 	end
@@ -242,6 +232,14 @@ function Receptor:__render(camera)
 			self.x, self.y, self.z, self.scale, self.zoom, self.rotation, self.vertices, self.__vertices, self.fov, self.mesh
 
 		ActorSprite.__render(glow, camera)
+	end
+
+	if self.splashes.exists and self.splashes.active then
+		for _, splash in ipairs(self.splashes.members) do
+			if splash.visible and splash.exists and splash.active then
+				ActorSprite.__render(splash, camera)
+			end
+		end
 	end
 end
 
