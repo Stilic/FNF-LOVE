@@ -28,6 +28,7 @@ function Receptor:new(x, y, direction, skin)
 		splash.direction, splash.parent = self.direction, self
 		splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
 		Note.loadSkinData(splash, self.skin, "splashes", self.direction)
+		splash:updateHitbox()
 		return splash
 	end
 
@@ -131,6 +132,7 @@ function Receptor:setDirection(direction)
 	for _, splash in ipairs(self.splashes.members) do
 		splash.direction, splash.__shaderAnimations = direction, {}
 		Note.loadSkinData(splash, skin, "splashes", direction)
+		splash:updateHitbox()
 	end
 
 	table.clear(self.__splashAnimations)
@@ -147,8 +149,10 @@ function Receptor:spawnSplash()
 	if not self.skin or not self.skin.splashes then return end
 
 	local splash = self.splashes:recycle(ActorSprite, self.splashFactory)
-	splash.x, splash.y, splash.z = self._x, self._y, self._z
-	Receptor.play(splash, self.__splashAnimations[math.random(1, #self.__splashAnimations)], true)
+	local anim = self.__splashAnimations[math.random(1, #self.__splashAnimations)]
+	splash:play(anim, true)
+	splash.shader = splash.__shaderAnimations[anim]
+	splash.x, splash.y, splash.z = self._x - splash.width / 2, self._y - splash.height / 2, self._z
 	self.parent:add(splash)
 	return splash
 end
