@@ -140,7 +140,7 @@ function PlayState:enter()
 	game.cameras.add(self.camNotes, false)
 	game.cameras.add(self.camOther, false)
 
-	self.camNotes.bgColor[4] = ClientPrefs.data.backgroundDim / 100
+	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 
 	if game.sound.music then game.sound.music:reset(true) end
 	game.sound.loadMusic(paths.getInst(songName))
