@@ -230,7 +230,7 @@ function Receptor:update(dt)
 					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
 				end
 				if note.wasGoodHoldHit then
-					if self.parent.bot then
+					if self.parent.canSpawnSplash then
 						cover:kill()
 					elseif cover.curAnim.name ~= "end" then
 						cover:play("end")
