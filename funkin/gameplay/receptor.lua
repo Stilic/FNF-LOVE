@@ -165,7 +165,7 @@ function Receptor:spawnCover(note)
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)
 	cover:updateHitbox()
-	cover.shader, cover.note = cover.__shaderAnimations[anim], note
+	cover.visible, cover.shader, cover.note = true, cover.__shaderAnimations[anim], note
 	return cover
 end
 
@@ -219,7 +219,7 @@ function Receptor:update(dt)
 			splash:kill()
 		end
 	end
-	local note
+	local hasInput, note = self.parent.bot or controls:down(PlayState.keysControls[self.direction])
 	for _, cover in ipairs(self.covers.members) do
 		if cover.exists then
 			note = cover.note
@@ -227,6 +227,10 @@ function Receptor:update(dt)
 				cover:kill()
 			else
 				if cover.curAnim.name ~= "end" then
+					if not cover.visible and hasInput then
+						cover:play(cover.curAnim.name, true)
+					end
+					cover.visible = hasInput
 					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
 				end
 				if note.wasGoodHoldHit then
@@ -235,7 +239,7 @@ function Receptor:update(dt)
 					elseif cover.curAnim.name ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
-						cover.x, cover.y = cover.x - cover.width / 6, cover.y - cover.height / 6
+						cover.x, cover.y, cover.visible = cover.x - cover.width / 6, cover.y - cover.height / 6, true
 					end
 				end
 				if cover.animFinished then

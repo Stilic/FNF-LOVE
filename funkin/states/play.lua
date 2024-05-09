@@ -18,6 +18,10 @@ PlayState.inputDirections = {
 	note_up = 2,
 	note_right = 3
 }
+PlayState.keysControls = {}
+for control, key in pairs(PlayState.inputDirections) do
+	PlayState.keysControls[key] = control
+end
 
 PlayState.SONG = nil
 PlayState.songDifficulty = ""
