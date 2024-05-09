@@ -23,7 +23,7 @@ function Character:new(x, y, char, isPlayer)
 	self.strokeTime, self.__strokeDelta = 0, 0
 	self.danceSpeed, self.danced = 2, false
 
-	local jsonData = paths.getJSON("data/characters/" .. self.char)
+	local jsonData = paths.getJSON("data/characters/" .. char)
 	if jsonData == nil then jsonData = paths.getJSON("data/characters/bf") end
 
 	self:setFrames(paths.getAtlas(jsonData.sprite))
@@ -51,13 +51,13 @@ function Character:new(x, y, char, isPlayer)
 		self.cameraPosition.y = jsonData.camera_points[2]
 	end
 
-	self.icon = jsonData.icon
+	self.icon = jsonData.icon or char
 	self.iconColor = jsonData.color == nil and nil or jsonData.color
 
 	self.flipX = jsonData.flip_x == true
 	self.jsonFlipX = self.flipX
 
-	self.jsonAntialiasing = jsonData.antialiasing or false
+	self.jsonAntialiasing = jsonData.antialiasing ~= nil and jsonData.antialiasing or true
 	self.antialiasing = ClientPrefs.data.antialiasing and self.jsonAntialiasing or false
 
 	self.animationsTable = jsonData.animations
