@@ -25,11 +25,13 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	self.isOldIcon = hasOldSuffix or
 		(self.isPixelIcon and icon:sub(1, -7):endsWith("-old"))
 
-	self:loadTexture(self.texture, true,
-		math.floor(self.width / 2),
-		math.floor(self.height))
-	self:addAnim("i", {0, 1}, 0)
-	self:play("i")
+	if math.round(self.width / self.height) > 1 then
+		self:loadTexture(self.texture, true,
+			math.floor(self.width / 2),
+			math.floor(self.height))
+		self:addAnim("i", {0, 1}, 0)
+		self:play("i")
+	end
 
 	self.iconOffset = {x = (self.width - 150) / 2, y = (self.height - 150) / 2}
 

@@ -57,7 +57,7 @@ function Character:new(x, y, char, isPlayer)
 	self.flipX = jsonData.flip_x == true
 	self.jsonFlipX = self.flipX
 
-	self.jsonAntialiasing = jsonData.antialiasing ~= nil and jsonData.antialiasing or true
+	self.jsonAntialiasing = jsonData.antialiasing == nil and true or jsonData.antialiasing
 	self.antialiasing = ClientPrefs.data.antialiasing and self.jsonAntialiasing or false
 
 	self.animationsTable = jsonData.animations

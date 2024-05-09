@@ -52,8 +52,12 @@ function HealthBar:update(dt)
 		(math.remapToRange(self.bar.percent, 0, 100, 100,
 			0) * 0.01)) - (150 * self.iconP2.scale.x) / 2 - iconOffset * 2
 
-	self.iconP1.curFrame = self.bar.percent <= 10 and 2 or 1
-	self.iconP2.curFrame = self.bar.percent >= 90 and 2 or 1
+	if self.iconP1.curAnim then
+		self.iconP1.curFrame = self.bar.percent <= 10 and 2 or 1
+	end
+	if self.iconP2.curAnim then
+		self.iconP2.curFrame = self.bar.percent >= 90 and 2 or 1
+	end
 end
 
 function HealthBar:scaleIcons(val)
