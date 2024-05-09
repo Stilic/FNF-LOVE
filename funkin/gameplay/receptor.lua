@@ -153,7 +153,6 @@ function Receptor:spawnSplash()
 	splash:play(anim, true)
 	splash.shader = splash.__shaderAnimations[anim]
 	splash.x, splash.y, splash.z = self._x - splash.width / 2, self._y - splash.height / 2, self._z
-	self.parent:add(splash)
 	return splash
 end
 
@@ -193,7 +192,6 @@ function Receptor:update(dt)
 
 	for _, splash in ipairs(self.splashes.members) do
 		if splash.animFinished then
-			self.parent:remove(splash)
 			splash:kill()
 		end
 	end
@@ -224,7 +222,6 @@ function Receptor:destroy()
 	if self.glow then self.glow:destroy() end
 	for _, splash in ipairs(self.splashes.members) do
 		if splash.animFinished then
-			self.parent:remove(splash)
 			splash:destroy()
 		end
 	end

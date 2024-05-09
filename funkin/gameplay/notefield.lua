@@ -55,6 +55,7 @@ function Notefield:makeLane(direction, y)
 	self.receptors[direction] = lane.receptor
 	self.lanes[direction] = lane
 	self:add(lane)
+	self:add(lane.receptor.splashes)
 	return lane
 end
 
