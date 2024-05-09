@@ -227,7 +227,7 @@ function Receptor:update(dt)
 				cover:kill()
 			else
 				if cover.curAnim.name ~= "end" then
-					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
+					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
 				end
 				if note.wasGoodHoldHit then
 					if self.parent.bot then
