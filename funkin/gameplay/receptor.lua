@@ -226,13 +226,16 @@ function Receptor:update(dt)
 			if note.tooLate then
 				cover:kill()
 			else
+				if cover.curAnim.name ~= "end" then
+					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
+				end
 				if note.wasGoodHoldHit then
 					if self.parent.bot then
 						cover:kill()
 					elseif cover.curAnim.name ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
-						cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
+						cover.x, cover.y = cover.x - cover.width / 6, cover.y - cover.height / 6
 					end
 				end
 				if cover.animFinished then
@@ -243,9 +246,6 @@ function Receptor:update(dt)
 						cover:kill()
 					end
 				end
-			end
-			if cover.curAnim.name ~= "end" then
-				cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
 			end
 		end
 	end

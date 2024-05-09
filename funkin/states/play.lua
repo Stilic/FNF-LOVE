@@ -1351,15 +1351,6 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 			if receptor then
 				receptor:play("static")
 			end
-
-			local held = notefield.held[fixedKey]
-			local i, note = #held
-			while i > 0 do
-				note = held[i]
-				note.tooLate = true
-				table.remove(held, i)
-				i = i - 1
-			end
 		end
 	end
 end
