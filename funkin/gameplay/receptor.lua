@@ -219,19 +219,20 @@ function Receptor:update(dt)
 			splash:kill()
 		end
 	end
-	local notEnd, note = false
+	local note
 	for _, cover in ipairs(self.covers.members) do
 		if cover.exists then
-			setPos, note = cover.curAnim.name ~= "end", cover.note
+			note = cover.note
 			if note.tooLate then
 				cover:kill()
 			else
 				if note.wasGoodHoldHit then
 					if self.parent.bot then
 						cover:kill()
-					elseif notEnd then
+					elseif cover.curAnim.name ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
+						cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
 					end
 				end
 				if cover.animFinished then
@@ -243,7 +244,7 @@ function Receptor:update(dt)
 					end
 				end
 			end
-			if notEnd then
+			if cover.curAnim.name ~= "end" then
 				cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
 			end
 		end
