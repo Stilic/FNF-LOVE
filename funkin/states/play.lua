@@ -1103,16 +1103,17 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 		local rating = self:getRating(note.time, time)
 
 		local receptor = notefield.receptors[fixedDir]
-		if not event.strumGlowCancelled then
+		if receptor and not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			receptor.holdTime, receptor.strokeTime = 0, 0
 			if note.sustain then
 				receptor.strokeTime = -1
+				receptor:spawnCover(note)
 			elseif not isPlayer then
 				receptor.holdTime = 0.15
 			end
-			if ClientPrefs.data.noteSplash and rating.splash then
-				notefield:spawnSplash(dir)
+			if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
+				receptor:spawnSplash()
 			end
 		end
 
@@ -1343,11 +1344,21 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 	if key < 0 then return end
 	self.keysPressed[key] = false
 
+	local fixedKey = key + 1
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
 			local receptor = self:resetStroke(notefield, key)
 			if receptor then
 				receptor:play("static")
+			end
+
+			local held = notefield.held[fixedKey]
+			local i, note = #held
+			while i > 0 do
+				note = held[i]
+				note.tooLate = true
+				table.remove(held, i)
+				i = i - 1
 			end
 		end
 	end

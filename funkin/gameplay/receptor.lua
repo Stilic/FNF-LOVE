@@ -23,14 +23,23 @@ function Receptor:new(x, y, direction, skin)
 	self.hideReceptor = false
 
 	self.glow = nil
-	self.splashes, self.__splashAnimations, self.splashFactory = Group(), {}, function()
-		local splash = ActorSprite()
-		splash.direction, splash.parent = self.direction, self
-		splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
-		Note.loadSkinData(splash, self.skin, "splashes", self.direction)
-		splash:updateHitbox()
-		return splash
-	end
+	self.covers, self.splashes, self.__splashAnimations,
+	self.coverFactory, self.splashFactory = Group(), Group(),
+		{}, function()
+			local cover = ActorSprite()
+			cover.direction, cover.parent = self.direction, self
+			cover.__shaderAnimations, cover.ignoreAffectByGroup = {}, true
+			Note.loadSkinData(cover, self.skin, "covers", self.direction)
+			cover:updateHitbox()
+			return cover
+		end, function()
+			local splash = ActorSprite()
+			splash.direction, splash.parent = self.direction, self
+			splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
+			Note.loadSkinData(splash, self.skin, "splashes", self.direction)
+			splash:updateHitbox()
+			return splash
+		end
 
 	self.directions = {x = 0, y = 0, z = 0}
 	self.noteRotations = {x = 0, y = 0, z = 0}
@@ -129,6 +138,11 @@ function Receptor:setDirection(direction)
 		self.glow.offset.z, self.glow.origin.z, self.glow.__render = 0, 0, __NIL__
 		Note.loadSkinData(self.glow, skin, "glow", direction)
 	end
+	for _, cover in ipairs(self.covers.members) do
+		cover.direction, cover.__shaderAnimations = direction, {}
+		Note.loadSkinData(cover, skin, "covers", direction)
+		cover:updateHitbox()
+	end
 	for _, splash in ipairs(self.splashes.members) do
 		splash.direction, splash.__shaderAnimations = direction, {}
 		Note.loadSkinData(splash, skin, "splashes", direction)
@@ -143,6 +157,18 @@ function Receptor:setDirection(direction)
 			end
 		end
 	end
+end
+
+function Receptor:spawnCover(note)
+	if not self.skin or not self.skin.covers then return end
+
+	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
+	cover:play("start", true)
+	cover:updateHitbox()
+	cover.shader, cover.note = cover.__shaderAnimations[anim], note
+	cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
+	cover.bx, cover.by = self._x, self._y
+	return cover
 end
 
 function Receptor:spawnSplash()
@@ -191,8 +217,36 @@ function Receptor:update(dt)
 	ActorSprite.update(self, dt)
 
 	for _, splash in ipairs(self.splashes.members) do
-		if splash.animFinished then
+		if splash.exists and splash.animFinished then
 			splash:kill()
+		end
+	end
+	local note
+	for _, cover in ipairs(self.covers.members) do
+		if cover.exists then
+			note = cover.note
+			if note.tooLate then
+				cover:kill()
+			else
+				if note.wasGoodHoldHit then
+					if self.parent.bot then
+						cover:kill()
+					elseif cover.curAnim.name ~= "end" then
+						cover:play("end")
+						cover:updateHitbox()
+						cover.x, cover.y = cover.bx - cover.width / 2, cover.by - cover.height / 2
+					end
+				end
+				if cover.animFinished then
+					if cover.curAnim.name == "start" then
+						cover:play("loop")
+						cover:updateHitbox()
+						cover.x, cover.y = cover.bx - cover.width / 2, cover.by - cover.height / 2
+					elseif cover.curAnim.name == "end" then
+						cover:kill()
+					end
+				end
+			end
 		end
 	end
 end
@@ -220,12 +274,8 @@ end
 function Receptor:destroy()
 	Receptor.super.destroy(self)
 	if self.glow then self.glow:destroy() end
-	for _, splash in ipairs(self.splashes.members) do
-		if splash.animFinished then
-			splash:destroy()
-		end
-	end
-	Group.super.destroy(self.splashes)
+	self.covers:destroy()
+	self.splashes:destroy()
 	self.__splashAnimations = nil
 end
 

@@ -30,12 +30,14 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.notes = {}
 	self.held = {}
 
+	self.__topSprites = Group()
 	self.__offsetX = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
 	for i = 1, keys do
 		self:makeLane(i).x = self.__offsetX + self.noteWidth * i
 		self.held[i] = {}
 	end
 	self.__offsetX = self.__offsetX / (1 + 1 / keys)
+	self:add(self.__topSprites)
 
 	self:getWidth()
 end
@@ -55,7 +57,8 @@ function Notefield:makeLane(direction, y)
 	self.receptors[direction] = lane.receptor
 	self.lanes[direction] = lane
 	self:add(lane)
-	self:add(lane.receptor.splashes)
+	self.__topSprites:add(lane.receptor.covers)
+	self.__topSprites:add(lane.receptor.splashes)
 	return lane
 end
 
@@ -147,13 +150,6 @@ function Notefield:getNotesToHit(time, direction)
 	end
 
 	return hitNotes
-end
-
-function Notefield:spawnSplash(direction)
-	if not self.canSpawnSplash or not ClientPrefs.data.noteSplash then return end
-
-	local receptor = self.receptors[direction + 1]
-	if receptor then receptor:spawnSplash() end
 end
 
 function Notefield:update(dt)

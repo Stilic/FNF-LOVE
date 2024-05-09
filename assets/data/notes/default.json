@@ -126,6 +126,19 @@
 		"blend": "add"
 	},
 
+	"covers": {
+		"sprite": "sustainCover",
+
+		"animations": [
+			["start", "cover start", 24, false, true],
+			["loop", "cover0", 24, true, true],
+			["end", "cover end", 24, false, true]
+		],
+
+		"scale": 1,
+		"antialiasing": true
+	},
+
 	"splashes": {
 		"sprite": "noteSplashes",
 
