@@ -2,7 +2,7 @@ return {
 	DEBUG_MODE = true,
 	splashScreen = true,
 
-	title = "Friday Night Funkin' LOVE",
+	title = "Friday Night Funkin'",
 	file = "FNF-LOVE",
 	icon = "art/icon.png",
 	version = "0.7.0",
