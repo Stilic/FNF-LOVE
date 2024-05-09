@@ -165,7 +165,7 @@ function Receptor:spawnCover(note)
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)
 	cover:updateHitbox()
-	cover.visible, cover.shader, cover.note = true, cover.__shaderAnimations[anim], note
+	cover.visible, cover.shader, cover.note = true, cover.__shaderAnimations["start"], note
 	return cover
 end
 
@@ -219,16 +219,17 @@ function Receptor:update(dt)
 			splash:kill()
 		end
 	end
-	local hasInput, note = self.parent.bot or controls:down(PlayState.keysControls[self.direction])
+	local hasInput, anim, note = self.parent.bot or controls:down(PlayState.keysControls[self.direction])
 	for _, cover in ipairs(self.covers.members) do
 		if cover.exists then
-			note = cover.note
+			anim, note = cover.curAnim.name, cover.note
 			if note.tooLate then
 				cover:kill()
 			else
-				if cover.curAnim.name ~= "end" then
+				if anim ~= "end" then
 					if not cover.visible and hasInput then
-						cover:play(cover.curAnim.name, true)
+						cover:play(anim, true)
+						cover.shader = cover.__shaderAnimations[anim]
 					end
 					cover.visible = hasInput
 					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
@@ -236,17 +237,19 @@ function Receptor:update(dt)
 				if note.wasGoodHoldHit then
 					if not self.parent.canSpawnSplash or not ClientPrefs.data.noteSplash then
 						cover:kill()
-					elseif cover.curAnim.name ~= "end" then
+					elseif anim ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
+						cover.shader = cover.__shaderAnimations["end"]
 						cover.x, cover.y, cover.visible = cover.x - cover.width / 6, cover.y - cover.height / 6, true
 					end
 				end
 				if cover.animFinished then
-					if cover.curAnim.name == "start" then
+					if anim == "start" then
 						cover:play("loop")
 						cover:updateHitbox()
-					elseif cover.curAnim.name == "end" then
+						cover.shader = cover.__shaderAnimations["loop"]
+					elseif anim == "end" then
 						cover:kill()
 					end
 				end
