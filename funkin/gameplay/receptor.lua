@@ -271,7 +271,7 @@ function Receptor:play(anim, force, frame, dontShader)
 	end
 
 	Note.updateHitbox(self)
-	self.__strokeDelta, self.strokeTime = 0, 0
+	self.holdTime, self.__strokeDelta, self.strokeTime = 0, 0, 0
 
 	if not dontShader and self.__shaderAnimations then
 		self.shader = self.__shaderAnimations[anim]
