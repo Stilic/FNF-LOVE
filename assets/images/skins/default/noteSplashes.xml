@@ -2,12 +2,12 @@
 <TextureAtlas imagePath="noteSplashes.png">
 	<!-- Created with Adobe Animate version 21.0.1.37179 -->
 	<!-- http://www.adobe.com/products/animate.html -->
-	<SubTexture name="impact 10000" x="0" y="0" width="189" height="270" frameX="-32" frameY="-12" frameWidth="260" frameHeight="298"/>
-	<SubTexture name="impact 10001" x="191" y="0" width="213" height="265" frameX="-27" frameY="-22" frameWidth="260" frameHeight="298"/>
-	<SubTexture name="impact 10002" x="406" y="0" width="252" height="291" frameX="-4" frameY="-6" frameWidth="260" frameHeight="298"/>
-	<SubTexture name="impact 10003" x="660" y="0" width="260" height="298"/>
-	<SubTexture name="impact 20000" x="0" y="300" width="169" height="201" frameX="-45" frameY="-41" frameWidth="503" frameHeight="303"/>
-	<SubTexture name="impact 20001" x="171" y="300" width="225" height="238" frameX="-20" frameY="-19" frameWidth="503" frameHeight="303"/>
-	<SubTexture name="impact 20002" x="398" y="300" width="265" height="257" frameX="0" frameY="-10" frameWidth="503" frameHeight="303"/>
-	<SubTexture name="impact 20003" x="0" y="559" width="453" height="303" frameX="-50" frameY="0" frameWidth="503" frameHeight="303"/>
+	<SubTexture name="impact 10000" x="0" y="0" width="196" height="278" frameX="-32" frameY="-11" frameWidth="267" frameHeight="305"/>
+	<SubTexture name="impact 10001" x="198" y="0" width="220" height="271" frameX="-27" frameY="-22" frameWidth="267" frameHeight="305"/>
+	<SubTexture name="impact 10002" x="420" y="0" width="257" height="298" frameX="-5" frameY="-6" frameWidth="267" frameHeight="305"/>
+	<SubTexture name="impact 10003" x="679" y="0" width="267" height="305"/>
+	<SubTexture name="impact 20000" x="0" y="307" width="176" height="208" frameX="-45" frameY="-41" frameWidth="511" frameHeight="310"/>
+	<SubTexture name="impact 20001" x="178" y="307" width="233" height="244" frameX="-20" frameY="-20" frameWidth="511" frameHeight="310"/>
+	<SubTexture name="impact 20002" x="413" y="307" width="272" height="264" frameX="0" frameY="-10" frameWidth="511" frameHeight="310"/>
+	<SubTexture name="impact 20003" x="0" y="573" width="461" height="310" frameX="-50" frameY="0" frameWidth="511" frameHeight="310"/>
 </TextureAtlas>
