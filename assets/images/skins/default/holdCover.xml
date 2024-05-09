@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAtlas imagePath="sustainCover.png">
+<TextureAtlas imagePath="holdCover.png">
 	<!-- Created with Adobe Animate version 21.0.1.37179 -->
 	<!-- http://www.adobe.com/products/animate.html -->
 	<SubTexture name="cover0000" x="0" y="0" width="161" height="125"/>

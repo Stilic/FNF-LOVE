@@ -241,7 +241,7 @@ function Receptor:update(dt)
 						cover:play("end")
 						cover:updateHitbox()
 						cover.shader = cover.__shaderAnimations["end"]
-						cover.x, cover.y, cover.visible = cover.x - cover.width / 6, cover.y - cover.height / 6, true
+						cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
 					end
 				end
 				if cover.animFinished then

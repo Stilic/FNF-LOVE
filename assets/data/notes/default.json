@@ -127,7 +127,7 @@
 	},
 
 	"covers": {
-		"sprite": "sustainCover",
+		"sprite": "holdCover",
 
 		"animations": [
 			["start", "cover start", 24, false, true],
