@@ -167,7 +167,6 @@ function Receptor:spawnCover(note)
 	cover:updateHitbox()
 	cover.shader, cover.note = cover.__shaderAnimations[anim], note
 	cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
-	cover.bx, cover.by = self._x, self._y
 	return cover
 end
 
@@ -234,14 +233,14 @@ function Receptor:update(dt)
 					elseif cover.curAnim.name ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
-						cover.x, cover.y = cover.bx - cover.width / 2, cover.by - cover.height / 2
+						cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
 					end
 				end
 				if cover.animFinished then
 					if cover.curAnim.name == "start" then
 						cover:play("loop")
 						cover:updateHitbox()
-						cover.x, cover.y = cover.bx - cover.width / 2, cover.by - cover.height / 2
+						cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2, self._z
 					elseif cover.curAnim.name == "end" then
 						cover:kill()
 					end
