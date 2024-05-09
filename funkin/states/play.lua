@@ -712,13 +712,15 @@ function PlayState:doCountdown(beat)
 	end
 end
 
-function PlayState:resetStroke(notefield, dir, delayReceptor)
+function PlayState:resetStroke(notefield, dir, forceStatic)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
-		if delayReceptor then
-			receptor.holdTime = 0.14 - receptor.__strokeDelta
-		end
 		receptor.strokeTime = 0
+		if not notefield.bot and not forceStatic and controls:down(PlayState.keysControls[dir]) then
+			receptor:play("pressed")
+		else
+			receptor:play("static")
+		end
 	end
 
 	local char = notefield.character
@@ -837,7 +839,7 @@ function PlayState:update(dt)
 								self:recalculateRating()
 							end
 
-							self:resetStroke(notefield, dir, not isPlayer)
+							self:resetStroke(notefield, dir)
 
 							table.remove(held, j)
 							j = j - 1
@@ -1351,10 +1353,7 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 	local fixedKey = key + 1
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			local receptor = self:resetStroke(notefield, key)
-			if receptor then
-				receptor:play("static")
-			end
+			self:resetStroke(notefield, key, true)
 		end
 	end
 end
