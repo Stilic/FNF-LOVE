@@ -178,8 +178,6 @@ function PlayState:enter()
 		end
 	end
 
-	self.keysPressed = {}
-
 	PlayState.pixelStage = false
 	PlayState.SONG.stage = self:loadStageWithSongName(songName)
 
@@ -715,10 +713,12 @@ end
 function PlayState:resetStroke(notefield, dir, delayStatic)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
-		if delayStatic then
+		if delayStatic ~= nil then
 			receptor.strokeTime = 0
 			if notefield.bot then
 				receptor.holdTime = 0.14 - receptor.__strokeDelta
+			else
+				receptor:play(delayStatic and "pressed" or "static")
 			end
 		else
 			receptor:play("static")
@@ -810,18 +810,16 @@ function PlayState:update(dt)
 			end
 		end
 
-		local heldNotes, j, l, note, dir = notefield.held
-		local resetVolume = false
+		local heldNotes, j, l, note, dir, resetVolume, hasInput = notefield.held
 		for i, held in ipairs(heldNotes) do
-			j, l = 1, #held
+			j, l, dir = 1, #held, i - 1
+			hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
 
 			while j <= l do
 				note = held[j]
 
 				if not note.tooLate then
-					dir = note.direction
-
-					if not isPlayer or self.keysPressed[dir] then
+					if hasInput then
 						-- sustain hitting
 						note.lastPress = noteTime
 						resetVolume = true
@@ -839,7 +837,7 @@ function PlayState:update(dt)
 								self:recalculateRating()
 							end
 
-							self:resetStroke(notefield, dir, true)
+							self:resetStroke(notefield, dir, hasInput)
 
 							table.remove(held, j)
 							j = j - 1
@@ -851,8 +849,7 @@ function PlayState:update(dt)
 					end
 				end
 
-				dir = i - 1
-				if l ~= 0 and (not isPlayer or self.keysPressed[dir]) then
+				if hasInput and l ~= 0 then
 					local receptor = notefield.receptors[i]
 					if receptor.strokeTime ~= -1 then
 						receptor:play("confirm")
@@ -1280,7 +1277,6 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	key = self:getKeyFromEvent(controls)
 
 	if key < 0 then return end
-	self.keysPressed[key] = true
 
 	time = PlayState.conductor.time / 1000
 		+ (time - self.lastTick) * game.sound.music:getActualPitch()
@@ -1348,7 +1344,6 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 	key = self:getKeyFromEvent(controls)
 
 	if key < 0 then return end
-	self.keysPressed[key] = false
 
 	local fixedKey = key + 1
 	for _, notefield in ipairs(self.notefields) do
