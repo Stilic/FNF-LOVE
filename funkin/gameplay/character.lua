@@ -99,6 +99,8 @@ function Character:new(x, y, char, isPlayer)
 
 	self:dance()
 	self:finish()
+
+	if self.script then self.script:call("postCreate") end
 end
 
 function Character:switchAnim(oldAnim, newAnim)
