@@ -225,7 +225,7 @@ end
 
 function Character:dance(force)
 	if self.__animations and
-		(not Character.editorMode and self.script:call("dance") or true) then
+		(not self.script and self.script:call("dance") or true) then
 		if self.__animations["danceLeft"] and self.__animations["danceRight"] then
 			self.danced = not self.danced
 
