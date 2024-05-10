@@ -1262,9 +1262,8 @@ end
 
 function PlayState:getKeyFromEvent(controls)
 	for _, control in pairs(controls) do
-		if PlayState.inputDirections[control] then
-			return PlayState.inputDirections[control]
-		end
+		local dir = PlayState.inputDirections[control]
+		if dir ~= nil then return dir end
 	end
 	return -1
 end
