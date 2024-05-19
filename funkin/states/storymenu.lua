@@ -65,7 +65,6 @@ function StoryMenuState:enter()
 
 	if #self.weeksData > 0 then
 		for i, week in pairs(self.weeksData) do
-			local isLocked = (week.locked == true)
 			local weekThing = MenuItem(0, bgYellow.y + bgYellow.height + 10,
 				week.sprite)
 			weekThing.y = weekThing.y + ((weekThing.height + 20) * (i - 1))
@@ -74,7 +73,7 @@ function StoryMenuState:enter()
 
 			weekThing:screenCenter("x")
 
-			if isLocked then
+			if week.locked then
 				local lock = Sprite(weekThing.width + 10 + weekThing.x)
 				lock:setFrames(ui_tex)
 				lock:addAnimByPrefix('lock', 'lock')
@@ -345,7 +344,7 @@ function StoryMenuState:updateText()
 
 	local leWeek = self.weeksData[StoryMenuState.curWeek]
 	local songs = table.concat(leWeek.songs, "\n")
-	self.txtTrackList.content = 'TRACKS\n\n' .. songs:upper()
+	self.txtTrackList.content = 'TRACKS\n\n' .. songs
 	self.txtTrackList:screenCenter("x")
 	self.txtTrackList.x = self.txtTrackList.x - game.width * 0.35
 
