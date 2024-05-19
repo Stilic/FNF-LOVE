@@ -764,20 +764,20 @@ function PlayState:update(dt)
 			self.playback = ClientPrefs.data.playback
 			Timer.setSpeed(self.playback)
 
+			local time = self.startPos / 1000
 			game.sound.music:setPitch(self.playback)
-			game.sound.music:seek(self.startPos / 1000)
-			game.sound.music:play()
-
+			game.sound.music:seek(time)
 			if self.vocals then
 				self.vocals:setPitch(self.playback)
-				self.vocals:seek(game.sound.music:tell())
-				self.vocals:play()
+				self.vocals:seek(time)
 			end
 			if self.dadVocals then
 				self.dadVocals:setPitch(self.playback)
-				self.dadVocals:seek(game.sound.music:tell())
-				self.dadVocals:play()
+				self.dadVocals:seek(time)
 			end
+			game.sound.music:play()
+			self.vocals:play()
+			self.dadVocals:play()
 
 			self:section(0)
 			self.scripts:call("songStart")
