@@ -5,7 +5,7 @@ function create()
 	cutsceneTimer = Timer.new()
 
 	state.dad.alpha = 0.00001
-	state.camHUD.visible = false
+	state.camHUD.visible, state.camNotes.visible = false, false
 
 	local songName = paths.formatToSongPath(state.SONG.song)
 
@@ -38,7 +38,7 @@ function postCreate()
 	cutsceneTimer:after(11.5, function()
 		tankman:destroy()
 		state.dad.alpha = 1
-		state.camHUD.visible = true
+		state.camHUD.visible, state.camNotes.visible = true, true
 
 		local times = PlayState.conductor.crotchet / 1000 * 4.5
 		Timer.tween(times, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad')

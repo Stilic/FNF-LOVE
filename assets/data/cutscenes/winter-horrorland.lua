@@ -1,5 +1,5 @@
 function create()
-	state.camHUD.visible = false
+	state.camHUD.visible, state.camNotes.visible = false, false
 
 	state.camFollow:set(400, -2050)
 	game.camera:snapToTarget()
@@ -17,7 +17,7 @@ function create()
 	end)
 
 	Timer.after(1, function()
-		state.camHUD.visible = true
+		state.camHUD.visible, state.camNotes.visible = true, true
 		Timer.tween(1.2, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad',
 			function() state:startCountdown() end)
 	end)

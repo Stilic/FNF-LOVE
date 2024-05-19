@@ -46,7 +46,7 @@ function create()
 		end)
 	end
 
-	state.camHUD.visible = false
+	state.camHUD.visible, state.camNotes.visible = false, false
 
 	Timer.after(2.1, function()
 		state:add(senpaiEvil)
@@ -67,7 +67,7 @@ function create()
 						state:remove(white)
 						game.camera.zoom = state.stage.camZoom
 						state:add(doof)
-						state.camHUD.visible = true
+						state.camHUD.visible, state.camNotes.visible = true, true
 						state.camHUD:flash(Color.WHITE, 4)
 					end)
 					Timer.after(2.4, function()

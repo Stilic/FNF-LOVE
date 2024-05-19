@@ -1,6 +1,6 @@
 function create()
 	Timer.after(0.5, function()
-		state.camHUD.visible = false
+		state.camHUD.visible, state.camNotes.visible = false, false
 
 		util.playSfx(paths.getSound('gameplay/Lights_Shut_off'))
 		local blackScreen = Graphic(game.width * -0.5, game.height * -0.5,

@@ -137,7 +137,7 @@ function PlayState:enter()
 
 	self.scripts:call("create")
 
-	self.camNotes = Camera() --ActorCamera() Will be changed to ActorCamera once thats class is done
+	self.camNotes = Camera() --Camera will be changed to ActorCamera once that class is done
 	self.camHUD = Camera()
 	self.camOther = Camera()
 	game.cameras.add(self.camHUD, false)
