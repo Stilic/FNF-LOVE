@@ -10,14 +10,14 @@ function create()
 
 	doof = DialogueBox(dialogue)
 	doof:setScrollFactor()
-	doof.cameras = {state.camHUD}
+	doof.cameras = {state.camNotes}
 	doof.finishThing = function()
 		state:startCountdown()
 		close()
 	end
 
 	black:setScrollFactor()
-	black.cameras = {state.camHUD}
+	black.cameras = {state.camNotes}
 	state:add(black)
 
 	game.discardTransition()

@@ -1254,8 +1254,7 @@ function PlayState:tryGameOver()
 			if self.dadVocals then self.dadVocals:pause() end
 		end
 
-		self.camNotes.visible = false
-		self.camHUD.visible = false
+		self.camHUD.visible, self.camNotes.visible = false, false
 		self.boyfriend.visible = false
 
 		if self.buttons then
