@@ -3,7 +3,7 @@ local Notefield = ActorGroup:extend("Notefield")
 function Notefield:new(x, y, keys, skin, character, vocals)
 	Notefield.super.new(self, x, y)
 
-	self.noteWidth = math.floor(160 * 0.7)
+	self.noteWidth = 160 * 0.7
 	self.height = 514
 	self.keys = keys
 	self.skin = paths.getNoteskin(skin)
