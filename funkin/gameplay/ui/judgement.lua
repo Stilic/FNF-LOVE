@@ -1,8 +1,8 @@
-local Judgement = SpriteGroup:extend("Judgement")
-Judgement.area = {width = 336, height = 135}
+local Judgements = SpriteGroup:extend("Judgements")
+Judgements.area = {width = 336, height = 135}
 
-function Judgement:new(x, y)
-	Judgement.super.new(self, x, y)
+function Judgements:new(x, y)
+	Judgements.super.new(self, x, y)
 	self.timer = Timer()
 
 	self.ratingVisible = true
@@ -13,12 +13,12 @@ function Judgement:new(x, y)
 	self.antialiasing = not PlayState.pixelStage
 end
 
-function Judgement:update(dt)
-	Judgement.super.update(self, dt)
+function Judgements:update(dt)
+	Judgements.super.update(self, dt)
 	self.timer:update(dt)
 end
 
-function Judgement:createSprite(name, scale, alpha, duration)
+function Judgements:createSprite(name, scale, alpha, duration)
 	local sprite = self:recycle()
 	sprite:loadTexture(paths.getImage("skins/" .. self.skin .. "/" .. name))
 	sprite:setGraphicSize(math.floor(sprite.width * scale))
@@ -41,7 +41,7 @@ function Judgement:createSprite(name, scale, alpha, duration)
 	return sprite
 end
 
-function Judgement:spawn(rating, combo)
+function Judgements:spawn(rating, combo)
 	local accel = PlayState.conductor.crotchet * 0.001
 
 	if rating and self.ratingVisible then
@@ -86,9 +86,9 @@ function Judgement:spawn(rating, combo)
 	end
 end
 
-function Judgement:screenCenter()
+function Judgements:screenCenter()
 	self.x, self.y = (game.width - self.area.width) / 2,
 		(game.height - self.area.height) / 2
 end
 
-return Judgement
+return Judgements

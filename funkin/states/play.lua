@@ -213,7 +213,7 @@ function PlayState:enter()
 
 	self:add(self.stage.foreground)
 
-	self.judgeSprites = Judgement()
+	self.judgeSprites = Judgements()
 	self.judgeSprites:screenCenter("x")
 	self.judgeSprites.y = self.judgeSprites.area.height * 1.5
 	self:add(self.judgeSprites)

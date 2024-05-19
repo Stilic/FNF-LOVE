@@ -48,7 +48,7 @@ BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 Character = require "funkin.gameplay.character"
 Stage = require "funkin.gameplay.stage"
 TankmenBG = require "funkin.gameplay.tankmenbg"
-Judgement = require "funkin.gameplay.ui.judgement"
+Judgements = require "funkin.gameplay.ui.judgement"
 
 Alphabet = require "funkin.ui.alphabet"
 MenuCharacter = require "funkin.ui.menucharacter"
@@ -67,7 +67,6 @@ ModsState = require "funkin.states.mods"
 StoryMenuState = require "funkin.states.storymenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
-AlphaTestState = require "funkin.states.alphatest"
 
 EditorMenu = require "funkin.ui.editor.editormenu"
 
