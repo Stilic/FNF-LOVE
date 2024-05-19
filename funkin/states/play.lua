@@ -238,10 +238,12 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = true
 
-	local y, keys, skin = game.height / 2, 4, self.pixelStage and "pixel" or nil
-	self.enemyNotefield = Notefield(0, y, keys, skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
+	self.skin = self.pixelStage and "pixel" or "default"
+
+	local y, keys = game.height / 2, 4
+	self.enemyNotefield = Notefield(0, y, keys, self.skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
 	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
-	self.playerNotefield = Notefield(0, y, keys, skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
+	self.playerNotefield = Notefield(0, y, keys, self.skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
 	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	local vocalVolume = ClientPrefs.data.vocalVolume / 100
@@ -402,6 +404,22 @@ function PlayState:enter()
 		self:startCountdown()
 	end
 	self:recalculateRating()
+
+	-- PRELOAD SPRITES TO GET RID OF THE FATASS LAGS!!
+	local path = "skins/" .. self.skin .. "/"
+	for _, r in ipairs(self.ratings) do
+		paths.getImage(path .. r.name)
+	end
+	for _, num in ipairs({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "negative"}) do
+		paths.getImage(path .. "num" .. num)
+	end
+	local sprite
+	for i, part in pairs(paths.getNoteskin(self.skin)) do
+		sprite = part.sprite
+		if sprite then
+			paths.getImage(path .. sprite)
+		end
+	end
 
 	PlayState.super.enter(self)
 	collectgarbage()

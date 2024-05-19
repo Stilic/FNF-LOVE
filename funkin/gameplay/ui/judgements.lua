@@ -56,7 +56,7 @@ function Judgements:spawn(rating, combo)
 		ratingSpr.visible = self.ratingVisible
 	end
 
-	if combo and (combo > 9 or combo < 0) then
+	if combo ~= nil and combo > 9 then
 		if self.comboNumVisible then
 			local negative = combo < 0
 			local comboStr = string.format(negative and "-%03d" or "%03d", math.abs(combo))
