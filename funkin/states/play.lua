@@ -34,8 +34,6 @@ PlayState.storyWeekFile = ""
 
 PlayState.seenCutscene = false
 
-PlayState.pixelStage = false
-
 PlayState.prevCamFollow = nil
 
 -- Charting Stuff
@@ -48,13 +46,12 @@ function PlayState.loadSong(song, diff)
 	local path = "songs/" .. song .. "/charts/" .. diff
 	local data = paths.getJSON(path)
 
+	local metadata = paths.getJSON('songs/' .. song .. '/meta')
 	if data then
-		local metadata = paths.getJSON('songs/' .. song .. '/meta')
 		PlayState.SONG = data.song
 		if metadata then PlayState.SONG.meta = metadata end
 	else
-		local metadata = paths.getJSON('songs/' .. song .. '/meta')
-		if metadata == nil then return false end
+		if not metadata then return false end
 		PlayState.SONG = {
 			song = song,
 			bpm = 150,
@@ -64,15 +61,21 @@ function PlayState.loadSong(song, diff)
 			player1 = 'bf',
 			player2 = 'dad',
 			gfVersion = 'gf',
+			skin = 'default',
 			notes = {},
 			meta = metadata
 		}
 	end
-	return true
-end
+	if metadata then
+		if metadata.name then
+			PlayState.SONG.song = metadata.name
+		end
+		if metadata.skin then
+			PlayState.SONG.skin = metadata.skin
+		end
+	end
 
-function PlayState.getSongName()
-	return PlayState.SONG.meta and PlayState.SONG.meta.name or PlayState.SONG.song
+	return true
 end
 
 function PlayState:new(storyMode, song, diff)
@@ -98,6 +101,8 @@ end
 
 function PlayState:enter()
 	if PlayState.SONG == nil then PlayState.loadSong('test') end
+	PlayState.SONG.skin = util.getSkin(PlayState.SONG)
+
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
 	local conductor = Conductor():setSong(PlayState.SONG)
@@ -178,7 +183,6 @@ function PlayState:enter()
 		end
 	end
 
-	PlayState.pixelStage = false
 	PlayState.SONG.stage = self:loadStageWithSongName(songName)
 
 	self.stage = Stage(PlayState.SONG.stage)
@@ -213,7 +217,7 @@ function PlayState:enter()
 
 	self:add(self.stage.foreground)
 
-	self.judgeSprites = Judgements()
+	self.judgeSprites = Judgements(0, 0, PlayState.SONG.skin)
 	self.judgeSprites:screenCenter("x")
 	self.judgeSprites.y = self.judgeSprites.area.height * 1.5
 	self:add(self.judgeSprites)
@@ -238,12 +242,10 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = true
 
-	self.skin = self.pixelStage and "pixel" or "default"
-
 	local y, keys = game.height / 2, 4
-	self.enemyNotefield = Notefield(0, y, keys, self.skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
+	self.enemyNotefield = Notefield(0, y, keys, PlayState.SONG.skin, self.dad, self.dadVocals and self.dadVocals or self.vocals)
 	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
-	self.playerNotefield = Notefield(0, y, keys, self.skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
+	self.playerNotefield = Notefield(0, y, keys, PlayState.SONG.skin, self.boyfriend, self.vocals and self.vocals or self.dadVocals)
 	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	local vocalVolume = ClientPrefs.data.vocalVolume / 100
@@ -406,7 +408,7 @@ function PlayState:enter()
 	self:recalculateRating()
 
 	-- PRELOAD SPRITES TO GET RID OF THE FATASS LAGS!!
-	local path = "skins/" .. self.skin .. "/"
+	local path = "skins/" .. PlayState.SONG.skin .. "/"
 	for _, r in ipairs(self.ratings) do
 		paths.getImage(path .. r.name)
 	end
@@ -414,7 +416,7 @@ function PlayState:enter()
 		paths.getImage(path .. "num" .. num)
 	end
 	local sprite
-	for i, part in pairs(paths.getNoteskin(self.skin)) do
+	for i, part in pairs(paths.getNoteskin(PlayState.SONG.skin)) do
 		sprite = part.sprite
 		if sprite then
 			paths.getImage(path .. sprite)
@@ -516,7 +518,6 @@ function PlayState:loadStageWithSongName(songName)
 			curStage = "stage"
 		end
 	end
-	PlayState.pixelStage = curStage == "school" or curStage == "school-evil"
 	return curStage
 end
 
@@ -560,13 +561,15 @@ function PlayState:startCountdown()
 
 	self.countdown.duration = PlayState.conductor.crotchet / 1000
 	self.countdown.playback = 1
-	if PlayState.pixelStage then
-		self.countdown.data = {
-			{sound = "skins/pixel/intro3",  image = nil},
-			{sound = "skins/pixel/intro2",  image = "skins/pixel/ready"},
-			{sound = "skins/pixel/intro1",  image = "skins/pixel/set"},
-			{sound = "skins/pixel/introGo", image = "skins/pixel/go"}
-		}
+
+	local skin = PlayState.SONG.skin
+	self.countdown.data = {
+		{sound = util.getSkinPath(skin, "intro3", "sound"),  image = nil},
+		{sound = util.getSkinPath(skin, "intro2", "sound"),  image = util.getSkinPath(skin, "ready", "image")},
+		{sound = util.getSkinPath(skin, "intro1", "sound"),  image = util.getSkinPath(skin, "set", "image")},
+		{sound = util.getSkinPath(skin, "introGo", "sound"), image = util.getSkinPath(skin, "go", "image")}
+	}
+	if skin:endsWith("-pixel") then
 		self.countdown.scale = {x = 7, y = 7}
 		self.countdown.antialiasing = false
 	end
@@ -1523,7 +1526,7 @@ function PlayState:updateDiscordRPC(paused)
 	if paused then
 		Discord.changePresence({
 			details = "Paused - " .. detailsText,
-			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+			state = PlayState.SONG.song .. ' - [' .. diff .. ']'
 		})
 		return
 	end
@@ -1531,14 +1534,14 @@ function PlayState:updateDiscordRPC(paused)
 	if self.startingSong or not game.sound.music or not game.sound.music:isPlaying() then
 		Discord.changePresence({
 			details = detailsText,
-			state = PlayState.getSongName() .. ' - [' .. diff .. ']'
+			state = PlayState.SONG.song .. ' - [' .. diff .. ']'
 		})
 	else
 		local startTimestamp = os.time(os.date("*t"))
 		local endTimestamp = (startTimestamp + game.sound.music:getDuration()) - PlayState.conductor.time / 1000
 		Discord.changePresence({
 			details = detailsText,
-			state = PlayState.getSongName() .. ' - [' .. diff .. ']',
+			state = PlayState.SONG.song .. ' - [' .. diff .. ']',
 			startTimestamp = math.floor(startTimestamp),
 			endTimestamp = math.floor(endTimestamp)
 		})

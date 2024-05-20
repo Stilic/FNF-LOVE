@@ -65,7 +65,6 @@ function ChartingState:enter()
 
 	local songName = paths.formatToSongPath(self.__song.song)
 
-	PlayState.pixelStage = false
 	self.__song.stage = PlayState:loadStageWithSongName(songName)
 	self.__song.gfVersion = PlayState:loadGfWithStage(songName, self.__song.stage)
 
@@ -936,7 +935,7 @@ end
 
 function ChartingState:generateNotes()
 	self.allNotes:clear()
-	local bpmChanges, lastChange = ChartingState.conductor.bpmChanges, ChartingState.conductor.dummyBPMChange
+	local skin, bpmChanges, lastChange = util.getSkin(self.__song), ChartingState.conductor.bpmChanges, ChartingState.conductor.dummyBPMChange
 	for section_num, s in ipairs(self.__song.notes) do
 		if s and s.sectionNotes then
 			for note_num, n in ipairs(s.sectionNotes) do
@@ -952,7 +951,7 @@ function ChartingState:generateNotes()
 					lastChange = Conductor.getBPMChangeFromTime(bpmChanges, daStrumTime,
 						lastChange.id) or lastChange
 
-					local note = ChartingNote(daStrumTime, daNoteData)
+					local note = ChartingNote(daStrumTime, daNoteData, skin)
 					note.section = section_num
 					note.index = note_num
 					note.step = Conductor.getStepFromBPMChange(lastChange, daStrumTime, 0)

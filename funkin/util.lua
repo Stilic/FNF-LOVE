@@ -1,5 +1,35 @@
 local util = {}
 
+function util.getSkin(song)
+	if song.meta and song.meta.skin then
+		return song.meta.skin
+	elseif song.skin then
+		return song.skin
+	end
+	return "default"
+end
+
+-- also handles caching of the asset located in said path
+function util.getSkinPath(skin, key, type)
+	local path, obj = "skins/" .. skin .. "/" .. key
+	switch(type, {
+		["image"] = function()
+			obj = paths.getImage(path)
+		end,
+		["atlas"] = function()
+			obj = paths.getAtlas(path)
+		end,
+		["music"] = function()
+			obj = paths.getMusic(path)
+		end,
+		["sound"] = function()
+			obj = paths.getSound(path)
+		end
+	})
+	if obj then return path end
+	return "skins/" .. (skin:endsWith("-pixel") and "default-pixel" or "default") .. "/" .. key
+end
+
 function util.coolLerp(x, y, i, delta)
 	local v = math.lerp(y, x, math.exp(-(delta or game.dt) * i))
 	return (y == 0 and v > y) and 0 or v

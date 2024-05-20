@@ -27,7 +27,7 @@ function PauseSubstate:new()
 		self.grpShitMenu:add(item)
 	end
 
-	local txt, font = PlayState.getSongName() or "?", paths.getFont("vcr.ttf", 32)
+	local txt, font = PlayState.SONG.song or "?", paths.getFont("vcr.ttf", 32)
 	self.songText = Text(0, 15, txt, font)
 	self.songText.x = game.width - self.songText:getWidth() - 28
 	self.songText.alpha = 0
@@ -180,7 +180,7 @@ end
 function PauseSubstate:loadPauseMusic()
 	local pauseMusic = ClientPrefs.data.pauseMusic
 	if pauseMusic == "breakfast" then
-		local songName = PlayState.getSongName():lower()
+		local songName = PlayState.SONG.song:lower()
 		if songName == "pico" or songName == "philly nice" or songName == "blammed" then
 			pauseMusic = pauseMusic .. "-pico"
 		elseif songName == "senpai" or songName == "roses" or songName == "thorns" then

@@ -3,7 +3,7 @@ ChartingNote.chartingMode = false
 ChartingNote.swagWidth = 160 * 0.7
 ChartingNote.directions = {'left', 'down', 'up', 'right'}
 
-function ChartingNote:new(time, data, prevNote, sustain, parentNote)
+function ChartingNote:new(time, data, skin, prevNote, sustain, parentNote)
 	ChartingNote.super.new(self, 0, -2000)
 
 	self.time = time
@@ -33,9 +33,7 @@ function ChartingNote:new(time, data, prevNote, sustain, parentNote)
 		self.children = {}
 	end
 
-	self.__style = 'unknown'
-	self:setStyle(PlayState.SONG.noteStyle or
-		(PlayState.pixelStage and 'pixel' or 'default'))
+	self:setStyle(skin or "default")
 end
 
 function ChartingNote:_addAnim(...)
@@ -57,7 +55,7 @@ function ChartingNote:setStyle(style)
 
 	local jsonData = paths.getJSON('data/notes/' .. self.__style).notes
 	local texture, str = '', 'skins/%s/%s'
-	texture = str:format(jsonData.isPixel and 'pixel' or 'default',
+	texture = str:format(jsonData.isPixel and 'default-pixel' or 'default',
 		jsonData.sprite)
 
 	if jsonData.isPixel then
