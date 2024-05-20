@@ -265,6 +265,28 @@ function PlayState:enter()
 	self.countdown:screenCenter()
 	self:add(self.countdown)
 
+	self.countdown.data = {
+		{
+			sound = util.getSkinPath(PlayState.SONG.skin, "intro3", "sound"),
+		},
+		{
+			sound = util.getSkinPath(PlayState.SONG.skin, "intro2", "sound"),
+			image = util.getSkinPath(PlayState.SONG.skin, "ready", "image")
+		},
+		{
+			sound = util.getSkinPath(PlayState.SONG.skin, "intro1", "sound"),
+			image = util.getSkinPath(PlayState.SONG.skin, "set", "image")
+		},
+		{
+			sound = util.getSkinPath(PlayState.SONG.skin, "introGo", "sound"),
+			image = util.getSkinPath(PlayState.SONG.skin, "go", "image")
+		}
+	}
+	if PlayState.SONG.skin:endsWith("-pixel") then
+		self.countdown.scale = {x = 7, y = 7}
+		self.countdown.antialiasing = false
+	end
+
 	self.healthBar = HealthBar(self.boyfriend, self.dad)
 	self.healthBar:screenCenter("x").y = game.height * 0.9
 	self:add(self.healthBar)
@@ -561,18 +583,6 @@ function PlayState:startCountdown()
 
 	self.countdown.duration = PlayState.conductor.crotchet / 1000
 	self.countdown.playback = 1
-
-	local skin = PlayState.SONG.skin
-	self.countdown.data = {
-		{sound = util.getSkinPath(skin, "intro3", "sound"),  image = nil},
-		{sound = util.getSkinPath(skin, "intro2", "sound"),  image = util.getSkinPath(skin, "ready", "image")},
-		{sound = util.getSkinPath(skin, "intro1", "sound"),  image = util.getSkinPath(skin, "set", "image")},
-		{sound = util.getSkinPath(skin, "introGo", "sound"), image = util.getSkinPath(skin, "go", "image")}
-	}
-	if skin:endsWith("-pixel") then
-		self.countdown.scale = {x = 7, y = 7}
-		self.countdown.antialiasing = false
-	end
 end
 
 function PlayState:cameraMovement()
