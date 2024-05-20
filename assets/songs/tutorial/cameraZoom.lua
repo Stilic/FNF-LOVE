@@ -1,5 +1,5 @@
-function onNoteHit(event)
-	event.enableCamZooming = false
+function postCreate()
+	state.camZooming = false
 end
 
 local target

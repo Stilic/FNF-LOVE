@@ -591,34 +591,28 @@ end
 function PlayState:cameraMovement()
 	local section = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
 	if section ~= nil then
-		local target, camX, camY
-		if section.gfSection then
-			target = "gf"
-
-			local x, y = self.gf:getMidpoint()
-			camX = x - (self.gf.cameraPosition.x - self.stage.gfCam.x)
-			camY = y - (self.gf.cameraPosition.y - self.stage.gfCam.y)
-		elseif section.mustHitSection then
-			target = "bf"
-
-			local x, y = self.boyfriend:getMidpoint()
-			camX = x - 100 - (self.boyfriend.cameraPosition.x -
-				self.stage.boyfriendCam.x)
-			camY = y - 100 + (self.boyfriend.cameraPosition.y +
-				self.stage.boyfriendCam.y)
-		else
-			target = "dad"
-
-			local x, y = self.dad:getMidpoint()
-			camX = x + 150 + (self.dad.cameraPosition.x +
-				self.stage.dadCam.x)
-			camY = y - 100 + (self.dad.cameraPosition.y +
-				self.stage.dadCam.y)
-		end
-
-		local event = self.scripts:event("onCameraMove", Events.CameraMove(target))
+		local event = self.scripts:event("onCameraMove",
+			Events.CameraMove(section.gfSection and "gf" or (section.mustHitSection and "bf" or "dad")))
 		if not event.cancelled then
-			self.camFollow:set(camX - event.offset.x, camY - event.offset.y)
+			local camX, camY
+			if event.target == "gf" then
+				camX, camY = self.gf:getMidpoint()
+				camX = camX - event.offset.x - self.gf.cameraPosition.x + self.stage.gfCam.x
+				camY = camY - event.offset.y - self.gf.cameraPosition.y + self.stage.gfCam.y
+			elseif event.target == "bf" then
+				camX, camY = self.boyfriend:getMidpoint()
+				camX = camX - 100 - event.offset.x - self.boyfriend.cameraPosition.x +
+					self.stage.boyfriendCam.x
+				camY = camY - 100 - event.offset.y + self.boyfriend.cameraPosition.y +
+					self.stage.boyfriendCam.y
+			else
+				camX, camY = self.dad:getMidpoint()
+				camX = camX + 150 - event.offset.x + self.dad.cameraPosition.x +
+					self.stage.dadCam.x
+				camY = camY - 100 - event.offset.y + self.dad.cameraPosition.y +
+					self.stage.dadCam.y
+			end
+			self.camFollow:set(camX, camY)
 		end
 	end
 end
