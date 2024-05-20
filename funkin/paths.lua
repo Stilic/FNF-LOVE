@@ -185,8 +185,6 @@ function paths.getSparrowAtlas(key)
 end
 
 function paths.getPackerAtlas(key)
-	local imgPath, txtPath
-	local obj
 	local imgPath, txtPath = key, paths.getPath("images/" .. key .. ".txt")
 	local obj = paths.atlases[paths.getPath("images/" .. key)]
 	if obj then return obj end
@@ -200,9 +198,7 @@ function paths.getPackerAtlas(key)
 end
 
 function paths.getAtlas(key)
-	if paths.exists(paths.getPath('images/' .. key .. '.xml'), "file") then
-		return paths.getSparrowAtlas(key)
-	end
+	if paths.exists(paths.getPath("images/" .. key .. ".xml"), "file") then return paths.getSparrowAtlas(key) end
 	return paths.getPackerAtlas(key)
 end
 
@@ -218,9 +214,9 @@ end
 local invalidChars = '[~&\\;:<>#]'
 local hideChars = '[.,\'"%?!]'
 function paths.formatToSongPath(path)
-	return string.lower(string.gsub(string.gsub(path:gsub(' ', '-'),
-			invalidChars, '-'), hideChars,
-		''))
+	return string.lower(string.gsub(string.gsub(path:gsub(" ", "-"),
+			invalidChars, "-"), hideChars,
+		""))
 end
 
 return paths

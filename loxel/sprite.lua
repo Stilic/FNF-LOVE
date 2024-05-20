@@ -244,6 +244,8 @@ function Sprite:loadTextureFromSprite(sprite)
 end
 
 function Sprite:addAnim(name, frames, framerate, looped)
+	if not frames or #frames == 0 then return end
+
 	if framerate == nil then framerate = 30 end
 	if looped == nil then looped = true end
 
@@ -265,15 +267,19 @@ function Sprite:addAnimByPrefix(name, prefix, framerate, looped)
 	if framerate == nil then framerate = 30 end
 	if looped == nil then looped = true end
 
-	local anim = {
+	local anim, foundFrame = {
 		name = name,
 		framerate = framerate,
 		looped = looped,
 		frames = {}
-	}
+	}, false
 	for _, f in ipairs(self.__frames) do
-		if f.name:startsWith(prefix) then table.insert(anim.frames, f) end
+		if f.name:startsWith(prefix) then
+			foundFrame = true
+			table.insert(anim.frames, f)
+		end
 	end
+	if not foundFrame then return end
 
 	table.sort(anim.frames, sortFramesByIndices(prefix, ""))
 
@@ -294,14 +300,17 @@ function Sprite:addAnimByIndices(name, prefix, indices, postfix, framerate,
 		frames = {}
 	}
 
-	local allFrames = {}
+	local allFrames, foundFrame = {}, false
 	local notPostfix = #postfix <= 0
 	for _, f in ipairs(self.__frames) do
 		if f.name:startsWith(prefix) and
 			(notPostfix or f.name:endsWith(postfix)) then
+			foundFrame = true
 			table.insert(allFrames, f)
 		end
 	end
+	if not foundFrame then return end
+
 	table.sort(allFrames, sortFramesByIndices(prefix, postfix))
 
 	for _, i in ipairs(indices) do
@@ -314,17 +323,22 @@ function Sprite:addAnimByIndices(name, prefix, indices, postfix, framerate,
 end
 
 function Sprite:play(anim, force, frame)
-	if not force and self.curAnim and self.curAnim.name == anim and
+	local curAnim = self.curAnim
+
+	if curAnim and not force and curAnim.name == anim and
 		not self.animFinished then
 		self.animFinished = false
 		self.animPaused = false
 		return
 	end
 
-	self.curAnim = self.__animations[anim]
-	self.curFrame = frame or 1
-	self.animFinished = false
-	self.animPaused = false
+	curAnim = self.__animations[anim]
+	if curAnim then
+		self.curAnim = curAnim
+		self.curFrame = frame or 1
+		self.animFinished = false
+		self.animPaused = false
+	end
 end
 
 function Sprite:pause()

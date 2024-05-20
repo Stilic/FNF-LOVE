@@ -44,26 +44,22 @@ function HealthBar:update(dt)
 	self.iconP1:updateHitbox()
 	self.iconP2:updateHitbox()
 
-	local iconOffset = 26
+	local healthPercent, iconOffset = self.bar.percent, 26
 	self.iconP1.x = self.bar.x + self.bar.width *
-		(math.remapToRange(self.bar.percent, 0, 100, 100,
+		(math.remapToRange(healthPercent, 0, 100, 100,
 			0) * 0.01) + (150 * self.iconP2.scale.x - 150) / 2 - iconOffset
 	self.iconP2.x = self.bar.x + (self.bar.width *
-		(math.remapToRange(self.bar.percent, 0, 100, 100,
+		(math.remapToRange(healthPercent, 0, 100, 100,
 			0) * 0.01)) - (150 * self.iconP2.scale.x) / 2 - iconOffset * 2
 
-	if self.iconP1.curAnim then
-		self.iconP1.curFrame = self.bar.percent <= 10 and 2 or 1
-	end
-	if self.iconP2.curAnim then
-		self.iconP2.curFrame = self.bar.percent >= 90 and 2 or 1
-	end
+	self.iconP1:updateAnimation(healthPercent)
+	self.iconP2:updateAnimation(healthPercent)
 end
 
 function HealthBar:scaleIcons(val)
 	self.iconScale = val
-	self.iconP1.scale = {x = val, y = val}
-	self.iconP2.scale = {x = val, y = val}
+	self.iconP1.scale.x, self.iconP1.scale.y = val, val
+	self.iconP2.scale.x, self.iconP2.scale.y = val, val
 end
 
 function HealthBar:screenCenter(axes)
