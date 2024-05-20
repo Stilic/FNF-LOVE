@@ -118,7 +118,7 @@ function PlayState:enter()
 	self.timer = Timer.new()
 
 	self.scripts = ScriptsHandler()
-	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs", "songs/" .. songName)
+	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs/" .. songName)
 
 	if Discord then self:updateDiscordRPC() end
 
