@@ -1,20 +1,15 @@
 local moveVal = 10
-local target = ""
-
 function onCameraMove(event)
-	target = event.target == "bf" and "boyfriend" or event.target
-end
-
-function postUpdate(dt)
+	local target = event.target == "bf" and "boyfriend" or event.target
 	if state[target] then
 		if state[target].curAnim.name == 'singLEFT' or state[target].curAnim.name == 'singLEFT-alt' then
-			state.camFollow.x = state.camFollow.x - moveVal
+			event.offset.x = event.offset.x + moveVal
 		elseif state[target].curAnim.name == 'singDOWN' or state[target].curAnim.name == 'singDOWN-alt' then
-			state.camFollow.y = state.camFollow.y + moveVal
+			event.offset.y = event.offset.y - moveVal
 		elseif state[target].curAnim.name == 'singUP' or state[target].curAnim.name == 'singUP-alt' then
-			state.camFollow.y = state.camFollow.y - moveVal
+			event.offset.y = event.offset.y + moveVal
 		elseif state[target].curAnim.name == 'singRIGHT' or state[target].curAnim.name == 'singRIGHT-alt' then
-			state.camFollow.x = state.camFollow.x + moveVal
+			event.offset.x = event.offset.x - moveVal
 		end
 	end
 end

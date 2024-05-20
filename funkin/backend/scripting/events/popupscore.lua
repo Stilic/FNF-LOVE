@@ -1,25 +1,25 @@
 local CancellableEvent = require "funkin.backend.scripting.events.cancellable"
 
-local NoteHitEvent = CancellableEvent:extend("NoteHitEvent")
+local PopUpScoreEvent = CancellableEvent:extend("PopUpScoreEvent")
 
-function NoteHitEvent:new()
-	NoteHitEvent.super.new(self)
+function PopUpScoreEvent:new()
+	PopUpScoreEvent.super.new(self)
 
 	self.hideRating = false
 	self.hideScore = false
 	self.hideCombo = true
 end
 
-function NoteHitEvent:cancelRating()
+function PopUpScoreEvent:cancelRating()
 	self.hideRating = true
 end
 
-function NoteHitEvent:cancelScore()
+function PopUpScoreEvent:cancelScore()
 	self.hideScore = true
 end
 
-function NoteHitEvent:cancelCombo()
+function PopUpScoreEvent:cancelCombo()
 	self.hideCombo = true
 end
 
-return NoteHitEvent
+return PopUpScoreEvent
