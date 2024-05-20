@@ -83,7 +83,7 @@ end
 
 function paths.exists(path, type)
 	local info = love.filesystem.getInfo(path)
-	return info and (not type or info.type == type:lower())
+	return info ~= nil and (not type or info.type == type:lower())
 end
 
 function paths.getText(key)

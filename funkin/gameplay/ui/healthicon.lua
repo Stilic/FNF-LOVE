@@ -25,8 +25,9 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	self.isOldIcon = hasOldSuffix or
 		(self.isPixelIcon and icon:sub(1, -7):endsWith("-old"))
 
-	local path, isSparrow = "icons/" .. icon, paths.exists(paths.getPath("images/" .. path .. ".xml"), "file")
-	self.isLegacyStyle = isSparrow or paths.exists(paths.getPath("images/" .. path .. ".txt"), "file")
+	local path = "icons/" .. icon
+	local isSparrow = paths.exists(paths.getPath("images/" .. path .. ".xml"), "file")
+	self.isLegacyStyle = not isSparrow or not paths.exists(paths.getPath("images/" .. path .. ".txt"), "file")
 	if self.isLegacyStyle then
 		self:loadTexture(paths.getImage(path))
 		if math.round(self.width / self.height) > 1 then
