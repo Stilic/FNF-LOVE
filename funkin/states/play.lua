@@ -826,7 +826,6 @@ function PlayState:update(dt)
 		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
 
 		local isPlayer = not notefield.bot
-
 		for _, note in ipairs(notefield:getNotesToHit(noteTime)) do
 			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
 				if isPlayer then
@@ -841,7 +840,8 @@ function PlayState:update(dt)
 			end
 		end
 
-		local heldNotes, j, l, note, dir, resetVolume, hasInput = notefield.held
+		local heldNotes, sustainHitOffset, fullyHitSustain, j, l,
+		note, dir, resetVolume, hasInput = notefield.held, 0.25 / notefield.speed
 		for i, held in ipairs(heldNotes) do
 			j, l, dir = 1, #held, i - 1
 			hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
@@ -851,32 +851,41 @@ function PlayState:update(dt)
 
 				if not note.tooLate then
 					if hasInput then
-						-- sustain hitting
-						note.lastPress = noteTime
+						-- reset vocals volume on input
 						resetVolume = true
 					end
+					if hasInput or note.wasGoodHoldHit then
+						-- sustain hitting
+						note.lastPress = noteTime
+					end
 
-					if note.lastPress and not note.wasGoodHoldHit then
-						if note.time + note.sustainTime <= note.lastPress then
+					fullyHitSustain = note.time + note.sustainTime <= note.lastPress
+
+					if not note.wasGoodHoldHit and note.lastPress then
+						if note.time + note.sustainTime - sustainHitOffset <= note.lastPress then
 							-- end of sustain hit
-							note.wasGoodHoldHit = true
+							if not hasInput or fullyHitSustain then
+								note.wasGoodHoldHit = true
 
-							if self.playerNotefield == notefield then
-								-- self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
-								self.score = self.score
-									+ math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
-								self:recalculateRating()
+								if self.playerNotefield == notefield then
+									-- self.totalPlayed, self.totalHit = self.totalPlayed + 1, self.totalHit + 1
+									self.score = self.score
+										+ math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+									self:recalculateRating()
+								end
+
+								self:resetStroke(notefield, dir, fullyHitSustain and hasInput)
 							end
-
-							self:resetStroke(notefield, dir, hasInput)
-
-							table.remove(held, j)
-							j = j - 1
-							l = l - 1
 						elseif note.lastPress <= missOffset then
 							-- sustain miss after parent note hit
 							self:miss(note)
 						end
+					end
+
+					if fullyHitSustain then
+						table.remove(held, j)
+						j = j - 1
+						l = l - 1
 					end
 				end
 

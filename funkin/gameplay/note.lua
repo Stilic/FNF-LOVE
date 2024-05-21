@@ -1,7 +1,6 @@
 local Note = ActorSprite:extend("Note")
 
-Note.safeZoneOffset = 10 / 60
-Note.sustainSafeZone = 1 / 2
+Note.safeZoneOffset = 1 / 6
 
 function Note.toPos(time, speed)
 	return time * 450 * speed
