@@ -718,19 +718,10 @@ function PlayState:doCountdown(beat)
 	end
 end
 
-function PlayState:resetStroke(notefield, dir, delayStatic)
+function PlayState:resetStroke(notefield, dir, doPress)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
-		if delayStatic ~= nil then
-			receptor.strokeTime = 0
-			if notefield.bot then
-				receptor.holdTime = 0.14 - receptor.__strokeDelta
-			else
-				receptor:play(delayStatic and "pressed" or "static")
-			end
-		else
-			receptor:play("static")
-		end
+		receptor:play((doPress and not notefield.bot) and "pressed" or "static")
 	end
 
 	local char = notefield.character
