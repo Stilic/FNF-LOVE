@@ -412,21 +412,18 @@ function PlayState:enter()
 	end
 	self:recalculateRating()
 
-	-- PRELOAD SPRITES TO GET RID OF THE FATASS LAGS!!
+	-- PRELOAD STUFF TO GET RID OF THE FATASS LAGS!!
 	local path = "skins/" .. PlayState.SONG.skin .. "/"
-	for _, r in ipairs(self.ratings) do
-		paths.getImage(path .. r.name)
-	end
+	for _, r in ipairs(self.ratings) do paths.getImage(path .. r.name) end
 	for _, num in ipairs({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "negative"}) do
 		paths.getImage(path .. "num" .. num)
 	end
 	local sprite
 	for i, part in pairs(paths.getNoteskin(PlayState.SONG.skin)) do
 		sprite = part.sprite
-		if sprite then
-			paths.getImage(path .. sprite)
-		end
+		if sprite then paths.getImage(path .. sprite) end
 	end
+	if ClientPrefs.data.hitSound > 0 then paths.getSound("hitsound") end
 
 	PlayState.super.enter(self)
 	collectgarbage()
@@ -1129,6 +1126,11 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			self.score = self.score + rating.score
 
 			self:recalculateRating(rating.name)
+
+			local hitSoundVolume = ClientPrefs.data.hitSound
+			if hitSoundVolume > 0 then
+				game.sound.play(paths.getSound("hitsound"), hitSoundVolume / 100)
+			end
 		end
 	end
 

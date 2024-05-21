@@ -9,9 +9,6 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.skin = paths.getNoteskin(skin)
 	self.character, self.vocals = character, vocals
 
-	-- self.hitsoundVolume, self.hitsound = 0, paths.getSound("hitsound")
-	self.vocalVolume = 1
-
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
 	self.speed = 1
@@ -22,6 +19,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 
 	-- for PlayState
 	self.bot = false
+	self.vocalVolume = 1
 
 	self.modifiers = {}
 
