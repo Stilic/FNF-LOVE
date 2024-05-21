@@ -635,7 +635,10 @@ function PlayState:beat(b)
 	self.gf:beat(b)
 	self.dad:beat(b)
 
-	self.healthBar:scaleIcons(1.2)
+	local val, healthBar = 1.2, self.healthBar
+	healthBar.iconScale = val
+	healthBar.iconP1:setScale(val)
+	healthBar.iconP2:setScale(val)
 
 	self.scripts:call("postBeat", b)
 end

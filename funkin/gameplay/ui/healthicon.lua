@@ -37,6 +37,13 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 			self:addAnim("i", {0, 1}, 0)
 			self:play("i")
 		end
+
+		self.iconOffset = {x = (self.width - 150) / 2, y = (self.height - 150) / 2}
+
+		local zoom = self.isPixelIcon and 150 / self.height or 1
+		self.zoom.x, self.zoom.y = zoom, zoom
+		self.antialiasing = zoom < 2.5 and self.antialiasing
+		self:updateHitbox()
 	else
 		self:setFrames(isSparrow and paths.getSparrowAtlas(path) or paths.getPackerAtlas(path))
 
@@ -47,26 +54,75 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 		self:addAnimByPrefix("toLosing", "toLosing", 24, false)
 		self:addAnimByPrefix("fromWinning", "fromWinning", 24, false)
 		self:addAnimByPrefix("fromLosing", "fromLosing", 24, false)
-
-		self:play("idle")
 	end
-
-	self.iconOffset = {x = (self.width - 150) / 2, y = (self.height - 150) / 2}
-
-	local zoom = self.isPixelIcon and 150 / self.height or 1
-	self.zoom.x, self.zoom.y = zoom, zoom
-	self.antialiasing = zoom < 2.5 and self.antialiasing
-	self:updateHitbox()
 
 	return true
 end
 
-function HealthIcon:updateAnimation(percent)
-	self.curFrame = (self.isPlayer and percent or 100 - percent) <= 10 and 2 or 1
+function HealthIcon:fallbackPlay(anim, fallback)
+	self:play(self.__animations[anim] and anim or fallback)
 end
 
-function HealthIcon:fixOffsets()
-	self.offset.x, self.offset.y = self.iconOffset.x, self.iconOffset.y
+function HealthIcon:updateAnimation(percent)
+	if not self.isPlayer then percent = 100 - percent end
+	local isLosing = percent < 10
+	if self.isLegacyStyle then
+		self.curFrame = isLosing and 2 or 1
+	else
+		local isWinning = percent > 80
+		local function backToIdleIfFinished()
+			if self.animFinished then self:play("idle") end
+		end
+		switch(self.curAnim and self.curAnim.name or "idle", {
+			["idle"] = function()
+				if isLosing then
+					self:fallbackPlay("toLosing", "losing")
+				elseif isWinning then
+					self:fallbackPlay("toWinning", "winning")
+				else
+					self:play("idle")
+				end
+			end,
+			["winning"] = function()
+				if not isWinning then
+					self:fallbackPlay("fromWinning", "idle")
+				else
+					self:fallbackPlay("winning", "idle")
+				end
+			end,
+			["losing"] = function()
+				if not isLosing then
+					self:fallbackPlay("fromLosing", "idle")
+				else
+					self:fallbackPlay("losing", "idle")
+				end
+			end,
+			["toLosing"] = function()
+				if self.animFinished then self:fallbackPlay("losing", "idle") end
+			end,
+			["toWinning"] = function()
+				if self.animFinished then self:fallbackPlay("winning", "idle") end
+			end,
+			["fromLosing"] = backToIdleIfFinished,
+			["fromWinning"] = backToIdleIfFinished,
+			["default"] = function() self:play("idle") end
+		})
+	end
+end
+
+function HealthIcon:setScale(scale)
+	if self.isLegacyStyle then
+		self.scale.x, self.scale.y = scale, scale
+		self:updateHitbox()
+	end
+end
+
+function HealthIcon:fixOffsets(width, height)
+	if self.isLegacyStyle and self.iconOffset then
+		self.offset.x, self.offset.y = self.iconOffset.x, self.iconOffset.y
+	else
+		HealthIcon.super.fixOffsets(self, width, height)
+	end
 end
 
 function HealthIcon:update(dt)

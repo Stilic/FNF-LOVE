@@ -15,6 +15,7 @@ function HealthBar:new(bfData, dadData, skin)
 	self:add(self.bg)
 	self:add(self.bar)
 
+	self.iconScale = 1
 	self.iconP1 = HealthIcon(bfData.icon, true)
 	self.iconP2 = HealthIcon(dadData.icon)
 
@@ -30,7 +31,6 @@ function HealthBar:new(bfData, dadData, skin)
 
 	self.value = 1
 	self.bar:setValue(1)
-	self:scaleIcons(1)
 end
 
 function HealthBar:update(dt)
@@ -38,11 +38,10 @@ function HealthBar:update(dt)
 
 	self.bar:setValue(self.value)
 
-	local mult = util.coolLerp(self.iconScale, 1, 15, dt)
-	self:scaleIcons(util.coolLerp(self.iconScale, 1, 15, dt))
-
-	self.iconP1:updateHitbox()
-	self.iconP2:updateHitbox()
+	local val = util.coolLerp(self.iconScale, 1, 15, dt)
+	self.iconScale = val
+	self.iconP1:setScale(val)
+	self.iconP2:setScale(val)
 
 	local healthPercent, iconOffset = self.bar.percent, 26
 	self.iconP1.x = self.bar.x + self.bar.width *
@@ -54,12 +53,6 @@ function HealthBar:update(dt)
 
 	self.iconP1:updateAnimation(healthPercent)
 	self.iconP2:updateAnimation(healthPercent)
-end
-
-function HealthBar:scaleIcons(val)
-	self.iconScale = val
-	self.iconP1.scale.x, self.iconP1.scale.y = val, val
-	self.iconP2.scale.x, self.iconP2.scale.y = val, val
 end
 
 function HealthBar:screenCenter(axes)

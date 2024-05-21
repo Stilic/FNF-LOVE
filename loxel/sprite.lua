@@ -426,19 +426,19 @@ function Sprite:updateHitbox()
 	self:centerOrigin(width, height)
 end
 
-function Sprite:centerOffsets(__width, __height)
-	self.offset.x = (__width or self:getFrameWidth()) / 2
-	self.offset.y = (__height or self:getFrameHeight()) / 2
+function Sprite:centerOffsets(width, height)
+	self.offset.x = (width or self:getFrameWidth()) / 2
+	self.offset.y = (height or self:getFrameHeight()) / 2
 end
 
-function Sprite:fixOffsets(__width, __height)
-	self.offset.x = (self.width - (__width or self:getFrameWidth())) / -2
-	self.offset.y = (self.height - (__height or self:getFrameHeight())) / -2
+function Sprite:fixOffsets(width, height)
+	self.offset.x = (self.width - (width or self:getFrameWidth())) / -2
+	self.offset.y = (self.height - (height or self:getFrameHeight())) / -2
 end
 
-function Sprite:centerOrigin(__width, __height)
-	self.origin.x = (__width or self:getFrameWidth()) / 2
-	self.origin.y = (__height or self:getFrameHeight()) / 2
+function Sprite:centerOrigin(width, height)
+	self.origin.x = (width or self:getFrameWidth()) / 2
+	self.origin.y = (height or self:getFrameHeight()) / 2
 end
 
 function Sprite:update(dt)
