@@ -839,8 +839,7 @@ function PlayState:update(dt)
 					fullyHeldSustain = note.time + note.sustainTime <= note.lastPress
 
 					if not note.wasGoodHoldHit and note.lastPress then
-						if math.max(note.time + note.sustainTime - sustainHitOffset,
-								note.time) <= note.lastPress then
+						if note.time + note.sustainTime - sustainHitOffset <= note.lastPress then
 							-- end of sustain hit
 							if not hasInput or fullyHeldSustain then
 								note.wasGoodHoldHit = true
