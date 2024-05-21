@@ -46,7 +46,7 @@ function HealthBar:update(dt)
 	local healthPercent, iconOffset = self.bar.percent, 26
 	self.iconP1.x = self.bar.x + self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
-			0) * 0.01) + (150 * self.iconP2.scale.x - 150) / 2 - iconOffset
+			0) * 0.01) + (150 * self.iconP1.scale.x - 150) / 2 - iconOffset
 	self.iconP2.x = self.bar.x + (self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
 			0) * 0.01)) - (150 * self.iconP2.scale.x) / 2 - iconOffset * 2
