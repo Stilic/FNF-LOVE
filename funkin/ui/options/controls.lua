@@ -17,8 +17,9 @@ local data = {
 	{"back",         "Back"},
 	{"pause",        "Pause"},
 
-	{"volume_down",  "Volume -"},
+	{"VOLUME"},
 	{"volume_up",    "Volume +"},
+	{"volume_down",  "Volume -"},
 	{"volume_mute",  "Mute"},
 
 	{"MISCELLANEOUS"},

@@ -5,7 +5,7 @@ local resolutionf, resolutionf2 = "%sx (%dx%d)", "%sx/Full (%dx%d)"
 
 local fpsf, fpsu2 = "%shz", "Unlimited"
 local data = {
-	{"GRAPHIC"},
+	{"GRAPHICS"},
 	{"antialiasing", "Antialiasing", "boolean", function()
 		local value = not ClientPrefs.data.antialiasing
 		ClientPrefs.data.antialiasing = value
@@ -15,18 +15,6 @@ local data = {
 	{"shader",     "Shaders",     "boolean"},
 
 	{"WINDOW"},
-	{"toastPrints", "Toast Prints", "boolean", function()
-		local value = not ClientPrefs.data.toastPrints
-		ClientPrefs.data.toastPrints = value
-		function print(...)
-			local v = {...}
-			for i = 1, #v do v[i] = tostring(v[i]) end
-			if ClientPrefs.data.toastPrints then
-				Toast.new(table.concat(v, ", "))
-			end
-			__print(...)
-		end
-	end},
 	{"fullscreen", "Fullscreen", "boolean", function()
 		local value = not ClientPrefs.data.fullscreen
 		ClientPrefs.data.fullscreen = value
@@ -67,12 +55,7 @@ local data = {
 		return resolutionf:format(tostring(math.truncate(value, 4)),
 			math.ceil(Project.width * value), height)
 	end},
-	{"parallelUpdate", "Parallel update", "boolean", function()
-		local value = not ClientPrefs.data.parallelUpdate
-		ClientPrefs.data.parallelUpdate = value
-		love.parallelUpdate = value
-	end},
-	{"fps", "Framerate limit", "number", function(add)
+	{"fps", "FPS", "number", function(add)
 		local value = math.floor(ClientPrefs.data.fps)
 		local _, _, modes = love.window.getMode()
 		local expect, diff = value + add, value - modes.refreshrate
@@ -99,7 +82,24 @@ local data = {
 		return math.truncate(modes.refreshrate, 3) == value and
 			fpsf:format(tostring(value)) or tostring(value)
 	end},
+	{"parallelUpdate", "Parallel update", "boolean", function()
+		local value = not ClientPrefs.data.parallelUpdate
+		ClientPrefs.data.parallelUpdate = value
+		love.parallelUpdate = value
+	end},
 	{"STATS"},
+	{"toastPrints", "Toast prints", "boolean", function()
+		local value = not ClientPrefs.data.toastPrints
+		ClientPrefs.data.toastPrints = value
+		function print(...)
+			local v = {...}
+			for i = 1, #v do v[i] = tostring(v[i]) end
+			if ClientPrefs.data.toastPrints then
+				Toast.new(table.concat(v, ", "))
+			end
+			__print(...)
+		end
+	end},
 	{"showFps", "Show FPS", "boolean", function()
 		local value = not ClientPrefs.data.showFps
 		ClientPrefs.data.showFps = value
