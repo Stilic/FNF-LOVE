@@ -840,7 +840,7 @@ function PlayState:update(dt)
 			end
 		end
 
-		local heldNotes, sustainHitOffset, fullyHitSustain, j, l,
+		local heldNotes, sustainHitOffset, fullyHeldSustain, j, l,
 		note, dir, resetVolume, hasInput = notefield.held, 0.25 / notefield.speed
 		for i, held in ipairs(heldNotes) do
 			j, l, dir = 1, #held, i - 1
@@ -859,12 +859,12 @@ function PlayState:update(dt)
 						note.lastPress = noteTime
 					end
 
-					fullyHitSustain = note.time + note.sustainTime <= note.lastPress
+					fullyHeldSustain = note.time + note.sustainTime <= note.lastPress
 
 					if not note.wasGoodHoldHit and note.lastPress then
 						if note.time + note.sustainTime - sustainHitOffset <= note.lastPress then
 							-- end of sustain hit
-							if not hasInput or fullyHitSustain then
+							if not hasInput or fullyHeldSustain then
 								note.wasGoodHoldHit = true
 
 								if self.playerNotefield == notefield then
@@ -874,7 +874,7 @@ function PlayState:update(dt)
 									self:recalculateRating()
 								end
 
-								self:resetStroke(notefield, dir, fullyHitSustain and hasInput)
+								self:resetStroke(notefield, dir, fullyHeldSustain and hasInput)
 							end
 						elseif note.lastPress <= missOffset then
 							-- sustain miss after parent note hit
@@ -882,7 +882,7 @@ function PlayState:update(dt)
 						end
 					end
 
-					if fullyHitSustain then
+					if fullyHeldSustain then
 						table.remove(held, j)
 						j = j - 1
 						l = l - 1
