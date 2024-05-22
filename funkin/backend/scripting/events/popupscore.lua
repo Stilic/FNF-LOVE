@@ -7,7 +7,6 @@ function PopUpScoreEvent:new()
 
 	self.hideRating = false
 	self.hideScore = false
-	self.hideCombo = true
 end
 
 function PopUpScoreEvent:cancelRating()
@@ -16,10 +15,6 @@ end
 
 function PopUpScoreEvent:cancelScore()
 	self.hideScore = true
-end
-
-function PopUpScoreEvent:cancelCombo()
-	self.hideCombo = true
 end
 
 return PopUpScoreEvent

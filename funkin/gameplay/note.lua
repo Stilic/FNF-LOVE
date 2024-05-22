@@ -26,12 +26,11 @@ function Note:new(time, direction, sustainTime, skin)
 	self.time = time
 	self._targetTime = 0
 
-	self.wasGoodHit, self.tooLate, self.ignoreNote = false, false, false
-	self.wasGoodHoldHit, self.lastPress = false, nil
+	self.wasGoodHit, self.tooLate, self.ignoreNote, self.lastPress = false, false, false, nil
 	self.priority, self.earlyHitMult, self.lateHitMult = 0, 1, 1
 	self.showNote, self.showNoteOnHit = true, false
 	self.type = ""
-	self.group = nil
+	self.group, self.sustainCover = nil, nil
 
 	self.sustainSegments = Note.defaultSustainSegments
 

@@ -160,12 +160,12 @@ function Receptor:setDirection(direction)
 end
 
 function Receptor:spawnCover(note)
-	if not self.skin or not self.skin.covers then return end
+	if note.sustainCover or not self.skin or not self.skin.covers then return end
 
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)
 	cover:updateHitbox()
-	cover.visible, cover.shader, cover.note = true, cover.__shaderAnimations["start"], note
+	note.sustainCover, cover.visible, cover.shader = cover, true, cover.__shaderAnimations["start"]
 	return cover
 end
 
@@ -223,35 +223,21 @@ function Receptor:update(dt)
 	for _, cover in ipairs(self.covers.members) do
 		if cover.exists then
 			anim, note = cover.curAnim.name, cover.note
-			if note.tooLate then
-				cover:kill()
-			else
-				if anim ~= "end" then
-					if not cover.visible and hasInput then
-						cover:play(anim, true)
-						cover.shader = cover.__shaderAnimations[anim]
-					end
-					cover.visible = hasInput
-					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
+			if anim ~= "end" then
+				if not cover.visible and hasInput then
+					cover:play(anim, true)
+					cover.shader = cover.__shaderAnimations[anim]
 				end
-				if note.wasGoodHoldHit then
-					if not self.parent.canSpawnSplash or not ClientPrefs.data.noteSplash then
-						cover:kill()
-					elseif anim ~= "end" then
-						cover:play("end")
-						cover:updateHitbox()
-						cover.shader = cover.__shaderAnimations["end"]
-						cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
-					end
-				end
-				if cover.animFinished then
-					if anim == "start" then
-						cover:play("loop")
-						cover:updateHitbox()
-						cover.shader = cover.__shaderAnimations["loop"]
-					elseif anim == "end" then
-						cover:kill()
-					end
+				cover.visible = hasInput
+				cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
+			end
+			if cover.animFinished then
+				if anim == "start" then
+					cover:play("loop")
+					cover:updateHitbox()
+					cover.shader = cover.__shaderAnimations["loop"]
+				elseif anim == "end" then
+					cover:kill()
 				end
 			end
 		end

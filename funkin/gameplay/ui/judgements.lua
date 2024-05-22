@@ -7,7 +7,6 @@ function Judgements:new(x, y, skin)
 
 	self.ratingVisible = true
 	self.comboNumVisible = true
-	self.comboSprVisible = false
 
 	skin = skin or "default"
 	self.skin = skin
@@ -57,32 +56,17 @@ function Judgements:spawn(rating, combo)
 		ratingSpr.visible = self.ratingVisible
 	end
 
-	if combo ~= nil and combo > 9 then
-		if self.comboNumVisible then
-			local negative = combo < 0
-			local comboStr = string.format(negative and "-%03d" or "%03d", math.abs(combo))
-			local x = math.min((#comboStr - 3) * -36, 0)
-			for i = 1, #comboStr do
-				local digit = comboStr:sub(i, i)
-				local isNegative = digit == "-"
-				if isNegative then digit = "negative" end
-
-				local comboNum = self:createSprite("num" .. digit, self.antialiasing and 0.5 or 4.5, 1, accel * 2)
-				x, comboNum.x, comboNum.y = x + comboNum.width + 4, x, self.area.height - comboNum.height
-
-				comboNum.acceleration.y, comboNum.velocity.x, comboNum.velocity.y = math.random(200, 300),
-					math.random(-5.0, 5.0), comboNum.velocity.y - math.random(140, 160)
-			end
-		end
-
-		if self.comboSprVisible then
-			local comboSpr = self:createSprite("combo", self.antialiasing and 0.6 or 4.2,
-				combo > 9 and 1 or 0, accel)
-			comboSpr.x, comboSpr.y = self.area.width - comboSpr.width,
-				self.area.height - comboSpr.height
-			comboSpr.acceleration.y = 600
-			comboSpr.velocity.y = comboSpr.velocity.y - 150
-			comboSpr.velocity.x = comboSpr.velocity.x + math.random(1, 10)
+	if self.comboNumVisible and combo ~= nil and combo > 9 then
+		combo = string.format(combo < 0 and "-%03d" or "%03d", math.abs(combo))
+		local l, x, char, comboNum = #combo, 38
+		for i = 1, l do
+			char = combo:sub(i, i)
+			comboNum = self:createSprite("num" .. (char == "-" and "negative" or char),
+				self.antialiasing and 0.5 or 4.5, 1, accel * 2)
+			x, comboNum.x, comboNum.y = x + comboNum.width,
+				x, self.area.height - comboNum.height
+			comboNum.acceleration.y, comboNum.velocity.x, comboNum.velocity.y = math.random(200, 300),
+				math.random(-5.0, 5.0), comboNum.velocity.y - math.random(140, 160)
 		end
 	end
 end

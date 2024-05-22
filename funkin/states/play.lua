@@ -316,7 +316,7 @@ function PlayState:enter()
 	self.health = 1
 
 	self.ratings = {
-		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
+		-- {name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
 		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
 		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
 		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
@@ -718,10 +718,23 @@ function PlayState:doCountdown(beat)
 	end
 end
 
-function PlayState:resetStroke(notefield, dir, doPress)
+function PlayState:resetStroke(notefield, dir, note, doPress)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
 		receptor:play((doPress and not notefield.bot) and "pressed" or "static")
+		if note then
+			-- show the splash for the sustain cover
+			local cover = note.sustainCover
+			note.sustainCover = nil
+			if not notefield.canSpawnSplash or not ClientPrefs.data.noteSplash then
+				cover:kill()
+			else
+				cover:play("end")
+				cover:updateHitbox()
+				cover.shader = cover.__shaderAnimations["end"]
+				cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
+			end
+		end
 	end
 
 	local char = notefield.character
@@ -828,12 +841,12 @@ function PlayState:update(dt)
 						lastPress = note.lastPress
 					end
 
-					if lastPress then
+					if lastPress ~= nil then
 						if note.time + note.sustainTime - sustainHitOffset <= lastPress then
 							-- end of sustain hit
 							fullyHeldSustain = note.time + note.sustainTime <= lastPress
 							if fullyHeldSustain or not hasInput then
-								note.wasGoodHoldHit = true
+								note.lastPress = nil
 
 								if self.playerNotefield == notefield then
 									self.score = self.score
@@ -842,7 +855,7 @@ function PlayState:update(dt)
 									self:recalculateRating()
 								end
 
-								self:resetStroke(notefield, dir, fullyHeldSustain)
+								self:resetStroke(notefield, dir, note, fullyHeldSustain)
 
 								notefield:removeNote(note)
 								table.remove(held, j)
@@ -1011,9 +1024,7 @@ end
 -- note can be nil for non-ghost-tap
 function PlayState:miss(note, dir)
 	local ghostMiss = dir ~= nil
-	if not ghostMiss then
-		dir = note.direction
-	end
+	if not ghostMiss then dir = note.direction end
 
 	local funcParam = ghostMiss and dir or note
 	self.scripts:call(ghostMiss and "miss" or "noteMiss", funcParam)
@@ -1024,12 +1035,17 @@ function PlayState:miss(note, dir)
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
 		table.delete(notefield.held[dir + 1], note)
 		if not ghostMiss then
+			-- set note as missed
 			note.tooLate = true
+			-- remove the cover of it's sustain
+			local cover = note.sustainCover
+			if cover then
+				cover:kill()
+				note.sustainCover = nil
+			end
 		end
 
-		if event.muteVocals and notefield.vocals then
-			notefield.vocals:setVolume(0)
-		end
+		if event.muteVocals and notefield.vocals then notefield.vocals:setVolume(0) end
 
 		if event.triggerSound then
 			util.playSfx(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)),
@@ -1037,9 +1053,7 @@ function PlayState:miss(note, dir)
 		end
 
 		local char = notefield.character
-		if not event.cancelledAnim then
-			char:sing(dir, "miss")
-		end
+		if not event.cancelledAnim then char:sing(dir, "miss") end
 
 		if notefield == self.playerNotefield then
 			if not event.cancelledSadGF and self.combo >= 10
@@ -1131,7 +1145,6 @@ function PlayState:popUpScore(rating)
 	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
 	if not event.cancelled then
 		self.judgeSprites.ratingVisible = not event.hideRating
-		self.judgeSprites.comboSprVisible = not event.hideCombo
 		self.judgeSprites.comboNumVisible = not event.hideScore
 		self.judgeSprites:spawn(rating, self.combo)
 	end
