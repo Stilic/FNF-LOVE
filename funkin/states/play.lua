@@ -316,7 +316,7 @@ function PlayState:enter()
 	self.health = 1
 
 	self.ratings = {
-		-- {name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
+		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
 		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
 		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
 		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
@@ -941,7 +941,8 @@ function PlayState:update(dt)
 		if game.keys.justPressed.ONE then self.playerNotefield.bot = not self.playerNotefield.bot end
 		if game.keys.justPressed.TWO then self:endSong() end
 		if game.keys.justPressed.THREE then
-			local time = (PlayState.conductor.time + PlayState.conductor.crotchet * (game.keys.pressed.SHIFT and 8 or 4)) / 1000
+			local time = (PlayState.conductor.time +
+				PlayState.conductor.crotchet * (game.keys.pressed.SHIFT and 8 or 4)) / 1000
 			PlayState.conductor.time = time * 1000
 			game.sound.music:seek(time)
 			if self.vocals then self.vocals:seek(time) end
@@ -1048,7 +1049,7 @@ function PlayState:miss(note, dir)
 		if event.muteVocals and notefield.vocals then notefield.vocals:setVolume(0) end
 
 		if event.triggerSound then
-			util.playSfx(paths.getSound('gameplay/missnote' .. love.math.random(1, 3)),
+			util.playSfx(paths.getSound("gameplay/missnote" .. love.math.random(1, 3)),
 				love.math.random(1, 2) / 10)
 		end
 
@@ -1058,15 +1059,15 @@ function PlayState:miss(note, dir)
 		if notefield == self.playerNotefield then
 			if not event.cancelledSadGF and self.combo >= 10
 				and self.gf.__animations.sad then
-				self.gf:playAnim('sad', true)
+				self.gf:playAnim("sad", true)
 				self.gf.lastHit = PlayState.conductor.time
 			end
 
-			self.combo = math.min(self.combo, 0) - 1
 			self.health = math.max(self.health - (ghostMiss and 0.04 or 0.0475), 0)
-
-			self.score, self.misses = self.score - 100, self.misses + 1
-			self:recalculateRating(); self:popUpScore()
+			self.score, self.misses, self.combo =
+				self.score - 100, self.misses + 1, math.min(self.combo, 0) - 1
+			self:recalculateRating()
+			self:popUpScore()
 		end
 	end
 
@@ -1125,10 +1126,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 
 		if self.playerNotefield == notefield then
 			self.health = math.min(self.health + 0.023, 2)
-
-			self.combo = math.max(self.combo, 0) + 1
-			self.score = self.score + rating.score
-
+			self.score, self.combo = self.score + rating.score, math.max(self.combo, 0) + 1
 			self:recalculateRating(rating.name)
 
 			local hitSoundVolume = ClientPrefs.data.hitSound
@@ -1141,21 +1139,21 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 	self.scripts:call("postGoodNoteHit", note, rating)
 end
 
+function PlayState:recalculateRating(rating)
+	self.scoreText.content = "Score:" .. math.floor(self.score)
+	if rating then
+		local field = rating .. "s"
+		self[field] = (self[field] or 0) + 1
+		self:popUpScore(rating)
+	end
+end
+
 function PlayState:popUpScore(rating)
 	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
 	if not event.cancelled then
 		self.judgeSprites.ratingVisible = not event.hideRating
 		self.judgeSprites.comboNumVisible = not event.hideScore
 		self.judgeSprites:spawn(rating, self.combo)
-	end
-end
-
-function PlayState:recalculateRating(rating)
-	self.scoreText.content = "Score:" .. math.floor(self.score)
-	if rating then
-		local ratingAdd = rating .. "s"
-		self[ratingAdd] = (self[ratingAdd] or 0) + 1
-		self:popUpScore(rating)
 	end
 end
 
