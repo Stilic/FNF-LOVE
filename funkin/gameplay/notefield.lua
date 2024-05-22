@@ -30,10 +30,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 
 	self.__topSprites = Group()
 	self.__offsetX = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
-	for i = 1, keys do
-		self:makeLane(i).x = self.__offsetX + self.noteWidth * i
-		self.held[i] = {}
-	end
+	for i = 1, keys do self:makeLane(i).x = self.__offsetX + self.noteWidth * i end
 	self.__offsetX = self.__offsetX / (1 + 1 / keys)
 	self:add(self.__topSprites)
 
@@ -93,7 +90,12 @@ function Notefield:removeNotefromIndex(idx)
 	note.parent, note.lastPress = nil, nil
 
 	if note.sustain then
-		table.delete(self.held[note.direction + 1], note)
+		local fixedDir = note.direction + 1
+		local held = self.held[fixedDir]
+		if held then
+			held = held - 1
+			self.held[fixedDir] = held ~= 0 and held or nil
+		end
 	end
 
 	local lane = note.group

@@ -844,30 +844,24 @@ function PlayState:update(dt)
 
 						self:resetStroke(notefield, dir, fullyHeldSustain)
 						notefield:removeNote(note)
+					end
+				end
+			end
 
-						if char then
-							local dirAnim, h = char.dirAnim
-							if dirAnim ~= nil then
-								local fixedDirAnim = dirAnim + 1
-								if #held[fixedDirAnim] == 0 then
-									for i = 1, keys do
-										if i ~= fixedDirAnim then
-											h = held[i]
-											for j = 1, #h do
-												if h[j].sustainTime ~= time then
-													char:sing(i - 1, nil, false)
-													goto continue
-												end
-											end
-										end
-									end
-								end
+			if char then
+				dirAnim = char.dirAnim
+				if dirAnim ~= nil then
+					local fixedDirAnim = dirAnim + 1
+					if not held[fixedDirAnim] then
+						for i = 1, keys do
+							if i ~= fixedDirAnim and held[i] then
+								char:sing(i - 1, nil, false)
+								break
 							end
 						end
 					end
 				end
 			end
-			::continue::
 
 			if isPlayer and
 				noSustainHit
@@ -1065,7 +1059,14 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 		note.wasGoodHit = true
 
 		if note.sustain then
-			table.insert(notefield.held[fixedDir], note)
+			local held = notefield.held
+			local count = held[fixedDir]
+			if count == nil then
+				count = 1
+			else
+				count = count + 1
+			end
+			held[fixedDir] = count
 			notefield.lastPress = note
 		else
 			notefield:removeNote(note)
@@ -1221,7 +1222,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			local l = #hitNotes
 			if l == 0 then
 				local receptor, sussy = notefield.receptors[fixedKey],
-					#notefield.held[fixedKey] ~= 0
+					notefield.held[fixedKey]
 
 				if sussy then
 					if receptor then
