@@ -808,8 +808,8 @@ function PlayState:update(dt)
 			end
 		end
 
-		local heldNotes, sustainHitOffset, fullyHeldSustain, j, l,
-		note, dir, resetVolume, hasInput = notefield.held, 0.25 / notefield.speed
+		local heldNotes, sustainHitOffset, fullyHeldSustain, lastPress, j,
+		l, note, dir, resetVolume, hasInput = notefield.held, 0.25 / notefield.speed
 		for i, held in ipairs(heldNotes) do
 			j, l, dir = 1, #held, i - 1
 			hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
@@ -819,40 +819,40 @@ function PlayState:update(dt)
 
 				if not note.tooLate then
 					if hasInput then
-						-- reset vocals volume on input
-						resetVolume = true
-					end
-					if hasInput or note.wasGoodHoldHit then
 						-- sustain hitting
 						note.lastPress = noteTime
+						lastPress = noteTime
+						-- reset vocals volume on input
+						resetVolume = true
+					else
+						lastPress = note.lastPress
 					end
 
-					fullyHeldSustain = note.time + note.sustainTime <= note.lastPress
-
-					if not note.wasGoodHoldHit and note.lastPress then
-						if note.time + note.sustainTime - sustainHitOffset <= note.lastPress then
+					if lastPress then
+						if note.time + note.sustainTime - sustainHitOffset <= lastPress then
 							-- end of sustain hit
-							if not hasInput or fullyHeldSustain then
+							fullyHeldSustain = note.time + note.sustainTime <= lastPress
+							if fullyHeldSustain or not hasInput then
 								note.wasGoodHoldHit = true
 
 								if self.playerNotefield == notefield then
 									self.score = self.score
-										+ math.min(noteTime - note.time + Note.safeZoneOffset, note.sustainTime) * 1000
+										+ math.min(noteTime - note.time + Note.safeZoneOffset,
+											note.sustainTime) * 1000
 									self:recalculateRating()
 								end
 
-								self:resetStroke(notefield, dir, fullyHeldSustain and hasInput)
+								self:resetStroke(notefield, dir, fullyHeldSustain)
+
+								notefield:removeNote(note)
+								table.remove(held, j)
+								j = j - 1
+								l = l - 1
 							end
-						elseif note.lastPress <= missOffset then
+						elseif lastPress <= missOffset then
 							-- sustain miss after parent note hit
 							self:miss(note)
 						end
-					end
-
-					if fullyHeldSustain then
-						table.remove(held, j)
-						j = j - 1
-						l = l - 1
 					end
 				end
 
