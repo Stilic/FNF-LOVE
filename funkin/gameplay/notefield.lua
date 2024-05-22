@@ -19,6 +19,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 
 	-- for PlayState
 	self.bot = false
+	self.held = {}
 	self.vocalVolume = 1
 
 	self.modifiers = {}
@@ -26,7 +27,6 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.lanes = {}
 	self.receptors = {}
 	self.notes = {}
-	self.held = {}
 
 	self.__topSprites = Group()
 	self.__offsetX = -self.noteWidth / 2 - (self.noteWidth * keys / 2)
@@ -90,7 +90,11 @@ end
 function Notefield:removeNotefromIndex(idx)
 	local note = self.notes[idx]
 	if not note then return end
-	note.parent = nil
+	note.parent, note.lastPress = nil, nil
+
+	if note.sustain then
+		table.delete(self.held[note.direction + 1], note)
+	end
 
 	local lane = note.group
 	if lane then
@@ -115,33 +119,39 @@ function Notefield:setSkin(skin)
 	skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
 	self.skin = skin
 
-	for _, rep in ipairs(self.receptors) do
-		rep:setSkin(skin)
+	for _, receptor in ipairs(self.receptors) do
+		receptor:setSkin(skin)
 	end
 	for _, note in ipairs(self.notes) do
 		note:setSkin(skin)
 	end
 end
 
-function Notefield:getNotesToHit(time, direction)
+function Notefield:getNotesToHit(time, direction, forceSustains)
 	local notes = self.notes
 	if #notes == 0 then return {} end
 
-	local hitNotes, i, started = {}, 1, false
+	local safeZoneOffset, hitNotes, i, started,
+	noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1, false
 	for _, note in ipairs(notes) do
-		if (direction == nil or note.direction == direction) and note:checkDiff(time) then
-			if not note.ignoreNote and not note.wasGoodHit and not note.tooLate then
-				local prevIdx = i - 1
-				local prev = hitNotes[prevIdx]
-				if prev and note.time - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
-					hitNotes[i] = prev
-					hitNotes[prevIdx] = note
-				else
-					hitNotes[i] = note
-				end
-				i = i + 1
-				started = true
+		noteTime = note.time
+		hitTime = note.lastPress or noteTime
+		if not note.tooLate
+			and not note.ignoreNote
+			and (direction == nil or note.direction == direction)
+			and (not note.wasGoodHit or (forceSustains and note.sustain))
+			and hitTime > time - safeZoneOffset * note.lateHitMult
+			and hitTime < time + safeZoneOffset * note.earlyHitMult then
+			prevIdx = i - 1
+			prev = hitNotes[prevIdx]
+			if prev and noteTime - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
+				hitNotes[i] = prev
+				hitNotes[prevIdx] = note
+			else
+				hitNotes[i] = note
 			end
+			i = i + 1
+			started = true
 		elseif started then
 			break
 		end

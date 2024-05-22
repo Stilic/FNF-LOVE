@@ -18,6 +18,7 @@
     "unused-local",
     "cast-local-type",
     "assign-type-mismatch",
-    "unbalanced-assignments"
+    "unbalanced-assignments",
+    "redefined-local"
   ]
 }

@@ -129,11 +129,6 @@ end
 
 local safeZoneOffset = (10 / 60) * 1000
 
-function ChartingNote:checkDiff()
-	return self.time > ChartingState.conductor.time - safeZoneOffset * self.lateHitMult and
-		self.time < ChartingState.conductor.time + safeZoneOffset * self.earlyHitMult
-end
-
 function ChartingNote:play(anim, force, frame)
 	local toplay, _anim = anim .. '-note' .. tostring(self.data), self.__animations
 	local realAnim = (_anim[toplay] ~= nil) and toplay or anim
@@ -141,7 +136,8 @@ function ChartingNote:play(anim, force, frame)
 end
 
 function ChartingNote:update(dt)
-	self.canBeHit = self:checkDiff()
+	self.canBeHit = self.time > ChartingState.conductor.time - safeZoneOffset * self.lateHitMult
+		and self.time < ChartingState.conductor.time + safeZoneOffset * self.earlyHitMult
 
 	if self.mustPress then
 		if not self.ignoreNote and not self.wasGoodHit and

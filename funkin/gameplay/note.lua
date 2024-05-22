@@ -26,11 +26,12 @@ function Note:new(time, direction, sustainTime, skin)
 	self.time = time
 	self._targetTime = 0
 
-	self.wasGoodHit, self.tooLate, self.ignoreNote, self.lastPress = false, false, false, nil
+	self.wasGoodHit, self.wasGoodSustainHit,
+	self.tooLate, self.ignoreNote, self.lastPress = false, false, false, false, nil
 	self.priority, self.earlyHitMult, self.lateHitMult = 0, 1, 1
 	self.showNote, self.showNoteOnHit = true, false
 	self.type = ""
-	self.group, self.sustainCover = nil, nil
+	self.group = nil
 
 	self.sustainSegments = Note.defaultSustainSegments
 
@@ -49,11 +50,6 @@ function Note:clone()
 	clone.speed, clone.sustainSegments = self.speed, self.sustainSegments
 
 	return clone
-end
-
-function Note:checkDiff(time)
-	return self.time > time - Note.safeZoneOffset * self.lateHitMult and
-		self.time < time + Note.safeZoneOffset * self.earlyHitMult
 end
 
 function Note:_addAnim(...)

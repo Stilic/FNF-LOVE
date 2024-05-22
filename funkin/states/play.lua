@@ -718,23 +718,10 @@ function PlayState:doCountdown(beat)
 	end
 end
 
-function PlayState:resetStroke(notefield, dir, note, doPress)
+function PlayState:resetStroke(notefield, dir, doPress)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
 		receptor:play((doPress and not notefield.bot) and "pressed" or "static")
-		if note then
-			-- show the splash for the sustain cover
-			local cover = note.sustainCover
-			note.sustainCover = nil
-			if not notefield.canSpawnSplash or not ClientPrefs.data.noteSplash then
-				cover:kill()
-			else
-				cover:play("end")
-				cover:updateHitbox()
-				cover.shader = cover.__shaderAnimations["end"]
-				cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
-			end
-		end
 	end
 
 	local char = notefield.character
@@ -780,115 +767,116 @@ function PlayState:update(dt)
 			local time, vocalsTime, dadVocalsTime = game.sound.music:tell(), self.vocals and self.vocals:tell(),
 				self.dadVocals and self.dadVocals:tell()
 			if PlayState.conductor.lastStep ~= PlayState.conductor.currentStep then
-				if vocalsTime and self.vocals:isPlaying() and math.abs(time - vocalsTime) > 0.03 * rate then
+				if vocalsTime and self.vocals:isPlaying()
+					and math.abs(time - vocalsTime) > 0.03 * rate then
 					self.vocals:seek(time)
 				end
-				if dadVocalsTime and self.dadVocals:isPlaying() and math.abs(time - dadVocalsTime) > 0.03 * rate then
+				if dadVocalsTime and self.dadVocals:isPlaying()
+					and math.abs(time - dadVocalsTime) > 0.03 * rate then
 					self.dadVocals:seek(time)
 				end
 			end
 
 			local contime = PlayState.conductor.time / 1000
 			if math.abs(time - contime) > 0.015 * rate then
-				PlayState.conductor.time = math.lerp(math.clamp(contime, time - rate, time + rate), time, dt * 8) * 1000
+				PlayState.conductor.time =
+					math.lerp(math.clamp(contime, time - rate, time + rate), time, dt * 8) * 1000
 			end
 		end
 
 		PlayState.conductor:update()
 
 		if self.startingSong and self.doCountdownAtBeats then
-			self:doCountdown(math.floor(PlayState.conductor.currentBeatFloat - self.doCountdownAtBeats + 1))
+			self:doCountdown(math.floor(
+				PlayState.conductor.currentBeatFloat - self.doCountdownAtBeats + 1
+			))
 		end
 	end
 
-	local noteTime = PlayState.conductor.time / 1000
-	local missOffset = noteTime - Note.safeZoneOffset / 1.25
+	local time = PlayState.conductor.time / 1000
+	local missOffset = time - Note.safeZoneOffset / 1.25
 	for _, notefield in ipairs(self.notefields) do
-		notefield.time, notefield.beat = noteTime, PlayState.conductor.currentBeatFloat
+		notefield.time, notefield.beat = time, PlayState.conductor.currentBeatFloat
 
-		local isPlayer = not notefield.bot
-		for _, note in ipairs(notefield:getNotesToHit(noteTime)) do
-			if not note.wasGoodHit and not note.tooLate and not note.ignoreNote then
-				if isPlayer then
-					if note.time <= missOffset then
-						-- regular note miss
-						self:miss(note)
-					end
-				elseif note.time <= noteTime then
+		local char, isPlayer, keys, held, sustainHitOffset,
+		fullyHeldSustain, lastPress, resetVolume =
+			notefield.character, not notefield.bot,
+			notefield.keys, notefield.held, 0.25 / notefield.speed
+		for _, note in ipairs(notefield:getNotesToHit(time, nil, true)) do
+			local noteTime, sustainTime, dir, noSustainHit =
+				note.time, note.sustainTime, note.direction, not note.wasGoodSustainHit
+			local hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
+
+			if not note.wasGoodHit then
+				if not isPlayer and noteTime <= time then
 					-- botplay hit
-					self:goodNoteHit(note, noteTime)
+					self:goodNoteHit(note, time)
 				end
-			end
-		end
-
-		local heldNotes, sustainHitOffset, fullyHeldSustain, lastPress, j,
-		l, note, dir, resetVolume, hasInput = notefield.held, 0.25 / notefield.speed
-		for i, held in ipairs(heldNotes) do
-			j, l, dir = 1, #held, i - 1
-			hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
-
-			while j <= l do
-				note = held[j]
-
-				if not note.tooLate then
-					if hasInput then
-						-- sustain hitting
-						note.lastPress = noteTime
-						lastPress = noteTime
-						-- reset vocals volume on input
-						resetVolume = true
-					else
-						lastPress = note.lastPress
-					end
-
-					if lastPress ~= nil then
-						if note.time + note.sustainTime - sustainHitOffset <= lastPress then
-							-- end of sustain hit
-							fullyHeldSustain = note.time + note.sustainTime <= lastPress
-							if fullyHeldSustain or not hasInput then
-								note.lastPress = nil
-
-								if self.playerNotefield == notefield then
-									self.score = self.score
-										+ math.min(noteTime - note.time + Note.safeZoneOffset,
-											note.sustainTime) * 1000
-									self:recalculateRating()
-								end
-
-								self:resetStroke(notefield, dir, note, fullyHeldSustain)
-
-								notefield:removeNote(note)
-								table.remove(held, j)
-								j = j - 1
-								l = l - 1
-							end
-						elseif lastPress <= missOffset then
-							-- sustain miss after parent note hit
-							self:miss(note)
-						end
-					end
-				end
-
-				if hasInput and l ~= 0 then
-					local receptor = notefield.receptors[i]
-					if receptor.strokeTime ~= -1 then
-						receptor:play("confirm")
-						receptor.strokeTime = -1
-					end
-
-					local char = notefield.character
+				lastPress = note.lastPress
+			else
+				if hasInput then
+					-- sustain hitting
+					note.lastPress = time
+					lastPress = time
+					resetVolume = true
 					if char and char.strokeTime ~= -1 then
-						local dirAnim = char.dirAnim
-						if dirAnim == nil or dirAnim == dir or #heldNotes[dirAnim + 1] == 0 then
-							char:sing(dir, nil, false)
-						end
+						char:sing(dir, nil, false)
 						char.strokeTime = -1
 					end
+				else
+					lastPress = note.lastPress
 				end
 
-				j = j + 1
+				if noSustainHit
+					and noteTime + sustainTime - sustainHitOffset <= lastPress then
+					-- end of sustain hit
+					fullyHeldSustain = noteTime + sustainTime <= lastPress
+					if fullyHeldSustain or not hasInput then
+						note.wasGoodSustainHit = true
+						noSustainHit = false
+
+						if self.playerNotefield == notefield then
+							self.score = self.score
+								+ math.min(time - noteTime + Note.safeZoneOffset,
+									sustainTime) * 1000
+							self:recalculateRating()
+						end
+
+						self:resetStroke(notefield, dir, fullyHeldSustain)
+						notefield:removeNote(note)
+
+						if char then
+							local dirAnim, h = char.dirAnim
+							if dirAnim ~= nil then
+								local fixedDirAnim = dirAnim + 1
+								if #held[fixedDirAnim] == 0 then
+									for i = 1, keys do
+										if i ~= fixedDirAnim then
+											h = held[i]
+											for j = 1, #h do
+												if h[j].sustainTime ~= time then
+													char:sing(i - 1, nil, false)
+													goto continue
+												end
+											end
+										end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+			::continue::
+
+			if isPlayer and
+				noSustainHit
+				and (lastPress or noteTime) <= missOffset then
+				-- miss note
+				self:miss(note)
 			end
 		end
+
 		if resetVolume and notefield.vocals then
 			notefield.vocals:setVolume(notefield.vocalVolume)
 		end
@@ -1034,16 +1022,8 @@ function PlayState:miss(note, dir)
 	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
 		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
-		table.delete(notefield.held[dir + 1], note)
 		if not ghostMiss then
-			-- set note as missed
 			note.tooLate = true
-			-- remove the cover of it's sustain
-			local cover = note.sustainCover
-			if cover then
-				cover:kill()
-				note.sustainCover = nil
-			end
 		end
 
 		if event.muteVocals and notefield.vocals then notefield.vocals:setVolume(0) end
@@ -1240,21 +1220,23 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			local hitNotes = notefield:getNotesToHit(time, key)
 			local l = #hitNotes
 			if l == 0 then
-				local receptor, notSussy = notefield.receptors[fixedKey],
-					#notefield.held[fixedKey] == 0
-				if receptor then
-					if not notSussy then
-						if receptor.strokeTime ~= -1 then
-							receptor:play("confirm")
-							receptor.strokeTime = -1
-						end
-					else
-						receptor:play("pressed")
+				local receptor, sussy = notefield.receptors[fixedKey],
+					#notefield.held[fixedKey] ~= 0
+
+				if sussy then
+					if receptor then
+						receptor:play("confirm")
+						receptor.strokeTime = -1
 					end
+
+					local char = notefield.character
+					if char then char:sing(key) end
+				elseif receptor then
+					receptor:play("pressed")
 				end
 
 				-- GET OUT OF MY HEAD!
-				if notSussy and not ClientPrefs.data.ghostTap then
+				if not sussy and not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
 			else

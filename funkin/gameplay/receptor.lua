@@ -165,7 +165,7 @@ function Receptor:spawnCover(note)
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)
 	cover:updateHitbox()
-	note.sustainCover, cover.visible, cover.shader = cover, true, cover.__shaderAnimations["start"]
+	cover.parent, cover.visible, cover.shader = note, true, cover.__shaderAnimations["start"]
 	return cover
 end
 
@@ -222,22 +222,36 @@ function Receptor:update(dt)
 	local hasInput, anim, note = self.parent.bot or controls:down(PlayState.keysControls[self.direction])
 	for _, cover in ipairs(self.covers.members) do
 		if cover.exists then
-			anim, note = cover.curAnim.name, cover.note
-			if anim ~= "end" then
-				if not cover.visible and hasInput then
-					cover:play(anim, true)
-					cover.shader = cover.__shaderAnimations[anim]
+			anim, note = cover.curAnim.name, cover.parent
+			if note.tooLate then
+				cover:kill()
+			else
+				if anim ~= "end" then
+					if not cover.visible and hasInput then
+						cover:play(anim, true)
+						cover.shader = cover.__shaderAnimations[anim]
+					end
+					cover.visible = hasInput
+					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
 				end
-				cover.visible = hasInput
-				cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
-			end
-			if cover.animFinished then
-				if anim == "start" then
-					cover:play("loop")
-					cover:updateHitbox()
-					cover.shader = cover.__shaderAnimations["loop"]
-				elseif anim == "end" then
-					cover:kill()
+				if note.wasGoodSustainHit then
+					if not self.parent.canSpawnSplash or not ClientPrefs.data.noteSplash then
+						cover:kill()
+					elseif anim ~= "end" then
+						cover:play("end")
+						cover:updateHitbox()
+						cover.shader = cover.__shaderAnimations["end"]
+						cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
+					end
+				end
+				if cover.animFinished then
+					if anim == "start" then
+						cover:play("loop")
+						cover:updateHitbox()
+						cover.shader = cover.__shaderAnimations["loop"]
+					elseif anim == "end" then
+						cover:kill()
+					end
 				end
 			end
 		end
