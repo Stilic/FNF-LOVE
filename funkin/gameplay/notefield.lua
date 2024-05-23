@@ -89,7 +89,7 @@ function Notefield:removeNotefromIndex(idx)
 	if not note then return end
 	note.parent, note.lastPress = nil, nil
 
-	if note.sustain then
+	if note.sustain and note.wasGoodHit then
 		local fixedDir = note.direction + 1
 		local held = self.held[fixedDir]
 		if held then
@@ -142,8 +142,8 @@ function Notefield:getNotesToHit(time, direction, forceSustains)
 			and (direction == nil or note.direction == direction)
 			and (not note.wasGoodHit or (forceSustains and note.sustain))
 			and (note.lastPress
-				or (hitTime > time - safeZoneOffset * note.lateHitMult
-					and hitTime < time + safeZoneOffset * note.earlyHitMult)) then
+				or (noteTime > time - safeZoneOffset * note.lateHitMult
+					and noteTime < time + safeZoneOffset * note.earlyHitMult)) then
 			prevIdx = i - 1
 			prev = hitNotes[prevIdx]
 			if prev and note.time - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
