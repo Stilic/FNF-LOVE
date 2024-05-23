@@ -851,14 +851,11 @@ function PlayState:update(dt)
 			if char then
 				dirAnim = char.dirAnim
 				if dirAnim ~= nil then
-					local fixedDirAnim = dirAnim + 1
-					if not held[fixedDirAnim] then
-						for i = 1, keys do
-							if i ~= fixedDirAnim and held[i] then
-								char:sing(i - 1, nil, false)
-								break
-							end
-						end
+					local lastSustain = notefield.lastSustain
+					if lastSustain
+						and lastSustain.direction ~= dirAnim
+						and lastSustain.sustainTime > sustainTime then
+						char:sing(i - 1, nil, false)
 					end
 				end
 			end
@@ -1067,10 +1064,10 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 				count = count + 1
 			end
 			held[fixedDir] = count
-			notefield.lastPress = note
+			notefield.lastSustain = note
 		else
 			notefield:removeNote(note)
-			notefield.lastPress = nil
+			notefield.lastSustain = nil
 		end
 
 		if event.unmuteVocals and notefield.vocals then
@@ -1255,13 +1252,13 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					i = i + 1
 				end
 
-				local lastPress = notefield.lastPress
-				local blockAnim = lastPress and firstNote.sustain
-					and lastPress.sustainTime < firstNote.sustainTime
+				local lastSustain = notefield.lastSustain
+				local blockAnim = lastSustain and firstNote.sustain
+					and lastSustain.sustainTime < firstNote.sustainTime
 				if blockAnim then
 					local char = notefield.character
 					if char then
-						local dir = lastPress.direction
+						local dir = lastSustain.direction
 						if char.dirAnim ~= dir then
 							char:sing(dir, nil, false)
 						end

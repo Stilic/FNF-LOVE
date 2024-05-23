@@ -19,7 +19,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 
 	-- for PlayState
 	self.bot = false
-	self.held = {}
+	self.held, self.lastSustain = {}, nil
 	self.vocalVolume = 1
 
 	self.modifiers = {}
@@ -137,16 +137,16 @@ function Notefield:getNotesToHit(time, direction, forceSustains)
 	noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1, false
 	for _, note in ipairs(notes) do
 		noteTime = note.time
-		hitTime = note.lastPress or noteTime
 		if not note.tooLate
 			and not note.ignoreNote
 			and (direction == nil or note.direction == direction)
 			and (not note.wasGoodHit or (forceSustains and note.sustain))
-			and hitTime > time - safeZoneOffset * note.lateHitMult
-			and hitTime < time + safeZoneOffset * note.earlyHitMult then
+			and (note.lastPress
+				or (hitTime > time - safeZoneOffset * note.lateHitMult
+					and hitTime < time + safeZoneOffset * note.earlyHitMult)) then
 			prevIdx = i - 1
 			prev = hitNotes[prevIdx]
-			if prev and noteTime - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
+			if prev and note.time - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
 				hitNotes[i] = prev
 				hitNotes[prevIdx] = note
 			else
