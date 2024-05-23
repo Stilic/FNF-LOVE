@@ -798,11 +798,11 @@ function PlayState:update(dt)
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = time, PlayState.conductor.currentBeatFloat
 
-		local char, isPlayer, keys, held, sustainHitOffset,
+		local char, isPlayer, keys, sustainHitOffset,
 		fullyHeldSustain, lastPress, resetVolume =
 			notefield.character, not notefield.bot,
-			notefield.keys, notefield.held, 0.25 / notefield.speed
-		for _, note in ipairs(notefield:getNotesToHit(time, nil, true)) do
+			notefield.keys, 0.25 / notefield.speed
+		for _, note in ipairs(notefield:getNotes(time, nil, true)) do
 			local noteTime, sustainTime, dir, noSustainHit =
 				note.time, note.sustainTime, note.direction, not note.wasGoodSustainHit
 			local hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
@@ -1057,14 +1057,6 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 		note.wasGoodHit = true
 
 		if note.sustain then
-			local held = notefield.held
-			local count = held[fixedDir]
-			if count == nil then
-				count = 1
-			else
-				count = count + 1
-			end
-			held[fixedDir] = count
 			notefield.lastSustain = note
 		else
 			notefield:removeNote(note)
@@ -1216,13 +1208,11 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 	local fixedKey = key + 1
 	for _, notefield in ipairs(self.notefields) do
 		if not notefield.bot then
-			local hitNotes = notefield:getNotesToHit(time, key)
+			local hitNotes, hasSustain = notefield:getNotes(time, key)
 			local l = #hitNotes
 			if l == 0 then
-				local receptor, sussy = notefield.receptors[fixedKey],
-					notefield.held[fixedKey]
-
-				if sussy then
+				local receptor = notefield.receptors[fixedKey]
+				if hasSustain then
 					if receptor then
 						receptor:play("confirm")
 						receptor.strokeTime = -1
@@ -1234,8 +1224,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					receptor:play("pressed")
 				end
 
-				-- GET OUT OF MY HEAD!
-				if not sussy and not ClientPrefs.data.ghostTap then
+				if not hasSustain and not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
 			else
