@@ -856,7 +856,6 @@ function PlayState:update(dt)
       					end
       				end
 						end
-						notefield.lastSustain = nil
 					end
 				end
 			end
