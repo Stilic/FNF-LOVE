@@ -87,6 +87,9 @@ end
 function Notefield:removeNotefromIndex(idx)
 	local note = self.notes[idx]
 	if not note then return end
+	if self.lastPress == note then
+    self.lastPress = nil
+  end
 	note.parent, note.lastPress = nil, nil
 
 	local lane = note.group
