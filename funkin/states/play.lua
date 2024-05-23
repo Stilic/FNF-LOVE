@@ -721,7 +721,8 @@ end
 function PlayState:resetStroke(notefield, dir, doPress)
 	local receptor = notefield.receptors[dir + 1]
 	if receptor then
-		receptor:play((doPress and not notefield.bot) and "pressed" or "static")
+		receptor:play((doPress and not notefield.bot)
+			and "pressed" or "static")
 	end
 
 	local char = notefield.character
@@ -799,7 +800,7 @@ function PlayState:update(dt)
 		notefield.time, notefield.beat = time, PlayState.conductor.currentBeatFloat
 
 		local char, isPlayer, keys, sustainHitOffset,
-		fullyHeldSustain, lastPress, resetVolume =
+		fullyHeldSustain, lastPress, lastSustain, dirAnim, resetVolume =
 			notefield.character, not notefield.bot,
 			notefield.keys, 0.25 / notefield.speed
 		for _, note in ipairs(notefield:getNotes(time, nil, true)) do
@@ -819,10 +820,6 @@ function PlayState:update(dt)
 					note.lastPress = time
 					lastPress = time
 					resetVolume = true
-					if char and char.strokeTime ~= -1 then
-						char:sing(dir, nil, false)
-						char.strokeTime = -1
-					end
 				else
 					lastPress = note.lastPress
 				end
@@ -844,19 +841,13 @@ function PlayState:update(dt)
 
 						self:resetStroke(notefield, dir, fullyHeldSustain)
 						notefield:removeNote(note)
-
-            local lastSustain = notefield.lastSustain
-						if lastSustain and lastSustain ~= note and char then
-      				dirAnim = char.dirAnim
-      				if dirAnim ~= nil then
-      					dir = lastSustain.direction
-                if dir ~= dirAnim
-      					and lastSustain.sustainTime ~= sustainTime then
-      						char:sing(dir, nil, false)
-      					end
-      				end
-						end
 					end
+				end
+
+				if noSustainHit and hasInput
+					and char and char.strokeTime ~= -1 then
+					char:sing(dir, nil, false)
+					char.strokeTime = -1
 				end
 			end
 
@@ -865,6 +856,22 @@ function PlayState:update(dt)
 				and (lastPress or noteTime) <= missOffset then
 				-- miss note
 				self:miss(note)
+			end
+		end
+
+		if char then
+			lastSustain = notefield.lastSustain
+			if lastSustain
+				and lastSustain ~= note
+				and lastSustain.sustainTime ~= sustainTime then
+				dirAnim = char.dirAnim
+				if dirAnim ~= nil then
+					dir = lastSustain.direction
+					if dir ~= dirAnim then
+						char:sing(dir, nil, false)
+						char.strokeTime = -1
+					end
+				end
 			end
 		end
 
@@ -1070,8 +1077,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			local char = notefield.character
 			if char then
 				local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
-				if section and section.altAnim then animType = 'alt' end
-
+				if section and section.altAnim then animType = "alt" end
 				char:sing(dir, animType)
 				if note.sustain then char.strokeTime = -1 end
 			end
@@ -1218,7 +1224,10 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					end
 
 					local char = notefield.character
-					if char then char:sing(key) end
+					if char then
+						char:sing(key)
+						char.strokeTime = -1
+					end
 				elseif receptor then
 					receptor:play("pressed")
 				end
@@ -1250,6 +1259,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 						local dir = lastSustain.direction
 						if char.dirAnim ~= dir then
 							char:sing(dir, nil, false)
+							char.strokeTime = -1
 						end
 					end
 				end

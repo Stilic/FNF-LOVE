@@ -87,9 +87,9 @@ end
 function Notefield:removeNotefromIndex(idx)
 	local note = self.notes[idx]
 	if not note then return end
-	if self.lastPress == note then
-    self.lastPress = nil
-  end
+	if self.lastSustain == note then
+		self.lastSustain = nil
+	end
 	note.parent, note.lastPress = nil, nil
 
 	local lane = note.group
@@ -127,7 +127,8 @@ function Notefield:getNotes(time, direction, forceSustains)
 	local notes = self.notes
 	if #notes == 0 then return {} end
 
-	local safeZoneOffset, hitNotes, i, started, hasSustain, forceHit, noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1
+	local safeZoneOffset, hitNotes, i, started, hasSustain,
+	forceHit, noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1
 	for _, note in ipairs(notes) do
 		noteTime = note.time
 		if not note.tooLate
@@ -139,19 +140,19 @@ function Notefield:getNotes(time, direction, forceSustains)
 			forceHit = forceSustains and note.sustain
 			if forceHit then hasSustain = true end
 			if not note.wasGoodHit or forceHit then
-      	prevIdx = i - 1
-      	prev = hitNotes[prevIdx]
-      	if prev and noteTime - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
-      		hitNotes[i] = prev
-      		hitNotes[prevIdx] = note
-      	else
-      		hitNotes[i] = note
-      	end
-      	i = i + 1
-      	started = true
-      elseif started then
-		    break
-      end
+				prevIdx = i - 1
+				prev = hitNotes[prevIdx]
+				if prev and noteTime - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
+					hitNotes[i] = prev
+					hitNotes[prevIdx] = note
+				else
+					hitNotes[i] = note
+				end
+				i = i + 1
+				started = true
+			elseif started then
+				break
+			end
 		end
 	end
 
