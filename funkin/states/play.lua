@@ -844,21 +844,19 @@ function PlayState:update(dt)
 
 						self:resetStroke(notefield, dir, fullyHeldSustain)
 						notefield:removeNote(note)
-						
-						if char then
+
+            local lastSustain = notefield.lastSustain
+						if lastSustain and lastSustain ~= note and char then
       				dirAnim = char.dirAnim
       				if dirAnim ~= nil then
-      					local lastSustain = notefield.lastSustain
-      					if lastSustain then
-      					  dir = lastSustain.direction
-      					  if dir ~= dirAnim
-      						and lastSustain.sustainTime ~= sustainTime then
-      						  char:sing(dir, nil, false)
-      						end
+      					dir = lastSustain.direction
+                if dir ~= dirAnim
+      					and lastSustain.sustainTime ~= sustainTime then
+      						char:sing(dir, nil, false)
       					end
       				end
 						end
-    			  notefield.lastSustain = nil
+						notefield.lastSustain = nil
 					end
 				end
 			end
