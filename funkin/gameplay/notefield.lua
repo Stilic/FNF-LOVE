@@ -124,7 +124,7 @@ function Notefield:getNotes(time, direction, forceSustains)
 	local notes = self.notes
 	if #notes == 0 then return {} end
 
-	local safeZoneOffset, hitNotes, i, started, hasSustain, isSustain, noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1
+	local safeZoneOffset, hitNotes, i, started, hasSustain, forceHit, noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1
 	for _, note in ipairs(notes) do
 		noteTime = note.time
 		if not note.tooLate
@@ -133,9 +133,9 @@ function Notefield:getNotes(time, direction, forceSustains)
 			and (note.lastPress
 				or (noteTime > time - safeZoneOffset * note.lateHitMult
 					and noteTime < time + safeZoneOffset * note.earlyHitMult)) then
-			isSustain = note.sustain
-			if isSustain then hasSustain = true end
-			if not note.wasGoodHit or (forceSustains and isSustain) then
+			forceHit = forceSustains and note.sustain
+			if forceHit then hasSustain = true end
+			if not note.wasGoodHit or forceHit then
       	prevIdx = i - 1
       	prev = hitNotes[prevIdx]
       	if prev and noteTime - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
