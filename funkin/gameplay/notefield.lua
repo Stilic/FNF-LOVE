@@ -19,7 +19,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 
 	-- for PlayState
 	self.bot = false
-	self.held, self.lastSustain = {}, nil
+	self.lastSustain = nil
 	self.vocalVolume = 1
 
 	self.modifiers = {}
@@ -89,15 +89,6 @@ function Notefield:removeNotefromIndex(idx)
 	if not note then return end
 	note.parent, note.lastPress = nil, nil
 
-	if note.sustain and note.wasGoodHit then
-		local fixedDir = note.direction + 1
-		local held = self.held[fixedDir]
-		if held then
-			held = held - 1
-			self.held[fixedDir] = held ~= 0 and held or nil
-		end
-	end
-
 	local lane = note.group
 	if lane then
 		note.group, lane.renderedNotesI[note] = nil
@@ -129,37 +120,39 @@ function Notefield:setSkin(skin)
 	end
 end
 
-function Notefield:getNotesToHit(time, direction, forceSustains)
+function Notefield:getNotes(time, direction, forceSustains)
 	local notes = self.notes
 	if #notes == 0 then return {} end
 
-	local safeZoneOffset, hitNotes, i, started,
-	noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1, false
+	local safeZoneOffset, hitNotes, i, started, hasSustain, isSustain, noteTime, hitTime, prev, prevIdx = Note.safeZoneOffset, {}, 1
 	for _, note in ipairs(notes) do
 		noteTime = note.time
 		if not note.tooLate
 			and not note.ignoreNote
 			and (direction == nil or note.direction == direction)
-			and (not note.wasGoodHit or (forceSustains and note.sustain))
 			and (note.lastPress
 				or (noteTime > time - safeZoneOffset * note.lateHitMult
 					and noteTime < time + safeZoneOffset * note.earlyHitMult)) then
-			prevIdx = i - 1
-			prev = hitNotes[prevIdx]
-			if prev and note.time - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
-				hitNotes[i] = prev
-				hitNotes[prevIdx] = note
-			else
-				hitNotes[i] = note
-			end
-			i = i + 1
-			started = true
-		elseif started then
-			break
+			isSustain = note.sustain
+			if isSustain then hasSustain = true end
+			if not note.wasGoodHit or (forceSustains and isSustain) then
+      	prevIdx = i - 1
+      	prev = hitNotes[prevIdx]
+      	if prev and noteTime - prev.time <= 0.001 and note.sustainTime > prev.sustainTime then
+      		hitNotes[i] = prev
+      		hitNotes[prevIdx] = note
+      	else
+      		hitNotes[i] = note
+      	end
+      	i = i + 1
+      	started = true
+      elseif started then
+		    break
+      end
 		end
 	end
 
-	return hitNotes
+	return hitNotes, hasSustain
 end
 
 function Notefield:update(dt)
