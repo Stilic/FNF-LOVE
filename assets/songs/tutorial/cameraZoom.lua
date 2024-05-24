@@ -2,11 +2,11 @@ function postCreate()
 	state.camZooming = false
 end
 
-local target
+local wasPlayer
 function onCameraMove(event)
-	if event.target == target then return end
-	target = event.target
-
+	local isPlayer = event.target.isPlayer
+	if isPlayer == wasPlayer then return end
+	wasPlayer = isPlayer
 	Timer.tween((PlayState.conductor.stepCrotchet * 4 / 1000),
-		game.camera, {zoom = target == "bf" and 1 or 1.3}, 'in-out-elastic')
+		game.camera, {zoom = isPlayer and 1 or 1.3}, "in-out-elastic")
 end

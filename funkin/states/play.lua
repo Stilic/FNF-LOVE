@@ -560,24 +560,24 @@ function PlayState:cameraMovement()
 	local section = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
 	if section ~= nil then
 		local event = self.scripts:event("onCameraMove",
-			Events.CameraMove(section.gfSection and "gf" or (section.mustHitSection and "bf" or "dad")))
+			Events.CameraMove(section.gfSection and self.gf or (section.mustHitSection and self.boyfriend or self.dad)))
 		if not event.cancelled then
-			local camX, camY
-			if event.target == "gf" then
-				camX, camY = self.gf:getMidpoint()
-				camX = camX - event.offset.x - self.gf.cameraPosition.x + self.stage.gfCam.x
-				camY = camY - event.offset.y - self.gf.cameraPosition.y + self.stage.gfCam.y
-			elseif event.target == "bf" then
-				camX, camY = self.boyfriend:getMidpoint()
-				camX = camX - 100 - event.offset.x - self.boyfriend.cameraPosition.x +
+			local target, camX, camY = event.target
+			if target == self.gf then
+				camX, camY = target:getMidpoint()
+				camX = camX - event.offset.x - target.cameraPosition.x + self.stage.gfCam.x
+				camY = camY - event.offset.y - target.cameraPosition.y + self.stage.gfCam.y
+			elseif target.isPlayer then
+				camX, camY = target:getMidpoint()
+				camX = camX - 100 - event.offset.x - target.cameraPosition.x +
 					self.stage.boyfriendCam.x
-				camY = camY - 100 - event.offset.y + self.boyfriend.cameraPosition.y +
+				camY = camY - 100 - event.offset.y + target.cameraPosition.y +
 					self.stage.boyfriendCam.y
 			else
-				camX, camY = self.dad:getMidpoint()
-				camX = camX + 150 - event.offset.x + self.dad.cameraPosition.x +
+				camX, camY = target:getMidpoint()
+				camX = camX + 150 - event.offset.x + target.cameraPosition.x +
 					self.stage.dadCam.x
-				camY = camY - 100 - event.offset.y + self.dad.cameraPosition.y +
+				camY = camY - 100 - event.offset.y + target.cameraPosition.y +
 					self.stage.dadCam.y
 			end
 			self.camFollow:set(camX, camY)
