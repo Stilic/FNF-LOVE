@@ -88,7 +88,7 @@ function MainMenuState:enter()
 
 		local down = VirtualPad("down", 0, game.height - w)
 		local up = VirtualPad("up", 0, down.y - w)
-		local mods = VirtualPad("6", game.width - w, 0)
+		local mods = VirtualPad("tab", game.width - w, 0)
 		mods:screenCenter("y")
 
 		local enter = VirtualPad("return", game.width - w, down.y)
