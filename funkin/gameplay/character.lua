@@ -221,18 +221,21 @@ function Character:sing(dir, type, force)
 end
 
 function Character:dance(force)
-	if self.__animations and
-		(not self.script and self.script:call("dance") or true) then
-		if self.__animations["danceLeft"] and self.__animations["danceRight"] then
-			self.danced = not self.danced
+	if self.__animations then
+		local result = self.script:call("dance")
+		if result == nil then result = true end
+		if result then
+			if self.__animations["danceLeft"] and self.__animations["danceRight"] then
+				self.danced = not self.danced
 
-			if self.danced then
-				self:playAnim("danceRight", force)
-			else
-				self:playAnim("danceLeft", force)
+				if self.danced then
+					self:playAnim("danceRight", force)
+				else
+					self:playAnim("danceLeft", force)
+				end
+			elseif self.__animations["idle"] then
+				self:playAnim("idle", force)
 			end
-		elseif self.__animations["idle"] then
-			self:playAnim("idle", force)
 		end
 	end
 end
