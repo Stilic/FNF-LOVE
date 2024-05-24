@@ -12,8 +12,6 @@
 
 - Stilic (owner)
 - Raltyro
-- Ralsin
-- Fellyn
 - Victor Kaoy
 - FowluhhDev
 
