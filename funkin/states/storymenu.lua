@@ -360,49 +360,6 @@ function StoryMenuState:closeSubstate()
 	StoryMenuState.super.closeSubstate(self)
 end
 
---[[
-function StoryMenuState:checkSongsAssets(songs, diff)
-	local title = "Assets"
-	local errorList = {}
-	local jsonList = {}
-	local audioList = {}
-
-	for _, s in ipairs(songs) do
-		local song = paths.formatToSongPath(s)
-
-		local jsonFile = paths.getJSON('songs/' .. song .. '/charts/' .. diff)
-		local hasVocals = false
-		if jsonFile then
-			hasVocals = (jsonFile.song.needsVoices == true)
-		else
-			local path = 'songs/' .. song .. '/charts/' .. diff .. '.json'
-			table.insert(jsonList, path)
-			table.insert(errorList, path)
-		end
-		if paths.getInst(song) == nil then
-			local path = 'songs/' .. song .. '/Inst.ogg'
-			table.insert(audioList, path)
-			table.insert(errorList, path)
-		end
-		if hasVocals and paths.getVoices(song) == nil then
-			local path = 'songs/' .. song .. '/Voices.ogg'
-			table.insert(audioList, path)
-			table.insert(errorList, path)
-		end
-	end
-	if #jsonList > 0 and #audioList <= 0 then
-		title = "Charts(s)"
-	elseif #jsonList <= 0 and #audioList > 0 then
-		title = "Audio(s)"
-	end
-	if #errorList <= 0 then return true end
-
-	self.inSubstate = true
-	self:openSubstate(AssetsErrorSubstate(title, errorList))
-	return false
-end
-]]
-
 function StoryMenuState:loadWeeks()
 	local func = Mods.currentMod and paths.getMods or function(...)
 		return paths.getPath(..., false)

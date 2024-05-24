@@ -251,33 +251,6 @@ function FreeplayState:positionHighscore()
 	self.diffText.x = math.floor(self.scoreBG.x + (self.scoreBG.width - self.diffText:getWidth()) / 2)
 end
 
---[[ rewriting this thing....
-function FreeplayState:checkSongAssets(song, diff)
-	local title = "Assets"
-	local errorList = {}
-
-	local jsonFile = paths.getJSON('songs/' .. song .. '/charts/' .. diff)
-	local hasVocals = false
-	if jsonFile then
-		title = "Audio(s)"
-		hasVocals = (jsonFile.song.needsVoices == true)
-	else
-		table.insert(errorList, 'songs/' .. song .. '/charts/' .. diff .. '.json')
-	end
-	if paths.getInst(song) == nil then
-		table.insert(errorList, 'songs/' .. song .. '/Inst.ogg')
-	end
-	if hasVocals and paths.getVoices(song) == nil then
-		table.insert(errorList, 'songs/' .. song .. '/Voices.ogg')
-	end
-	if #errorList <= 0 then return true end
-
-	self.inSubstate = true
-	self:openSubstate(AssetsErrorSubstate(title, errorList))
-	return false
-end
-]]
-
 local function getSongMetadata(song)
 	local song_metadata = paths.getJSON(
 		'songs/' .. paths.formatToSongPath(song) ..
