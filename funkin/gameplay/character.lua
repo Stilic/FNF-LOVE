@@ -15,11 +15,10 @@ function Character:new(x, y, char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
-	self.dirAnim = nil
-
 	self.__reverseDraw = false
 
-	self.holdTime, self.lastHit, self.waitReleaseAfterSing = 4, math.negative_infinity, false
+	self.dirAnim, self.holdTime, self.lastHit, self.waitReleaseAfterSing =
+		nil, 4, math.negative_infinity, false
 	self.strokeTime, self.__strokeDelta = 0, 0
 	self.danceSpeed, self.danced = 2, false
 

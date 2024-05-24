@@ -111,6 +111,8 @@ function PlayState:enter()
 	conductor.onSection = bind(self, self.section)
 	PlayState.conductor = conductor
 
+	self.skipConductor = false
+
 	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
@@ -157,19 +159,19 @@ function PlayState:enter()
 	game.sound.music.onComplete = function() self:endSong() end
 
 	local bfVocals, dadVocals, volume = paths.getVoices(songName, "Player", true)
-	  or paths.getVoices(songName, self.SONG.player1, true)
-	  or paths.getVoices(songName, nil, true),
-	  paths.getVoices(songName, "Opponent", true) or paths.getVoices(songName, self.SONG.player2, true),
-	  ClientPrefs.data.vocalVolume / 100
+		or paths.getVoices(songName, self.SONG.player1, true)
+		or paths.getVoices(songName, nil, true),
+		paths.getVoices(songName, "Opponent", true) or paths.getVoices(songName, self.SONG.player2, true),
+		ClientPrefs.data.vocalVolume / 100
 	if bfVocals then
-	  self.vocals = game.sound.load(bfVocals)
-	  self.vocals:setVolume(volume)
+		self.vocals = game.sound.load(bfVocals)
+		self.vocals:setVolume(volume)
 	end
 	if dadVocals then
-	  self.dadVocals = game.sound.load(dadVocals)
-	  self.dadVocals:setVolume(volume)
+		self.dadVocals = game.sound.load(dadVocals)
+		self.dadVocals:setVolume(volume)
 	elseif bfVocals then
-	  self.dadVocals = self.vocals
+		self.dadVocals = self.vocals
 	end
 
 	PlayState.SONG.stage = self:loadStageWithSongName(songName)
@@ -584,6 +586,8 @@ function PlayState:cameraMovement()
 end
 
 function PlayState:step(s)
+	if self.skipConductor then return end
+
 	if Discord and not self.startingSong and self.startedCountdown and game.sound.music:isPlaying() then
 		coroutine.wrap(PlayState.updateDiscordRPC)(self)
 	end
@@ -594,6 +598,8 @@ function PlayState:step(s)
 end
 
 function PlayState:beat(b)
+	if self.skipConductor then return end
+
 	self.scripts:set("curBeat", b)
 	self.scripts:call("beat")
 
@@ -610,6 +616,8 @@ function PlayState:beat(b)
 end
 
 function PlayState:section(s)
+	if self.skipConductor then return end
+
 	self.scripts:set("curSection", s)
 	if not self.startingSong then self.scripts:call("section") end
 
@@ -775,6 +783,7 @@ function PlayState:update(dt)
 		end
 
 		PlayState.conductor:update()
+		if self.skipConductor then self.skipConductor = false end
 
 		if self.startingSong and self.doCountdownAtBeats then
 			self:doCountdown(math.floor(
@@ -882,6 +891,9 @@ function PlayState:update(dt)
 	end
 	self.camNotes.zoom = self.camHUD.zoom
 
+	self.healthBar.value = util.coolLerp(self.healthBar.value, self.health, 15, dt)
+	if not self.isDead and self.healthBar.value <= 0 then self:tryGameOver() end
+
 	if self.startedCountdown then
 		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
 			self:tryPause()
@@ -904,13 +916,8 @@ function PlayState:update(dt)
 			game.switchState(CharacterEditor())
 		end
 
-		if controls:pressed("reset") then
-			self.health = 0
-		end
+		if not self.isDead and controls:pressed("reset") then self:tryGameOver() end
 	end
-
-	self.healthBar.value = util.coolLerp(self.healthBar.value, self.health, 15, dt)
-	if self.healthBar.value <= 0 and not self.isDead then self:tryGameOver() end
 
 	if Project.DEBUG_MODE then
 		if game.keys.justPressed.ONE then self.playerNotefield.bot = not self.playerNotefield.bot end
@@ -918,7 +925,7 @@ function PlayState:update(dt)
 		if game.keys.justPressed.THREE then
 			local time = (PlayState.conductor.time +
 				PlayState.conductor.crotchet * (game.keys.pressed.SHIFT and 8 or 4)) / 1000
-			PlayState.conductor.time = time * 1000
+			self.skipConductor, PlayState.conductor.time = true, time * 1000
 			game.sound.music:seek(time)
 			if self.vocals then self.vocals:seek(time) end
 			if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:seek(time) end
