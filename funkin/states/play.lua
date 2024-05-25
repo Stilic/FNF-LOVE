@@ -857,22 +857,6 @@ function PlayState:update(dt)
 			end
 		end
 
-		if char then
-			lastSustain = notefield.lastSustain
-			if lastSustain
-				and lastSustain ~= note
-				and lastSustain.sustainTime ~= sustainTime then
-				dirAnim = char.dirAnim
-				if dirAnim ~= nil then
-					dir = lastSustain.direction
-					if dir ~= dirAnim then
-						char:sing(dir, nil, false)
-						char.strokeTime = -1
-					end
-				end
-			end
-		end
-
 		if resetVolume and notefield.vocals then
 			notefield.vocals:setVolume(notefield.vocalVolume)
 		end
