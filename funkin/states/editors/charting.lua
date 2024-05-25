@@ -935,7 +935,10 @@ end
 
 function ChartingState:generateNotes()
 	self.allNotes:clear()
-	local skin, bpmChanges, lastChange = util.getSkin(self.__song), ChartingState.conductor.bpmChanges, ChartingState.conductor.dummyBPMChange
+	local skin, bpmChanges, lastChange =
+		util.getSongSkin(self.__song),
+		ChartingState.conductor.bpmChanges,
+		ChartingState.conductor.dummyBPMChange
 	for section_num, s in ipairs(self.__song.notes) do
 		if s and s.sectionNotes then
 			for note_num, n in ipairs(s.sectionNotes) do
@@ -1037,7 +1040,7 @@ end
 
 function ChartingState:strumPosUpdate()
 	self.strumLine.y = (ChartingState.conductor.currentStepFloat *
-			self.gridSize) - (self.gridSize * 4)
+		self.gridSize) - (self.gridSize * 4)
 	self.gridBox.y = (self.gridSize * -8) + (self.gridSize * 8 *
 		(math.floor(
 			(ChartingState.conductor.currentStepFloat / 8) -

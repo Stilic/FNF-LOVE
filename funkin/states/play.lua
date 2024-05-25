@@ -100,7 +100,7 @@ end
 
 function PlayState:enter()
 	if PlayState.SONG == nil then PlayState.loadSong('test') end
-	PlayState.SONG.skin = util.getSkin(PlayState.SONG)
+	PlayState.SONG.skin = util.getSongSkin(PlayState.SONG)
 
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
@@ -410,7 +410,7 @@ function PlayState:enter()
 		paths.getImage(path .. "num" .. num)
 	end
 	local sprite
-	for i, part in pairs(paths.getNoteskin(PlayState.SONG.skin)) do
+	for i, part in pairs(paths.getSkin(PlayState.SONG.skin)) do
 		sprite = part.sprite
 		if sprite then paths.getImage(path .. sprite) end
 	end

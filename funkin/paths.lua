@@ -98,7 +98,7 @@ function paths.getJSON(key)
 	return nil, path
 end
 
-function paths.getNoteskin(key)
+function paths.getSkin(key)
 	local obj = paths.noteskins[key]
 	if obj then return obj end
 	obj = paths.getJSON("data/skins/" .. key)

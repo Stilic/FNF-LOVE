@@ -6,7 +6,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 	self.noteWidth = 160 * 0.7
 	self.height = 514
 	self.keys = keys
-	self.skin = paths.getNoteskin(skin)
+	self.skin = paths.getSkin(skin)
 	self.character, self.vocals = character, vocals
 
 	self.time, self.beat = 0, 0
@@ -112,7 +112,7 @@ end
 function Notefield:setSkin(skin)
 	if self.skin.skin == skin then return end
 
-	skin = skin and paths.getNoteskin(skin) or paths.getNoteskin("default")
+	skin = skin and paths.getSkin(skin) or paths.getSkin("default")
 	self.skin = skin
 
 	for _, receptor in ipairs(self.receptors) do

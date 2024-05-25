@@ -1,6 +1,6 @@
 local util = {}
 
-function util.getSkin(song)
+function util.getSongSkin(song)
 	if song.meta and song.meta.skin then
 		return song.meta.skin
 	elseif song.skin then
