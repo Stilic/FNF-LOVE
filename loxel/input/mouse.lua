@@ -63,17 +63,19 @@ end
 
 function Mouse.overlaps(obj, cam)
 	local camera = cam or game.camera
-	local mouseX, mouseY = (Mouse.x + camera.scroll.x),
-		(Mouse.y + camera.scroll.y)
-	if obj and obj:is(Group) then
-		for _, o in ipairs(obj.members) do
-			if o and (o.x and o.y and o.width and o.height) then
-				Mouse.overlaps(o, cam)
+	local mouseX, mouseY = Mouse.x + camera.scroll.x,
+		Mouse.y + camera.scroll.y
+	if obj then
+		if obj:is(Group) then
+			for _, o in ipairs(obj.members) do
+				if o and (o.x and o.y and o.width and o.height) then
+					Mouse.overlaps(o, cam)
+				end
 			end
+		elseif obj:is(Object) then
+			return mouseX >= obj.x and mouseX <= obj.x + obj.width and mouseY >=
+				obj.y and mouseY <= obj.y + obj.height
 		end
-	elseif obj and obj:is(Sprite) then
-		return (mouseX >= obj.x and mouseX <= obj.x + obj.width and mouseY >=
-			obj.y and mouseY <= obj.y + obj.height)
 	end
 	return false
 end
