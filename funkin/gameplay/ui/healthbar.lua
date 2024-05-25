@@ -15,16 +15,17 @@ function HealthBar:new(bfData, dadData, skin)
 	self:add(self.bg)
 	self:add(self.bar)
 
-	self.iconScale = 1
-	self.iconP1 = HealthIcon(bfData.icon, true)
-	self.iconP2 = HealthIcon(dadData.icon)
+	self.iconP1, self.iconP2, self.iconScale =
+		HealthIcon(bfData.icon, true), HealthIcon(dadData.icon), 1
 
-	local y = self.bar.y - 75
-	self.iconP1.y = y
-	self.iconP2.y = y
+	local y = self.bar.y
+	self.iconP1.y = y - self.iconP1.height / 2
+	self.iconP2.y = y - self.iconP2.height / 2
 
-	self.bar.color = bfData.iconColor ~= nil and Color.fromString(bfData.iconColor) or Color.GREEN
-	self.bar.color.bg = dadData.iconColor ~= nil and Color.fromString(dadData.iconColor) or Color.RED
+	self.bar.color =
+		bfData.iconColor ~= nil and Color.fromString(bfData.iconColor) or Color.GREEN
+	self.bar.color.bg =
+		dadData.iconColor ~= nil and Color.fromString(dadData.iconColor) or Color.RED
 
 	self:add(self.iconP1)
 	self:add(self.iconP2)
