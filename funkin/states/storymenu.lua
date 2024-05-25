@@ -61,7 +61,10 @@ function StoryMenuState:enter()
 
 	self.weeksData = {}
 	self:loadWeeks()
-	StoryMenuState.curWeek = math.min(StoryMenuState.curWeek, #self.weeksData)
+	local l = #self.weeksData
+	if l ~= 0 and StoryMenuState.curWeek > l then
+		StoryMenuState.curWeek = l
+	end
 
 	if #self.weeksData > 0 then
 		for i, week in pairs(self.weeksData) do
@@ -234,26 +237,7 @@ function StoryMenuState:selectWeek()
 		end
 
 		local diff = (leWeek.difficulties and leWeek.difficulties[StoryMenuState.curDifficulty] or
-			self.diffs[StoryMenuState.curDifficulty]):lower()
-
-		--[[if self:checkSongsAssets(songTable, diff) then
-			local toState = PlayState(true, songTable, diff)
-			PlayState.storyWeek = leWeek.name
-			PlayState.storyWeekFile = leWeek.file
-
-			if not self.selectedWeek then
-				util.playSfx(paths.getSound('confirmMenu'))
-				self.grpWeekText.members[StoryMenuState.curWeek]:startFlashing()
-				for _, char in pairs(self.grpWeekCharacters.members) do
-					if char.character ~= '' and char.hasConfirmAnimation then
-						char:play('confirm')
-					end
-				end
-				self.selectedWeek = true
-			end
-
-			Timer.after(1, function() game.switchState(toState) end)
-		end]]
+			self.diffs[StoryMenuState.curDifficulty])
 
 		local toState = PlayState(true, songTable, diff)
 		PlayState.storyWeek = leWeek.name
@@ -278,13 +262,13 @@ end
 
 function StoryMenuState:changeDifficulty(change)
 	if change == nil then change = 0 end
-	local songdiffs = self.weeksData[StoryMenuState.curWeek].difficulties or
+	local songDiffs = self.weeksData[StoryMenuState.curWeek].difficulties or
 		self.diffs
 
 	StoryMenuState.curDifficulty = StoryMenuState.curDifficulty + change
-	StoryMenuState.curDifficulty = (StoryMenuState.curDifficulty - 1) % #songdiffs + 1
+	StoryMenuState.curDifficulty = (StoryMenuState.curDifficulty - 1) % #songDiffs + 1
 
-	local storyDiff = songdiffs[StoryMenuState.curDifficulty]
+	local storyDiff = songDiffs[StoryMenuState.curDifficulty]
 	local newImage = paths.getImage('menus/storymenu/difficulties/' ..
 		paths.formatToSongPath(storyDiff))
 
@@ -300,10 +284,8 @@ function StoryMenuState:changeDifficulty(change)
 			{y = self.leftArrow.y + 15, alpha = 1})
 	end
 
-	local diff = songdiffs[StoryMenuState.curDifficulty]:lower()
-
-	local weekName = self.weeksData[StoryMenuState.curWeek].file
-	self.intendedScore = Highscore.getWeekScore(weekName, diff)
+	self.intendedScore = Highscore.getWeekScore(self.weeksData[StoryMenuState.curWeek].file,
+		songDiffs[StoryMenuState.curDifficulty])
 end
 
 function StoryMenuState:changeWeek(change)
@@ -348,11 +330,10 @@ function StoryMenuState:updateText()
 	self.txtTrackList:screenCenter("x")
 	self.txtTrackList.x = self.txtTrackList.x - game.width * 0.35
 
-	local diff = (leWeek.difficulties and leWeek.difficulties[StoryMenuState.curDifficulty] or
-		self.diffs[StoryMenuState.curDifficulty]):lower()
-
-	local weekName = self.weeksData[StoryMenuState.curWeek].file
-	self.intendedScore = Highscore.getWeekScore(weekName, diff)
+	self.intendedScore = Highscore.getWeekScore(self.weeksData[StoryMenuState.curWeek].file,
+		leWeek.difficulties
+		and leWeek.difficulties[StoryMenuState.curDifficulty]
+		or self.diffs[StoryMenuState.curDifficulty])
 end
 
 function StoryMenuState:closeSubstate()

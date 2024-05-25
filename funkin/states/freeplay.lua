@@ -31,6 +31,10 @@ function FreeplayState:enter()
 
 	self.songsData = {}
 	self:loadSongs()
+	local l = #self.songsData
+	if l ~= 0 and FreeplayState.curSelected > l then
+		FreeplayState.curSelected = l
+	end
 
 	FreeplayState.curSelected = math.min(FreeplayState.curSelected, #self.songsData)
 
@@ -157,7 +161,7 @@ function FreeplayState:update(dt)
 					self.songsData[FreeplayState.curSelected]
 					.name)
 				local diff =
-					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]:lower()
+					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]
 
 				if game.keys.pressed.SHIFT then
 					PlayState.loadSong(daSong, diff)
@@ -166,16 +170,6 @@ function FreeplayState:update(dt)
 				else
 					game.switchState(PlayState(false, daSong, diff))
 				end
-
-				--[[if self:checkSongAssets(daSong, diff) then
-					if game.keys.pressed.SHIFT then
-						PlayState.loadSong(daSong, diff)
-						PlayState.storyDifficulty = diff
-						game.switchState(ChartingState())
-					else
-						game.switchState(PlayState(false, daSong, diff))
-					end
-				end]]
 			end
 		end
 		if controls:pressed("back") then
@@ -200,21 +194,20 @@ end
 
 function FreeplayState:changeDiff(change)
 	if change == nil then change = 0 end
-	local songdiffs = self.songsData[self.curSelected].difficulties
+	local songDiffs = self.songsData[self.curSelected].difficulties
 
 	FreeplayState.curDifficulty = FreeplayState.curDifficulty + change
-	FreeplayState.curDifficulty = (FreeplayState.curDifficulty - 1) % #songdiffs + 1
+	FreeplayState.curDifficulty = (FreeplayState.curDifficulty - 1) % #songDiffs + 1
 
-	local daSong = paths.formatToSongPath(self.songsData[self.curSelected].name)
-	self.intendedScore = Highscore.getScore(daSong,
-		songdiffs[FreeplayState.curDifficulty]:lower())
+	self.intendedScore = Highscore.getScore(self.songsData[self.curSelected].name,
+		songDiffs[FreeplayState.curDifficulty])
 
-	if #songdiffs > 1 then
+	if #songDiffs > 1 then
 		self.diffText.content = "< " ..
-			songdiffs[FreeplayState.curDifficulty]:upper() ..
+			songDiffs[FreeplayState.curDifficulty]:upper() ..
 			" >"
 	else
-		self.diffText.content = songdiffs[FreeplayState.curDifficulty]:upper()
+		self.diffText.content = songDiffs[FreeplayState.curDifficulty]:upper()
 	end
 	self:positionHighscore()
 end

@@ -41,9 +41,10 @@ PlayState.chartingMode = false
 PlayState.startPos = 0
 
 function PlayState.loadSong(song, diff)
-	if type(diff) ~= "string" then diff = PlayState.defaultDifficulty end
+	diff = diff or PlayState.defaultDifficulty
+	PlayState.songDifficulty = diff
 
-	local path = "songs/" .. song .. "/charts/" .. diff
+	local path = "songs/" .. song .. "/charts/" .. diff:lower()
 	local data = paths.getJSON(path)
 
 	local metadata = paths.getJSON('songs/' .. song .. '/meta')
@@ -81,7 +82,6 @@ function PlayState:new(storyMode, song, diff)
 	PlayState.super.new(self)
 
 	if storyMode ~= nil then
-		PlayState.songDifficulty = diff
 		PlayState.storyMode = storyMode
 		PlayState.storyWeek = ""
 	end
@@ -1353,8 +1353,7 @@ function PlayState:endSong(skip)
 	if event == Script.Event_Cancel then return end
 	game.sound.music.onComplete = nil
 
-	local formatSong = paths.formatToSongPath(self.SONG.song)
-	Highscore.saveScore(formatSong, self.score, self.songDifficulty)
+	Highscore.saveScore(self.SONG.song, self.score, self.songDifficulty)
 
 	if self.chartingMode then
 		game.switchState(ChartingState())

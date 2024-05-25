@@ -33,13 +33,13 @@ function PauseSubstate:new()
 	self.songText.alpha = 0
 	self:add(self.songText)
 
-	txt = (PlayState.songDifficulty or "?"):upper()
+	txt = "Difficulty: " .. (PlayState.songDifficulty or "?")
 	self.diffText = Text(0, 47, txt, font)
 	self.diffText.x = game.width - self.diffText:getWidth() - 28
 	self.diffText.alpha = 0
 	self:add(self.diffText)
 
-	txt = "Blue balled: " .. tostring(GameOverSubstate.deaths)
+	txt = GameOverSubstate.deaths .. " Blue Balls"
 	self.deathsText = Text(0, 79, txt, font)
 	self.deathsText.x = game.width - self.deathsText:getWidth() - 28
 	self.deathsText.alpha = 0

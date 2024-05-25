@@ -6,7 +6,7 @@ local Highscore = {
 }
 
 function Highscore.saveScore(song, score, diff)
-	local formatSong = song .. '-' .. diff
+	local formatSong = paths.formatToSongPath(song) .. '-' .. diff:lower()
 
 	if Highscore.scores.songs[formatSong] then
 		if Highscore.scores.songs[formatSong] < score then
@@ -19,7 +19,7 @@ function Highscore.saveScore(song, score, diff)
 end
 
 function Highscore.saveWeekScore(week, score, diff)
-	local formatWeek = week .. '-' .. diff
+	local formatWeek = week .. '-' .. diff:lower()
 
 	if Highscore.scores.weeks[formatWeek] then
 		if Highscore.scores.weeks[formatWeek] < score then
@@ -32,7 +32,7 @@ function Highscore.saveWeekScore(week, score, diff)
 end
 
 function Highscore.getScore(song, diff)
-	local formatSong = song .. '-' .. diff
+	local formatSong = paths.formatToSongPath(song) .. '-' .. diff:lower()
 
 	if Highscore.scores.songs[formatSong] == nil then
 		Highscore.scores.songs[formatSong] = 0
@@ -42,7 +42,7 @@ function Highscore.getScore(song, diff)
 end
 
 function Highscore.getWeekScore(week, diff)
-	local formatWeek = week .. '-' .. diff
+	local formatWeek = week .. '-' .. diff:lower()
 
 	if Highscore.scores.weeks[formatWeek] == nil then
 		Highscore.scores.weeks[formatWeek] = 0
