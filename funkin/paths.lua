@@ -101,7 +101,7 @@ end
 function paths.getNoteskin(key)
 	local obj = paths.noteskins[key]
 	if obj then return obj end
-	obj = paths.getJSON("data/notes/" .. key)
+	obj = paths.getJSON("data/skins/" .. key)
 	if obj then
 		obj.skin = key
 		paths.noteskins[key] = obj

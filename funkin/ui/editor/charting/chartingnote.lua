@@ -48,12 +48,12 @@ end
 function ChartingNote:setStyle(style)
 	if style == self.__style then return end
 
-	if paths.getJSON('data/notes/' .. style) == nil then
+	if paths.getJSON('data/skins/' .. style) == nil then
 		style = "default"
 	end
 	self.__style = style
 
-	local jsonData = paths.getJSON('data/notes/' .. self.__style).notes
+	local jsonData = paths.getJSON('data/skins/' .. self.__style).notes
 	local texture, str = '', 'skins/%s/%s'
 	texture = str:format(jsonData.isPixel and 'default-pixel' or 'default',
 		jsonData.sprite)
