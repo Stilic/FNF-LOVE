@@ -150,18 +150,18 @@ function Character:update(dt)
 		end
 	end
 	if self.lastHit > 0 and self.lastHit +
-		PlayState.conductor.stepCrotchet * self.holdTime
+		PlayState.conductor.stepCrotchet * (self.holdTime + 0.1)
 		< PlayState.conductor.time then
-		local okay = true
+		local canDance = true
 		if self.waitReleaseAfterSing then
 			for input, _ in pairs(PlayState.inputDirections) do
 				if controls:down(input) then
-					okay = false
+					canDance = false
 					break
 				end
 			end
 		end
-		if okay then
+		if canDance then
 			self:dance()
 			self.lastHit = math.negative_infinity
 		end
