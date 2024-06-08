@@ -797,22 +797,17 @@ function PlayState:update(dt)
 	for _, notefield in ipairs(self.notefields) do
 		notefield.time, notefield.beat = time, PlayState.conductor.currentBeatFloat
 
-		local char, isPlayer, keys, sustainHitOffset,
-		fullyHeldSustain, lastPress, lastSustain, dirAnim, resetVolume =
-			notefield.character, not notefield.bot,
-			notefield.keys, 0.25 / notefield.speed
+		local char, isPlayer, sustainHitOffset, noSustainHit, sustainTime,
+		noteTime, lastPress, dir, fullyHeldSustain, hasInput, resetVolume =
+			notefield.character, not notefield.bot, 0.25 / notefield.speed
 		for _, note in ipairs(notefield:getNotes(time, nil, true)) do
-			local noteTime, sustainTime, dir, noSustainHit =
-				note.time, note.sustainTime, note.direction, not note.wasGoodSustainHit
-			local hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
+			noteTime, lastPress, dir, noSustainHit =
+				note.time, note.lastPress, note.direction, not note.wasGoodSustainHit
+			hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
 
-			if not note.wasGoodHit then
-				if not isPlayer and noteTime <= time then
-					-- botplay hit
-					self:goodNoteHit(note, time)
-				end
-				lastPress = note.lastPress
-			else
+			if note.wasGoodHit then
+				sustainTime = note.sustainTime
+
 				if hasInput then
 					-- sustain hitting
 					note.lastPress = time
@@ -822,23 +817,18 @@ function PlayState:update(dt)
 					lastPress = note.lastPress
 				end
 
-				if noSustainHit
-					and noteTime + sustainTime - sustainHitOffset <= lastPress then
-					-- end of sustain hit
-					fullyHeldSustain = noteTime + sustainTime <= lastPress
-					if fullyHeldSustain or not hasInput then
-						note.wasGoodSustainHit = true
-						noSustainHit = false
-
-						if self.playerNotefield == notefield then
-							self.score = self.score
-								+ math.min(time - noteTime + Note.safeZoneOffset,
-									sustainTime) * 1000
-							self:recalculateRating()
+				if not note.wasGoodSustainHit then
+					if noteTime + sustainTime - sustainHitOffset <= lastPress then
+						-- end of sustain hit
+						fullyHeldSustain = noteTime + sustainTime <= lastPress
+						if fullyHeldSustain or not hasInput then
+							self:goodSustainHit(note, time, fullyHeldSustain)
+							noSustainHit = false
 						end
-
-						self:resetStroke(notefield, dir, fullyHeldSustain)
-						notefield:removeNote(note)
+					elseif not hasInput and isPlayer and noteTime <= time then
+						-- early end of sustain hit (no full score)
+						self:goodSustainHit(note, time)
+						noSustainHit, note.tooLate = false, true
 					end
 				end
 
@@ -847,13 +837,15 @@ function PlayState:update(dt)
 					char:sing(dir, nil, false)
 					char.strokeTime = -1
 				end
-			end
-
-			if isPlayer and
-				noSustainHit
-				and (lastPress or noteTime) <= missOffset then
-				-- miss note
-				self:miss(note)
+			elseif isPlayer then
+				if noSustainHit
+					and (lastPress or noteTime) <= missOffset then
+					-- miss note
+					self:miss(note)
+				end
+			elseif noteTime <= time then
+				-- botplay hit
+				self:goodNoteHit(note, time)
 			end
 		end
 
@@ -988,50 +980,6 @@ function PlayState:onSettingChange(category, setting)
 	self.scripts:call("onSettingChange", category, setting)
 end
 
--- note can be nil for non-ghost-tap
-function PlayState:miss(note, dir)
-	local ghostMiss = dir ~= nil
-	if not ghostMiss then dir = note.direction end
-
-	local funcParam = ghostMiss and dir or note
-	self.scripts:call(ghostMiss and "miss" or "noteMiss", funcParam)
-
-	local notefield = ghostMiss and note or note.parent
-	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
-		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
-	if not event.cancelled and (ghostMiss or not note.tooLate) then
-		if not ghostMiss then
-			note.tooLate = true
-		end
-
-		if event.muteVocals and notefield.vocals then notefield.vocals:setVolume(0) end
-
-		if event.triggerSound then
-			util.playSfx(paths.getSound("gameplay/missnote" .. love.math.random(1, 3)),
-				love.math.random(1, 2) / 10)
-		end
-
-		local char = notefield.character
-		if not event.cancelledAnim then char:sing(dir, "miss") end
-
-		if notefield == self.playerNotefield then
-			if not event.cancelledSadGF and self.combo >= 10
-				and self.gf.__animations.sad then
-				self.gf:playAnim("sad", true)
-				self.gf.lastHit = PlayState.conductor.time
-			end
-
-			self.health = math.max(self.health - (ghostMiss and 0.04 or 0.0475), 0)
-			self.score, self.misses, self.combo =
-				self.score - 100, self.misses + 1, math.min(self.combo, 0) - 1
-			self:recalculateRating()
-			self:popUpScore()
-		end
-	end
-
-	self.scripts:call(ghostMiss and "postMiss" or "postNoteMiss", funcParam)
-end
-
 function PlayState:goodNoteHit(note, time, blockAnimation)
 	self.scripts:call("goodNoteHit", note, rating)
 
@@ -1093,6 +1041,78 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 	end
 
 	self.scripts:call("postGoodNoteHit", note, rating)
+end
+
+function PlayState:goodSustainHit(note, time, fullyHeldSustain)
+	self.scripts:call("goodSustainHit", note)
+
+	local notefield, dir, fullScore =
+		note.parent, note.direction, fullyHeldSustain ~= nil
+	local event = self.scripts:event("onSustainHit",
+		Events.NoteHit(notefield, note))
+	if not event.cancelled and not note.wasGoodSustainHit then
+		note.wasGoodSustainHit = true
+
+		if notefield == self.playerNotefield then
+			if fullScore then
+				self.score = self.score + note.sustainTime * 1000
+			else
+				self.score = self.score
+					+ math.min(time - note.lastPress + Note.safeZoneOffset,
+						note.sustainTime) * 1000
+			end
+			self:recalculateRating()
+		end
+
+		self:resetStroke(notefield, dir, fullyHeldSustain)
+		if fullScore then notefield:removeNote(note) end
+	end
+
+	self.scripts:call("postGoodSustainHit", note)
+end
+
+-- dir can be nil for non-ghost-tap
+function PlayState:miss(note, dir)
+	local ghostMiss = dir ~= nil
+	if not ghostMiss then dir = note.direction end
+
+	local funcParam = ghostMiss and dir or note
+	self.scripts:call(ghostMiss and "miss" or "noteMiss", funcParam)
+
+	local notefield = ghostMiss and note or note.parent
+	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
+		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
+	if not event.cancelled and (ghostMiss or not note.tooLate) then
+		if not ghostMiss then
+			note.tooLate = true
+		end
+
+		if event.muteVocals and notefield.vocals then notefield.vocals:setVolume(0) end
+
+		if event.triggerSound then
+			util.playSfx(paths.getSound("gameplay/missnote" .. love.math.random(1, 3)),
+				love.math.random(1, 2) / 10)
+		end
+
+		local char = notefield.character
+		if not event.cancelledAnim then char:sing(dir, "miss") end
+
+		if notefield == self.playerNotefield then
+			if not event.cancelledSadGF and self.combo >= 10
+				and self.gf.__animations.sad then
+				self.gf:playAnim("sad", true)
+				self.gf.lastHit = PlayState.conductor.time
+			end
+
+			self.health = math.max(self.health - (ghostMiss and 0.04 or 0.0475), 0)
+			self.score, self.misses, self.combo =
+				self.score - 100, self.misses + 1, math.min(self.combo, 0) - 1
+			self:recalculateRating()
+			self:popUpScore()
+		end
+	end
+
+	self.scripts:call(ghostMiss and "postMiss" or "postNoteMiss", funcParam)
 end
 
 function PlayState:recalculateRating(rating)
