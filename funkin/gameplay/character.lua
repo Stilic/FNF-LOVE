@@ -150,7 +150,7 @@ function Character:update(dt)
 		end
 	end
 	if self.lastHit > 0 and self.lastHit +
-		PlayState.conductor.stepCrotchet * (self.holdTime + 0.1)
+		PlayState.conductor.stepCrotchet * self.holdTime
 		< PlayState.conductor.time then
 		local canDance = true
 		if self.waitReleaseAfterSing then
