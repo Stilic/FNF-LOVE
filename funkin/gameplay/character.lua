@@ -97,7 +97,9 @@ function Character:new(x, y, char, isPlayer)
 	self.y = self.y + self.positionTable.y
 
 	self:dance()
-	self:finish()
+	if self.curAnim and not self.curAnim.looped then
+		self:finish()
+	end
 end
 
 function Character:switchAnim(oldAnim, newAnim)
