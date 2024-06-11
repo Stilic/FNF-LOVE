@@ -123,7 +123,7 @@ function Notefield:setSkin(skin)
 	end
 end
 
-function Notefield:getNotes(time, direction, forceSustains)
+function Notefield:getNotes(time, direction, sustainLoop)
 	local notes = self.notes
 	if #notes == 0 then return {} end
 
@@ -137,7 +137,7 @@ function Notefield:getNotes(time, direction, forceSustains)
 			and (note.lastPress
 				or (noteTime > time - safeZoneOffset * note.lateHitMult
 					and noteTime < time + safeZoneOffset * note.earlyHitMult)) then
-			forceHit = forceSustains and note.sustain
+			forceHit = sustainLoop and not note.wasGoodSustainHit and note.sustain
 			if forceHit then hasSustain = true end
 			if not note.wasGoodHit or forceHit then
 				prevIdx = i - 1
