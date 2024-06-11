@@ -15,6 +15,8 @@ Receptor.axes = axes
 function Receptor:new(x, y, direction, skin)
 	Receptor.super.new(self, x, y)
 
+	self._x, self._y, self._z = x, y, 0
+
 	self.holdTime = 0
 	self.strokeTime = 0
 	self.__strokeDelta = 0
