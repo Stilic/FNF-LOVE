@@ -1259,7 +1259,6 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 						local dir = lastSustain.direction
 						if char.dirAnim ~= dir then
 							char:sing(dir, nil, false)
-							char.strokeTime = -1
 						end
 					end
 				end
