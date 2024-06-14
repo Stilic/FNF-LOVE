@@ -817,7 +817,7 @@ function PlayState:update(dt)
 					lastPress = note.lastPress
 				end
 
-				if not note.wasGoodSustainHit then
+				if not note.wasGoodSustainHit and lastPress ~= nil then
 					if noteTime + sustainTime - sustainHitOffset <= lastPress then
 						-- end of sustain hit
 						fullyHeldSustain = noteTime + sustainTime <= lastPress
