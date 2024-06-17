@@ -754,7 +754,7 @@ function ChartingState:update(dt)
 				if self.vocals then self.vocals:pause() end
 			else
 				if self.vocals then
-					self.vocals.__source:seek(
+					self.vocals:seek(
 						game.sound.music:tell())
 					self.vocals:play()
 				end
@@ -813,7 +813,7 @@ function ChartingState:update(dt)
 
 			if self.vocals then
 				self.vocals:pause()
-				self.vocals.__source:seek(game.sound.music:tell())
+				self.vocals:seek(game.sound.music:tell())
 			end
 
 			ChartingState.conductor:update()
@@ -1276,7 +1276,7 @@ function ChartingState:changeSection(sec)
 	self:strumPosUpdate()
 	game.sound.music:seek(self:getSectionTime() / 1000)
 	if self.vocals then
-		self.vocals.__source:seek(game.sound.music:tell())
+		self.vocals:seek(game.sound.music:tell())
 	end
 	game.sound.music:pause()
 	if self.vocals then self.vocals:pause() end
