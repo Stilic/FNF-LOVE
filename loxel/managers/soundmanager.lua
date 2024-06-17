@@ -27,7 +27,6 @@ function SoundManager.loadMusic(asset)
 	return music:load(asset)
 end
 
--- volume, looped, pitch, restart
 function SoundManager.playMusic(asset, volume, looped, ...)
 	if looped == nil then looped = true end
 	return SoundManager.loadMusic(asset):play(volume, looped, ...)
@@ -38,15 +37,18 @@ function SoundManager.update(dt)
 end
 
 function SoundManager.onFocus(focus)
-	for _, sound in ipairs(SoundManager.list.members) do
-		if sound.exists and sound.active then sound:onFocus(focus) end
+	if love.autoPause then
+		for _, sound in ipairs(SoundManager.list.members) do
+			if sound.exists and sound.active then sound:onFocus(focus) end
+		end
 	end
 end
 
 function SoundManager.__adjust()
 	for _, sound in ipairs(SoundManager.list.members) do
 		if sound.exists and sound.active then
-			sound:setVolume(); sound:setPitch()
+			sound:setVolume()
+			sound:setPitch()
 		end
 	end
 end
@@ -58,22 +60,26 @@ function SoundManager:adjust(mute, volume, pitch)
 		return
 	end
 	SoundManager.__mute, SoundManager.__volume = mute, volume
-	SoundManager.__pitch = pitch; SoundManager.__adjust()
+	SoundManager.__pitch = pitch
+	SoundManager.__adjust()
 end
 
 function SoundManager.setMute(mute)
 	if SoundManager.__mute == mute then return end
-	SoundManager.__mute = mute; SoundManager.__adjust()
+	SoundManager.__mute = mute
+	SoundManager.__adjust()
 end
 
 function SoundManager.setVolume(volume)
 	if SoundManager.__volume == volume then return end
-	SoundManager.__volume = volume; SoundManager.__adjust()
+	SoundManager.__volume = volume
+	SoundManager.__adjust()
 end
 
 function SoundManager.setPitch(pitch)
 	if SoundManager.__pitch == pitch then return end
-	SoundManager.__pitch = pitch; SoundManager.__adjust()
+	SoundManager.__pitch = pitch
+	SoundManager.__adjust()
 end
 
 function SoundManager.destroy(force)

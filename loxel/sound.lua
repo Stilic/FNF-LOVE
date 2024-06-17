@@ -9,11 +9,10 @@ end
 
 function Sound:revive()
 	self:reset(true)
-
 	self.__volume = 1
 	self.__pitch = 1
 	self.__duration = 0
-	self.__wasPlaying = nil
+	self.__wasPlaying = false
 	Sound.super.revive(self)
 end
 
@@ -25,16 +24,13 @@ function Sound:reset(cleanup, x, y)
 	end
 	self:setPosition(x or self.x, y or self.y)
 
+	self.__wasPlaying = false
 	self.looped = false
 	self.autoDestroy = false
 	self.radius = 0
+	self:cancelFade()
+	self:setVolume(1)
 	self:setPitch(1)
-
-	--[[
-	self.__amplitudeLeft = 0.0
-	self.__amplitudeRight = 0.0
-	self.__amplitudeUpdate = true
-	]]
 end
 
 function Sound:fade(duration, startVolume, endVolume)
@@ -45,7 +41,7 @@ function Sound:fade(duration, startVolume, endVolume)
 end
 
 function Sound:cancelFade()
-	self.__fadeStartTime = nil
+	self.__fadeDuration = nil
 end
 
 function Sound:cleanup()
@@ -135,7 +131,6 @@ function Sound:proximity(x, y, target, radius)
 	self:setPosition(x, y)
 	self.target = target
 	self.radius = radius
-
 	return self
 end
 
@@ -166,24 +161,20 @@ function Sound:update(dt)
 end
 
 function Sound:onFocus(focus)
-	if love.autoPause and self.active and not self:isFinished() then
+	if not self:isFinished() then
 		if focus then
-			if self.__wasPlaying ~= nil and self.__wasPlaying then
-				self.__wasPlaying = nil
-				self:play()
-			end
+			if self.__wasPlaying then self:play() end
+		elseif self:isPlaying() then
+			self.__wasPlaying = true
+			self:pause()
 		else
-			self.__wasPlaying = self:isPlaying()
-			if self.__wasPlaying then
-				self:pause()
-			end
+			self.__wasPlaying = false
 		end
 	end
 end
 
 function Sound:isPlaying()
 	if not self.__source then return false end
-
 	local success, playing = pcall(self.__source.isPlaying, self.__source)
 	return success and playing
 end
@@ -195,7 +186,6 @@ end
 
 function Sound:tell()
 	if not self.__source then return 0 end
-
 	local success, position = pcall(self.__source.tell, self.__source)
 	return success and position or 0
 end
@@ -242,7 +232,6 @@ end
 
 function Sound:isLooping()
 	if not self.__source then return end
-
 	local success, loop = pcall(self.__source.isLooping, self.__source)
 	if success then return loop end
 end
