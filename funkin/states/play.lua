@@ -1,11 +1,15 @@
 local Events = require "funkin.backend.scripting.events"
 local PauseSubstate = require "funkin.substates.pause"
-
+local Vocals = require "funkin.gameplay.vocals"
 --[[ LIST TODO OR NOTES
+	- ralty
 	maybe make scripts vars just include conductor itself instead of the properties of conductor
-	-- NVM NVM, maybe do make a var conductor but keep props
+	NVM NVM, maybe do make a var conductor but keep props
 
 	rewrite timers. to just be dependancy to loxel,. just rewrite timers with new codes.
+
+	- kaoy
+	remake stuff like cameramove to be handled by events. also uuh do it softcoded mayb
 ]]
 
 ---@class PlayState:State
@@ -44,36 +48,7 @@ function PlayState.loadSong(song, diff)
 	diff = diff or PlayState.defaultDifficulty
 	PlayState.songDifficulty = diff
 
-	local path = "songs/" .. song .. "/charts/" .. diff:lower()
-	local data = paths.getJSON(path)
-
-	local metadata = paths.getJSON('songs/' .. song .. '/meta')
-	if data then
-		PlayState.SONG = data.song
-		if metadata then PlayState.SONG.meta = metadata end
-	else
-		if not metadata then return false end
-		PlayState.SONG = {
-			song = song,
-			bpm = 150,
-			speed = 1,
-			stage = 'stage',
-			player1 = 'bf',
-			player2 = 'dad',
-			gfVersion = 'gf',
-			skin = 'default',
-			notes = {},
-			meta = metadata
-		}
-	end
-	if metadata then
-		if metadata.name then
-			PlayState.SONG.song = metadata.name
-		end
-		if metadata.skin then
-			PlayState.SONG.skin = metadata.skin
-		end
-	end
+	PlayState.SONG = API.chart.parse(song, diff)
 
 	return true
 end
@@ -158,20 +133,8 @@ function PlayState:enter()
 	game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100)
 	game.sound.music.onComplete = function() self:endSong() end
 
-	local bfVocals, dadVocals, volume = paths.getVoices(songName, "Player", true)
-		or paths.getVoices(songName, self.SONG.player1, true)
-		or paths.getVoices(songName, nil, true),
-		paths.getVoices(songName, "Opponent", true) or paths.getVoices(songName, self.SONG.player2, true),
-		ClientPrefs.data.vocalVolume / 100
-	if bfVocals then
-		self.vocals = game.sound.load(bfVocals)
-		self.vocals:setVolume(volume)
-	end
-	if dadVocals then
-		self.dadVocals = game.sound.load(dadVocals)
-		self.dadVocals:setVolume(volume)
-	elseif bfVocals then
-		self.dadVocals = self.vocals
+	if not PlayState.SONG.noVoices then
+		self.vocals = Vocals(PlayState.SONG)
 	end
 
 	PlayState.SONG.stage = self:loadStageWithSongName(songName)
@@ -234,9 +197,10 @@ function PlayState:enter()
 	self.camZooming = true
 
 	local y, keys = game.height / 2, 4
-	self.enemyNotefield = Notefield(0, y, keys, PlayState.SONG.skin, self.dad, self.dadVocals)
+	local sameVoc = self.vocals and (self.vocals.dad and self.vocals.dad or self.vocals.bf) or nil
+	self.enemyNotefield = Notefield(0, y, keys, PlayState.SONG.skin, self.dad, sameVoc)
 	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
-	self.playerNotefield = Notefield(0, y, keys, PlayState.SONG.skin, self.boyfriend, self.vocals)
+	self.playerNotefield = Notefield(0, y, keys, PlayState.SONG.skin, self.boyfriend, self.vocals and self.vocals.bf)
 	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	local vocalVolume = ClientPrefs.data.vocalVolume / 100
@@ -454,28 +418,23 @@ function PlayState:getRating(a, b)
 end
 
 function PlayState:generateNote(n, s)
-	local time, col = tonumber(n[1]), tonumber(n[2])
+	local time, col = tonumber(n.t), tonumber(n.d)
 	if time == nil or col == nil or time < self.startPos then return end
 
-	local hit = s.mustHitSection
+	local hit = true
 	if col > 3 then hit = not hit end
-	col = col % 4
 
-	local sustime = tonumber(n[3]) or 0
+	local sustime = tonumber(n.l) or 0
 	if sustime > 0 then sustime = math.max(sustime / 1000, 0.125) end
 
 	local notefield = hit and self.playerNotefield or self.enemyNotefield
-	local note = notefield:makeNote(time / 1000, col, sustime)
-	note.type = n[4]
+	local note = notefield:makeNote(time / 1000, n.d % 4, sustime)
+	note.type = nil
 end
 
 function PlayState:generateNotes()
 	for _, s in ipairs(PlayState.SONG.notes) do
-		if s and s.sectionNotes then
-			for _, n in ipairs(s.sectionNotes) do
-				self:generateNote(n, s)
-			end
-		end
+		self:generateNote(s, s)
 	end
 
 	local speed = PlayState.SONG.speed
@@ -547,7 +506,6 @@ function PlayState:startCountdown()
 
 	game.sound.music:setPitch(self.playback)
 	if self.vocals then self.vocals:setPitch(self.playback) end
-	if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:setPitch(self.playback) end
 
 	self.startedCountdown = true
 	self.doCountdownAtBeats = PlayState.startPos / PlayState.conductor.crotchet - 4
@@ -743,35 +701,27 @@ function PlayState:update(dt)
 			self.playback = ClientPrefs.data.playback
 			Timer.setSpeed(self.playback)
 
-			local time, hasVocals, hasDadVocals = self.startPos / 1000, self.vocals, self.dadVocals and self.dadVocals ~= self.vocals
+			local time, hasVocals = self.startPos / 1000, self.vocals
 			game.sound.music:setPitch(self.playback)
 			game.sound.music:seek(time)
 			if hasVocals then
 				self.vocals:setPitch(self.playback)
 				self.vocals:seek(time)
 			end
-			if hasDadVocals then
-				self.dadVocals:setPitch(self.playback)
-				self.dadVocals:seek(time)
-			end
 			game.sound.music:play()
 			if hasVocals then self.vocals:play() end
-			if hasDadVocals then self.dadVocals:play() end
 
 			self:section(0)
 			self.scripts:call("songStart")
 		elseif game.sound.music:isPlaying() then
-			local rate = math.max(self.playback, 1)
-			local time, vocalsTime, dadVocalsTime = game.sound.music:tell(), self.vocals and self.vocals:tell(),
-				(self.dadVocals and self.dadVocals ~= self.vocals) and self.dadVocals:tell()
+			local time, rate = game.sound.music:tell(), math.max(self.playback, 1)
+
 			if PlayState.conductor.lastStep ~= PlayState.conductor.currentStep then
-				if vocalsTime and self.vocals:isPlaying()
-					and math.abs(time - vocalsTime) > 0.03 * rate then
+				local vocalTime = self.vocals and self.vocals:tell()
+				if vocalTime and not self.vocals._paused
+					and math.abs(time - vocalTime) > 0.0088 * rate then
 					self.vocals:seek(time)
-				end
-				if dadVocalsTime and self.dadVocals:isPlaying()
-					and math.abs(time - dadVocalsTime) > 0.03 * rate then
-					self.dadVocals:seek(time)
+					print("resync vocals")
 				end
 			end
 
@@ -879,7 +829,6 @@ function PlayState:update(dt)
 			game.camera:unfollow()
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
-			if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:pause() end
 			game.switchState(ChartingState())
 		end
 
@@ -887,7 +836,6 @@ function PlayState:update(dt)
 			game.camera:unfollow()
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
-			if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:pause() end
 			CharacterEditor.onPlayState = true
 			game.switchState(CharacterEditor())
 		end
@@ -904,7 +852,6 @@ function PlayState:update(dt)
 			self.skipConductor, PlayState.conductor.time = true, time * 1000
 			game.sound.music:seek(time)
 			if self.vocals then self.vocals:seek(time) end
-			if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:seek(time) end
 		end
 	end
 
@@ -959,7 +906,6 @@ function PlayState:onSettingChange(category, setting)
 				Timer.setSpeed(self.playback)
 				game.sound.music:setPitch(self.playback)
 				if self.vocals then self.vocals:setPitch(self.playback) end
-				if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:setPitch(self.playback) end
 			end
 		})
 
@@ -1004,8 +950,8 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 		if not event.cancelledAnim and (blockAnimation == nil or not blockAnimation) then
 			local char = notefield.character
 			if char then
-				local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
-				if section and section.altAnim then animType = "alt" end
+				-- local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
+				-- if section and section.altAnim then animType = "alt" end
 				char:sing(dir, animType)
 				if note.sustain then char.strokeTime = -1 end
 			end
@@ -1143,7 +1089,6 @@ function PlayState:tryPause()
 
 		game.sound.music:pause()
 		if self.vocals then self.vocals:pause() end
-		if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:pause() end
 
 		self.paused = true
 
@@ -1165,7 +1110,6 @@ function PlayState:tryGameOver()
 		if event.pauseSong then
 			game.sound.music:pause()
 			if self.vocals then self.vocals:pause() end
-			if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:pause() end
 		end
 
 		self.camHUD.visible, self.camNotes.visible = false, false
@@ -1302,10 +1246,6 @@ function PlayState:closeSubstate()
 			self.vocals:seek(time)
 			self.vocals:play()
 		end
-		if self.dadVocals and self.dadVocals ~= self.vocals then
-			self.dadVocals:seek(time)
-			self.dadVocals:play()
-		end
 
 		PlayState.conductor.time = time * 1000
 
@@ -1381,7 +1321,6 @@ function PlayState:endSong(skip)
 
 	game.sound.music:reset(true)
 	if self.vocals then self.vocals:stop() end
-	if self.dadVocals and self.dadVocals ~= self.vocals then self.dadVocals:stop() end
 	if self.storyMode then
 		PlayState.storyScore = PlayState.storyScore + self.score
 

@@ -4,7 +4,6 @@ function Vocals:new(songData)
 	Vocals.super.new(self)
 
 	self.bf, self.dad = nil, nil
-	self.volume = ClientPrefs.data.vocalVolume / 100
 	self._paused = true
 
 	local songName = paths.formatToSongPath(songData.song)
