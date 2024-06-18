@@ -1,6 +1,6 @@
 local Notefield = ActorGroup:extend("Notefield")
 
-function Notefield:new(x, y, keys, skin, character, vocals)
+function Notefield:new(x, y, keys, skin, character, vocals, speed)
 	Notefield.super.new(self, x, y)
 
 	self.noteWidth = 160 * 0.7
@@ -11,7 +11,7 @@ function Notefield:new(x, y, keys, skin, character, vocals)
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
-	self.speed = 1
+	self.speed = speed or 1
 	self.drawSize = game.height * 2 + self.noteWidth
 	self.drawSizeOffset = 0
 	self.downscroll = false -- this just sets scale y backwards

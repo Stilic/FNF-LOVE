@@ -437,7 +437,8 @@ function Camera:drawComplex(_skipCheck)
 	grap.setBlendMode("alpha", "premultiplied")
 	grap.setColor(color[1] * alpha, color[2] * alpha, color[3] * alpha, alpha)
 
-	canvas:setFilter(self.antialiasing and "linear" or "nearest")
+	local filter = self.antialiasing and "linear" or "nearest"
+	canvas:setFilter(filter, filter)
 	if self.clipCam then
 		grap.draw(canvas, w2 + x, h2 + y, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
 	else
