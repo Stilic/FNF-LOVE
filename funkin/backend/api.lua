@@ -72,31 +72,43 @@ function API.chart.parse(song, diff, returnRaw)
 			data.scrollSpeed.default) or 1
 		parsedData.speed = speed
 
-		parsedData.notes = data.notes[diff:lower()]
+		parsedData.notes = API.chart.splitNotes(data.notes[diff:lower()])
 		parsedData.events = data.events
 	else
-		parsedData.notes = API.chart.convertNotesToV2(chart.notes)
+		parsedData.notes = API.chart.splitNotes(chart.notes, true)
 		parsedData.events = API.chart.getV1Events(chart.notes)
 	end
 
 	return (returnRaw and data or parsedData)
 end
 
-function API.chart.convertNotesToV2(data)
-	-- this is broken
-	local result = {}
-	for _, s in ipairs(data) do
-		if s and s.sectionNotes then
-			for i, n in ipairs(s.sectionNotes) do
-				local time, col = tonumber(n[1]), tonumber(n[2])
-				local hit, sustime = s.mustHitSection, tonumber(n[3]) or 0
-				if not hit then col = math.abs(col - 7) end
+function API.chart.splitNotes(data, isV1)
+	local dad, bf = {}, {}
+	if not isV1 then
+		for _, n in ipairs(data) do
+			local col, time, length = tonumber(n.d), tonumber(n.t), tonumber(n.l) or 0
+			local hit = true
+			if col > 3 then hit = false end
 
-				table.insert(result, {t = time, d = col, l = sustime})
+			if hit then table.insert(bf, {t = time, d = col % 4, l = length}) end
+			if not hit then table.insert(dad, {t = time, d = col % 4, l = length}) end
+		end
+	else
+		for _, s in ipairs(data) do
+			if s and s.sectionNotes then
+				for _, n in ipairs(s.sectionNotes) do
+					local col, time, length = tonumber(n[2]), tonumber(n[1]),
+						tonumber(n[3]) or 0
+					local hit = s.mustHitSection
+					if col > 3 then hit = not hit end
+
+					if hit then table.insert(bf, {t = time, d = col % 4, l = length}) end
+					if not hit then table.insert(dad, {t = time, d = col % 4, l = length}) end
+				end
 			end
 		end
 	end
-	return result
+	return {enemy = dad, player = bf}
 end
 
 function API.chart.getV1Events(data, initBPM)

@@ -417,25 +417,18 @@ function PlayState:getRating(a, b)
 	end
 end
 
-function PlayState:generateNote(n, s)
-	local time, col = tonumber(n.t), tonumber(n.d)
-	if time == nil or col == nil or time < self.startPos then return end
-
-	local hit = true
-	if col > 3 then hit = not hit end
-
-	local sustime = tonumber(n.l) or 0
+function PlayState:generateNote(enemyField, n)
+	local sustime = n.l or 0
 	if sustime > 0 then sustime = math.max(sustime / 1000, 0.125) end
 
-	local notefield = hit and self.playerNotefield or self.enemyNotefield
-	local note = notefield:makeNote(time / 1000, n.d % 4, sustime)
-	note.type = nil
+	local notefield = enemyField and self.enemyNotefield or self.playerNotefield
+	local note = notefield:makeNote(n.t / 1000, n.d % 4, sustime)
 end
 
 function PlayState:generateNotes()
-	for _, s in ipairs(PlayState.SONG.notes) do
-		self:generateNote(s, s)
-	end
+	local song = PlayState.SONG
+	for _, n in ipairs(song.notes.enemy) do self:generateNote(true, n) end
+	for _, n in ipairs(song.notes.player) do self:generateNote(false, n) end
 
 	local speed = PlayState.SONG.speed
 	self.playerNotefield.speed = speed
