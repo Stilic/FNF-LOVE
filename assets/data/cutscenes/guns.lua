@@ -4,13 +4,12 @@ local cutsceneTimer
 function create()
 	cutsceneTimer = Timer.new()
 
-	state.dad.alpha = 0.00001
+	state.dad.alpha = 0
 	state.camHUD.visible, state.camNotes.visible = false, false
 
-	local songName = paths.formatToSongPath(state.SONG.song)
-
 	tankman = Sprite(state.dad.x + 100, state.dad.y)
-	tankman:setFrames(paths.getSparrowAtlas('stages/tank/cutscenes/' .. songName))
+	tankman:setFrames(paths.getSparrowAtlas('stages/tank/cutscenes/'
+		.. paths.formatToSongPath(PlayState.SONG.song)))
 	tankman:addAnimByPrefix('tightBars', 'TANK TALK 2', 24, false)
 	tankman:play('tightBars', true)
 	state:insert(table.find(state.members, state.dad) + 1, tankman)

@@ -20,5 +20,6 @@
     "assign-type-mismatch",
     "unbalanced-assignments",
     "redefined-local"
-  ]
+  ],
+  "Lua.completion.autoRequire": false
 }

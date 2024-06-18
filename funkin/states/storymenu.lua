@@ -233,7 +233,7 @@ function StoryMenuState:selectWeek()
 		local songTable = {}
 		local leWeek = self.weeksData[StoryMenuState.curWeek]
 		for i = 1, #leWeek.songs do
-			table.insert(songTable, paths.formatToSongPath(leWeek.songs[i]))
+			table.insert(songTable, leWeek.songs[i])
 		end
 
 		local diff = (leWeek.difficulties and leWeek.difficulties[StoryMenuState.curDifficulty] or

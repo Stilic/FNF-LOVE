@@ -1,4 +1,4 @@
-local bgGirls
+local songName, bgGirls = paths.formatToSongPath(PlayState.SONG.song)
 
 function create()
 	self.camZoom = 1.05
@@ -68,7 +68,7 @@ function create()
 	bgStreet:updateHitbox()
 	bgTrees:updateHitbox()
 
-	bgGirls = BackgroundGirls(-100, 190, state.SONG.song:lower() == 'roses')
+	bgGirls = BackgroundGirls(-100, 190, songName)
 	bgGirls:setScrollFactor(0.9, 0.9)
 	bgGirls:setGraphicSize(math.floor(bgGirls.width * 6))
 	bgGirls:updateHitbox()
@@ -76,7 +76,7 @@ function create()
 	self:add(bgGirls)
 end
 
-function beat(b) if state.SONG.song:lower() ~= 'thorns' then bgGirls:dance() end end
+function beat(b) if songName ~= 'thorns' then bgGirls:dance() end end
 
 function onGameOver(event)
 	event.characterName = 'bf-pixel-dead'

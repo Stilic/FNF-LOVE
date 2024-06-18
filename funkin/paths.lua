@@ -162,13 +162,13 @@ function paths.getMusic(key) return paths.getAudio("music/" .. key, true) end
 function paths.getSound(key) return paths.getAudio("sounds/" .. key, false) end
 
 function paths.getInst(song)
-	local daSong = paths.formatToSongPath(song)
-	return paths.getAudio("songs/" .. daSong .. "/Inst", true)
+	return paths.getAudio("songs/" .. paths.formatToSongPath(song) .. "/Inst", true)
 end
 
 function paths.getVoices(song, suffix, logError)
-	local daSong = paths.formatToSongPath(song)
-	return paths.getAudio("songs/" .. daSong .. "/Voices" .. (suffix and "-" .. suffix or ""), true, logError)
+	return paths.getAudio("songs/"
+		.. paths.formatToSongPath(song)
+		.. "/Voices" .. (suffix and "-" .. suffix or ""), true, logError)
 end
 
 function paths.getSparrowAtlas(key)

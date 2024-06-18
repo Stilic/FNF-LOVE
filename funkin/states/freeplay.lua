@@ -157,9 +157,7 @@ function FreeplayState:update(dt)
 			if controls:pressed('accept') then
 				PlayState.storyMode = false
 
-				local daSong = paths.formatToSongPath(
-					self.songsData[FreeplayState.curSelected]
-					.name)
+				local daSong = self.songsData[FreeplayState.curSelected].name
 				local diff =
 					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]
 

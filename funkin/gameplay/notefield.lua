@@ -7,7 +7,6 @@ function Notefield:new(x, y, keys, skin, character, vocals, speed)
 	self.height = 514
 	self.keys = keys
 	self.skin = paths.getSkin(skin)
-	self.character, self.vocals = character, vocals
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
@@ -18,9 +17,9 @@ function Notefield:new(x, y, keys, skin, character, vocals, speed)
 	self.canSpawnSplash = true
 
 	-- for PlayState
+	self.character, self.vocals = character, vocals
 	self.bot = false
 	self.lastSustain = nil
-	self.vocalVolume = 1
 
 	self.modifiers = {}
 
