@@ -148,7 +148,11 @@ end
 
 function string:trim() return self:ltrim():rtrim() end
 
-function table.merge(a, b) for i, v in pairs(b) do a[i] = v end end
+function table.merge(a, b)
+	if a and b then
+		for i, v in pairs(b) do a[i] = v end
+	end
+end
 
 function table.keys(list, includeIndices, keys)
 	keys = keys or table_new(#list, 0)
