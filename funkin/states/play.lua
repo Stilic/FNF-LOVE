@@ -497,22 +497,23 @@ end
 function PlayState:step(s)
 	if self.skipConductor then return end
 
-	local time, conductorTime, rate = game.sound.music:tell(),
-		PlayState.conductor.time / 1000, math.max(self.playback, 1)
-	if math.abs(time - conductorTime) > 0.015 * rate then
-		game.sound.music:seek(conductorTime)
-	end
-	local maxDelay, vocals = 0.0088 * rate
-	for _, notefield in ipairs(self.notefields) do
-		vocals = notefield.vocals
-		if vocals and vocals:isPlaying()
-			and math.abs(time - vocals:tell()) > maxDelay then
-			vocals:seek(time)
+	if not self.startingSong then
+		local time, rate = game.sound.music:tell(), math.max(self.playback, 1)
+		if math.abs(time - PlayState.conductor.time / 1000) > 0.015 * rate then
+			PlayState.conductor.time = time * 1000
 		end
-	end
+		local maxDelay, vocals = 0.0088 * rate
+		for _, notefield in ipairs(self.notefields) do
+			vocals = notefield.vocals
+			if vocals and vocals:isPlaying()
+				and math.abs(time - vocals:tell()) > maxDelay then
+				vocals:seek(time)
+			end
+		end
 
-	if Discord and not self.startingSong and self.startedCountdown and game.sound.music:isPlaying() then
-		coroutine.wrap(PlayState.updateDiscordRPC)(self)
+		if Discord then
+			coroutine.wrap(PlayState.updateDiscordRPC)(self)
+		end
 	end
 
 	self.scripts:set("curStep", s)
