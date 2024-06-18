@@ -2,6 +2,7 @@ io.stdout:setvbuf("no")
 __print = print
 
 require "loxel"
+API = require "funkin.backend.api"
 
 if love.system.getOS() == "Windows" then
 	WindowDialogue = require "lib.windows.dialogue"
