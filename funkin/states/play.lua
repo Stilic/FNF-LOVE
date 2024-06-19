@@ -197,34 +197,38 @@ function PlayState:enter()
 	game.camera.zoom = self.stage.camZoom
 	self.camZooming = true
 
-	local enemyVocals, playerVocals, volume = paths.getVoices(songName, "Opponent", true)
-		or paths.getVoices(songName, PlayState.SONG.player2, true),
-		paths.getVoices(songName, "Player", true)
-		or paths.getVoices(songName, PlayState.SONG.player1, true)
+	local playerVocals, enemyVocals, volume =
+		paths.getVoices(songName, PlayState.SONG.player1, true)
+		or paths.getVoices(songName, "Player", true)
 		or paths.getVoices(songName, nil, true),
+		paths.getVoices(songName, PlayState.SONG.player2, true)
+		or paths.getVoices(songName, "Opponent", true),
 		ClientPrefs.data.vocalVolume / 100
-	if enemyVocals then
-		enemyVocals = game.sound.load(enemyVocals)
-		enemyVocals:setVolume(volume)
-	end
 	if playerVocals then
 		playerVocals = game.sound.load(playerVocals)
 		playerVocals:setVolume(volume)
 	end
+	if enemyVocals then
+		enemyVocals = game.sound.load(enemyVocals)
+		enemyVocals:setVolume(volume)
+	end
 	local y, keys, volume = game.height / 2, 4, ClientPrefs.data.vocalVolume / 100
-	self.enemyNotefield = Notefield(0, y, keys, PlayState.SONG.skin,
-		self.dad, enemyVocals, PlayState.SONG.speed)
-	self.enemyNotefield.bot, self.enemyNotefield.canSpawnSplash = true, false
 	self.playerNotefield = Notefield(0, y, keys, PlayState.SONG.skin,
 		self.boyfriend, playerVocals, PlayState.SONG.speed)
-	self.playerNotefield.bot = ClientPrefs.data.botplayMode
-
-	self.enemyNotefield.cameras, self.playerNotefield.cameras = {self.camNotes}, {self.camNotes}
+	self.enemyNotefield = Notefield(0, y, keys, PlayState.SONG.skin,
+		self.dad, enemyVocals, PlayState.SONG.speed)
+	self.playerNotefield.bot, self.enemyNotefield.bot,
+	self.enemyNotefield.canSpawnSplash = ClientPrefs.data.botplayMode, true, false
+	self.playerNotefield.cameras, self.enemyNotefield.cameras = {self.camNotes}, {self.camNotes}
 	self.notefields = {self.playerNotefield, self.enemyNotefield, {character = self.gf}}
 	self:centerNotefields()
 
-	for _, n in ipairs(PlayState.SONG.notes.enemy) do self:generateNote(true, n) end
-	for _, n in ipairs(PlayState.SONG.notes.player) do self:generateNote(false, n) end
+	for _, n in ipairs(PlayState.SONG.notes.enemy) do
+		self:generateNote(self.enemyNotefield, n)
+	end
+	for _, n in ipairs(PlayState.SONG.notes.player) do
+		self:generateNote(self.playerNotefield, n)
+	end
 	self:add(self.enemyNotefield)
 	self:add(self.playerNotefield)
 
@@ -426,7 +430,7 @@ function PlayState:centerNotefields()
 		local halfW = game.width / 2
 		local startX = game.width / 1.5 -
 			(self.enemyNotefield:getWidth() + halfW + self.playerNotefield:getWidth()) / 2
-		self.enemyNotefield.x, self.playerNotefield.x = startX, startX + halfW
+		self.playerNotefield.x, self.enemyNotefield.x = startX + halfW, startX
 
 		for _, notefield in ipairs(self.notefields) do
 			if notefield.is then notefield.visible = true end
@@ -446,12 +450,12 @@ function PlayState:getRating(a, b)
 	end
 end
 
-function PlayState:generateNote(enemyField, n)
-	local sustime = n.l or 0
-	if sustime > 0 then sustime = math.max(sustime / 1000, 0.125) end
-
-	local notefield = enemyField and self.enemyNotefield or self.playerNotefield
-	local note = notefield:makeNote(n.t / 1000, n.d % 4, sustime)
+function PlayState:generateNote(notefield, n)
+	local sustainTime = n.l or 0
+	if sustainTime > 0 then
+		sustainTime = math.max(sustainTime / 1000, 0.125)
+	end
+	notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
 end
 
 function PlayState:startCountdown()
