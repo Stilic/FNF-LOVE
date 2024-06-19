@@ -60,27 +60,18 @@ function API.chart.parse(song, diff, returnRaw)
 	if chart.stage then
 		parsedData.stage = chart.stage
 	else
-		if song == "test" then
-			parsedData.stage = "test"
-		elseif song == "spookeez" or song == "south" or song == "monster" then
-			parsedData.stage = "spooky"
-		elseif song == "pico" or song == "philly-nice" or song == "blammed" then
-			parsedData.stage = "philly"
-		elseif song == "satin-panties" or song == "high" or song == "milf" then
-			parsedData.stage = "limo"
-		elseif song == "cocoa" or song == "eggnog" then
-			parsedData.stage = "mall"
-		elseif song == "winter-horrorland" then
-			parsedData.stage = "mall-evil"
-		elseif song == "senpai" or song == "roses" then
-			parsedData.stage = "school"
-		elseif song == "thorns" then
-			parsedData.stage = "school-evil"
-		elseif song == "ugh" or song == "guns" or song == "stress" then
-			parsedData.stage = "tank"
-		else
-			parsedData.stage = meta.playData.stage
-		end
+		switch(song, {
+			["test"] = function() parsedData.stage = "test" end,
+			[{"spookeez", "south", "monster"}] = function() parsedData.stage = "spooky" end,
+			[{"pico", "philly-nice", "blammed"}] = function() parsedData.stage = "philly" end,
+			[{"satin-panties", "high", "milf"}] = function() parsedData.stage = "limo" end,
+			[{"cocoa", "eggnog"}] = function() parsedData.stage = "mall" end,
+			["winter-horrorland"] = function() parsedData.stage = "mall-evil" end,
+			[{"senpai", "roses"}] = function() parsedData.stage = "school" end,
+			["thorns"] = function() parsedData.stage = "school-evil" end,
+			[{"ugh", "guns", "stress"}] = function() parsedData.stage = "tank" end,
+			default = function() parsedData.stage = meta.playData.stage end
+		})
 	end
 	parsedData.skin = chart.skin or meta.playData.skin
 
@@ -92,10 +83,8 @@ function API.chart.parse(song, diff, returnRaw)
 	else
 		switch(parsedData.stage, {
 			["limo"] = function() parsedData.gfVersion = "gf-car" end,
-			["mall"] = function() parsedData.gfVersion = "gf-christmas" end,
-			["mall-evil"] = function() parsedData.gfVersion = "gf-christmas" end,
-			["school"] = function() parsedData.gfVersion = "gf-pixel" end,
-			["school-evil"] = function() parsedData.gfVersion = "gf-pixel" end,
+			[{"mall", "mall-evil"}] = function() parsedData.gfVersion = "gf-christmas" end,
+			[{"school", "school-evil"}] = function() parsedData.gfVersion = "gf-pixel" end,
 			["tank"] = function()
 				if song == "stress" then
 					parsedData.gfVersion = "pico-speaker"
@@ -138,13 +127,13 @@ function API.chart.splitNotes(data, isV1)
 		for _, s in ipairs(data) do
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
-					local col, time, length = tonumber(n[2]), tonumber(n[1]),
-						tonumber(n[3]) or 0
+					local col, time, length, type = tonumber(n[2]), tonumber(n[1]),
+						tonumber(n[3]) or 0, tonumber(n[4]) or 0 -- ?
 					local hit = s.mustHitSection
 					if col > 3 then hit = not hit end
 
-					if hit then table.insert(bf, {t = time, d = col % 4, l = length}) end
-					if not hit then table.insert(dad, {t = time, d = col % 4, l = length}) end
+					if hit then table.insert(bf, {t = time, d = col % 4, l = length, k = type}) end
+					if not hit then table.insert(dad, {t = time, d = col % 4, l = length, k = type}) end
 				end
 			end
 		end
@@ -154,8 +143,8 @@ function API.chart.splitNotes(data, isV1)
 			local hit = true
 			if col > 3 then hit = false end
 
-			if hit then table.insert(bf, {t = time, d = col % 4, l = length}) end
-			if not hit then table.insert(dad, {t = time, d = col % 4, l = length}) end
+			if hit then table.insert(bf, {t = time, d = col % 4, l = length, k = n.k}) end
+			if not hit then table.insert(dad, {t = time, d = col % 4, l = length, k = n.k}) end
 		end
 	end
 	return {enemy = dad, player = bf}
@@ -170,7 +159,7 @@ function API.chart.getV1Events(data, bpm)
 				bpm = s.bpm
 				crotchet = getCrotchet(bpm)
 			end
-			focus = s.gfSection and 2 or (s.mustHitSection and 1 or 0)
+			focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)
 			if focus ~= lastFocus then
 				table.insert(result, {
 					t = time,

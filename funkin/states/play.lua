@@ -95,6 +95,17 @@ function PlayState:enter()
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs/" .. songName)
 
+	self.events = table.clone(PlayState.SONG.events)
+	self.eventScripts = {}
+	for _, e in ipairs(self.events) do
+		local scriptPath = "data/events/" .. e.e:gsub(" ", "-"):lower()
+		if not self.eventScripts[e.e] then
+			self.eventScripts[e.e] = Script(scriptPath)
+			self.eventScripts[e.e].belongsTo = e.e
+			self.scripts:add(self.eventScripts[e.e])
+		end
+	end
+
 	if Discord then self:updateDiscordRPC() end
 
 	self.startingSong = true
@@ -209,15 +220,13 @@ function PlayState:enter()
 	self.playerNotefield.bot = ClientPrefs.data.botplayMode
 
 	self.enemyNotefield.cameras, self.playerNotefield.cameras = {self.camNotes}, {self.camNotes}
-	self.notefields = {self.enemyNotefield, self.playerNotefield, {character = self.gf}}
+	self.notefields = {self.playerNotefield, self.enemyNotefield, {character = self.gf}}
 	self:centerNotefields()
 
 	for _, n in ipairs(PlayState.SONG.notes.enemy) do self:generateNote(true, n) end
 	for _, n in ipairs(PlayState.SONG.notes.player) do self:generateNote(false, n) end
 	self:add(self.enemyNotefield)
 	self:add(self.playerNotefield)
-
-	self.events = table.clone(PlayState.SONG.events)
 
 	local notefield
 	for i, event in ipairs(self.events) do
@@ -566,11 +575,8 @@ function PlayState:focus(f)
 end
 
 function PlayState:executeEvent(event)
-	if event.e == "FocusCamera" then
-		local notefield = self.notefields[event.v + 1]
-		if notefield then
-			self.camTarget = notefield.character
-		end
+	for _, s in pairs(self.eventScripts) do
+		if s.belongsTo == event.e then s:call("event", event) end
 	end
 end
 

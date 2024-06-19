@@ -96,7 +96,19 @@ math.perlin = math.noise
 function __NULL__() end
 
 -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
-function switch(param, case_table) return (case_table[param] or case_table.default or __NULL__)() end
+-- edited to support tables inside
+function switch(param, case_table)
+    for k, v in pairs(case_table) do
+        if type(k) == "table" then
+            for _, key in ipairs(k) do
+                if key == param then return v() end
+            end
+        else
+            if k == param then return v() end
+        end
+    end
+    return (case_table.default or __NULL__)()
+end
 
 function bind(self, callback) return function(...) callback(self, ...) end end
 
