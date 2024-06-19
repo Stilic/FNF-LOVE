@@ -152,12 +152,12 @@ end
 
 local function getCrotchet(bpm) return (60 / bpm) * 1000 end
 function API.chart.getV1Events(data, bpm)
-	local result, time, crotchet, focus, lastFocus = {}, 0, getCrotchet(bpm)
+	local result, time, toAdd, focus, lastFocus = {}, 0, getCrotchet(bpm) * 4
 	for _, s in ipairs(data) do
 		if s then
 			if s.changeBPM and s.bpm ~= bpm then
 				bpm = s.bpm
-				crotchet = getCrotchet(bpm)
+				toAdd = getCrotchet(bpm) * 4
 			end
 			focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)
 			if focus ~= lastFocus then
@@ -169,7 +169,7 @@ function API.chart.getV1Events(data, bpm)
 				lastFocus = focus
 			end
 		end
-		time = time + crotchet * 4
+		time = time + toAdd
 	end
 	return result
 end
