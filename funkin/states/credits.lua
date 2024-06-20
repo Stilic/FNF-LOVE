@@ -348,7 +348,7 @@ function CreditsState:addUsers(name, people, i)
 		local img, txt = makeCard(people[i].name, people[i].icon, i)
 		self.lastHeight = img.y + img.height + 10
 	end
-	u.userBox.height = self.lastHeight + 10
+	u.userBox.height = math.max(game.height - 10, self.lastHeight + 10)
 end
 
 function CreditsState:reloadSocials()
