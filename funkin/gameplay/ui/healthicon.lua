@@ -113,8 +113,10 @@ end
 function HealthIcon:setScale(scale)
 	if self.isLegacyStyle then
 		self.scale.x, self.scale.y = scale, scale
-		self:updateHitbox()
+	else
+		self.scale.x, self.scale.y = 1, 1
 	end
+	self:updateHitbox()
 end
 
 function HealthIcon:fixOffsets(width, height)
