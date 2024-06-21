@@ -530,15 +530,15 @@ function PlayState:step(s)
 	end
 
 	self.scripts:set("curStep", s)
-	self.scripts:call("step")
-	self.scripts:call("postStep")
+	self.scripts:call("step", s)
+	self.scripts:call("postStep", s)
 end
 
 function PlayState:beat(b)
 	if self.skipConductor then return end
 
 	self.scripts:set("curBeat", b)
-	self.scripts:call("beat")
+	self.scripts:call("beat", b)
 
 	local character
 	for _, notefield in ipairs(self.notefields) do
@@ -558,7 +558,7 @@ function PlayState:section(s)
 	if self.skipConductor then return end
 
 	self.scripts:set("curSection", s)
-	if not self.startingSong then self.scripts:call("section") end
+	self.scripts:call("section", s)
 
 	if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
 		self.scripts:set("bpm", PlayState.conductor.bpm)
@@ -571,7 +571,7 @@ function PlayState:section(s)
 		self.camHUD.zoom = self.camHUD.zoom + 0.03
 	end
 
-	if not self.startingSong then self.scripts:call("postSection") end
+	self.scripts:call("postSection", s)
 end
 
 function PlayState:focus(f)
