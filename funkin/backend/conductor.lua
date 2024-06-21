@@ -44,53 +44,29 @@ function Conductor.newSectionChanges(beats, list)
 	return list
 end
 
-function Conductor.getBPMChangesFromSong(song, bpmChanges)
-	local bpm, time, steps, total, add = song.bpm or 120, 0, 0, 0
-	bpmChanges = Conductor.newBPMChanges(bpm, bpmChanges)
+-- function Conductor.getSectionChangesFromSong(song, sectionChanges)
+-- 	local beats, total = song.beats or 4, 0
+-- 	local prev = beats
+-- 	sectionChanges = Conductor.newSectionChanges(beats, sectionChanges)
 
-	for i, v in ipairs(song.notes) do
-		if v.changeBPM and v.bpm ~= nil and v.bpm ~= bpm then
-			bpm, total = v.bpm, total + 1
-			table.insert(bpmChanges, {
-				step = steps,
-				time = time,
-				bpm = bpm,
-				stepCrotchet = Conductor.calculateCrotchet(bpm) / 4,
-				id = total
-			})
-		end
+-- 	for i, v in ipairs(song.notes) do
+-- 		if v.sectionBeats ~= nil then
+-- 			beats = v.sectionBeats
+-- 		else
+-- 			beats = 4
+-- 		end
+-- 		if prev ~= beats then
+-- 			prev, total = beats, total + 1
+-- 			table.insert(sectionChanges, {
+-- 				section = i,
+-- 				beats = beats,
+-- 				id = total
+-- 			})
+-- 		end
+-- 	end
 
-		add = v.sectionBeats and v.sectionBeats * 4 or 16
-		steps = steps + add
-		time = time + bpmChanges[total].stepCrotchet * add
-	end
-
-	return bpmChanges
-end
-
-function Conductor.getSectionChangesFromSong(song, sectionChanges)
-	local beats, total = song.beats or 4, 0
-	local prev = beats
-	sectionChanges = Conductor.newSectionChanges(beats, sectionChanges)
-
-	for i, v in ipairs(song.notes) do
-		if v.sectionBeats ~= nil then
-			beats = v.sectionBeats
-		else
-			beats = 4
-		end
-		if prev ~= beats then
-			prev, total = beats, total + 1
-			table.insert(sectionChanges, {
-				section = i,
-				beats = beats,
-				id = total
-			})
-		end
-	end
-
-	return sectionChanges
-end
+-- 	return sectionChanges
+-- end
 
 function Conductor.sortBPMChanges(bpmChanges)
 	table.sort(bpmChanges, Conductor.sortByTime)
@@ -273,8 +249,8 @@ end
 
 function Conductor:setSong(song)
 	self:setBPM(song.bpm,
-		Conductor.getBPMChangesFromSong(song, self.bpmChanges),
-		Conductor.getSectionChangesFromSong(song, self.sectionChanges)
+		song.bpmChanges
+	-- Conductor.getSectionChangesFromSong(song, self.sectionChanges)
 	)
 
 	return self

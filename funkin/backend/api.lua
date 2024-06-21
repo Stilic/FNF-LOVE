@@ -104,14 +104,15 @@ function API.chart.parse(song, diff, returnRaw)
 				data.scrollSpeed.default) or 1
 			parsedData.speed = speed
 
-			parsedData.notes = API.chart.splitNotes(data.notes[diff:lower()])
-			parsedData.events = data.events
+			parsedData.notes, parsedData.events, parsedData.bpmChanges =
+				API.chart.readDiff(parsedData.bpm, data.notes[diff:lower()])
 		else
-			parsedData.notes = API.chart.splitNotes(chart.notes, true)
-			parsedData.events = API.chart.getV1Events(chart.notes, parsedData.bpm)
+			parsedData.notes, parsedData.events, parsedData.bpmChanges =
+				API.chart.readDiff(parsedData.bpm, chart.notes, true)
 		end
 	else
-		parsedData.notes, parsedData.events = {enemy = {}, player = {}}, {}
+		parsedData.notes, parsedData.events, parsedData.bpmChanges =
+			{enemy = {}, player = {}}, {}, {}
 	end
 
 	table.sort(parsedData.notes.enemy, sortByTime)
@@ -121,9 +122,12 @@ function API.chart.parse(song, diff, returnRaw)
 	return returnRaw and data or parsedData
 end
 
-function API.chart.splitNotes(data, isV1)
-	local dad, bf = {}, {}
+function API.chart.readDiff(bpm, data, isV1)
+	local dad, bf, events, bpmChanges =
+		{}, {}, {}, Conductor.newBPMChanges(bpm)
 	if isV1 then
+		local time, steps, total,
+		add, focus, lastFocus = 0, 0, 0
 		for _, s in ipairs(data) do
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
@@ -135,6 +139,31 @@ function API.chart.splitNotes(data, isV1)
 					if hit then table.insert(bf, {t = time, d = col % 4, l = length, k = type}) end
 					if not hit then table.insert(dad, {t = time, d = col % 4, l = length, k = type}) end
 				end
+
+				focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)
+				if focus ~= lastFocus then
+					table.insert(events, {
+						t = time,
+						e = "FocusCamera",
+						v = focus
+					})
+					lastFocus = focus
+				end
+
+				if s.changeBPM and s.bpm ~= nil and s.bpm ~= bpm then
+					bpm, total = s.bpm, total + 1
+					table.insert(bpmChanges, {
+						step = steps,
+						time = time,
+						bpm = bpm,
+						stepCrotchet = Conductor.calculateCrotchet(bpm) / 4,
+						id = total
+					})
+				end
+
+				add = s.sectionBeats and s.sectionBeats * 4 or 16
+				steps = steps + add
+				time = time + bpmChanges[total].stepCrotchet * add
 			end
 		end
 	else
@@ -147,31 +176,7 @@ function API.chart.splitNotes(data, isV1)
 			if not hit then table.insert(dad, {t = time, d = col % 4, l = length, k = n.k}) end
 		end
 	end
-	return {enemy = dad, player = bf}
-end
-
-local function getCrotchet(bpm) return (60 / bpm) * 1000 end
-function API.chart.getV1Events(data, bpm)
-	local result, time, toAdd, focus, lastFocus = {}, 0, getCrotchet(bpm) * 4
-	for _, s in ipairs(data) do
-		if s then
-			if s.changeBPM and s.bpm ~= bpm then
-				bpm = s.bpm
-				toAdd = getCrotchet(bpm) * 4
-			end
-			focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)
-			if focus ~= lastFocus then
-				table.insert(result, {
-					t = time,
-					e = "FocusCamera",
-					v = focus
-				})
-				lastFocus = focus
-			end
-		end
-		time = time + toAdd
-	end
-	return result
+	return {enemy = dad, player = bf}, events, bpmChanges
 end
 
 return API
