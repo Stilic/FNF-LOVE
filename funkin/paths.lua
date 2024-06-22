@@ -86,6 +86,27 @@ function paths.exists(path, type)
 	return info ~= nil and (not type or info.type == type:lower())
 end
 
+function paths.getItems(key, type)
+	local path = paths.getPath(key)
+
+	if type == nil then type = "any" end
+	if not paths.exists(path, "directory") then return {} end
+
+	local files, result = love.filesystem.getDirectoryItems(path), {}
+	for _, v in ipairs(files) do
+		local f = path .. "/" .. v
+		local info = love.filesystem.getInfo(f)
+
+		if info then
+			if type == "any" or info.type == type:lower() then
+				table.insert(result, v)
+			end
+		end
+	end
+
+	return result
+end
+
 function paths.getText(key)
 	local path = paths.getPath("data/" .. key .. ".txt")
 	return readFile(path), path
