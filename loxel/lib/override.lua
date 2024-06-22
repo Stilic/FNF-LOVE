@@ -76,6 +76,15 @@ function table.delete(list, object)
 	return false
 end
 
+function table.shuffle(tbl)
+	local len = #tbl
+	for i = len, 2, -1 do
+		local j = math.random(i)
+		tbl[i], tbl[j] = tbl[j], tbl[i]
+	end
+	return tbl
+end
+
 local math_min, math_max, math_floor, math_ceil = math.min, math.max, math.floor, math.ceil
 local function math_round(x) return x >= 0 and math_floor(x + .5) or math_ceil(x - .5) end
 math.round = math_round
@@ -98,16 +107,16 @@ function __NULL__() end
 -- https://gist.github.com/FreeBirdLjj/6303864?permalink_comment_id=3400522#gistcomment-3400522
 -- edited to support tables inside
 function switch(param, case_table)
-    for k, v in pairs(case_table) do
-        if type(k) == "table" then
-            for _, key in ipairs(k) do
-                if key == param then return v() end
-            end
-        else
-            if k == param then return v() end
-        end
-    end
-    return (case_table.default or __NULL__)()
+	for k, v in pairs(case_table) do
+		if type(k) == "table" then
+			for _, key in ipairs(k) do
+				if key == param then return v() end
+			end
+		else
+			if k == param then return v() end
+		end
+	end
+	return (case_table.default or __NULL__)()
 end
 
 function bind(self, callback) return function(...) callback(self, ...) end end
