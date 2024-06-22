@@ -48,46 +48,47 @@ local table_remove = table.remove or function(t, pos)
 	local v = t[pos]; if pos < n then table_move(t, pos + 1, n, pos) end;
 	t[n] = nil; return v
 end
-function table.remove(list, pos)
-	if pos == nil or type(pos) == __number__ then return table_remove(list, pos) end
+function table.remove(t, pos)
+	if pos == nil or type(pos) == __number__ then return table_remove(t, pos) end
 	local j, v = 1
-	for i = j, #list do
-		if list[i] and pos(list, i, j) then
-			v, list[i] = list[i]
+	for i = j, #t do
+		if t[i] and pos(t, i, j) then
+			v, t[i] = t[i]
 		else
-			if i ~= j then list[j], list[i] = list[i] end
+			if i ~= j then t[j], t[i] = t[i] end
 			j = j + 1
 		end
 	end
 	return v
 end
 
-function table.reverse(list)
-	local n = #list + 1
-	for i = 1, (n - 1) / 2 do list[i], list[n - i] = list[n - i], list[i] end
+function table.reverse(t)
+	local n = #t + 1
+	for i = 1, (n - 1) / 2 do t[i], t[n - i] = t[n - i], t[i] end
 end
 
-function table.delete(list, object)
-	local index = table_find(list, object)
+function table.delete(t, obj)
+	local index = table_find(t, obj)
 	if index then
-		table_remove(list, index)
+		table_remove(t, index)
 		return true
 	end
 	return false
 end
 
-function table.shuffle(tbl)
-	local len = #tbl
-	for i = len, 2, -1 do
-		local j = math.random(i)
-		tbl[i], tbl[j] = tbl[j], tbl[i]
-	end
-	return tbl
-end
-
-local math_min, math_max, math_floor, math_ceil = math.min, math.max, math.floor, math.ceil
+local math_min, math_max, math_floor, math_ceil, math_random =
+	math.min, math.max, math.floor, math.ceil, math.random
 local function math_round(x) return x >= 0 and math_floor(x + .5) or math_ceil(x - .5) end
 math.round = math_round
+
+function table.shuffle(t)
+	local l, j = #t
+	for i = l, 2, -1 do
+		j = math_random(i)
+		t[i], t[j] = t[j], t[i]
+	end
+	return t
+end
 
 function math.clamp(x, min, max) return math_min(math_max(x, min or 0), max or 1) end
 
@@ -175,9 +176,9 @@ function table.merge(a, b)
 	end
 end
 
-function table.keys(list, includeIndices, keys)
-	keys = keys or table_new(#list, 0)
-	for i in (includeIndices and pairs or ipairs)(list) do table_insert(keys, i) end
+function table.keys(t, includeIndices, keys)
+	keys = keys or table_new(#t, 0)
+	for i in (includeIndices and pairs or ipairs)(t) do table_insert(keys, i) end
 	return keys
 end
 
@@ -190,12 +191,12 @@ end
 
 table.clone = table_clone
 
-function table.splice(list, start, count, ...)
-	local n, removed = #list + 1, {...};
+function table.splice(t, start, count, ...)
+	local n, removed = #t + 1, {...};
 	local c = #removed; start = (start < 1 and n + start or start) + c;
-	for i = c, 1, -1 do table_insert(list, start, table_remove(removed, i)) end
+	for i = c, 1, -1 do table_insert(t, start, table_remove(removed, i)) end
 	for i = 1, math_min(count or 0, n - start) do
-		table_insert(removed, table_remove(list, start))
+		table_insert(removed, table_remove(t, start))
 	end
 	return removed
 end
@@ -240,7 +241,7 @@ end
 -- please use math.floor/round instead if you want the precision to be 0
 function math.truncate(x, precision, round)
 	precision = 10 ^ (precision or 2)
-	; return (round and math_round or math_floor)(precision * x) / precision
+	return (round and math_round or math_floor)(precision * x) / precision
 end
 
 local intervals, countbytesf = {"B", "KB", "MB", "GB"}, "%.2f %s"
@@ -251,8 +252,9 @@ function math.countbytes(x, i)
 end
 
 -- LOVE2D EXTRA FUNCTIONS
+local love_random = love.math.random
 function love.math.randomBool(chance)
-	return love.math.random(0, 100) < (chance or 50)
+	return love_random(0, 100) < (chance or 50)
 end
 
 -- Gets the current device
