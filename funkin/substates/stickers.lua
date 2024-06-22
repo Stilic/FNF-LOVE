@@ -3,7 +3,7 @@ StickersSubstate.prevStickers = nil
 
 local function sortByTime(a, b) return a.time < b.time end
 
-function StickersSubstate:new(targState)
+function StickersSubstate:new(targState, prevStickers)
 	StickersSubstate.super.new(self)
 
 	self.targetState = targState or MainMenuState()
@@ -11,31 +11,30 @@ function StickersSubstate:new(targState)
 	local cam = Camera()
 	game.cameras.add(cam, false)
 
-	self.stickers = SpriteGroup()
+	self.stickers = SpriteGroup(prevStickers and 16 or 0, prevStickers and 16 or 0)
+	-- no clue why it has offsets
 	self.stickers:setScrollFactor()
 	self.stickers.cameras = {cam}
 	self:add(self.stickers)
 
 	self.createSticker = function(set, name, x, y)
-		local spr = Sprite()
-		spr.x, spr.y = x or 0, y or 0
-		spr:loadTexture(paths.getImage('stickers/' .. set .. '/' .. name))
+		local spr = Sprite(x or 0, y or 0, paths.getImage(
+			'stickers/' .. set .. '/' .. name))
 		return spr
 	end
 
 	self.sounds = {}
-	-- it's supposed to be this? im not sure
-	local sndPath = "sounds/stickers"
-	local folders = paths.getItems(sndPath, "directory")
+	local folders = paths.getItems("sounds/stickers", "directory")
 	if #folders > 0 then
-		local folder = sndPath .. "/" .. folders[math.random(1, #folders)]
+		local r = math.random(1, #folders)
+		local folder = "sounds/stickers/" .. folders[r]
 		local sounds = paths.getItems(folder, "file")
 
 		if #sounds > 0 then
 			for _, sound in ipairs(sounds) do
 				if sound:endsWith(".ogg") then
-					table.insert(self.sounds, folder:gsub("sounds/", "") ..
-						"/" .. sound:withoutExt())
+					table.insert(self.sounds, "stickers/" .. folders[r]
+						.. "/" .. sound:withoutExt())
 				end
 			end
 		else
@@ -45,20 +44,7 @@ function StickersSubstate:new(targState)
 		print("Folders containing sticker sounds are missing!")
 	end
 
-	if StickersSubstate.prevStickers then
-		for _, sticker in ipairs(StickersSubstate.prevStickers) do
-			local s = self.createSticker(sticker.name, sticker.set,
-				sticker.x, sticker.y)
-			s.time, s.angle = sticker.time, sticker.angle
-			s.scale.x, s.scale.y = sticker.scale.x, sticker.scale.y
-			self.stickers:add(s)
-			s:updateHitbox()
-			table.sort(self.stickers.members, sortByTime)
-		end
-		self:unspawnStickers()
-	else
-		self:spawnStickers()
-	end
+	if prevStickers then self:unspawnStickers() else self:spawnStickers() end
 end
 
 function StickersSubstate:enter()
@@ -90,9 +76,9 @@ function StickersSubstate:spawnStickers()
 		sticky.visible = false
 
 		sticky.x, sticky.y = xPos, yPos
-		xPos = xPos + sticky.width * 0.5
+		xPos = xPos + sticky.width / 2
 		sticky.scale = {x = 1.1, y = 1.1}
-		sticky:updateHitbox()
+		sticky.angle = math.random(-60, 70)
 
 		if xPos >= game.width then
 			if yPos <= game.height then
@@ -100,8 +86,8 @@ function StickersSubstate:spawnStickers()
 				yPos = yPos + math.random(70.0, 120.0)
 			end
 		end
+		sticky:updateHitbox()
 
-		sticky.angle = math.random(-60, 70)
 		self.stickers:add(sticky)
 	end
 
@@ -120,7 +106,7 @@ function StickersSubstate:spawnStickers()
 			end
 
 			local frameTimer = math.random(0.1, 2)
-			if i == #self.stickers.members - 1 then frameTimer = 2 end
+			if i == #self.stickers.members then frameTimer = 2 end
 
 			Timer.after((1 / 24) * frameTimer, function()
 				if not sticker then return end
@@ -128,6 +114,7 @@ function StickersSubstate:spawnStickers()
 
 				if i == #self.stickers.members then
 					self.targetState.skipTransIn = true
+					self.targetState.persistentUpdate = true
 					if self.parent then self.parent.skipTransOut = true end
 
 					game.switchState(self.targetState)
@@ -147,9 +134,17 @@ function StickersSubstate:spawnStickers()
 end
 
 function StickersSubstate:unspawnStickers()
-	if not self.stickers.members or #self.stickers.members == 0 then
+	if #StickersSubstate.prevStickers == 0 then
 		self:close()
 		return
+	end
+	for _, sticker in ipairs(StickersSubstate.prevStickers) do
+		local s = self.createSticker(sticker.name, sticker.set,
+			sticker.x, sticker.y)
+		s.time, s.angle = sticker.time, sticker.angle
+		s.scale.x, s.scale.y = sticker.scale.x, sticker.scale.y
+		s:updateHitbox()
+		self.stickers:add(s)
 	end
 
 	for i, sticker in ipairs(self.stickers.members) do
@@ -176,14 +171,12 @@ function StickersSubstate:getStickers(set)
 	obj.stickerPacks = {}
 	obj.stickers = {}
 
-	if json then
-		for field, _ in pairs(json.stickerPacks) do
-			obj.stickerPacks[field] = json.stickerPacks[field]
-		end
+	for field, _ in pairs(json.stickerPacks) do
+		obj.stickerPacks[field] = json.stickerPacks[field]
+	end
 
-		for field, _ in pairs(json.stickers) do
-			obj.stickers[field] = json.stickers[field]
-		end
+	for field, _ in pairs(json.stickers) do
+		obj.stickers[field] = json.stickers[field]
 	end
 
 	return obj
