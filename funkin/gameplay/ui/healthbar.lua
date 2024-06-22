@@ -15,8 +15,11 @@ function HealthBar:new(bfData, dadData, skin)
 	self:add(self.bg)
 	self:add(self.bar)
 
+	local healthPercent = self.bar.percent
 	self.iconP1, self.iconP2, self.iconScale =
-		HealthIcon(bfData.icon, true), HealthIcon(dadData.icon), 1
+		HealthIcon(bfData.icon, true, healthPercent),
+		HealthIcon(dadData.icon, false, healthPercent),
+		1
 
 	local y = self.bar.y
 	self.iconP1.y = y - self.iconP1.height / 2
@@ -34,29 +37,25 @@ function HealthBar:new(bfData, dadData, skin)
 	self.bar:setValue(1)
 end
 
+local iconOffset = 26
 function HealthBar:update(dt)
 	HealthBar.super.update(self, dt)
-
 	self.bar:setValue(self.value)
-
-	local y, lerpValue = self.bar.y, util.coolLerp(self.iconScale, 1, 15, dt)
-	self.iconScale = lerpValue
+	local lerpValue, healthPercent, y =
+		util.coolLerp(self.iconScale, 1, 15, dt), self.bar.percent, self.bar.y
+	self.iconScale, self.iconP1.health, self.iconP2.health =
+		lerpValue, healthPercent, healthPercent
 	self.iconP1:setScale(lerpValue)
 	self.iconP2:setScale(lerpValue)
-	self.iconP1.y, self.iconP2.y =
-		y - self.iconP1.height / self.iconP1.scale.y / 2,
-		y - self.iconP2.height / self.iconP2.scale.y / 2
-
-	local healthPercent, iconOffset = self.bar.percent, 26
 	self.iconP1.x = self.bar.x + self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
 			0) * 0.01) + (150 * self.iconP1.scale.x - 150) / 2 - iconOffset
 	self.iconP2.x = self.bar.x + (self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
 			0) * 0.01)) - (150 * self.iconP2.scale.x) / 2 - iconOffset * 2
-
-	self.iconP1:updateAnimation(healthPercent)
-	self.iconP2:updateAnimation(healthPercent)
+	self.iconP1.y, self.iconP2.y =
+		y - self.iconP1.height / self.iconP1.scale.y / 2,
+		y - self.iconP2.height / self.iconP2.scale.y / 2
 end
 
 function HealthBar:screenCenter(axes)

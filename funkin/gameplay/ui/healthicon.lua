@@ -2,13 +2,62 @@ local HealthIcon = Sprite:extend("HealthIcon")
 
 HealthIcon.defaultIcon = "face"
 
-function HealthIcon:new(icon, isPlayer)
+function HealthIcon:new(icon, isPlayer, health)
 	HealthIcon.super.new(self)
 
 	self.isPlayer, self.isLegacyStyle = isPlayer or false, true
+	self.health = health or 50
 	self.flipX = self.isPlayer
 	self.sprTracker = nil
 	self:changeIcon(icon)
+end
+
+function HealthIcon:updateAnimation()
+	local percent = self.health
+	if not self.isPlayer then percent = 100 - percent end
+	local isLosing = percent < 10
+	if self.isLegacyStyle then
+		self.curFrame = isLosing and 2 or 1
+	else
+		local isWinning = percent > 80
+		local function backToIdleIfFinished()
+			if self.animFinished then self:play("idle") end
+		end
+		switch(self.curAnim and self.curAnim.name or "idle", {
+			["idle"] = function()
+				if isLosing then
+					self:fallbackPlay("toLosing", "losing")
+				elseif isWinning then
+					self:fallbackPlay("toWinning", "winning")
+				else
+					self:play("idle")
+				end
+			end,
+			["winning"] = function()
+				if not isWinning then
+					self:fallbackPlay("fromWinning", "idle")
+				else
+					self:fallbackPlay("winning", "idle")
+				end
+			end,
+			["losing"] = function()
+				if not isLosing then
+					self:fallbackPlay("fromLosing", "idle")
+				else
+					self:fallbackPlay("losing", "idle")
+				end
+			end,
+			["toLosing"] = function()
+				if self.animFinished then self:fallbackPlay("losing", "idle") end
+			end,
+			["toWinning"] = function()
+				if self.animFinished then self:fallbackPlay("winning", "idle") end
+			end,
+			["fromLosing"] = backToIdleIfFinished,
+			["fromWinning"] = backToIdleIfFinished,
+			["default"] = function() self:play("idle") end
+		})
+	end
 end
 
 function HealthIcon:changeIcon(icon, ignoreDefault)
@@ -56,58 +105,18 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 		self:addAnimByPrefix("fromLosing", "fromLosing", 24, false)
 	end
 
+	self:updateAnimation()
+	if not self.isLegacyStyle
+		and self.curAnim
+		and not self.curAnim.looped then
+		self:finish()
+	end
+
 	return true
 end
 
 function HealthIcon:fallbackPlay(anim, fallback)
 	self:play(self.__animations[anim] and anim or fallback)
-end
-
-function HealthIcon:updateAnimation(percent)
-	if not self.isPlayer then percent = 100 - percent end
-	local isLosing = percent < 10
-	if self.isLegacyStyle then
-		self.curFrame = isLosing and 2 or 1
-	else
-		local isWinning = percent > 80
-		local function backToIdleIfFinished()
-			if self.animFinished then self:play("idle") end
-		end
-		switch(self.curAnim and self.curAnim.name or "idle", {
-			["idle"] = function()
-				if isLosing then
-					self:fallbackPlay("toLosing", "losing")
-				elseif isWinning then
-					self:fallbackPlay("toWinning", "winning")
-				else
-					self:play("idle")
-				end
-			end,
-			["winning"] = function()
-				if not isWinning then
-					self:fallbackPlay("fromWinning", "idle")
-				else
-					self:fallbackPlay("winning", "idle")
-				end
-			end,
-			["losing"] = function()
-				if not isLosing then
-					self:fallbackPlay("fromLosing", "idle")
-				else
-					self:fallbackPlay("losing", "idle")
-				end
-			end,
-			["toLosing"] = function()
-				if self.animFinished then self:fallbackPlay("losing", "idle") end
-			end,
-			["toWinning"] = function()
-				if self.animFinished then self:fallbackPlay("winning", "idle") end
-			end,
-			["fromLosing"] = backToIdleIfFinished,
-			["fromWinning"] = backToIdleIfFinished,
-			["default"] = function() self:play("idle") end
-		})
-	end
 end
 
 function HealthIcon:setScale(scale)
@@ -129,7 +138,7 @@ end
 
 function HealthIcon:update(dt)
 	HealthIcon.super.update(self, dt)
-
+	self:updateAnimation()
 	if self.sprTracker then
 		self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() + 10,
 			self.sprTracker.y - 30)
