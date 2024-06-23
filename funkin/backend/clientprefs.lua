@@ -54,7 +54,7 @@ ClientPrefs.controls = {
 	ui_right = {"key:d", "key:right"},
 
 	volume_down = {"key:-", "key:kp-"},
-	volume_up = {"key:+", "key:kp+"},
+	volume_up = {"key:=", "key:kp="},
 	volume_mute = {"key:0", "key:kp0"},
 
 	reset = {"key:r"},
