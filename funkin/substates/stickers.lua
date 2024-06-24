@@ -3,7 +3,7 @@ StickersSubstate.prevStickers = nil
 
 local function sortByTime(a, b) return a.time < b.time end
 
-function StickersSubstate:new(targState, prevStickers)
+function StickersSubstate:new(targState, prevStickers, stickerSet)
 	StickersSubstate.super.new(self)
 	self.targetState = targState or MainMenuState()
 
@@ -14,6 +14,8 @@ function StickersSubstate:new(targState, prevStickers)
 	self.stickers:setScrollFactor()
 	self.stickers.cameras = {camera}
 	self:add(self.stickers)
+
+	self.stickerSet = stickerSet
 
 	self.createSticker = function(set, name, x, y)
 		local sticker = Sprite(x or 0, y or 0, paths.getImage(
@@ -45,6 +47,11 @@ function StickersSubstate:new(targState, prevStickers)
 		end
 	end
 
+	if self.stickerSet == nil then
+		local sets = paths.getItems("data/stickers", "file")
+		self.stickerSet = sets[math.random(#sets)]:withoutExt()
+	end
+
 	if prevStickers then self:unspawnStickers() else self:spawnStickers() end
 end
 
@@ -56,7 +63,7 @@ end
 function StickersSubstate:spawnStickers()
 	if #self.stickers.members > 0 then self.stickers:clear() end
 
-	local random, data, stks = math.random, self:getStickers('stickers-set-1'), {}
+	local random, data, stks = math.random, self:getStickers(self.stickerSet), {}
 	for _, set in ipairs(data.packs["all"]) do stks[set] = data.stickers[set] end
 	local keys = {}
 	for key, _ in pairs(stks) do table.insert(keys, key) end
