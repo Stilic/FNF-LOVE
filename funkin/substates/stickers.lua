@@ -5,28 +5,33 @@ local function sortByTime(a, b) return a.time < b.time end
 
 function StickersSubstate:new(targState, prevStickers)
 	StickersSubstate.super.new(self)
-
 	self.targetState = targState or MainMenuState()
 
-	local cam = Camera()
-	game.cameras.add(cam, false)
+	local camera = Camera()
+	game.cameras.add(camera, false)
 
-	self.stickers = SpriteGroup(prevStickers and 16 or 0, prevStickers and 16 or 0)
-	-- no clue why it has offsets
+	self.stickers = SpriteGroup()
 	self.stickers:setScrollFactor()
-	self.stickers.cameras = {cam}
+	self.stickers.cameras = {camera}
 	self:add(self.stickers)
 
 	self.createSticker = function(set, name, x, y)
-		local spr = Sprite(x or 0, y or 0, paths.getImage(
+		local sticker = Sprite(x or 0, y or 0, paths.getImage(
 			'stickers/' .. set .. '/' .. name))
-		return spr
+		sticker.name = set
+		sticker.set = name
+		sticker.scale = {x = 1.1, y = 1.1}
+		sticker.angle = math.random(-60, 70)
+		sticker.visible = false
+		sticker:updateHitbox()
+		self.stickers:add(sticker)
+		return sticker
 	end
 
 	self.sounds = {}
 	local folders = paths.getItems("sounds/stickers", "directory")
 	if #folders > 0 then
-		local r = math.random(1, #folders)
+		local r = math.random(#folders)
 		local folder = "sounds/stickers/" .. folders[r]
 		local sounds = paths.getItems(folder, "file")
 
@@ -37,58 +42,39 @@ function StickersSubstate:new(targState, prevStickers)
 						.. "/" .. sound:withoutExt())
 				end
 			end
-		else
-			print("No sounds found!")
 		end
-	else
-		print("Folders containing sticker sounds are missing!")
 	end
 
 	if prevStickers then self:unspawnStickers() else self:spawnStickers() end
 end
 
 function StickersSubstate:enter()
-	self.skipTransIn = true
-	self.skipTransOut = true
+	self.skipTransIn, self.skipTransOut = true, true
 	StickersSubstate.super.enter(self)
 end
 
 function StickersSubstate:spawnStickers()
 	if #self.stickers.members > 0 then self.stickers:clear() end
 
-	local data, stickers = self:getStickers('stickers-set-1'), {}
-	for _, stickerSet in ipairs(data.stickerPacks["all"]) do
-		stickers[stickerSet] = data.stickers[stickerSet]
-	end
+	local random, data, stks = math.random, self:getStickers('stickers-set-1'), {}
+	for _, set in ipairs(data.packs["all"]) do stks[set] = data.stickers[set] end
+	local keys = {}
+	for key, _ in pairs(stks) do table.insert(keys, key) end
 
 	local xPos, yPos = -100, -100
 	while xPos <= game.width do
-		local stickerKeys = {}
-		for key, _ in pairs(stickers) do table.insert(stickerKeys, key) end
-
-		local rSet = stickerKeys[math.random(1, #stickerKeys)]
-		local rSticker = stickers[rSet]
-		local sticker = rSticker[math.random(1, #rSticker)]
+		local sets = stks[keys[random(#keys)]]
+		local sticker = sets[random(#sets)]
 
 		local sticky = self.createSticker(data.name, sticker)
-		sticky.name = data.name
-		sticky.set = sticker
-		sticky.visible = false
-
 		sticky.x, sticky.y = xPos, yPos
 		xPos = xPos + sticky.width / 2
-		sticky.scale = {x = 1.1, y = 1.1}
-		sticky.angle = math.random(-60, 70)
 
 		if xPos >= game.width then
 			if yPos <= game.height then
-				xPos = -100
-				yPos = yPos + math.random(70.0, 120.0)
+				xPos, yPos = -100, yPos + math.random(70.0, 120.0)
 			end
 		end
-		sticky:updateHitbox()
-
-		self.stickers:add(sticky)
 	end
 
 	table.shuffle(self.stickers.members)
@@ -101,14 +87,11 @@ function StickersSubstate:spawnStickers()
 
 			sticker.visible = true
 			if #self.sounds > 0 then
-				local random = math.random(1, #self.sounds)
-				game.sound.play(paths.getSound(self.sounds[random]))
+				game.sound.play(paths.getSound(self.sounds[random(#self.sounds)]))
 			end
 
-			local frameTimer = math.random(0.1, 2)
-			if i == #self.stickers.members then frameTimer = 2 end
-
-			Timer.after((1 / 24) * frameTimer, function()
+			local timer = i == #self.stickers.members and 2 or math.random(0.1, 1.9)
+			Timer.after((1 / 24) * timer, function()
 				if not sticker then return end
 				sticker.scale = {x = 1, y = 1}
 
@@ -134,28 +117,26 @@ function StickersSubstate:spawnStickers()
 end
 
 function StickersSubstate:unspawnStickers()
-	if #StickersSubstate.prevStickers == 0 then
-		self:close()
-		return
+	if not StickersSubstate.prevStickers then
+		return self:close()
 	end
-	for _, sticker in ipairs(StickersSubstate.prevStickers) do
-		local s = self.createSticker(sticker.name, sticker.set,
-			sticker.x, sticker.y)
-		s.time, s.angle = sticker.time, sticker.angle
-		s.scale.x, s.scale.y = sticker.scale.x, sticker.scale.y
-		s:updateHitbox()
-		self.stickers:add(s)
+
+	for _, s in ipairs(StickersSubstate.prevStickers) do
+		local sticky = self.createSticker(s.name, s.set, s.x, s.y)
+		sticky.time, sticky.visible = s.time, true
+		sticky.angle = s.angle
+		sticky.scale = {x = 1, y = 1}
 	end
 
 	for i, sticker in ipairs(self.stickers.members) do
 		Timer.after(sticker.time, function()
 			sticker.visible = false
 			if #self.sounds > 0 then
-				local random = math.random(1, #self.sounds)
-				game.sound.play(paths.getSound(self.sounds[random]))
+				game.sound.play(paths.getSound(self.sounds[
+					math.random(#self.sounds)]))
 			end
 
-			if not self.stickers or i == #self.stickers.members then
+			if i == #self.stickers.members then
 				self:close()
 				StickersSubstate.prevStickers = nil
 			end
@@ -164,22 +145,13 @@ function StickersSubstate:unspawnStickers()
 end
 
 function StickersSubstate:getStickers(set)
-	local obj, json = {}, paths.getJSON('data/stickers/' .. set)
-
-	obj.name = json and json.name or set
-	obj.artist = json and json.artist or ""
-	obj.stickerPacks = {}
-	obj.stickers = {}
-
-	for field, _ in pairs(json.stickerPacks) do
-		obj.stickerPacks[field] = json.stickerPacks[field]
-	end
-
-	for field, _ in pairs(json.stickers) do
-		obj.stickers[field] = json.stickers[field]
-	end
-
-	return obj
+	local json = paths.getJSON('data/stickers/' .. set)
+	return {
+		name = json.name or set,
+		artist = json.artist,
+		packs = json.stickerPacks,
+		stickers = json.stickers
+	}
 end
 
 function StickersSubstate:close()
