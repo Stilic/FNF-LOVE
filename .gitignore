@@ -33,7 +33,8 @@ luac.out
 *.x86_64
 *.hex
 
-# Ignore
+# Custom
 *.lnk
 *.sublime-workspace
 mods
+release
