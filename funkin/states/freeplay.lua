@@ -53,7 +53,7 @@ function FreeplayState:enter()
 	self:add(self.grpSongs)
 
 	if #self.songsData == 0 then
-		self.noSongTxt = Alphabet(0, 0, 'No songs here', true, false)
+		self.noSongTxt = Alphabet(0, 0, 'No songs here', "bold", false)
 		self.noSongTxt:screenCenter()
 		self:add(self.noSongTxt)
 	end
@@ -62,7 +62,7 @@ function FreeplayState:enter()
 	if #self.songsData > 0 then
 		for i = 0, #self.songsData - 1 do
 			local songText = Alphabet(0, (70 * i) + 30,
-				self.songsData[i + 1].name, true, false)
+				self.songsData[i + 1].name, "bold", false)
 			songText.isMenuItem = true
 			songText.targetY = i
 			self.grpSongs:add(songText)

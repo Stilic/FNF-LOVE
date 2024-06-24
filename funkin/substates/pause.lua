@@ -21,7 +21,7 @@ function PauseSubstate:new()
 	self:add(self.grpShitMenu)
 
 	for i = 0, #self.menuItems - 1 do
-		local item = Alphabet(0, 70 * i + 30, self.menuItems[i + 1], true, false)
+		local item = Alphabet(0, 70 * i + 30, self.menuItems[i + 1], "bold", false)
 		item.isMenuItem = true
 		item.targetY = i
 		self.grpShitMenu:add(item)

@@ -123,7 +123,7 @@ function StoryMenuState:enter()
 	self:add(self.grpWeekCharacters)
 
 	if #self.weeksData == 0 then
-		self.noWeeksTxt = Alphabet(0, 210, 'No weeks here', true, false)
+		self.noWeeksTxt = Alphabet(0, 210, 'No weeks here', "bold", false)
 		self.noWeeksTxt:screenCenter('x')
 		self:add(self.noWeeksTxt)
 	end

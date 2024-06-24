@@ -3,12 +3,14 @@ local TitleState = State:extend("TitleState")
 TitleState.initialized = false
 
 function TitleState:enter()
-	TitleState.super.enter(self)
-
 	self.notCreated = false
+	self.skipTransIn = true
 
 	self.script = Script("data/states/title", false)
+
 	local event = self.script:call("create")
+	TitleState.super.enter(self)
+
 	if event == Script.Event_Cancel then
 		self.notCreated = true
 		return
@@ -18,8 +20,6 @@ function TitleState:enter()
 	if Discord then
 		Discord.changePresence({details = "In the Menus", state = "Title Screen"})
 	end
-
-	self.skipTransIn = true
 
 	self.curWacky = self:getIntroTextShit()
 
@@ -109,8 +109,8 @@ function TitleState:update(dt)
 		self.confirmed = true
 		self.titleText:play("press")
 		util.playSfx(paths.getSound("confirmMenu"))
-		game.camera:flash(Color.WHITE, 1.5)
-		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
+		game.camera:flash(Color.WHITE, 1)
+		Timer.after(1.5, function() self:openSubstate(StickersSubstate()) end)
 	end
 	self:updateEnterColor()
 
@@ -146,7 +146,7 @@ end
 
 function TitleState:createCoolText(textTable)
 	for i = 1, #textTable do
-		local money = Alphabet(0, 0, textTable[i], true, false)
+		local money = Alphabet(0, 0, textTable[i], "bold", false)
 		money:screenCenter("x")
 		money.y = money.y + (i * 60) + 140
 		self.textGroup:add(money)
@@ -154,7 +154,7 @@ function TitleState:createCoolText(textTable)
 end
 
 function TitleState:addMoreText(text)
-	local coolText = Alphabet(0, 0, text, true, false)
+	local coolText = Alphabet(0, 0, text, "bold", false)
 	coolText:screenCenter("x")
 	coolText.y = coolText.y + (#self.textGroup.members * 60) + 200
 	self.textGroup:add(coolText)
@@ -176,31 +176,24 @@ function TitleState:beat(b)
 		self.gfDance:play("danceRight")
 	end
 
-	switch(b, {
-		[1] = function()
-			self:createCoolText({
-				'ninjamuffin99', 'phantomArcade', 'kawaisprite', 'evilsk8er'
-			})
-		end,
-		[3] = function() self:addMoreText('present') end,
-		[4] = function() self:deleteCoolText() end,
-		[5] = function() self:createCoolText({'In association', 'with'}) end,
-		[7] = function()
-			self:addMoreText('newgrounds')
-			self.ngSpr.visible = true
-		end,
-		[8] = function()
-			self:deleteCoolText()
-			self.ngSpr.visible = false
-		end,
-		[9] = function() self:createCoolText({self.curWacky[1]}) end,
-		[11] = function() self:addMoreText(self.curWacky[2]) end,
-		[12] = function() self:deleteCoolText() end,
-		[13] = function() self:addMoreText('Friday') end,
-		[14] = function() self:addMoreText('Night') end,
-		[15] = function() self:addMoreText('Funkin') end,
-		[16] = function() self:skipIntro() end
-	})
+	if not self.skippedIntro then
+		switch(b, {
+			[{4, 12}] = function() self:deleteCoolText() end,
+			[1] = function() self:createCoolText({'The', "Funkin' Crew Inc."}) end,
+			[3] = function() self:addMoreText('present') end,
+			[5] = function() self:createCoolText({'In association', 'with'}) end,
+			[{7, 8}] = function()
+				if b == 7 then self:addMoreText('newgrounds') else self:deleteCoolText() end
+				self.ngSpr.visible = not self.ngSpr.visible
+			end,
+			[9] = function() self:createCoolText({self.curWacky[1]}) end,
+			[11] = function() self:addMoreText(self.curWacky[2]) end,
+			[13] = function() self:addMoreText('Friday') end,
+			[14] = function() self:addMoreText('Night') end,
+			[15] = function() self:addMoreText('Funkin') end,
+			[16] = function() self:skipIntro() end
+		})
+	end
 end
 
 function TitleState:skipIntro()
