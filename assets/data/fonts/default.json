@@ -1,0 +1,29 @@
+{
+	"name": "default",
+	"artist": "PhantomArcade3K",
+	"offsets": [0, 38],
+	"specChars": [
+		{
+			"letter": "'", "prefix": "-apostraphie-",
+			"offsets": [0, 20]
+		},
+		{
+			"letter": "-", "prefix": "-dash-",
+			"offsets": [0, 16]
+		},
+		{"letter": "&", "prefix": "-andpersand-"},
+		{"letter": "\\","prefix": "-back slash-"},
+		{"letter": "/", "prefix": "-forward slash-"},
+		{"letter": ",", "prefix": "-comma-"},
+		{"letter": "“", "prefix": "-start quote-"},
+		{"letter": "”", "prefix": "-end quote-"},
+		{"letter": "\"","prefix": "-end quote-"},
+		{"letter": "!", "prefix": "-exclamation point-"},
+		{"letter": "?", "prefix": "-question mark-"},
+		{"letter": ".", "prefix": "-period-"},
+		{"letter": "↓", "prefix": "-down arrow-"},
+		{"letter": "↑", "prefix": "-up arrow-"},
+		{"letter": "→", "prefix": "-right arrow-"},
+		{"letter": "←", "prefix": "-left arrow-"}
+	]
+}

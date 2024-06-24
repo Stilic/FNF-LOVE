@@ -19,8 +19,6 @@ Alphabet.text = ""
 Alphabet.__finalText = ""
 Alphabet.yMulti = 1
 
--- custom shit
--- amp, backslash, question mark, apostrophy, comma, angry faic, period
 Alphabet.lastSprite = nil
 Alphabet.xPosResetted = false
 
@@ -34,9 +32,9 @@ Alphabet.typed = false
 
 Alphabet.typingSpeed = 0.05
 
-function Alphabet:new(x, y, text, bold, typed, typingSpeed, textSize)
+function Alphabet:new(x, y, text, font, typed, typingSpeed, textSize)
 	if text == nil then text = "" end
-	if bold == nil then bold = false end
+	if font == nil then font = "default" end
 	if typed == nil then typed = false end
 	if typingSpeed == nil then typingSpeed = 0.05 end
 	if textSize == nil then textSize = 1 end
@@ -49,7 +47,7 @@ function Alphabet:new(x, y, text, bold, typed, typingSpeed, textSize)
 	self.__finalText = text
 	self.text = text
 	self.typed = typed
-	self.isBold = bold
+	self.font = paths.getJSON("data/fonts/" .. font)
 
 	if self.text ~= "" then
 		if self.typed then
@@ -66,17 +64,11 @@ function Alphabet:addText()
 
 	local xPos = 0
 	for i, character in ipairs(self.splitWords) do
-		local spaceChar = (character == " " or
-			(self.isBold and character == "_"))
+		local spaceChar = character == " "
 		if spaceChar then
 			self.consecutiveSpace = self.consecutiveSpace + 1
 		end
-
-		local isNumber = character:match("%d") ~= nil
-		local isSymbol = character:match("[^%w%s]") ~= nil
-		local isAlphabet = character:match("[a-zA-Z]") ~= nil
-		if (isAlphabet or isSymbol or isNumber) and
-			(not self.isBold or not spaceChar) then
+		if not spaceChar then
 			if self.lastSprite ~= nil then
 				xPos = self.lastSprite.x + self.lastSprite.width
 			end
@@ -85,26 +77,8 @@ function Alphabet:addText()
 			end
 			self.consecutiveSpace = 0
 
-			local letter = AlphaCharacter(xPos, 0, self.textSize)
-
-			if self.isBold then
-				if isNumber then
-					letter:createBoldNumber(character)
-				elseif isSymbol then
-					letter:createBoldSymbol(character)
-				else
-					letter:createBoldLetter(character)
-				end
-			else
-				if isNumber then
-					letter:createNumber(character)
-				elseif isSymbol then
-					letter:createSymbol(character)
-				else
-					letter:createLetter(character)
-				end
-			end
-
+			local letter = AlphaCharacter(xPos, 0, self.font, self.textSize)
+			letter:createCharacter(character)
 			self:add(letter)
 			table.insert(self.lettersArray, letter)
 
