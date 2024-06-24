@@ -21,7 +21,7 @@ package_name = "FNFLOVE"
 
 # The name of your game. This will be used when distributing the Game
 # as a zip file. On macOS, this is also used as the app file name.
-title = "FNF LÖVE"
+title = "FNF LOVE"
 
 # The Uniform Type Identifier for your game. This is required for the
 # macOS build of the game.
