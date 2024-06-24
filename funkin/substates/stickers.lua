@@ -101,6 +101,11 @@ function StickersSubstate:spawnStickers()
 					if self.parent then self.parent.skipTransOut = true end
 
 					game.switchState(self.targetState)
+					local superenter = self.targetState.enter
+					self.targetState.enter = function(this)
+						superenter(this)
+						this:openSubstate(StickersSubstate(nil, true))
+					end
 				end
 			end)
 		end)
