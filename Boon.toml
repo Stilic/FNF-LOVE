@@ -46,7 +46,7 @@ output_directory = "release"
 # directory from the build.
 ignore_list = [
     # Git
-    "^.git.*",
+    "^.git*",
 
     # Binary files
     ".zip$",
@@ -59,12 +59,13 @@ ignore_list = [
     "^release$",
 
     # Docs/internal stuff
-    "^.vscode$",
+    "^.vscode/*",
+    "^art/flas*",
+    "^docs/*",
+    "^mods/*",
     "^.editorconfig$",
-    "^mods$",
-    "^docs$",
-    ".README*",
-    "^LICENSE$"
+    "^LICENSE*",
+    "^README*"
 ]
 
 # List of targets to build for
