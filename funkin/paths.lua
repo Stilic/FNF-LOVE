@@ -16,6 +16,13 @@ local function excludeAssets(path)
 	return path
 end
 
+local function insertFile(path, file, type, tbl)
+	local info = love.filesystem.getInfo(path)
+	if info and (type == "any" or info.type == type:lower()) then
+		table.insert(tbl, file)
+	end
+end
+
 local paths = {
 	images = {},
 	audio = {},
@@ -86,25 +93,25 @@ function paths.exists(path, type)
 	return info ~= nil and (not type or info.type == type:lower())
 end
 
-function paths.getItems(key, type)
-	local path = paths.getPath(key)
+function paths.getItems(key, type, excludeMods)
+	type = type or "any"
+	local mods, base = paths.getMods(key) .. "/", paths.getPath(key, false) .. "/"
+	local files, getItems = {}, love.filesystem.getDirectoryItems
 
-	if type == nil then type = "any" end
-	if not paths.exists(path, "directory") then return {} end
-
-	local files, result = love.filesystem.getDirectoryItems(path), {}
-	for _, v in ipairs(files) do
-		local f = path .. "/" .. v
-		local info = love.filesystem.getInfo(f)
-
-		if info then
-			if type == "any" or info.type == type:lower() then
-				table.insert(result, v)
+	if paths.exists(mods, "directory") or paths.exists(base, "directory") then
+		if not excludeMods then
+			for _, v in ipairs(getItems(mods)) do
+				insertFile(mods .. v, v, type, files)
+			end
+		end
+		for _, v in ipairs(getItems(base)) do
+			if not table.find(files, v) then
+				insertFile(base .. v, v, type, files)
 			end
 		end
 	end
 
-	return result
+	return files
 end
 
 function paths.getText(key)
