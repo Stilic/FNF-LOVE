@@ -19,43 +19,6 @@ if Project.flags.LoxelInitWindow then
 	end
 end
 
-local restrictedfs = false
-function love.filesystem.isRestricted()
-	return restrictedfs
-end
-
--- unrestrict the filesystem
-if love.filesystem.isFused() or not love.filesystem.getInfo("assets") then
-	if love.filesystem.mountFullPath then
-		love.filesystem.mountFullPath(love.filesystem.getSourceBaseDirectory(), "")
-	elseif not isMobile then
-		restrictedfs = true
-
-		local lovefs = love.filesystem
-		love.filesystem = setmetatable(loxreq "lib.nativefs", {
-			__index = lovefs
-		})
-
-		local function replace(func)
-			return function(a, ...)
-				return func(type(a) == "string" and love.filesystem.newFileData(a) or a,
-					...)
-			end
-		end
-
-		love.audio.newSource = replace(love.audio.newSource)
-		love.graphics.newFont = replace(love.graphics.newFont)
-		love.graphics.newCubeImage = replace(love.graphics.newCubeImage)
-		love.graphics.newImage = replace(love.graphics.newImage)
-		love.graphics.newImageFont = replace(love.graphics.newImageFont)
-		love.graphics.setNewFont = replace(love.graphics.setNewFont)
-		love.image.newImageData = replace(love.image.newImageData)
-		love.sound.newSoundData = replace(love.sound.newSoundData)
-	else
-		restrictedfs = true
-	end
-end
-
 -- NOTE, no matter how precision is, in windows 10 as of now (<=love 11)
 -- will be always 12ms, unless its using SDL3 or CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag
 local __step__, __quit__ = "step", "quit"

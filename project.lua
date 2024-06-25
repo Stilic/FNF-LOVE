@@ -1,5 +1,5 @@
 return {
-	DEBUG_MODE = true,
+	DEBUG_MODE = false,
 	splashScreen = true,
 
 	title = "Friday Night Funkin' Löve",
