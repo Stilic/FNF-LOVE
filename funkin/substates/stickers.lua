@@ -39,7 +39,7 @@ function StickersSubstate:new(targState, prevStickers, stickerSet)
 
 		if #sounds > 0 then
 			for _, sound in ipairs(sounds) do
-				if sound:endsWith(".ogg") then
+				if sound:ext("ogg") then
 					table.insert(self.sounds, "stickers/" .. folders[r]
 						.. "/" .. sound:withoutExt())
 				end
@@ -61,8 +61,7 @@ function StickersSubstate:enter()
 end
 
 function StickersSubstate:spawnStickers()
-	if #self.stickers.members > 0 then self.stickers:clear() end
-
+	self.stickers:clear()
 	local random, data, stks = math.random, self:getStickers(self.stickerSet), {}
 	for _, set in ipairs(data.packs["all"]) do stks[set] = data.stickers[set] end
 	local keys = {}
