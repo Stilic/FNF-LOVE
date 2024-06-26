@@ -143,9 +143,11 @@ function PauseSubstate:update(dt)
 				PlayState.startPos = 0
 				if PlayState.storyMode then
 					PlayState.seenCutscene = false
-					game.switchState(StoryMenuState())
+					self:close()
+					self.parent:openSubstate(StickersSubstate(StoryMenuState()))
 				else
-					game.switchState(FreeplayState())
+					self:close()
+					self.parent:openSubstate(StickersSubstate(FreeplayState()))
 				end
 				GameOverSubstate.deaths = 0
 			end
