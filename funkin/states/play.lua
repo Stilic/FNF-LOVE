@@ -1356,14 +1356,14 @@ function PlayState:endSong(skip)
 			game.resetState(true)
 		else
 			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
-			game.switchState(StoryMenuState())
+			self:openSubstate(StickersSubstate(StoryMenuState()))
 			GameOverSubstate.deaths = 0
 
 			util.playMenuMusic()
 		end
 	else
 		game.camera:unfollow()
-		game.switchState(FreeplayState())
+		self:openSubstate(StickersSubstate(FreeplayState()))
 		GameOverSubstate.deaths = 0
 
 		util.playMenuMusic()
