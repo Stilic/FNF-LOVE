@@ -187,6 +187,7 @@ function PlayState:enter()
 		self.camFollow = {
 			x = 0,
 			y = 0,
+			tweening = false,
 			set = function(this, x, y)
 				this.x = x
 				this.y = y
@@ -242,7 +243,6 @@ function PlayState:enter()
 			break
 		end
 	end
-	self:cameraMovement()
 	game.camera:snapToTarget()
 
 	self.countdown = Countdown()
@@ -427,10 +427,10 @@ function PlayState:centerNotefields()
 			end
 		end
 	else
-		local halfW = game.width / 2
-		local startX = game.width / 1.5 -
-			(self.enemyNotefield:getWidth() + halfW + self.playerNotefield:getWidth()) / 2
-		self.playerNotefield.x, self.enemyNotefield.x = startX + halfW, startX
+		self.playerNotefield:screenCenter("x")
+		self.enemyNotefield:screenCenter("x")
+		self.playerNotefield.x = self.playerNotefield.x + game.width / 3.7
+		self.enemyNotefield.x = self.enemyNotefield.x - game.width / 3.7
 
 		for _, notefield in ipairs(self.notefields) do
 			if notefield.is then notefield.visible = true end
@@ -481,29 +481,23 @@ function PlayState:startCountdown()
 	self.countdown.playback = 1
 end
 
-function PlayState:cameraMovement()
+function PlayState:cameraMovement(ox, oy, ease, time)
 	local event = self.scripts:event("onCameraMove", Events.CameraMove(self.camTarget))
 	local target = event.target
-	if target and not event.cancelled then
-		local camX, camY
-		if target == self.gf then
-			camX, camY = target:getMidpoint()
-			camX = camX - event.offset.x - target.cameraPosition.x + self.stage.gfCam.x
-			camY = camY - event.offset.y - target.cameraPosition.y + self.stage.gfCam.y
-		elseif target.isPlayer then
-			camX, camY = target:getMidpoint()
-			camX = camX - 100 - event.offset.x - target.cameraPosition.x +
-				self.stage.boyfriendCam.x
-			camY = camY - 100 - event.offset.y + target.cameraPosition.y +
-				self.stage.boyfriendCam.y
-		else
-			camX, camY = target:getMidpoint()
-			camX = camX + 150 - event.offset.x + target.cameraPosition.x +
-				self.stage.dadCam.x
-			camY = camY - 100 - event.offset.y + target.cameraPosition.y +
-				self.stage.dadCam.y
-		end
+
+	local camX = ox or 0 - event.offset.x + (target and target.cameraPosition.x or 0)
+	local camY = oy or 0 - event.offset.y + (target and target.cameraPosition.y or 0)
+
+	if not ease then
+		self.timer:cancelTweensOf(self.camFollow)
+		game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 		self.camFollow:set(camX, camY)
+	else
+		game.camera:follow(self.camFollow, nil)
+		self.timer:cancelTweensOf(self.camFollow)
+		self.timer:tween(time, self.camFollow, {x = camX, y = camY}, ease, function()
+			self.camFollow.tweening = false
+		end)
 	end
 end
 
@@ -788,10 +782,6 @@ function PlayState:update(dt)
 
 	self.scripts:call("update", dt)
 	PlayState.super.update(self, dt)
-
-	if self.startedCountdown then
-		self:cameraMovement()
-	end
 
 	if self.camZooming then
 		game.camera.zoom = util.coolLerp(game.camera.zoom, self.camZoom, 3, dt * self.camZoomSpeed)
