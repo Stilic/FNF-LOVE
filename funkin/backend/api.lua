@@ -1,164 +1,130 @@
-local API = {}
---[[
-this is supposed to be called ChartParser instead but ill probably
-add other functions for parsing or getting stuff or idk. who knows
-todo that shouldn't be here: think a way to make erect songs stuff…
--kaoy
-]]
+local API = {chart = {}, meta = {}, character = {}}
 
-API.chart = {
-	defaultMeta = {
-		songName = nil,
-		playData = {
-			characters = {
-				player = "bf",
-				opponent = "dad",
-				girlfriend = "gf"
-			},
-			stage = "stage",
-			skin = "default"
-		},
-		artist = nil,
-		charter = nil,
-		timeChanges = nil
-	}
+API.meta.base = {
+	songName = nil,
+	artist = nil,
+	charter = nil,
+
+	preview = {0, 1500}
 }
 
+API.chart.base = {
+	song = nil,
+	bpm = 100,
+	speed = 1,
+
+	player1 = "bf",
+	player2 = "dad",
+	gfVersion = "gf",
+
+	stage = "stage",
+	skin = "default",
+
+	events = {},
+	notes = {
+		player = {}, enemy = {}
+	},
+	timeChanges = nil
+}
+
+API.character.base = {}
+
 local function sortByTime(a, b) return a.t < b.t end
+local function set(tbl, key, v) if v ~= nil then tbl[key] = v end end
+
 function API.chart.parse(song, diff, returnRaw)
-	if song then
-		song = paths.formatToSongPath(song)
-	else
-		return
-	end
+	assert(type(song) == "string", "Song must be a string.")
+	song = paths.formatToSongPath(song)
 
-	local isV2 = true
-	-- pretty sure this can be done other way but eh whatever
-	local path = "songs/" .. song .. "/chart" -- default fallback for now
-	local data = paths.getJSON(path)
+	local chart, isV1 = table.clone(API.chart.base), false
+	local data = paths.getJSON("songs/" .. song .. "/chart")
 
-	local parsedData = {events = {}, notes = {}}
-
-	if not data then
+	if data == nil then
 		path = "songs/" .. song .. "/charts/" .. diff:lower() or
 			PlayState.defaultDifficulty
+
 		data = paths.getJSON(path)
-		isV2 = false
+		if data == nil then data = chart end
+		isV1 = true
 	end
 
-	local clonedMeta = table.clone(API.chart.defaultMeta) -- so it doesn't overwrite original one
-	local meta, chart =
-		table.merge(clonedMeta, paths.getJSON("songs/" .. song .. "/meta")),
-		data and data.song or {}
-	if not meta then meta = clonedMeta end
+	set(chart, "song", song:capitalize())
 
-	parsedData.song = chart.song or meta.songName or song:capitalize()
-	parsedData.bpm = 100
+	local meta = API.chart.adjustMeta(song, chart)
 
-	if meta.timeChanges then
-	--[[
-	 * - t: Timestamp in specified `timeFormat`.
-	 * - b: Time in beats (int). The game will calculate further beat values based on this one, so it can do it in a simple linear fashion.
-	 * - bpm: Quarter notes per minute (float). Cannot be empty in the first element of the list, but otherwise it's optional,
-	 *		and defaults to the value of the previous element.
-	 * - n: Time signature numerator (int). Optional, defaults to 4.
-	 * - d: Time signature denominator (int). Optional, defaults to 4. Should only ever be a power of two.
-	 * - bt: Beat tuplets (Array<int> or int). This defines how many steps each beat is divided into.
-	 *		It can either be an array of length `n` (see above) or a single integer number. Optional, defaults to 4.
-	]]
-		-- todo fix this entirely, fnf base works with different times
-		local daBpm
-		local add, steps = 0, 0
-		for i, c in ipairs(meta.timeChanges) do
+	if chart.timeChanges then
+		-- todo rework this and change conductor maybe??, fnf base works with different times
+		--[[
+		t: Timestamp in specified `timeFormat`.
+		b: Time in beats (int). The game will calculate further beat values based on this one, so it can do it in a simple linear fashion.
+		bpm: Quarter notes per minute (float). Cannot be empty in the first element of the list, but otherwise it's optional,
+		and defaults to the value of the previous element.
+		n: Time signature numerator (int). Optional, defaults to 4.
+		d: Time signature denominator (int). Optional, defaults to 4. Should only ever be a power of two.
+		bt: Beat tuplets (Array<int> or int). This defines how many steps each beat is divided into.
+		It can either be an array of length `n` (see above) or a single integer number. Optional, defaults to 4.
+		]]
+		for i, c in ipairs(chart.timeChanges) do
 			if c.t <= 0 then
-				parsedData.bpm = c.bpm
+				chart.bpm = c.bpm
+				table.remove(chart.timeChanges, i)
+				break
 			end
 		end
-		local bpmChanges = Conductor.newBPMChanges(parsedData.bpm)
-		for i, c in ipairs(meta.timeChanges) do
-			daBpm = c.bpm
-			table.insert(bpmChanges, {
-				step = steps,
-				time = c.t,
-				bpm = daBpm,
-				stepCrotchet = Conductor.calculateCrotchet(daBpm) / 4,
-				id = i
-			})
-			add = 16
-			steps = steps + add
+	end
+
+	local rdata = data.song or data
+
+	if isV1 then
+		set(chart, "song", rdata.song)
+		set(chart, "bpm", rdata.bpm)
+		set(chart, "speed", rdata.speed)
+
+		set(chart, "stage", rdata.stage)
+		set(chart, "skin", rdata.skin)
+
+		set(chart, "player1", rdata.player1)
+		set(chart, "player2", rdata.player2)
+		set(chart, "gfVersion", rdata.gfVersion)
+	end
+
+	switch(song, {
+		["test"] = function() chart.stage = "test" end,
+		[{"spookeez", "south", "monster"}] = function() chart.stage = "spooky" end,
+		[{"pico", "philly-nice", "blammed"}] = function() chart.stage = "philly" end,
+		[{"satin-panties", "high", "milf"}] = function() chart.stage = "limo" end,
+		[{"cocoa", "eggnog"}] = function() chart.stage = "mall" end,
+		["winter-horrorland"] = function() chart.stage = "mall-evil" end,
+		[{"senpai", "roses"}] = function() chart.stage = "school" end,
+		["thorns"] = function() chart.stage = "school-evil" end,
+		[{"ugh", "guns", "stress"}] = function() chart.stage = "tank" end
+	})
+
+	switch(chart.stage, {
+		["limo"] = function() chart.gfVersion = "gf-car" end,
+		[{"mall", "mall-evil"}] = function() chart.gfVersion = "gf-christmas" end,
+		[{"school", "school-evil"}] = function() chart.gfVersion = "gf-pixel" end,
+		["tank"] = function()
+			chart.gfVersion = song == "stress" and "pico-speaker" or "gf-tankmen"
 		end
-		parsedData.bpmChanges = bpmChanges
-	else
-		parsedData.bpm = chart.bpm or 100
+	})
+
+	if isV1 and rdata.notes then
+		chart.notes, chart.events, chart.bpmChanges =
+			API.chart.readDiff(chart.bpm, rdata.notes, true)
+	elseif not isV1 and data.notes[diff:lower()] then
+		local speed = data.scrollSpeed and (data.scrollSpeed[diff:lower()] or
+			data.scrollSpeed.default) or 1
+		chart.speed = speed
+		chart.notes, chart.events =
+			API.chart.readDiff(chart.bpm, data.notes[diff:lower()]), data.events
 	end
 
-	parsedData.speed = chart.speed or 1
+	table.sort(chart.notes.enemy, sortByTime)
+	table.sort(chart.notes.player, sortByTime)
+	table.sort(chart.events, sortByTime)
 
-	parsedData.artist = meta.artist
-	parsedData.charter = meta.charter
-
-	if chart.stage then
-		parsedData.stage = chart.stage
-	else
-		switch(song, {
-			["test"] = function() parsedData.stage = "test" end,
-			[{"spookeez", "south", "monster"}] = function() parsedData.stage = "spooky" end,
-			[{"pico", "philly-nice", "blammed"}] = function() parsedData.stage = "philly" end,
-			[{"satin-panties", "high", "milf"}] = function() parsedData.stage = "limo" end,
-			[{"cocoa", "eggnog"}] = function() parsedData.stage = "mall" end,
-			["winter-horrorland"] = function() parsedData.stage = "mall-evil" end,
-			[{"senpai", "roses"}] = function() parsedData.stage = "school" end,
-			["thorns"] = function() parsedData.stage = "school-evil" end,
-			[{"ugh", "guns", "stress"}] = function() parsedData.stage = "tank" end,
-			default = function() parsedData.stage = meta.playData.stage end
-		})
-	end
-	parsedData.skin = chart.skin or meta.playData.skin
-
-	local char = meta.playData.characters
-	parsedData.player1 = chart.player1 or char.player
-	parsedData.player2 = chart.player2 or char.opponent
-	if chart.gfVersion then
-		parsedData.gfVersion = chart.gfVersion
-	else
-		switch(parsedData.stage, {
-			["limo"] = function() parsedData.gfVersion = "gf-car" end,
-			[{"mall", "mall-evil"}] = function() parsedData.gfVersion = "gf-christmas" end,
-			[{"school", "school-evil"}] = function() parsedData.gfVersion = "gf-pixel" end,
-			["tank"] = function()
-				if song == "stress" then
-					parsedData.gfVersion = "pico-speaker"
-				else
-					parsedData.gfVersion = "gf-tankmen"
-				end
-			end,
-			default = function()
-				parsedData.gfVersion = char.girlfriend
-			end
-		})
-	end
-
-	if data then
-		if isV2 then
-			local speed = data.scrollSpeed and (data.scrollSpeed[diff:lower()] or
-				data.scrollSpeed.default) or 1
-			parsedData.speed = speed
-			parsedData.notes, parsedData.events =
-				API.chart.readDiff(parsedData.bpm, data.notes[diff:lower()]), data.events
-		else
-			parsedData.notes, parsedData.events, parsedData.bpmChanges =
-				API.chart.readDiff(parsedData.bpm, chart.notes, true)
-		end
-	else
-		parsedData.notes, parsedData.events, parsedData.bpmChanges =
-			{enemy = {}, player = {}}, {}, {}
-	end
-
-	table.sort(parsedData.notes.enemy, sortByTime)
-	table.sort(parsedData.notes.player, sortByTime)
-	table.sort(parsedData.events, sortByTime)
-
-	return returnRaw and data or parsedData
+	return (returnRaw and data or chart), meta
 end
 
 function API.chart.readDiff(bpm, data, isV1)
@@ -216,6 +182,52 @@ function API.chart.readDiff(bpm, data, isV1)
 		end
 	end
 	return {enemy = dad, player = bf}, events, bpmChanges
+end
+
+-- This moves a lot of playData info to charts, then it get
+-- wiped from the meta, to avoid unused values.
+function API.chart.adjustMeta(song, tbl)
+	local data = API.meta.parse(song, true)
+	local info = {}
+
+	if data.playData then
+		local info = data.playData
+		set(tbl, "song", data.songName)
+
+		set(tbl, "player1", info.characters.player)
+		set(tbl, "player2", info.characters.opponent)
+		set(tbl, "gfVersion", info.characters.girlfriend)
+
+		set(tbl, "stage", info.stage)
+		set(tbl, "skin", info.skin)
+		set(tbl, "timeChanges", data.timeChanges)
+	end
+
+	data.playData, data.timeChanges = nil, nil
+	data.preview = nil
+
+	return data
+end
+
+-- Function to parse metadata song files.
+function API.meta.parse(song, isPlayable)
+	local clone = table.clone(API.meta.base)
+	local path = isPlayable and "songs/" .. song .. "/meta" or "music/" .. song .. "-meta"
+
+	local meta = table.merge(clone, paths.getJSON(path))
+	if meta == nil then meta = clone end
+
+	local info = {}
+	if meta.playData then
+		local info = meta.playData
+	end
+
+	set(meta.preview[1], info.previewStart)
+	set(meta.preview[2], info.previewEnd)
+
+	info.previewStart, info.previewEnd = nil, nil
+
+	return meta
 end
 
 return API
