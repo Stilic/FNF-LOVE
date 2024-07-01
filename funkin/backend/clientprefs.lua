@@ -11,6 +11,7 @@ ClientPrefs.data = {
 	ghostTap = true,
 	noteSplash = true,
 	backgroundDim = 0,
+	flashingLights = true,
 	-- notesBelowHUD = true,
 	botplayMode = false,
 	-- timeType = 'left',
