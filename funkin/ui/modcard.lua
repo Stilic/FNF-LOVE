@@ -46,7 +46,7 @@ function ModCard:new(x, y, mods)
 	self:add(self.descBG)
 
 	self.descTxt = Text(self.descBG.x + 8, self.descBG.y + 8, metadata.description, love.graphics.newFont(16),
-		Color.WHITE, "left", descBG.width - 16)
+		Color.WHITE, "left", self.descBG.width - 16)
 	self:add(self.descTxt)
 end
 
