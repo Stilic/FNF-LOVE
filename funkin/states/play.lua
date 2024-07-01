@@ -91,6 +91,7 @@ function PlayState:enter()
 	NoteModifier.reset()
 
 	self.timer = Timer.new()
+	self.camPosTween = nil
 
 	self.scripts = ScriptsHandler()
 	self.scripts:loadDirectory("data/scripts", "data/scripts/" .. songName, "songs/" .. songName)
@@ -481,23 +482,41 @@ function PlayState:startCountdown()
 	self.countdown.playback = 1
 end
 
+function PlayState:getCameraPosition(char)
+	local camX, camY = char:getMidpoint()
+	if char == self.gf then
+		camX, camY = camX - char.cameraPosition.x + self.stage.gfCam.x,
+			camY - char.cameraPosition.y + self.stage.gfCam.y
+	elseif char.isPlayer then
+		camX, camY = camX - 100 - char.cameraPosition.x + self.stage.boyfriendCam.x,
+			camY - 100 + char.cameraPosition.y + self.stage.boyfriendCam.y
+	else
+		camX, camY = camX + 150 + char.cameraPosition.x + self.stage.dadCam.x,
+			camY - 100 + char.cameraPosition.y + self.stage.dadCam.y
+	end
+	return camX, camY
+end
+
 function PlayState:cameraMovement(ox, oy, ease, time)
 	local event = self.scripts:event("onCameraMove", Events.CameraMove(self.camTarget))
-	local target = event.target
-
-	local camX = ox or 0 - event.offset.x + (target and target.cameraPosition.x or 0)
-	local camY = oy or 0 - event.offset.y + (target and target.cameraPosition.y or 0)
-
-	if not ease then
-		self.timer:cancelTweensOf(self.camFollow)
-		game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
-		self.camFollow:set(camX, camY)
+	local camX, camY = (ox or 0) + event.offset.x, (oy or 0) + event.offset.y
+	if self.camPosTween then
+		self.timer:cancel(self.camPosTween)
+	end
+	if ease then
+		if game.camera.followLerp then
+			game.camera:follow(self.camFollow, nil)
+		end
+		self.camPosTween =
+			self.timer:tween(time, self.camFollow, {x = camX, y = camY}, ease, function()
+				self.camFollow.tweening = false
+			end)
 	else
-		game.camera:follow(self.camFollow, nil)
-		self.timer:cancelTweensOf(self.camFollow)
-		self.timer:tween(time, self.camFollow, {x = camX, y = camY}, ease, function()
-			self.camFollow.tweening = false
-		end)
+		if not game.camera.followLerp then
+			game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
+		end
+		self.camPosTween = nil
+		self.camFollow:set(camX, camY)
 	end
 end
 
@@ -698,10 +717,19 @@ function PlayState:update(dt)
 			self:section(0)
 			self.scripts:call("songStart")
 		else
-			local event = self.events[1]
-			if event and event.t <= PlayState.conductor.time then
-				self:executeEvent(event)
-				table.remove(self.events, 1)
+			local noFocus, events, e = true, self.events
+			while events[1] do
+				e = events[1]
+				if e.t <= PlayState.conductor.time then
+					self:executeEvent(e)
+					table.remove(events, 1)
+					if e.e == "FocusCamera" then noFocus = false end
+				else
+					break
+				end
+			end
+			if noFocus and self.camTarget and game.camera.followLerp then
+				self:cameraMovement(self:getCameraPosition(self.camTarget))
 			end
 		end
 

@@ -69,13 +69,12 @@ StoryMenuState = require "funkin.states.storymenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
-EditorMenu = require "funkin.ui.editor.editormenu"
-
 GameOverSubstate = require "funkin.substates.gameover"
+StickersSubstate = require "funkin.substates.stickers"
 
+EditorMenu = require "funkin.ui.editor.editormenu"
 CutsceneState = require "funkin.states.editors.cutscene"
 CharacterEditor = require "funkin.states.editors.character"
-
 ChartingState = require "funkin.states.editors.charting"
 ChartingNote = require "funkin.ui.editor.charting.chartingnote"
 
