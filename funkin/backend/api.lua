@@ -15,10 +15,10 @@ API.chart.base = {
 
 	player1 = "bf",
 	player2 = "dad",
-	gfVersion = "gf",
+	gfVersion = nil,
 
-	stage = "stage",
-	skin = "default",
+	stage = nil,
+	skin = nil,
 
 	events = {},
 	notes = {
@@ -73,46 +73,59 @@ function API.chart.parse(song, diff, returnRaw)
 		end
 	end
 
-	local rdata = data.song or data
+	local realData = data.song or data
 
 	if isV1 then
-		set(chart, "song", rdata.song)
-		set(chart, "bpm", rdata.bpm)
-		set(chart, "speed", rdata.speed)
+		set(chart, "song", realData.song)
+		set(chart, "bpm", realData.bpm)
+		set(chart, "speed", realData.speed)
 
-		set(chart, "stage", rdata.stage)
-		set(chart, "skin", rdata.skin)
+		set(chart, "stage", realData.stage)
+		set(chart, "skin", realData.skin)
 
-		set(chart, "player1", rdata.player1)
-		set(chart, "player2", rdata.player2)
-		set(chart, "gfVersion", rdata.gfVersion)
+		set(chart, "player1", realData.player1)
+		set(chart, "player2", realData.player2)
+		set(chart, "gfVersion", realData.gfVersion)
 	end
 
-	switch(song, {
-		["test"] = function() chart.stage = "test" end,
-		[{"spookeez", "south", "monster"}] = function() chart.stage = "spooky" end,
-		[{"pico", "philly-nice", "blammed"}] = function() chart.stage = "philly" end,
-		[{"satin-panties", "high", "milf"}] = function() chart.stage = "limo" end,
-		[{"cocoa", "eggnog"}] = function() chart.stage = "mall" end,
-		["winter-horrorland"] = function() chart.stage = "mall-evil" end,
-		[{"senpai", "roses"}] = function() chart.stage = "school" end,
-		["thorns"] = function() chart.stage = "school-evil" end,
-		[{"ugh", "guns", "stress"}] = function() chart.stage = "tank" end
-	})
+	if not chart.stage then
+		switch(song, {
+			["test"] = function() chart.stage = "test" end,
+			[{"spookeez", "south", "monster"}] = function() chart.stage = "spooky" end,
+			[{"pico", "philly-nice", "blammed"}] = function() chart.stage = "philly" end,
+			[{"satin-panties", "high", "milf"}] = function() chart.stage = "limo" end,
+			[{"cocoa", "eggnog"}] = function() chart.stage = "mall" end,
+			["winter-horrorland"] = function() chart.stage = "mall-evil" end,
+			[{"senpai", "roses"}] = function() chart.stage = "school" end,
+			["thorns"] = function() chart.stage = "school-evil" end,
+			[{"ugh", "guns", "stress"}] = function() chart.stage = "tank" end,
+			default = function() chart.stage = "stage" end
+		})
+	end
+	if not chart.skin then
+		switch(chart.stage, {
+			[{"school", "school-evil"}] = function() chart.skin = "default-pixel" end,
+			default = function() chart.skin = "default" end
+		})
+	end
+	if not chart.gfVersion then
+		switch(chart.stage, {
+			["limo"] = function() chart.gfVersion = "gf-car" end,
+			[{"mall", "mall-evil"}] = function() chart.gfVersion = "gf-christmas" end,
+			[{"school", "school-evil"}] = function() chart.gfVersion = "gf-pixel" end,
+			["tank"] = function()
+				chart.gfVersion = song == "stress" and "pico-speaker" or "gf-tankmen"
+			end,
+			default = function() chart.gfVersion = "gf" end
+		})
+	end
 
-	switch(chart.stage, {
-		["limo"] = function() chart.gfVersion = "gf-car" end,
-		[{"mall", "mall-evil"}] = function() chart.gfVersion = "gf-christmas" end,
-		[{"school", "school-evil"}] = function() chart.gfVersion = "gf-pixel" end,
-		["tank"] = function()
-			chart.gfVersion = song == "stress" and "pico-speaker" or "gf-tankmen"
+	if isV1 then
+		if realData.notes then
+			chart.notes, chart.events, chart.bpmChanges =
+				API.chart.readDiff(chart.bpm, realData.notes, true)
 		end
-	})
-
-	if isV1 and rdata.notes then
-		chart.notes, chart.events, chart.bpmChanges =
-			API.chart.readDiff(chart.bpm, rdata.notes, true)
-	elseif not isV1 and data.notes[diff:lower()] then
+	elseif data.notes[diff:lower()] then
 		local speed = data.scrollSpeed and (data.scrollSpeed[diff:lower()] or
 			data.scrollSpeed.default) or 1
 		chart.speed = speed
