@@ -179,8 +179,10 @@ function PlayState:enter()
 	self.judgeSprites.y = self.judgeSprites.area.height * 1.5
 	self:add(self.judgeSprites)
 
-	self.camZoom, self.camZoomSpeed, self.camSpeed, self.camTarget =
-		self.stage.camZoom, self.stage.camZoomSpeed, self.stage.camSpeed
+	game.camera.zoom, self.camZoom, self.camZooming,
+	self.camZoomSpeed, self.camSpeed, self.camTarget =
+		self.stage.camZoom, self.stage.camZoom, true,
+		self.stage.camZoomSpeed, self.stage.camSpeed
 	if PlayState.prevCamFollow then
 		self.camFollow = PlayState.prevCamFollow
 		PlayState.prevCamFollow = nil
@@ -195,9 +197,6 @@ function PlayState:enter()
 			end
 		}
 	end
-	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
-	game.camera.zoom = self.stage.camZoom
-	self.camZooming = true
 
 	local playerVocals, enemyVocals, volume =
 		paths.getVoices(songName, PlayState.SONG.player1, true)
@@ -244,7 +243,6 @@ function PlayState:enter()
 			break
 		end
 	end
-	game.camera:snapToTarget()
 
 	self.countdown = Countdown()
 	self.countdown:screenCenter()
@@ -416,6 +414,9 @@ function PlayState:enter()
 	collectgarbage()
 
 	self.scripts:call("postCreate")
+
+	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
+	game.camera:snapToTarget()
 end
 
 function PlayState:centerNotefields()
