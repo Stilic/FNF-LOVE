@@ -18,7 +18,6 @@ function Receptor:new(x, y, direction, skin)
 	self._x, self._y, self._z = x, y, 0
 
 	self.holdTime = 0
-	self.strokeTime = 0
 	self.__strokeDelta = 0
 
 	self.__shaderAnimations = {}
@@ -191,25 +190,6 @@ function Receptor:update(dt)
 		end
 	end
 
-	if self.strokeTime ~= 0 and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
-		self.__strokeDelta = self.__strokeDelta + dt
-		if self.__strokeDelta >= 0.13 then
-			local time = self.__strokeTime
-			self.curFrame, self.animFinished = 1, false
-			if self.glow then
-				self.glow.curFrame, self.glow.animFinished = 1, false
-			end
-			self.__strokeDelta = 0
-		end
-
-		if self.strokeTime ~= -1 then
-			self.strokeTime = self.strokeTime - dt
-			if self.strokeTime <= 0 then
-				self.__strokeDelta, self.strokeTime = 0, 0
-			end
-		end
-	end
-
 	if self.glow then
 		ActorSprite.update(self.glow, dt)
 	end
@@ -273,7 +253,7 @@ function Receptor:play(anim, force, frame, dontShader)
 	end
 
 	Note.updateHitbox(self)
-	self.holdTime, self.__strokeDelta, self.strokeTime = 0, 0, 0
+	self.holdTime = 0
 
 	if not dontShader and self.__shaderAnimations then
 		self.shader = self.__shaderAnimations[anim]

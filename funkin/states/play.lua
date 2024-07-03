@@ -680,11 +680,6 @@ function PlayState:resetStroke(notefield, dir, doPress)
 		receptor:play((doPress and not notefield.bot)
 			and "pressed" or "static")
 	end
-
-	local char = notefield.character
-	if char and char.dirAnim == dir then
-		char.strokeTime = 0
-	end
 end
 
 function PlayState:update(dt)
@@ -785,10 +780,8 @@ function PlayState:update(dt)
 						end
 					end
 
-					if noSustainHit and hasInput
-						and char and char.strokeTime ~= -1 then
-						char:sing(dir, nil, false)
-						char.strokeTime = -1
+					if noSustainHit and hasInput and char then
+						char.lastHit = PlayState.conductor.time
 					end
 				elseif isPlayer then
 					if noSustainHit
@@ -954,6 +947,26 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 	if not event.cancelled and not note.wasGoodHit then
 		note.wasGoodHit = true
 
+		if event.unmuteVocals then
+			local vocals = notefield.vocals or self.playerNotefield.vocals
+			if vocals then vocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
+		end
+
+		if not event.cancelledAnim then
+			local char = notefield.character
+			if char then
+				local lastSustain = notefield.lastSustain
+				if lastSustain and lastSustain.sustainTime > note.sustainTime then
+					local dir = lastSustain.direction
+					if char.dirAnim ~= dir then
+						char:sing(dir, nil, false)
+					end
+				else
+					char:sing(dir, animType)
+				end
+			end
+		end
+
 		if note.sustain then
 			notefield.lastSustain = note
 		else
@@ -961,29 +974,13 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			notefield.lastSustain = nil
 		end
 
-		if event.unmuteVocals then
-			local vocals = notefield.vocals or self.playerNotefield.vocals
-			if vocals then vocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
-		end
-
-		if not event.cancelledAnim and (blockAnimation == nil or not blockAnimation) then
-			local char = notefield.character
-			if char then
-				-- local section, animType = PlayState.SONG.notes[math.max(PlayState.conductor.currentSection + 1, 1)]
-				-- if section and section.altAnim then animType = "alt" end
-				char:sing(dir, animType)
-				if note.sustain then char.strokeTime = -1 end
-			end
-		end
-
 		local rating = self:getRating(note.time, time)
 
 		local receptor = notefield.receptors[fixedDir]
 		if receptor and not event.strumGlowCancelled then
 			receptor:play("confirm", true)
-			receptor.holdTime, receptor.strokeTime = 0, 0
+			receptor.holdTime = 0
 			if note.sustain then
-				receptor.strokeTime = -1
 				receptor:spawnCover(note)
 			elseif not isPlayer then
 				receptor.holdTime = 0.15
@@ -1188,29 +1185,15 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			local l = #hitNotes
 			if l == 0 then
 				local receptor = notefield.receptors[fixedKey]
-				if hasSustain then
-					if receptor then
-						receptor:play("confirm")
-						receptor.strokeTime = -1
-					end
-
-					local char = notefield.character
-					if char then
-						char:sing(key)
-						char.strokeTime = -1
-					end
-				elseif receptor then
-					receptor:play("pressed")
+				if receptor then
+					receptor:play(hasSustain and "confirm" or "pressed")
 				end
-
 				if not hasSustain and not ClientPrefs.data.ghostTap then
 					self:miss(notefield, key)
 				end
 			else
-				local firstNote = hitNotes[1]
-
 				-- remove stacked notes (this is dedicated to spam songs)
-				local i, note = 2
+				local i, firstNote, note = 2, hitNotes[1]
 				while i <= l do
 					note = hitNotes[i]
 					if note and math.abs(note.time - firstNote.time) < 0.01 then
@@ -1219,19 +1202,6 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 						break
 					end
 					i = i + 1
-				end
-
-				local lastSustain = notefield.lastSustain
-				local blockAnim = lastSustain and firstNote.sustain
-					and lastSustain.sustainTime < firstNote.sustainTime
-				if blockAnim then
-					local char = notefield.character
-					if char then
-						local dir = lastSustain.direction
-						if char.dirAnim ~= dir then
-							char:sing(dir, nil, false)
-						end
-					end
 				end
 				self:goodNoteHit(firstNote, time, blockAnim)
 			end

@@ -19,7 +19,6 @@ function Character:new(x, y, char, isPlayer)
 
 	self.dirAnim, self.holdTime, self.lastHit, self.waitReleaseAfterSing =
 		nil, 4, math.negative_infinity, false
-	self.strokeTime, self.__strokeDelta = 0, 0
 	self.danceSpeed, self.danced = 2, false
 
 	local jsonData = paths.getJSON("data/characters/" .. char)
@@ -134,22 +133,6 @@ function Character:update(dt)
 		else
 			self.offset.x, self.offset.y = 0, 0
 		end
-
-		if self.strokeTime ~= 0 and self.curAnim.name:startsWith("sing") then
-			self.__strokeDelta = self.__strokeDelta + dt
-			if self.__strokeDelta >= 0.13 then
-				self.lastHit = PlayState.conductor.time
-				self.curFrame, self.animFinished = 1, false
-				self.__strokeDelta = 0
-			end
-
-			if self.strokeTime ~= -1 then
-				self.strokeTime = self.strokeTime - dt
-				if self.strokeTime <= 0 then
-					self.__strokeDelta, self.strokeTime = 0, 0
-				end
-			end
-		end
 	end
 	if self.lastHit > 0 and self.lastHit +
 		PlayState.conductor.stepCrotchet * self.holdTime
@@ -179,7 +162,7 @@ end
 
 function Character:playAnim(anim, force, frame)
 	Character.super.play(self, anim, force, frame)
-	self.__strokeDelta, self.strokeTime, self.dirAnim = 0, 0, nil
+	self.dirAnim = nil
 
 	local offset = self.animOffsets[anim]
 	if offset then
@@ -219,7 +202,6 @@ function Character:sing(dir, type, force)
 
 	self.dirAnim = type == "miss" and nil or dir
 	self.lastHit = PlayState.conductor.time
-	self.strokeTime = 0
 end
 
 function Character:dance(force)
