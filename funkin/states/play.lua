@@ -941,7 +941,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 	self.scripts:call("goodNoteHit", note, rating)
 
 	local notefield, dir = note.parent, note.direction
-	local isPlayer, fixedDir = not notefield.bot, dir + 1
+	local fixedDir = dir + 1
 	local event = self.scripts:event("onNoteHit",
 		Events.NoteHit(notefield, note, rating))
 	if not event.cancelled and not note.wasGoodHit then
@@ -982,7 +982,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			receptor.holdTime = 0
 			if note.sustain then
 				receptor:spawnCover(note)
-			elseif not isPlayer then
+			elseif notefield.bot then
 				receptor.holdTime = 0.15
 			end
 			if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
