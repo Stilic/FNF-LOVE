@@ -1,37 +1,40 @@
 local base, back, window, reflect
 local shader = [[
-extern vec3 modf;
-// modf.x = contrast, modf.y = saturation, modf.z = brightness
+extern vec3 modf; extern bool isGraphic;
+// modf: x = contrast, y = saturation, z = brightness
 // yeah im lazy lol don't judge me i hate shaders - kaoy
 
 vec3 scb(vec3 color, vec3 adj) {
-	const float alumR = 0.5;
-	const float alumG = 0.5;
-	const float alumB = 0.5;
+	const vec3 coeffi = vec3(0.2125, 0.7154, 0.0721);
+	const vec3 lumins = vec3(0.5, 0.5, 0.5);
 
-	const vec3 coeff = vec3(0.2125, 0.7154, 0.0721);
-
-	vec3 lumin = vec3(alumR, alumG, alumB);
 	vec3 brtcol = color * adj.z;
-	vec3 intensity = vec3(dot(brtcol, coeff));
-	vec3 satcol = mix(intensity, brtcol, adj.y);
-	vec3 concol = mix(lumin, satcol, adj.x);
+	vec3 intens = vec3(dot(brtcol, coeffi));
+	vec3 satcol = mix(intens, brtcol, adj.y);
+	vec3 concol = mix(lumins, satcol, adj.x);
 
 	return concol;
 }
 
-vec4 effect(vec4 vcolor, Image tex, vec2 textureCoords, vec2 screenCoords) {
-	vec4 pixel = Texel(tex, textureCoords);
-	vec3 color = scb(pixel.rgb, modf);
-	return vec4(color, pixel.a) * vcolor;
+vec4 effect(vec4 color, Image tex, vec2 coords, vec2 _) {
+	vec4 pixel = Texel(tex, coords);
+	vec3 modif; vec4 final;
+
+	if (isGraphic) {
+		modif = scb(color.rgb, modf);
+		final = vec4(modif, color.a);
+	} else {
+		modif = scb(pixel.rgb, modf);
+		final = vec4(modif, pixel.a) * color;
+	}
+	return final;
 }
 ]]
 
 function create()
 	self.dadCam.y = 34
 
-	base = Sprite(-350, -260, paths.getImage(SCRIPT_PATH .. "base"))
-	base:setGraphicSize(2280)
+	base = Graphic(-350, -260, 2000, 2000, Color.fromString("#32325A"))
 	base:setScrollFactor()
 	base.shader = love.graphics.newShader(shader)
 	self:add(base)
@@ -39,6 +42,11 @@ function create()
 	window = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
 	window.shader = love.graphics.newShader(shader)
 	self:add(window)
+
+	local windowBlend = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
+	windowBlend.blend = "add"
+	windowBlend.alpha = 0.22
+	self:add(windowBlend)
 
 	back = Sprite(-200, -100, paths.getImage(SCRIPT_PATH .. "bg_shadows"))
 	back.shader = love.graphics.newShader(shader)
@@ -68,8 +76,7 @@ function beat()
 end
 
 function lightingAnimation()
-	local flashAllowed = ClientPrefs.data.flashingLights
-	if flashAllowed then
+	if ClientPrefs.data.flashingLights then
 		modify(base, 1, 0.8, 1.6)
 		modify(back, 1.25, 1.5, 0.8)
 		modify(window, 1, 1, 10)
@@ -81,7 +88,7 @@ function lightingAnimation()
 		local eh = {c = 3, s = 2, b = 0.9}
 		local eh2 = {b = 10}
 
-		if flashAllowed then
+		if ClientPrefs.data.flashingLights then
 			modify(base, 1.5, 1, 0.5)
 			modify(back, 1.5, 1, 0.5)
 			modify(window, 1.3, 1, 0.5)
@@ -98,16 +105,16 @@ function lightingAnimation()
 			state.camHUD:shake(0.001, 1.4)
 
 			util.playSfx(paths.getSound('gameplay/thunder_' ..
-			love.math.random(1, 2)))
+				love.math.random(1, 2)))
 
 			reflect.alpha = 0.9
 
-			state.timer:tween(0.6, eh, {c = 1, s = 1, b = 1}, "out-expo")
-			state.timer:tween(0.8, eh2, {b = 1}, "out-expo")
+			state.timer:tween(0.8, eh, {c = 1, s = 1, b = 1}, "linear")
+			state.timer:tween(0.8, eh2, {b = 1}, "linear")
 
-			state.timer:tween(0.8, reflect, {alpha = 0.6}, "out-expo")
+			state.timer:tween(0.7, reflect, {alpha = 0.6}, "linear")
 
-			state.timer:during(0.8, function()
+			state.timer:during(1.5, function()
 				modify(base, eh.c, eh.s, eh.b)
 				modify(back, eh.c, eh.s, eh.b)
 				modify(window, 1, 1, eh2.b)
@@ -123,6 +130,7 @@ function lightingAnimation()
 end
 
 function modify(obj, c, s, b)
+	obj.shader:send("isGraphic", obj:is(Graphic))
 	obj.shader:send("modf", {c, s, b})
 end
 
