@@ -940,8 +940,8 @@ end
 function PlayState:goodNoteHit(note, time, blockAnimation)
 	self.scripts:call("goodNoteHit", note, rating)
 
-	local notefield, dir = note.parent, note.direction
-	local fixedDir = dir + 1
+	local notefield, dir, isSustain =
+		note.parent, note.direction, note.sustain
 	local event = self.scripts:event("onNoteHit",
 		Events.NoteHit(notefield, note, rating))
 	if not event.cancelled and not note.wasGoodHit then
@@ -956,7 +956,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			local char = notefield.character
 			if char then
 				local lastSustain = notefield.lastSustain
-				if lastSustain and not note.sustain
+				if lastSustain and not isSustain
 					and lastSustain.sustainTime > note.sustainTime then
 					local dir = lastSustain.direction
 					if char.dirAnim ~= dir then
@@ -968,7 +968,7 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			end
 		end
 
-		if note.sustain then
+		if isSustain then
 			notefield.lastSustain = note
 		else
 			notefield:removeNote(note)
@@ -977,11 +977,11 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 
 		local rating = self:getRating(note.time, time)
 
-		local receptor = notefield.receptors[fixedDir]
+		local receptor = notefield.receptors[dir + 1]
 		if receptor and not event.strumGlowCancelled then
 			receptor:play("confirm", true)
 			receptor.holdTime = 0
-			if note.sustain then
+			if isSustain then
 				receptor:spawnCover(note)
 			elseif notefield.bot then
 				receptor.holdTime = 0.15
