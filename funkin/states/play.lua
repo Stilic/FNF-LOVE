@@ -956,7 +956,8 @@ function PlayState:goodNoteHit(note, time, blockAnimation)
 			local char = notefield.character
 			if char then
 				local lastSustain = notefield.lastSustain
-				if lastSustain and lastSustain.sustainTime > note.sustainTime then
+				if lastSustain and not note.sustain
+					and lastSustain.sustainTime > note.sustainTime then
 					local dir = lastSustain.direction
 					if char.dirAnim ~= dir then
 						char:sing(dir, nil, false)
@@ -1203,7 +1204,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 					end
 					i = i + 1
 				end
-				self:goodNoteHit(firstNote, time, blockAnim)
+				self:goodNoteHit(firstNote, time)
 			end
 		end
 	end
