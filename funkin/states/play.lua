@@ -937,7 +937,7 @@ function PlayState:onSettingChange(category, setting)
 	self.scripts:call("onSettingChange", category, setting)
 end
 
-function PlayState:goodNoteHit(note, time, blockAnimation)
+function PlayState:goodNoteHit(note, time)
 	self.scripts:call("goodNoteHit", note, rating)
 
 	local notefield, dir, isSustain =
