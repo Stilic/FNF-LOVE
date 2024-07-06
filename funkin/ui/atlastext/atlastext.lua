@@ -14,11 +14,8 @@ end
 
 function AtlasText.getFont(font, size)
 	font = font or "default"
-	local func = Mods.currentMod and paths.getMods or function(...)
-		return paths.getPath(..., false)
-	end
 
-	local exists = paths.exists(func("data/fonts/" .. font .. ".json"), "file")
+	local exists = paths.exists(paths.getPath("data/fonts/" .. font .. ".json"), "file")
 	local font = paths.getJSON("data/fonts/" .. (exists and font or "default"))
 	if size ~= nil then font.scale = size end
 	font.scale = font.scale or 1
@@ -47,6 +44,8 @@ end
 
 function AtlasText:setTyping(speed, sound)
 	self.typed = (speed > 0)
+
+	if not self.typed then return end
 	self.target, self.text = self.text, ""
 	self.speed, self.timer, self.index = 0.04, 0, 0
 	self.sound, self.completeCallback = sound, nil
