@@ -1,20 +1,21 @@
 local AtlasChar = Sprite:extend("AtlasChar")
 
-function AtlasChar:new(x, y, font, size)
+function AtlasChar:new(x, y, font, char)
 	AtlasChar.super.new(self, x, y)
-	self:setFont(font, size)
+
+	self.font = font or "default"
+	self.char = char or "#"
+	self:setFont()
+	self:setChar()
 end
 
-function AtlasChar:setFont(font, size)
-	self.font = font
-	local tex = paths.getSparrowAtlas('fonts/' .. self.font.name)
+function AtlasChar:setFont(font)
+	if font and self.font == font then return end
+	self.font = font or self.font
+	self:setFrames(paths.getSparrowAtlas('fonts/' .. self.font.name))
 
-	self:setFrames(tex)
 	self:updateHitbox()
-
-	self.size = size or self.font.size or self.width
-
-	self:setGraphicSize(self.size)
+	self:setGraphicSize(self.width * self.font.scale)
 	self:updateHitbox()
 
 	self.antialiasing = self.font.antialiasing ~= nil and
@@ -22,7 +23,10 @@ function AtlasChar:setFont(font, size)
 end
 
 function AtlasChar:setChar(letter)
-	local prefix = tostring(letter)
+	if letter and self.char == letter then return end
+	self.char = letter or self.char
+
+	local prefix = tostring(self.char)
 	local ox, oy = self.font.offsets[1], self.font.offsets[2]
 
 	if self.font.noUpper then prefix = prefix:lower() end
@@ -42,10 +46,11 @@ function AtlasChar:setChar(letter)
 	if self.__animations and self.__animations[prefix] then
 		self:play(prefix)
 	end
-
 	self:updateHitbox()
-	local y = 110 - self.height
-	self.offset = {x = ox, y = oy - y}
+
+	local scale = self.font.scale
+	local x, y = ox * scale, (oy - (110 - self.height)) * scale
+	self.offset = {x = x, y = y}
 end
 
 return AtlasChar
