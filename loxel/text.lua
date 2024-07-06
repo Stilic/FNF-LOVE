@@ -23,7 +23,7 @@ function Text:new(x, y, content, font, color, align, limit)
 	self.__limit = nil
 	self.__font = nil
 
-	Text:__updateDimension()
+	self:__updateDimension()
 end
 
 function Text:destroy()
