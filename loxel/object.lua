@@ -27,6 +27,42 @@ function Object.getAngleTowards(x, y, x2, y2)
 	return deg(atan((x2 - x) / (y2 - y))) + (y > y2 and 180 or 0)
 end
 
+function Object.saveGraphicState(obj)
+	local lg = love.graphics
+
+	local blend, alpha = lg.getBlendMode()
+	local lstyle, lwidth, ljoin =
+		lg.getLineStyle(), lg.getLineWidth(), lg.getLineJoin()
+
+	local min, mag, anisotropy
+	if obj and obj.getFilter then
+		min, mag, anisotropy = obj:getFilter()
+	end
+
+	return {
+		object = obj,
+		shader = lg.getShader(),
+		filter = {min, mag, anisotropy},
+		color = {lg.getColor()},
+		blend = {blend, alpha},
+		font = love.graphics.getFont(),
+		line = {lstyle, lwidth, ljoin},
+	}
+end
+
+function Object.loadGraphicState(state)
+	love.graphics.setColor(unpack(state.color))
+	love.graphics.setShader(state.shader)
+	love.graphics.setBlendMode(unpack(state.blend))
+	love.graphics.setLineStyle(state.line[1])
+	love.graphics.setLineWidth(state.line[2])
+	love.graphics.setLineJoin(state.line[3])
+
+	if state.object and state.object.setFilter then
+		state.object:setFilter(unpack(state.filter))
+	end
+end
+
 function Object:new(x, y)
 	Object.super.new(self)
 
