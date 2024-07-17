@@ -51,9 +51,10 @@ function Object.saveGraphicState(obj)
 end
 
 function Object.loadGraphicState(state)
-	love.graphics.setColor(unpack(state.color))
 	love.graphics.setShader(state.shader)
+	love.graphics.setColor(unpack(state.color))
 	love.graphics.setBlendMode(unpack(state.blend))
+	love.graphics.setFont(state.font)
 	love.graphics.setLineStyle(state.line[1])
 	love.graphics.setLineWidth(state.line[2])
 	love.graphics.setLineJoin(state.line[3])
