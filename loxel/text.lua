@@ -16,7 +16,11 @@ function Text:new(x, y, content, font, color, align, limit)
 		style = "normal",
 		color = {0, 0, 0, 1},
 		width = 0,
-		offset = {x = 0, y = 0}
+		offset = {x = 0, y = 0},
+
+		-- these affects the outline quality
+		precision = 8,
+		antialiasing = true
 	}
 
 	self.__content = nil
@@ -137,16 +141,20 @@ function Text:__render(camera)
 				x + outline.offset.x, y + outline.offset.y,
 				width, align, rad, sx, sy, ox, oy)
 		elseif outline.width > 0 and outline.style == "normal" then
-			local step = math.fmod(outline.width, 1)
-			local daStep = step ~= 0 and step or 1
-			for dx = -outline.width, outline.width, daStep do
-				for dy = -outline.width, outline.width, daStep do
-					love.graphics.printf(content, x + dx, y + dy,
-						width, align, rad, sx, sy, ox, oy)
+			local step = (2 * math.pi) / outline.precision
+			for i = 1, outline.precision do
+				local dx = math.cos(i * step) * outline.width
+				local dy = math.sin(i * step) * outline.width
+				if outline.antialiasing ~= nil then
+					local omode = outline.antialiasing and "linear" or "nearest"
+					self.font:setFilter(omode, omode, anisotropy)
 				end
+				love.graphics.printf(content, x + dx, y + dy,
+					width, align, rad, sx, sy, ox, oy)
 			end
 		end
 	end
+	self.font:setFilter(mode, mode, anisotropy)
 
 	color = self.bgColor
 	local bgAlpha = #color > 3 and color[4] * self.alpha or self.alpha
