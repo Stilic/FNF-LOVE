@@ -137,8 +137,10 @@ function Text:__render(camera)
 				x + outline.offset.x, y + outline.offset.y,
 				width, align, rad, sx, sy, ox, oy)
 		elseif outline.width > 0 and outline.style == "normal" then
-			for dx = -outline.width, outline.width do
-				for dy = -outline.width, outline.width do
+			local step = math.fmod(outline.width, 1)
+			local daStep = step ~= 0 and step or 1
+			for dx = -outline.width, outline.width, daStep do
+				for dy = -outline.width, outline.width, daStep do
 					love.graphics.printf(content, x + dx, y + dy,
 						width, align, rad, sx, sy, ox, oy)
 				end
