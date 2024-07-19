@@ -27,7 +27,7 @@ function Object.getAngleTowards(x, y, x2, y2)
 	return deg(atan((x2 - x) / (y2 - y))) + (y > y2 and 180 or 0)
 end
 
-function Object.saveGraphicState(obj)
+function Object.saveDrawState(obj)
 	local lg = love.graphics
 
 	local blend, alpha = lg.getBlendMode()
@@ -50,7 +50,7 @@ function Object.saveGraphicState(obj)
 	}
 end
 
-function Object.loadGraphicState(state)
+function Object.loadDrawState(state)
 	love.graphics.setShader(state.shader)
 	love.graphics.setColor(unpack(state.color))
 	love.graphics.setBlendMode(unpack(state.blend))
