@@ -45,7 +45,7 @@ function Object.saveDrawState(obj)
 		filter = {min, mag, anisotropy},
 		color = {lg.getColor()},
 		blend = {blend, alpha},
-		font = love.graphics.getFont(),
+		font = lg.getFont(),
 		line = {lstyle, lwidth, ljoin},
 	}
 end
