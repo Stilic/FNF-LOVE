@@ -98,6 +98,23 @@ function Color.lerpDelta(x, y, i, delta)
 		math.lerp(y[3], x[3], math.exp(-(delta or game.dt) * i))}
 end
 
+function Color.vec4(tbl, ...)
+	local args = {...}
+	local fill = table.clone(tbl)
+
+	local idx = 1
+	for i = #tbl + 1, 4 do
+		if idx <= #args then
+			fill[i] = args[idx]
+			idx = idx + 1
+		else
+			fill[i] = 0
+		end
+	end
+
+	return fill[1], fill[2], fill[3], fill[4]
+end
+
 setmetatable(Color, {
 	__index = function(tbl, key)
 		if colorTable[key] then return table.clone(colorTable[key]) end
