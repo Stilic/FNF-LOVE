@@ -1,7 +1,7 @@
 local MenuList = SpriteGroup:extend("MenuList")
 
-function MenuList.lerp(d, targ, mult, add, dt, time)
-	local formula = (math.remapToRange(targ, 0, 1, 0, 1.3) * mult) + add
+function MenuList.lerp(d, targ, factor, mult, add, dt, time)
+	local formula = (math.remapToRange(targ, 0, 1, 0, factor) * mult) + add
 	if time and time <= 0 then
 		return formula
 	end
@@ -12,6 +12,17 @@ function MenuList:new(type, attachPos)
 	MenuList.super.new(self, 0, 0)
 	self.type = type or "diagonal"
 	self.attachPos = attachPos or "left"
+
+	self.changeCallback = nil
+
+	self.throttles = {}
+	if self.type ~= "horizontal" then
+		self.throttles[-1] = Throttle:make({controls.down, controls, "ui_up"})
+		self.throttles[1] = Throttle:make({controls.down, controls, "ui_down"})
+	else
+		self.throttles[-1] = Throttle:make({controls.down, controls, "ui_left"})
+		self.throttles[1] = Throttle:make({controls.down, controls, "ui_right"})
+	end
 
 	self.curSelected = 1
 end
@@ -30,6 +41,8 @@ function MenuList:add(obj, attach)
 	obj.xAdd = 60
 	obj.xMult = 1
 
+	obj.spaceFactor = 1.34
+
 	if attach then
 		attach.xAdd = 10
 		attach.yAdd = -30
@@ -43,18 +56,28 @@ function MenuList:updatePositions(dt, time)
 	self.x, self.y = 0, 0
 	for _, obj in ipairs(self.members) do
 		if self.type == "diagonal" then
-			obj.y = MenuList.lerp(obj.y, obj.target, obj.yMult, obj.yAdd, dt, time)
-			obj.x = MenuList.lerp(obj.x, obj.target * 20, obj.xMult, obj.xAdd, dt, time)
+			obj.y = MenuList.lerp(
+				obj.y, obj.target, obj.spaceFactor, obj.yMult, obj.yAdd, dt, time)
+			obj.x = MenuList.lerp(
+				obj.x, obj.target * 20, obj.spaceFactor, obj.xMult, obj.xAdd, dt, time)
 		elseif self.type == "vertical" then
-			obj.y = MenuList.lerp(obj.y, obj.target, obj.yMult, obj.yAdd, dt, time)
+			obj.y = MenuList.lerp(
+				obj.y, obj.target, obj.spaceFactor, obj.yMult, obj.yAdd, dt, time)
 		elseif self.type == "horizontal" then
-			obj.x = MenuList.lerp(obj.x, obj.target, obj.xMult, obj.xAdd, dt, time)
+			obj.x = MenuList.lerp(
+				obj.x, obj.target, obj.spaceFactor, obj.xMult, obj.xAdd, dt, time)
 		end
 		if obj.attach then
 			obj.attach:update(dt)
 			obj.attach:setPosition(self.attachPos == "left" and obj.x + obj:getWidth() +
 					obj.attach.xAdd or obj.x - obj.attach.width - obj.attach.xAdd,
 				obj.y + obj.attach.yAdd)
+		end
+	end
+	for i, throttle in pairs(self.throttles) do
+		if throttle:check() then
+			if self.changeCallback then self.changeCallback(i) end
+			self:changeSelection()
 		end
 	end
 end
@@ -87,6 +110,13 @@ function MenuList:__render(c)
 			obj.attach:__render(c)
 		end
 	end
+end
+
+function MenuList:destroy()
+	MenuList.super.destroy(self)
+	--for _, v in ipairs(self.throttles) do v:destroy() end
+	-- it's returning a metatable error
+	self.throttles = nil
 end
 
 return MenuList
