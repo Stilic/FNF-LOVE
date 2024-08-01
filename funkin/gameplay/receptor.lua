@@ -28,6 +28,7 @@ function Receptor:new(x, y, direction, skin)
 	self.coverFactory, self.splashFactory = Group(), Group(),
 		{}, function()
 			local cover = ActorSprite()
+			cover.play = function(_, a, b, c) Receptor.play(cover, a, b, c, true, true) end
 			cover.direction, cover.parent = self.direction, self
 			cover.__shaderAnimations, cover.ignoreAffectByGroup = {}, true
 			Note.loadSkinData(cover, self.skin, "covers", self.direction)
@@ -35,12 +36,13 @@ function Receptor:new(x, y, direction, skin)
 			return cover
 		end, function()
 			local splash = ActorSprite()
+			splash.play = function(_, a, b, c) Receptor.play(splash, a, b, c, true, true) end
 			splash.direction, splash.parent = self.direction, self
 			splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
 			Note.loadSkinData(splash, self.skin, "splashes", self.direction)
 			splash:updateHitbox()
 			return splash
-		end
+	end
 
 	self.directions = {x = 0, y = 0, z = 0}
 	self.noteRotations = {x = 0, y = 0, z = 0}
@@ -240,7 +242,7 @@ function Receptor:update(dt)
 	end
 end
 
-function Receptor:play(anim, force, frame, dontShader)
+function Receptor:play(anim, force, frame, dontShader, isSplashOrCover)
 	local toPlay = anim .. "-note" .. self.direction
 	Sprite.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
 
@@ -250,11 +252,13 @@ function Receptor:play(anim, force, frame, dontShader)
 		Note.updateHitbox(self.glow)
 	end
 
-	Note.updateHitbox(self)
-	self.holdTime = 0
+	if not isSplashOrCover then
+		Note.updateHitbox(self)
+		self.holdTime = 0
 
-	if not dontShader and self.__shaderAnimations then
-		self.shader = self.__shaderAnimations[anim]
+		if not dontShader and self.__shaderAnimations then
+			self.shader = self.__shaderAnimations[anim]
+		end
 	end
 end
 
