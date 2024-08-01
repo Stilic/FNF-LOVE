@@ -161,7 +161,7 @@ function Receptor:setDirection(direction)
 end
 
 function Receptor:spawnCover(note)
-	if note.sustainCover or not self.skin or not self.skin.covers then return end
+	if not self.skin or not self.skin.covers then return end
 
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)

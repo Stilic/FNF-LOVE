@@ -7,6 +7,7 @@ function NoteHitEvent:new(notefield, note, rating)
 
 	self.cancelledAnim = false
 	self.strumGlowCancelled = false
+	self.coverSpawnCancelled = false
 	self.unmuteVocals = true
 
 	self.notefield = notefield
@@ -20,6 +21,10 @@ end
 
 function NoteHitEvent:cancelStrumGlow()
 	self.strumGlowCancelled = true
+end
+
+function NoteHitEvent:cancelCoverSpawn()
+	self.coverSpawnCancelled = true
 end
 
 function NoteHitEvent:cancelUnmuteVocals()
