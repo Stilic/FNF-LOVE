@@ -160,9 +160,9 @@ function Note:createSustain()
 	Note.loadSkinData(sustainEnd, skin, "sustainends", col)
 
 	local toPlay = "hold-note" .. self.direction
-	sustain:play(self.__animations[toPlay] and toPlay or "hold")
+	sustain:play(sustain.__animations[toPlay] and toPlay or "hold")
 	toPlay = "end-note" .. self.direction
-	sustainEnd:play(self.__animations[toPlay] and toPlay or "end")
+	sustainEnd:play(sustainEnd.__animations[toPlay] and toPlay or "end")
 
 	self.updateHitbox(sustain)
 	self.updateHitbox(sustainEnd)
