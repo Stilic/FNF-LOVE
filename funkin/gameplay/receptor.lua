@@ -28,7 +28,7 @@ function Receptor:new(x, y, direction, skin)
 	self.coverFactory, self.splashFactory = Group(), Group(),
 		{}, function()
 			local cover = ActorSprite()
-			cover.play = function(_, a, b, c) Receptor.play(cover, a, b, c, true, true) end
+			cover.play = function(_, a, b, c) Receptor.play(cover, a, b, c, false, true) end
 			cover.direction, cover.parent = self.direction, self
 			cover.__shaderAnimations, cover.ignoreAffectByGroup = {}, true
 			Note.loadSkinData(cover, self.skin, "covers", self.direction)
@@ -36,13 +36,13 @@ function Receptor:new(x, y, direction, skin)
 			return cover
 		end, function()
 			local splash = ActorSprite()
-			splash.play = function(_, a, b, c) Receptor.play(splash, a, b, c, true, true) end
+			splash.play = function(_, a, b, c) Receptor.play(splash, a, b, c, false, true) end
 			splash.direction, splash.parent = self.direction, self
 			splash.__shaderAnimations, splash.ignoreAffectByGroup = {}, true
 			Note.loadSkinData(splash, self.skin, "splashes", self.direction)
 			splash:updateHitbox()
 			return splash
-	end
+		end
 
 	self.directions = {x = 0, y = 0, z = 0}
 	self.noteRotations = {x = 0, y = 0, z = 0}
@@ -168,7 +168,7 @@ function Receptor:spawnCover(note)
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)
 	cover:updateHitbox()
-	cover.parent, cover.visible, cover.shader = note, true, cover.__shaderAnimations["start"]
+	cover.parent, cover.visible = note, true
 	return cover
 end
 
@@ -178,7 +178,6 @@ function Receptor:spawnSplash()
 	local splash = self.splashes:recycle(ActorSprite, self.splashFactory)
 	local anim = self.__splashAnimations[math.random(1, #self.__splashAnimations)]
 	splash:play(anim, true)
-	splash.shader = splash.__shaderAnimations[anim]
 	splash.x, splash.y, splash.z = self._x - splash.width / 2, self._y - splash.height / 2, self._z
 	return splash
 end
@@ -213,7 +212,6 @@ function Receptor:update(dt)
 				if anim ~= "end" then
 					if not cover.visible and hasInput then
 						cover:play(anim, true)
-						cover.shader = cover.__shaderAnimations[anim]
 					end
 					cover.visible = hasInput
 					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
@@ -224,7 +222,6 @@ function Receptor:update(dt)
 					elseif anim ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
-						cover.shader = cover.__shaderAnimations["end"]
 						cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
 					end
 				end
@@ -232,7 +229,6 @@ function Receptor:update(dt)
 					if anim == "start" then
 						cover:play("loop")
 						cover:updateHitbox()
-						cover.shader = cover.__shaderAnimations["loop"]
 					elseif anim == "end" then
 						cover:kill()
 					end
@@ -246,19 +242,19 @@ function Receptor:play(anim, force, frame, dontShader, isSplashOrCover)
 	local toPlay = anim .. "-note" .. self.direction
 	Sprite.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
 
-	if anim == "confirm" and self.glow then
-		toPlay = "glow-note" .. self.direction
-		Sprite.play(self.glow, self.glow.__animations[toPlay] and toPlay or "glow", force, frame)
-		Note.updateHitbox(self.glow)
-	end
-
 	if not isSplashOrCover then
+		if anim == "confirm" and self.glow then
+			toPlay = "glow-note" .. self.direction
+			Sprite.play(self.glow, self.glow.__animations[toPlay] and toPlay or "glow", force, frame)
+			Note.updateHitbox(self.glow)
+		end
+
 		Note.updateHitbox(self)
 		self.holdTime = 0
+	end
 
-		if not dontShader and self.__shaderAnimations then
-			self.shader = self.__shaderAnimations[anim]
-		end
+	if not dontShader and self.__shaderAnimations then
+		self.shader = self.__shaderAnimations[anim]
 	end
 end
 
