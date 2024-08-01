@@ -241,14 +241,12 @@ function Receptor:update(dt)
 end
 
 function Receptor:play(anim, force, frame, dontShader)
-	local toPlay = anim .. '-note' .. self.direction
-	local realAnim = self.__animations[toPlay] and toPlay or anim
-	Sprite.play(self, realAnim, force, frame)
+	local toPlay = anim .. "-note" .. self.direction
+	Sprite.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
 
 	if anim == "confirm" and self.glow then
-		local anim, toPlay = 'glow', 'glop-note' .. self.direction
-		local realAnim = self.glow.__animations[toPlay] and toPlay or anim
-		Sprite.play(self.glow, realAnim, force, frame)
+		toPlay = "glow-note" .. self.direction
+		Sprite.play(self.glow, self.glow.__animations[toPlay] and toPlay or "glow", force, frame)
 		Note.updateHitbox(self.glow)
 	end
 

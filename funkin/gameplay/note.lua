@@ -152,18 +152,23 @@ end
 
 function Note:createSustain()
 	if self.sustain then return end
-	local sustain, susend = Sprite(), Sprite()
-	self.sustain, self.sustainEnd = sustain, susend
+	local sustain, sustainEnd = Sprite(), Sprite()
+	self.sustain, self.sustainEnd = sustain, sustainEnd
 
 	local skin, col = self.skin, self.direction
 	Note.loadSkinData(sustain, skin, "sustains", col)
-	Note.loadSkinData(susend, skin, "sustainends", col)
+	Note.loadSkinData(sustainEnd, skin, "sustainends", col)
 
-	sustain:play("hold"); self.updateHitbox(sustain)
-	susend:play("end"); self.updateHitbox(susend)
+	local toPlay = "hold-note" .. self.direction
+	sustain:play(self.__animations[toPlay] and toPlay or "hold")
+	toPlay = "end-note" .. self.direction
+	sustainEnd:play(self.__animations[toPlay] and toPlay or "end")
+
+	self.updateHitbox(sustain)
+	self.updateHitbox(sustainEnd)
 
 	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__render = 0, 0, 0, __NIL__
-	susend.z, susend.offset.z, susend.origin.z, susend.__render = 0, 0, 0, __NIL__
+	sustainEnd.z, sustainEnd.offset.z, sustainEnd.origin.z, sustainEnd.__render = 0, 0, 0, __NIL__
 end
 
 function Note:destroySustain()
@@ -188,7 +193,8 @@ function Note:destroy()
 end
 
 function Note:play(anim, force, frame)
-	Note.super.play(self, anim, force, frame)
+	local toPlay = anim .. '-note' .. self.direction
+	Note.super.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
 	Note.updateHitbox(self)
 end
 
