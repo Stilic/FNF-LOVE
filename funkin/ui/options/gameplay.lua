@@ -13,7 +13,7 @@ local data = {
 		ClientPrefs.data.backgroundDim = value
 	end, percentvalue},
 	-- {"notesBelowHUD", "Notes below HUD", "boolean"},
-	{"flashingLights", "Flashing Lights", "boolean"},
+	{"flashingLights", "Flashing lights", "boolean"},
 	{"downScroll",    "Down scroll",     "boolean"},
 	{"middleScroll",  "Middle scroll",   "boolean"},
 	{"ghostTap",      "Ghost tap",       "boolean"},
