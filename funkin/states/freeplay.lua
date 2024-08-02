@@ -163,7 +163,6 @@ function FreeplayState:update(dt)
 
 				if game.keys.pressed.SHIFT then
 					PlayState.loadSong(daSong, diff)
-					PlayState.storyDifficulty = diff
 					game.switchState(ChartingState())
 				else
 					game.switchState(PlayState(false, daSong, diff))

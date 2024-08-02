@@ -233,8 +233,7 @@ end
 function paths.getLua(key)
 	local path = paths.getPath(key .. ".lua")
 	if paths.exists(path, "file") then
-		local chunk = love.filesystem.load(path)
-		return chunk
+		return love.filesystem.load(path)
 	end
 	return nil
 end

@@ -1317,7 +1317,6 @@ function ChartingState:loadJson(song)
 	local diff = ""
 	if self.curDiff ~= "normal" then diff = self.curDiff end
 	PlayState.loadSong(formatSong, diff)
-	PlayState.storyDifficulty = diff
 	game.resetState()
 end
 
