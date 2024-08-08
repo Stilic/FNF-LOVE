@@ -28,6 +28,8 @@ function VirtualPad:new(key, x, y, width, height, color)
 	self.pressedLineWidth = 4
 	self.releasedLineWidth = 2
 
+	self.realX, self.realY = self.x, self.y
+
 	self.line.width = self.releasedLineWidth
 	self.config.round = {18, 18}
 
@@ -63,9 +65,9 @@ function VirtualPad:destroy()
 end
 
 function VirtualPad:check(x, y)
-	if not self.stunned and x >= self.x and
-		x <= self.x + self.width and y >= self.y and
-		y <= self.y + self.height then
+	if not self.stunned and x >= self.realX and
+		x <= self.realX + self.width and y >= self.realY and
+		y <= self.realY + self.height then
 		return self
 	end
 	return nil
@@ -86,12 +88,14 @@ end
 
 function VirtualPad.press(id, x, y, p, time)
 	local X, Y = VirtualPad.remap(x, y)
-	for _, buttons in ipairs(VirtualPad.instances) do
+	for i = #VirtualPad.instances, 1, -1 do
+		local buttons = VirtualPad.instances[i]
 		local button = buttons:check(X, Y)
 		if button then
 			VirtualPad._press(button.key, time)
 			VirtualPad.active[id] = button
 			button.pressed = true
+			break
 		end
 	end
 end
@@ -102,35 +106,29 @@ function VirtualPad.move(id, x, y, p, time)
 
 	if not active then
 		VirtualPad.press(id, x, y, p, time)
-	else
-		local found = false
-		for _, buttons in ipairs(VirtualPad.instances) do
-			local button = buttons:check(X, Y)
-			if button then
-				found = true
-				if active ~= button then
-					VirtualPad._release(active.key, time)
-					active.pressed = false
+		return
+	end
 
-					VirtualPad._press(button.key, time)
-					VirtualPad.active[id] = button
-					button.pressed = true
-				end
-			elseif active == button then
-				button.pressed = false
+	local found = false
+	for i = #VirtualPad.instances, 1, -1 do
+		local button = VirtualPad.instances[i]
+		if button:check(X, Y) then
+			found = true
+			if active ~= button then
+				VirtualPad._release(active.key, time)
+				active.pressed = false
+				VirtualPad._press(button.key, time)
+				VirtualPad.active[id] = button
+				button.pressed = true
 			end
+			break
 		end
+	end
 
-		if not found then
-			VirtualPad._release(active.key, time)
-			for _, buttons in ipairs(VirtualPad.instances) do
-				local button = buttons:check(X, Y)
-				if active ~= button then
-					active.pressed = false
-				end
-			end
-			VirtualPad.active[id] = nil
-		end
+	if not found then
+		VirtualPad._release(active.key, time)
+		active.pressed = false
+		VirtualPad.active[id] = nil
 	end
 end
 
@@ -147,6 +145,15 @@ function VirtualPad.release(id, x, y, p, time)
 		end
 		VirtualPad.active[id] = nil
 	end
+end
+
+function VirtualPad:__render(camera)
+	VirtualPad.super.__render(self, camera)
+	local x, y, o, f, sf = self.x, self.y, self.offset,
+		self.origin, self.scrollFactor
+
+	self.realX, self.realY = x + o.x - f.x - (camera.scroll.x * sf.x),
+		y + o.y - f.y - (camera.scroll.y * sf.y)
 end
 
 local keys, sc = {}, {}
