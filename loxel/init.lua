@@ -343,6 +343,9 @@ local function switch(state)
 		end
 		if s.substate then
 			Gamestate.pop(table.find(Gamestate.stack, s.substate))
+			for _, o in ipairs(s.substate.members) do
+				if type(o) == "table" and o.destroy then o:destroy() end
+			end
 			s.substate = nil
 		end
 	end
