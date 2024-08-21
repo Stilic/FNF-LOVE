@@ -154,9 +154,12 @@ function Receptor:setDirection(direction)
 
 	table.clear(self.__splashAnimations)
 	if skin.splashes then
+		local strDir, name = tostring(self.direction)
+		local strEnd = -1 - #strDir
 		for _, anim in ipairs(skin.splashes.animations) do
-			if anim[1]:sub(1, 6) == "splash" then
-				table.insert(self.__splashAnimations, anim[1])
+			name = anim[1]
+			if not name:sub(1, strEnd):endsWith("-note") or name:endsWith(strDir) then
+				table.insert(self.__splashAnimations, name)
 			end
 		end
 	end
