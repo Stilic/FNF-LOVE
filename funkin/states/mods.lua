@@ -25,7 +25,7 @@ function ModsState:enter()
 	self:add(self.cardGroup)
 
 	if #Mods.mods == 0 then
-		self.noModsTxt = Alphabet(0, 0, 'No mods here', true, false)
+		self.noModsTxt = Alphabet(0, 0, 'No mods here', 'bold', false)
 		self.noModsTxt:screenCenter()
 		self:add(self.noModsTxt)
 	end
