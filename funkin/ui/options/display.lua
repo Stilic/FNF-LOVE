@@ -91,14 +91,6 @@ local data = {
 	{"toastPrints", "Toast prints", "boolean", function()
 		local value = not ClientPrefs.data.toastPrints
 		ClientPrefs.data.toastPrints = value
-		function print(...)
-			local v = {...}
-			for i = 1, #v do v[i] = tostring(v[i]) end
-			if ClientPrefs.data.toastPrints then
-				Toast.new(table.concat(v, ", "))
-			end
-			__print(...)
-		end
 	end},
 	{"showFps", "Show FPS", "boolean", function()
 		local value = not ClientPrefs.data.showFps
