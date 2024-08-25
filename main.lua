@@ -50,4 +50,4 @@ function love.quit()
 	game.quit()
 end
 
-function love.errorhandler(msg) funkin.throwError(msg) end
+function love.errorhandler(msg) return funkin.throwError(msg) end
