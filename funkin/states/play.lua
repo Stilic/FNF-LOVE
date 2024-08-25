@@ -148,26 +148,31 @@ function PlayState:enter()
 	self:add(self.stage)
 	self.scripts:add(self.stage.script)
 
-	self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-		PlayState.SONG.gfVersion, false)
-	self.gf:setScrollFactor(0.95, 0.95)
-	self.scripts:add(self.gf.script)
+	if PlayState.SONG.gfVersion ~= "" then
+		self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
+			PlayState.SONG.gfVersion, false)
+		self.gf:setScrollFactor(0.95, 0.95)
+		self:add(self.gf)
+		self.scripts:add(self.gf.script)
+	end
 
-	self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
-		PlayState.SONG.player2, false)
-	self.scripts:add(self.dad.script)
+	if PlayState.SONG.player2 ~= "" then
+		self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
+			PlayState.SONG.player2, false)
+		self:add(self.dad)
+		self.scripts:add(self.dad.script)
+	end
 
-	self.boyfriend = Character(self.stage.boyfriendPos.x,
-		self.stage.boyfriendPos.y, PlayState.SONG.player1,
-		true)
-	self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode
-	self.scripts:add(self.boyfriend.script)
+	if PlayState.SONG.player1 ~= "" then
+		self.boyfriend = Character(self.stage.boyfriendPos.x,
+			self.stage.boyfriendPos.y, PlayState.SONG.player1,
+			true)
+		self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode
+		self:add(self.boyfriend)
+		self.scripts:add(self.boyfriend.script)
+	end
 
-	self:add(self.gf)
-	self:add(self.dad)
-	self:add(self.boyfriend)
-
-	if PlayState.SONG.player2:startsWith('gf') then
+	if self.gf and PlayState.SONG.player2:startsWith("gf") then
 		self.gf.visible = false
 		self.dad:setPosition(self.gf.x, self.gf.y)
 	end
@@ -333,7 +338,9 @@ function PlayState:enter()
 		})
 	end
 
-	if self.buttons then self:add(self.buttons); self.buttons:disable() end
+	if self.buttons then
+		self:add(self.buttons); self.buttons:disable()
+	end
 
 	self.lastTick = love.timer.getTime()
 
@@ -456,13 +463,12 @@ end
 
 function PlayState:generateNote(notefield, n)
 	if n.t >= PlayState.startPos then
-	local sustainTime = n.l or 0
-	if sustainTime > 0 then
-		sustainTime = math.max(sustainTime / 1000, 0.125)
+		local sustainTime = n.l or 0
+		if sustainTime > 0 then
+			sustainTime = math.max(sustainTime / 1000, 0.125)
+		end
+		notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
 	end
-	notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
-	end
-
 end
 
 function PlayState:startCountdown()
@@ -985,10 +991,10 @@ function PlayState:goodNoteHit(note, time)
 		local receptor = notefield.receptors[dir + 1]
 		if receptor then
 			if not event.strumGlowCancelled then
-			receptor:play("confirm", true)
+				receptor:play("confirm", true)
 				receptor.holdTime = not isSustain and notefield.bot and 0.15 or 0
-			if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
-				receptor:spawnSplash()
+				if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
+					receptor:spawnSplash()
 				end
 			end
 			if isSustain and not event.coverSpawnCancelled then
@@ -1066,7 +1072,7 @@ function PlayState:miss(note, dir)
 		if not event.cancelledAnim then char:sing(dir, "miss") end
 
 		if notefield == self.playerNotefield then
-			if not event.cancelledSadGF and self.combo >= 10
+			if self.gf and not event.cancelledSadGF and self.combo >= 10
 				and self.gf.__animations.sad then
 				self.gf:playAnim("sad", true)
 				self.gf.lastHit = notefield.time * 1000
@@ -1099,7 +1105,7 @@ function PlayState:popUpScore(rating)
 		self.judgeSprites.comboNumVisible = not event.hideScore
 		self.judgeSprites:spawn(rating, self.combo)
 	end
-end 
+end
 
 function PlayState:tryPause()
 	local event = self.scripts:call("paused")
