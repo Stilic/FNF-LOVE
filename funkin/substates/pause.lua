@@ -125,14 +125,10 @@ function PauseSubstate:selectOption(daChoice)
 			self:openDifficultyMenu()
 		end,
 		["options"] = function()
-			if self.buttons then
-				self.buttons:disable()
-			end
+			if self.buttons then self:remove(self.buttons) end
 			self.optionsUI = self.optionsUI or Options(false, function()
 
-				if self.buttons then
-					self.buttons:enable()
-				end
+				if self.buttons then self:add(self.buttons) end
 
 				self.menuList.alpha = 1
 				self.menuList.lock = false

@@ -165,18 +165,14 @@ local triggerChoices = {
 		game.switchState(CreditsState())
 	end},
 	options = {false, function(self)
-		if self.buttons then
-			self.buttons:disable()
-		end
+		if self.buttons then self:remove(self.buttons) end
 		self.optionsUI = self.optionsUI or Options(true, function()
 			self.selectedSomethin = false
 
 			if Discord then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 			end
-			if self.buttons then
-				self.buttons:enable()
-			end
+			if self.buttons then self:add(self.buttons) end
 		end)
 		self.optionsUI.applySettings = bind(self, self.onSettingChange)
 		self.optionsUI:setScrollFactor()

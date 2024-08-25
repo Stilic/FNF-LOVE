@@ -331,10 +331,9 @@ function PlayState:enter()
 			cameras = {self.camOther},
 			config = {round = {0, 0}}
 		})
-		self.buttons:disable()
 	end
 
-	if self.buttons then self:add(self.buttons) end
+	if self.buttons then self:add(self.buttons); self.buttons:disable() end
 
 	self.lastTick = love.timer.getTime()
 
@@ -457,16 +456,17 @@ end
 
 function PlayState:generateNote(notefield, n)
 	if n.t >= PlayState.startPos then
-		local sustainTime = n.l or 0
-		if sustainTime > 0 then
-			sustainTime = math.max(sustainTime / 1000, 0.125)
-		end
-		notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
+	local sustainTime = n.l or 0
+	if sustainTime > 0 then
+		sustainTime = math.max(sustainTime / 1000, 0.125)
 	end
+	notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
+	end
+
 end
 
 function PlayState:startCountdown()
-	if self.buttons then self.buttons:enable() end
+	if self.buttons then self:add(self.buttons) end
 
 	local event = self.scripts:call("startCountdown")
 	if event == Script.Event_Cancel then return end
@@ -659,7 +659,7 @@ function PlayState:executeCutsceneEvent(event, isEnd)
 				if skipCountdown then
 					PlayState.conductor.time = 0
 					self.startedCountdown = true
-					if self.buttons then self.buttons:enable() end
+					if self.buttons then self:add(self.buttons) end
 				else
 					self:startCountdown()
 				end
@@ -1119,7 +1119,7 @@ function PlayState:tryPause()
 		self.paused = true
 
 		if self.buttons then
-			self.buttons:disable()
+			self:remove(self.buttons)
 		end
 
 		local pause = PauseSubstate()
@@ -1146,7 +1146,7 @@ function PlayState:tryGameOver()
 		self.boyfriend.visible = false
 
 		if self.buttons then
-			self.buttons:disable()
+			self:remove(self.buttons)
 		end
 
 		GameOverSubstate.characterName = event.characterName
@@ -1255,7 +1255,7 @@ function PlayState:closeSubstate()
 	end
 
 	if self.buttons then
-		self.buttons:enable()
+		self:add(self.buttons)
 	end
 end
 
