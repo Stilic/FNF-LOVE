@@ -89,8 +89,7 @@ setmetatable(GS, {
 		if func == "update" or not state_is_dirty then
 			state_is_dirty = false
 			function_cache[func] = function_cache[func] or function(...)
-					return (stack[#stack][func] or __NULL__)(stack[#stack], ...)
-				end
+				return (stack[#stack][func] or __NULL__)(stack[#stack], ...)
 			end
 			return function_cache[func]
 		end
