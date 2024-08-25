@@ -1,5 +1,3 @@
-local Gamestate = require "loxel.lib.gamestate"
-
 ---@class State:Group
 local State = Group:extend("State")
 
@@ -30,12 +28,12 @@ end
 function State:openSubstate(substate)
 	self.substate = substate
 	substate.parent = self
-	Gamestate.push(substate)
+	game.openSubstate(substate)
 end
 
 function State:closeSubstate()
 	if self.substate then
-		Gamestate.pop(table.find(Gamestate.stack, self.substate))
+		game.closeSubstate(self.substate)
 		self.substate = nil
 	end
 end
@@ -52,7 +50,7 @@ function State:startOutro(onOutroComplete)
 	local transOut = self.transOut or State.defaultTransOut
 	if self.skipTransOut or not transOut then
 		onOutroComplete()
-	elseif self.exiting then
+	elseif self.exiting and self.currentTransition then
 		self.currentTransition.callback = onOutroComplete
 	else
 		self:discardTransition()

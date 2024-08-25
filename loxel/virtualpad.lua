@@ -40,6 +40,12 @@ function VirtualPad:enter()
 	end
 end
 
+function VirtualPad:leave()
+	if table.find(VirtualPad.instances, self) then
+		table.delete(VirtualPad.instances, self)
+	end
+end
+
 local function press(button, id)
 	if not button or button.pressed then return end
 	button.pressed = true
