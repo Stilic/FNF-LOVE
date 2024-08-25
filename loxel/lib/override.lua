@@ -120,6 +120,12 @@ function switch(param, case_table)
 	return (case_table.default or __NULL__)()
 end
 
+function tobool(s)
+	if s == 1 or s == "true" then return true
+	elseif s == -1 then return nil end
+	return false
+end
+
 function bind(self, callback) return function(...) callback(self, ...) end end
 
 local checktype_str = "bad argument #%d to '%s' (%s expected, got %s)"
@@ -199,6 +205,11 @@ function table.splice(t, start, count, ...)
 		table_insert(removed, table_remove(t, start))
 	end
 	return removed
+end
+
+function table.random(t)
+	if #t == 0 then return nil end
+	return t[math.random(1, #t)]
 end
 
 local pi = math.pi
