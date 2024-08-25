@@ -453,11 +453,13 @@ function PlayState:getRating(a, b)
 end
 
 function PlayState:generateNote(notefield, n)
-	local sustainTime = n.l or 0
-	if sustainTime > 0 then
-		sustainTime = math.max(sustainTime / 1000, 0.125)
+	if n.t >= PlayState.startPos then
+		local sustainTime = n.l or 0
+		if sustainTime > 0 then
+			sustainTime = math.max(sustainTime / 1000, 0.125)
+		end
+		notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
 	end
-	notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
 end
 
 function PlayState:startCountdown()
@@ -1064,7 +1066,7 @@ function PlayState:miss(note, dir)
 			if not event.cancelledSadGF and self.combo >= 10
 				and self.gf.__animations.sad then
 				self.gf:playAnim("sad", true)
-				self.gf.lastHit = PlayState.conductor.time
+				self.gf.lastHit = notefield.time * 1000
 			end
 
 			self.health = math.max(self.health - (ghostMiss and 0.04 or 0.0475), 0)
@@ -1174,14 +1176,13 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 
 	if not controls then return end
 	key = self:getKeyFromEvent(controls)
-
 	if key < 0 then return end
 
-	time = PlayState.conductor.time / 1000
-		+ (time - self.lastTick) * game.sound.music:getActualPitch()
-	local fixedKey = key + 1
+	local fixedKey, offset = key + 1,
+		(time - self.lastTick) * game.sound.music:getActualPitch()
 	for _, notefield in ipairs(self.notefields) do
 		if notefield.is and not notefield.bot then
+			time = notefield.time + offset
 			local hitNotes, hasSustain = notefield:getNotes(time, key)
 			local l = #hitNotes
 			if l == 0 then

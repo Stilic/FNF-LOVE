@@ -42,7 +42,6 @@ function ChartingState:enter()
 	self.focused = true
 
 	self.bgMusic = game.sound.play(paths.getMusic('chartEditorLoop'), 0.4, true)
-	game.sound.list:add(self.bgMusic)
 
 	if PlayState.SONG ~= nil then
 		self.__song = PlayState.SONG
@@ -64,9 +63,6 @@ function ChartingState:enter()
 	self:loadSong(self.__song.song)
 
 	local songName = paths.formatToSongPath(self.__song.song)
-
-	self.__song.stage = PlayState:loadStageWithSongName(songName)
-	self.__song.gfVersion = PlayState:loadGfWithStage(songName, self.__song.stage)
 
 	self.allNotes = Group()
 	self.allSustains = Group()

@@ -23,7 +23,6 @@ function SoundManager.loadMusic(asset)
 		SoundManager.music = music
 		SoundManager.list:add(music)
 	end
-
 	return music:load(asset)
 end
 

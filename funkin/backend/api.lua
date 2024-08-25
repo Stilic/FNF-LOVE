@@ -197,8 +197,10 @@ function API.chart.readDiff(bpm, data, isV1)
 	return {enemy = dad, player = bf}, events, bpmChanges
 end
 
--- This moves a lot of playData info to charts, then it get
--- wiped from the meta, to avoid unused values.
+--[[
+This moves a lot of playData info to charts, then it gets
+wiped from the meta, to avoid unused values.
+]]
 function API.chart.adjustMeta(song, tbl)
 	local data = API.meta.parse(song, true)
 	local info = {}
