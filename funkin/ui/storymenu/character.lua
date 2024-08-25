@@ -1,13 +1,13 @@
----@class MenuCharacter:Sprite
-local MenuCharacter = Sprite:extend("MenuCharacter")
+---@class StoryCharacter:Sprite
+local StoryCharacter = Sprite:extend("StoryCharacter")
 
-function MenuCharacter:new(x, char)
-	MenuCharacter.super.new(self, x)
+function StoryCharacter:new(x, char)
+	StoryCharacter.super.new(self, x)
 
 	self:changeCharacter(char)
 end
 
-function MenuCharacter:changeCharacter(char)
+function StoryCharacter:changeCharacter(char)
 	if char == nil then char = '' end
 	if char == self.character then return end
 
@@ -54,4 +54,4 @@ function MenuCharacter:changeCharacter(char)
 	})
 end
 
-return MenuCharacter
+return StoryCharacter

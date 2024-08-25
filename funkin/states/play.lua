@@ -410,6 +410,9 @@ function PlayState:enter()
 	end
 	if ClientPrefs.data.hitSound > 0 then paths.getSound("hitsound") end
 
+	self.__stickers = Stickers()
+	self:add(self.__stickers)
+
 	PlayState.super.enter(self)
 	collectgarbage()
 
@@ -431,8 +434,8 @@ function PlayState:centerNotefields()
 	else
 		self.playerNotefield:screenCenter("x")
 		self.enemyNotefield:screenCenter("x")
-		self.playerNotefield.x = self.playerNotefield.x + game.width / 3.7
-		self.enemyNotefield.x = self.enemyNotefield.x - game.width / 3.7
+		self.playerNotefield.x = self.playerNotefield.x + game.width / 4
+		self.enemyNotefield.x = self.enemyNotefield.x - game.width / 4
 
 		for _, notefield in ipairs(self.notefields) do
 			if notefield.is then notefield.visible = true end
@@ -980,10 +983,10 @@ function PlayState:goodNoteHit(note, time)
 		local receptor = notefield.receptors[dir + 1]
 		if receptor then
 			if not event.strumGlowCancelled then
-				receptor:play("confirm", true)
+			receptor:play("confirm", true)
 				receptor.holdTime = not isSustain and notefield.bot and 0.15 or 0
-				if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
-					receptor:spawnSplash()
+			if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
+				receptor:spawnSplash()
 				end
 			end
 			if isSustain and not event.coverSpawnCancelled then
@@ -1094,7 +1097,7 @@ function PlayState:popUpScore(rating)
 		self.judgeSprites.comboNumVisible = not event.hideScore
 		self.judgeSprites:spawn(rating, self.combo)
 	end
-end
+end 
 
 function PlayState:tryPause()
 	local event = self.scripts:call("paused")
@@ -1346,14 +1349,14 @@ function PlayState:endSong(skip)
 			game.resetState(true)
 		else
 			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
-			self:openSubstate(StickersSubstate(StoryMenuState()))
+			self.__stickers:start(StoryMenuState())
 			GameOverSubstate.deaths = 0
 
 			util.playMenuMusic()
 		end
 	else
 		game.camera:unfollow()
-		self:openSubstate(StickersSubstate(FreeplayState()))
+		self.__stickers:start(FreeplayState())
 		GameOverSubstate.deaths = 0
 
 		util.playMenuMusic()

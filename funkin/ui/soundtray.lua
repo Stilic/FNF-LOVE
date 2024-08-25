@@ -1,16 +1,18 @@
 local SoundTray = {
-	bars = {},
-	game = {width = 0, height = 0},
-	box = {x = 0, y = -75, width = 170, height = 72},
-	text = {x = 0, y = 0, text = "Volume: 100%"},
-	bar = {x = 0, y = 30, width = 8 * 10 + 20}
-}
--- manually calculed cuz me lazy, needs change
--- 8 is the width, 10 the quantity
--- 20 is space - width * quantity
--- - Vi
+	images = {
+		bars = love.graphics.newImage(paths.getPath("images/soundtray/bars.png")),
+		box = love.graphics.newImage(paths.getPath("images/soundtray/volumebox.png"))
+	},
 
-local clock = 0
+	sounds = {
+		voldown = love.sound.newSoundData(paths.getPath("sounds/soundtray/voldown.ogg")),
+		volup = love.sound.newSoundData(paths.getPath("sounds/soundtray/volup.ogg")),
+		volmax = love.sound.newSoundData(paths.getPath("sounds/soundtray/volmax.ogg"))
+	},
+
+	game = {width = 0, height = 0}
+}
+
 local DEFAULT_VOLUME = 10
 local prev = DEFAULT_VOLUME
 local n = DEFAULT_VOLUME
@@ -24,138 +26,140 @@ function SoundTray.init(width, height)
 		prev = game.save.data.gameVolume
 		n = game.save.data.gameVolume
 	end
+
+	return SoundTray
 end
 
-function SoundTray.new(font)
-	SoundTray.visible = false
-	SoundTray.silent = false
-	SoundTray.canSpawn = false
-	SoundTray.timer = 0
+function SoundTray.new()
+	local this = SoundTray
 
-	SoundTray.text.font = font or love.graphics.newFont(18)
-	SoundTray.text.font:setFilter("nearest", "nearest")
+	this.visible = false
+	this.silent = false
+	this.canSpawn = false
+	this.timer = 0
 
-	for i = 1, 10 do
-		local bar = {
-			space = 10,
-			x = i - 1,
-			y = 20,
-			width = 8,
-			height = -(i * 2.5),
-			visible = true
-		}
-		table.insert(SoundTray.bars, bar)
-	end
+	this.box = {
+		image = this.images.box,
+		x = 0,
+		y = 0,
+		width = this.images.box:getWidth(),
+		height = this.images.box:getHeight()
+	}
 
-	SoundTray.throttles = {}
-	SoundTray.throttles.up = Throttle:make({controls.down, controls, "volume_up"})
-	SoundTray.throttles.down = Throttle:make({controls.down, controls, "volume_down"})
+	this.bars = {
+		image = this.images.bars,
+		x = 0,
+		y = 0,
+		width = this.images.bars:getWidth(),
+		height = this.images.bars:getHeight()
+	}
 
-	SoundTray.adjust()
+	this.throttles = {}
+	this.throttles.up = Throttle:make({controls.down, controls, "volume_up"})
+	this.throttles.down = Throttle:make({controls.down, controls, "volume_down"})
+
+	this.adjust()
+
+	return this
 end
 
 function SoundTray.adjust()
-	SoundTray.text.width = SoundTray.text.font:getWidth(SoundTray.text.text)
-	SoundTray.box.x = (SoundTray.game.width - SoundTray.box.width) / 2
-	SoundTray.bar.x = (SoundTray.game.width - SoundTray.bar.width) / 2
-	SoundTray.text.x = (SoundTray.game.width - SoundTray.text.width) / 2
-	SoundTray.text.y = SoundTray.box.y + SoundTray.box.height - SoundTray.text.font:getHeight() - 8
-	SoundTray.bar.y = SoundTray.box.y + 34
+	local this = SoundTray
+
+	this.box.x = (this.game.width - this.box.width) / 2
+	this.bars.x = (this.game.width - this.bars.width) / 2
+	this.bars.y = (this.box.y + (this.box.width - this.bars.width) / 2) - 11
 end
 
-function SoundTray:fullscreen()
-	self:resize(love.graphics.getDimensions())
-end
+function SoundTray.adjustVolume(amount)
+	local this = SoundTray
 
-function SoundTray:resize(width, height)
-	self.game.width = width
-	self.game.height = height
-	SoundTray.adjust()
-end
-
-function SoundTray:update(dt)
-	if self.throttles.up:check() then self:adjustVolume(1) end
-	if self.throttles.down:check() then self:adjustVolume(-1) end
-	if controls:pressed("volume_mute") then self:toggleMute() end
-
-	self.timer = self.timer + dt
-	if self.timer >= 2 then self.canSpawn = false end
-
-	if self.canSpawn then
-		self.visible = true
-		self.box.y = math.lerp(22, self.box.y, math.exp(-dt * 14))
-	else
-		self.box.y = math.lerp(-82, self.box.y, math.exp(-dt * 7))
-		if self.box.y < -75 then self.visible = false end
-	end
-
-	self.adjust()
-end
-
-function SoundTray:adjustVolume(amount)
-	self.canSpawn = true
-	self.timer = 0
+	this.canSpawn = true
+	this.timer = 0
 
 	local newVolume = n + amount
 	newVolume = math.max(0, math.min(10, newVolume))
 
+	prev, n = n, newVolume
+	local sound = amount > 0 and (prev == 10 and "volmax" or "volup") or "voldown"
+
 	game.sound.setVolume(newVolume / 10)
 	game.sound.setMute(newVolume == 0)
-	if not self.silent then game.sound.play(paths.getSound("beep")) end
 
-	self.text.text = "Volume: " .. newVolume * 10 .. "%"
-
-	for i, bar in ipairs(SoundTray.bars) do
-		bar.visible = (i <= newVolume)
+	if not this.silent then
+		game.sound.play(SoundTray.sounds[sound], 1, false, false)
 	end
-
-	prev = n
-	n = newVolume
 
 	game.save.data.gameVolume = newVolume
 end
 
-function SoundTray:toggleMute()
+function SoundTray.toggleMute()
+	local this = SoundTray
+
 	game.sound.setMute(not game.sound.__mute)
 	if not game.sound.__mute then
-		self:adjustVolume(prev > 0 and prev or 1)
+		this.adjustVolume(prev > 0 and prev or 1)
 	else
-		self:adjustVolume(-n)
+		this.adjustVolume(-n)
 	end
 end
 
-function SoundTray:__render()
-	local r, g, b, a = love.graphics.getColor()
-	local font = love.graphics.getFont()
+function SoundTray:update(dt)
+	local this = SoundTray
 
-	if self.visible then
-		local color = Color.fromRGB(28, 26, 40)
-		love.graphics.setColor(color[1], color[2], color[3], 0.8)
-		love.graphics.rectangle("fill", self.box.x, self.box.y, self.box.width, self.box.height, 10, 10, 20)
-		love.graphics.setColor(Color.fromRGB(130, 135, 174))
-		love.graphics.rectangle("line", self.box.x, self.box.y, self.box.width, self.box.height, 10, 10, 20)
+	if this.throttles.up:check() then this.adjustVolume(1) end
+	if this.throttles.down:check() then this.adjustVolume(-1) end
+	if controls:pressed("volume_mute") then this.toggleMute() end
 
-		love.graphics.setColor(1, 1, 1, 0.2)
+	this.timer = this.timer + dt
+	if this.timer >= 2 then this.canSpawn = false end
 
-		for _, bar in ipairs(SoundTray.bars) do
-			love.graphics.rectangle("fill", self.bar.x + (bar.x * bar.space), self.bar.y,
-				bar.width, bar.height)
-		end
-
-		love.graphics.setColor(1, 1, 1)
-		love.graphics.setFont(self.text.font)
-		love.graphics.print(self.text.text, self.text.x, self.text.y)
-
-		for _, bar in ipairs(SoundTray.bars) do
-			if bar.visible then
-				love.graphics.rectangle("fill", self.bar.x + (bar.x * bar.space), self.bar.y,
-					bar.width, bar.height)
-			end
-		end
+	if this.canSpawn then
+		this.visible = true
+		this.box.y = math.lerp(25, this.box.y, math.exp(-dt * 14))
+	else
+		this.box.y = math.lerp(-230, this.box.y, math.exp(-dt * 7))
+		if this.box.y < -160 then this.visible = false end
 	end
 
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.setFont(font)
+	this.adjust()
+end
+
+function SoundTray:fullscreen()
+	SoundTray.resize(love.graphics.getDimensions())
+end
+
+function SoundTray:resize(width, height)
+	local this = SoundTray
+
+	this.game.width = width
+	this.game.height = height
+	this.adjust()
+end
+
+function SoundTray:__render()
+	local this = SoundTray
+
+	if this.visible then
+		local lg = love.graphics
+		local state = Object.saveDrawState()
+		lg.setColor(1, 1, 1, 1)
+		lg.draw(this.box.image, this.box.x, this.box.y)
+
+		lg.setColor(1, 1, 1, 0.4)
+		lg.draw(this.bars.image, this.bars.x, this.bars.y)
+
+		lg.setColor(1, 1, 1, 1)
+		lg.stencil(function()
+			local width = n * 20
+			lg.rectangle("fill", this.bars.x, this.bars.y, width, this.bars.height)
+		end, "replace", 1)
+		lg.setStencilTest("greater", 0)
+		lg.draw(this.bars.image, this.bars.x, this.bars.y)
+
+		lg.setStencilTest()
+		Object.loadDrawState(state)
+	end
 end
 
 return SoundTray

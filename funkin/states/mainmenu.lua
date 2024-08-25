@@ -7,10 +7,23 @@ function MainMenuState:enter()
 
 	self.notCreated = false
 
+	self.versionFormat = "FNF LÖVE v%version\nFriday Night Funkin' v0.3.0"
+	self.versionText = Text(12, 0, self.versionFormat:gsub("%%version", Project.version),
+		paths.getFont("vcr.ttf", 16))
+	self.versionText.y = game.height - self.versionText:getHeight() - 8
+	self.versionText.antialiasing = false
+	self.versionText.outline.width = 1
+	self.versionText:setScrollFactor()
+
 	self.script = Script("data/states/mainmenu", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		self.notCreated = true
+		MainMenuState.super.enter(self)
+
+		self:add(self.versionText)
+
+		self.script:call("postCreate")
 		return
 	end
 
@@ -69,13 +82,6 @@ function MainMenuState:enter()
 	self.camFollow = {x = 0, y = 0}
 	game.camera:follow(self.camFollow, nil, 10)
 
-	self.versionFormat = "FNF LÖVE v%version\nFriday Night Funkin' v0.3.0"
-	self.versionText = Text(12, 0, self.versionFormat:gsub("%%version", Project.version),
-		paths.getFont("vcr.ttf", 16))
-	self.versionText.y = game.height - self.versionText:getHeight() - 8
-	self.versionText.antialiasing = false
-	self.versionText.outline.width = 1
-	self.versionText:setScrollFactor()
 	self:add(self.versionText)
 
 	self.throttles = {}
@@ -113,7 +119,11 @@ end
 
 function MainMenuState:update(dt)
 	self.script:call("update", dt)
-	if self.notCreated then return end
+	if self.notCreated then
+		MainMenuState.super.update(self, dt)
+		self.script:call("postUpdate", dt)
+		return
+	end
 
 	if not self.selectedSomethin and self.throttles then
 		if self.throttles.up:check() then self:changeSelection(-1) end
@@ -240,7 +250,10 @@ end
 
 function MainMenuState:leave()
 	self.script:call("leave")
-	if self.notCreated then return end
+	if self.notCreated then
+		self.script:call("postLeave")
+		return
+	end
 
 	if self.optionsUI then self.optionsUI:destroy() end
 	self.optionsUI = nil

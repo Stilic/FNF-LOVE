@@ -1,20 +1,17 @@
----@class MenuItem:Sprite
-local MenuItem = Sprite:extend("MenuItem")
+---@class StoryWeek:Sprite
+local StoryWeek = Sprite:extend("StoryWeek")
 
-function MenuItem:new(x, y, weekName)
-	MenuItem.super.new(self, x, y)
+function StoryWeek:new(x, y, weekName)
+	StoryWeek.super.new(self, x, y)
 	self:loadTexture(paths.getImage('menus/storymenu/weeks/' .. weekName))
-	self.targetY = 0
 	self.flashingInt = 0
 	self.__isFlashing = false
 end
 
-function MenuItem:startFlashing() self.__isFlashing = true end
+function StoryWeek:startFlashing() self.__isFlashing = true end
 
-function MenuItem:update(dt)
-	MenuItem.super.update(self, dt)
-
-	self.y = util.coolLerp(self.y, 480 + self.targetY * 120, 10, dt)
+function StoryWeek:update(dt)
+	StoryWeek.super.update(self, dt)
 
 	if self.__isFlashing then
 		self.flashingInt = self.flashingInt + 1
@@ -27,4 +24,4 @@ function MenuItem:update(dt)
 	end
 end
 
-return MenuItem
+return StoryWeek

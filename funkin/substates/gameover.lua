@@ -95,7 +95,9 @@ function GameOverSubstate:update(dt)
 
 			util.playMenuMusic()
 			GameOverSubstate.deaths = 0
-			game.switchState(FreeplayState())
+			local state = PlayState.isStoryMode and StoryMenuState or FreeplayState
+			self.parent.__stickers:start(state())
+			self.isEnding = true
 		end
 
 		if controls:pressed('accept') then
@@ -104,7 +106,7 @@ function GameOverSubstate:update(dt)
 			self.isEnding = true
 			self.boyfriend:playAnim('deathConfirm', true)
 			game.sound.music:stop()
-			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName), ClientPrefs.data.musicVolume / 100).persist = true
+			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName), ClientPrefs.data.musicVolume / 100)
 			Timer.after(0.7, function()
 				Timer.tween(2, self.boyfriend, {alpha = 0}, "linear", function()
 					game.resetState()

@@ -13,6 +13,8 @@ API.chart.base = {
 	bpm = 100,
 	speed = 1,
 
+	difficulties = {"Easy", "Normal", "Hard"},
+
 	player1 = "bf",
 	player2 = "dad",
 	gfVersion = nil,
@@ -203,17 +205,19 @@ function API.chart.adjustMeta(song, tbl)
 	local data = API.meta.parse(song, true)
 	local info = {}
 
-	if data.playData then
-		local info = data.playData
-		set(tbl, "song", data.songName)
-
-		set(tbl, "player1", info.characters.player)
-		set(tbl, "player2", info.characters.opponent)
-		set(tbl, "gfVersion", info.characters.girlfriend)
-
+	if data then
+		local info = data.playData or data
+		set(tbl, "song", data.songName or data.song)
 		set(tbl, "stage", info.stage)
 		set(tbl, "skin", info.skin)
+
+		set(tbl, "difficulties", info.difficulties)
 		set(tbl, "timeChanges", data.timeChanges)
+
+		info = info.characters or info
+		set(tbl, "player1", info.player)
+		set(tbl, "player2", info.opponent)
+		set(tbl, "gfVersion", info.girlfriend)
 	end
 
 	data.playData, data.timeChanges = nil, nil

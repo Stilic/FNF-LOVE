@@ -49,9 +49,6 @@ until s > 1]]
 local eventhandlers = {
 	keypressed = function(t, b, s, r) return love.keypressed(b, s, r, t) end,
 	keyreleased = function(t, b, s) return love.keyreleased(b, s, t) end,
-	touchpressed = function(t, id, x, y, dx, dy, p) return love.touchpressed(id, x, y, dx, dy, p, t) end,
-	touchmoved = function(t, id, x, y, dx, dy, p) return love.touchmoved(id, x, y, dx, dy, p, t) end,
-	touchreleased = function(t, id, x, y, dx, dy, p) return love.touchreleased(id, x, y, dx, dy, p, t) end,
 	joystickpressed = function(t, j, b) if love.joystickpressed then return love.joystickpressed(j, b, t) end end,
 	joystickreleased = function(t, j, b) if love.joystickreleased then return love.joystickreleased(j, b, t) end end,
 	gamepadpressed = function(t, j, b) if love.gamepadpressed then return love.gamepadpressed(j, b, t) end end,
@@ -287,6 +284,15 @@ function game.switchState(state, force)
 	end)
 end
 
+function game.openSubstate(substate) return Gamestate.push(substate) end
+
+function game.closeSubstate(substate)
+	Gamestate.pop(table.find(Gamestate.stack, substate))
+	for _, o in pairs(substate.members) do
+		if type(o) == "table" and o.destroy then o:destroy() end
+	end
+end
+
 function game.init(app, state, ...)
 	local width, height = app.width, app.height
 	game.width, game.height = width, height
@@ -309,9 +315,17 @@ function game.init(app, state, ...)
 	Gamestate.switch(state(...))
 end
 
-function game.keypressed(...) game.keys.onPressed(...) end
+function game.keypressed(...)
+	game.keys.onPressed(...)
+	-- for _, o in ipairs(game.bound.members) do triggerCallback(o.keypressed, o, ...) end
+	-- for _, o in ipairs(game.members) do triggerCallback(o.keypressed, o, ...) end
+end
 
-function game.keyreleased(...) game.keys.onReleased(...) end
+function game.keyreleased(...)
+	game.keys.onReleased(...)
+	-- for _, o in ipairs(game.bound.members) do triggerCallback(o.keyreleased, o, ...) end
+	-- for _, o in ipairs(game.members) do triggerCallback(o.keyreleased, o, ...) end
+end
 
 function game.wheelmoved(x, y) game.mouse.wheel = y end
 
@@ -320,12 +334,6 @@ function game.mousemoved(x, y) game.mouse.onMoved(x, y) end
 function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 
 function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
-
-function game.touchmoved(id, x, y, dx, dy, p, time) VirtualPad.move(id, x, y, p, time) end
-
-function game.touchpressed(id, x, y, dx, dy, p, time) VirtualPad.press(id, x, y, p, time) end
-
-function game.touchreleased(id, x, y, dx, dy, p, time) VirtualPad.release(id, x, y, p, time) end
 
 local function switch(state)
 	Timer.clear()
@@ -337,16 +345,17 @@ local function switch(state)
 	triggerCallback(game.onPreStateSwitch, state)
 
 	for _, s in ipairs(Gamestate.stack) do
-		for _, o in ipairs(s.members) do
+		for _, o in pairs(s.members) do
 			if type(o) == "table" and o.destroy then o:destroy() end
 		end
 		if s.substate then
 			Gamestate.pop(table.find(Gamestate.stack, s.substate))
-			for _, o in ipairs(s.substate.members) do
+			for _, o in pairs(s.substate.members) do
 				if type(o) == "table" and o.destroy then o:destroy() end
 			end
 			s.substate = nil
 		end
+		collectgarbage()
 	end
 
 	triggerCallback(game.onPreStateEnter, state)
@@ -373,10 +382,10 @@ function game.update(real_dt)
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
 	game.sound.update(dt)
 
+	if not game.isSwitchingState then Gamestate.update(dt) end
+	VirtualPad.updatePress()
 	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end
 	for _, o in ipairs(game.members) do triggerCallback(o.update, o, dt) end
-
-	if not game.isSwitchingState then Gamestate.update(dt) end
 
 	game.keys.reset()
 	game.mouse.reset()
