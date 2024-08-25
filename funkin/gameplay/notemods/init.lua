@@ -2,7 +2,7 @@ local folder = "funkin.gameplay.notemods."
 
 NoteModifier = require(folder .. "notemodifier")
 
-local NoteMod = {
+local NoteMods = {
 	beat   = require(folder .. "notemodbeat"),
 	column = require(folder .. "notemodcolumn"),
 	scale  = require(folder .. "notemodscale"),
@@ -10,4 +10,4 @@ local NoteMod = {
 	tipsy  = require(folder .. "notemodtipsy")
 }
 
-return NoteMod
+return NoteMods

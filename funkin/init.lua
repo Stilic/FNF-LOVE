@@ -49,7 +49,7 @@ HealthBar = require "funkin.gameplay.ui.healthbar"
 ProgressArc = require "funkin.gameplay.ui.progressarc"
 Judgements = require "funkin.gameplay.ui.judgements"
 
-NoteMod = require "funkin.gameplay.notemods"
+NoteMods = require "funkin.gameplay.notemods"
 BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 Character = require "funkin.gameplay.character"
