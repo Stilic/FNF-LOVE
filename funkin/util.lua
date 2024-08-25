@@ -76,4 +76,15 @@ function util.playSfx(asset, volume, ...)
 	return game.sound.play(asset, (volume or 1) * ClientPrefs.data.sfxVolume / 100, ...)
 end
 
+-- menu thing
+function util.responsiveBG(bg)
+	local scale = math.max(game.width / bg.width, game.height / bg.height)
+	bg:setGraphicSize(math.floor(bg.width * scale))
+	bg:updateHitbox()
+	bg:screenCenter()
+	bg:setScrollFactor()
+
+	return bg
+end
+
 return util
