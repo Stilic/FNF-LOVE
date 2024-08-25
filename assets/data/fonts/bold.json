@@ -1,32 +1,26 @@
 {
 	"name": "bold",
-	"artist": "PhantomArcade3K",
 	"offsets": [0, 38],
 	"noLower": true,
-	"specChars": [
-		{
-			"letter": "'", "prefix": "-apostraphie-",
-			"offsets": [0, -80]
-		},
-		{
-			"letter": "-", "prefix": "-dash-",
-			"offsets": [0, 16]
-		},
-		{"letter": "&", "prefix": "-andpersand-"},
-		{"letter": "\\","prefix": "-back slash-"},
-		{"letter": "/", "prefix": "-foward slash-"},
-		{"letter": ",", "prefix": "-comma-"},
-		{"letter": "“", "prefix": "-start quote-"},
-		{"letter": "”", "prefix": "-end quote-"},
-		{"letter": "\"","prefix": "-end quote-"},
-		{"letter": ">", "prefix": "-greater than-"},
-		{"letter": "<", "prefix": "-less than-"},
-		{"letter": "!", "prefix": "-exclamation point-"},
-		{"letter": "?", "prefix": "-question mark-"},
-		{"letter": ".", "prefix": "-period-"},
-		{"letter": "↓", "prefix": "-down arrow-"},
-		{"letter": "↑", "prefix": "-up arrow-"},
-		{"letter": "→", "prefix": "-right arrow-"},
-		{"letter": "←", "prefix": "-left arrow-"}
+
+	"characters": [
+		["'", "-apostraphie-", [0, -40]],
+		["-", "-dash-", [0, -20]],
+		["&", "-andpersand-"],
+		["\\", "-back slash-"],
+		["/", "-foward slash-"],
+		[",", "-comma-"],
+		["“", "-start quote-"],
+		["”", "-end quote-"],
+		["\"", "-end quote-"],
+		[">", "-greater than-"],
+		["<", "-less than-"],
+		["!", "-exclamation point-"],
+		["?", "-question mark-"],
+		[".", "-period-"],
+		["↓", "-down arrow-"],
+		["↑", "-up arrow-"],
+		["→", "-right arrow-"],
+		["←", "-left arrow-"]
 	]
 }
