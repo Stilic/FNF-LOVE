@@ -7,12 +7,11 @@ function TitleState:enter()
 	self.skipTransIn = true
 
 	self.script = Script("data/states/title", false)
-
 	local event = self.script:call("create")
-	TitleState.super.enter(self)
-
 	if event == Script.Event_Cancel then
 		self.notCreated = true
+		TitleState.super.enter(self)
+		self.script:call("postCreate")
 		return
 	end
 
@@ -52,8 +51,9 @@ function TitleState:enter()
 	self.titleText:updateHitbox()
 	self.titleText.colors = {{50, 60, 205}, {50, 255, 255}}
 
-	self.textGroup = Group()
-	self:add(self.textGroup)
+	self.coolText = AtlasText(0, 160, "", "bold", game.width, "center")
+	self:add(self.coolText)
+	self.textBuffer = ""
 
 	self.ngSpr = Sprite(0, game.height * 0.52):loadTexture(paths.getImage(
 		'menus/title/newgrounds_logo'))
@@ -77,6 +77,8 @@ function TitleState:enter()
 		self:add(VirtualPad("return", 0, 0, game.width, game.height, false))
 	end
 
+	TitleState.super.enter(self)
+
 	self.script:call("postCreate")
 end
 
@@ -90,7 +92,11 @@ end
 
 function TitleState:update(dt)
 	self.script:call("update", dt)
-	if self.notCreated then return end
+	if self.notCreated then
+		TitleState.super.update(self, dt)
+		self.script:call("postUpdate", dt)
+		return
+	end
 
 	self.conductor.time = game.sound.music:tell() * 1000
 	self.conductor:update(dt)
@@ -110,6 +116,7 @@ function TitleState:update(dt)
 		self.titleText:play("press")
 		util.playSfx(paths.getSound("confirmMenu"))
 		game.camera:flash(Color.WHITE, 1)
+
 		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
 	end
 	self:updateEnterColor()
@@ -144,26 +151,13 @@ function TitleState:updateEnterColor()
 	end
 end
 
-function TitleState:createCoolText(textTable)
-	for i = 1, #textTable do
-		local money = Alphabet(0, 0, textTable[i], "bold", false)
-		money:screenCenter("x")
-		money.y = money.y + (i * 60) + 140
-		self.textGroup:add(money)
-	end
-end
-
-function TitleState:addMoreText(text)
-	local coolText = Alphabet(0, 0, text, "bold", false)
-	coolText:screenCenter("x")
-	coolText.y = coolText.y + (#self.textGroup.members * 60) + 200
-	self.textGroup:add(coolText)
-end
-
-function TitleState:deleteCoolText()
-	while #self.textGroup.members > 0 do
-		self.textGroup:remove(self.textGroup.members[1])
-	end
+function TitleState:setText(text)
+	if text and type(text) == "string" then text = {text} end
+	local concat = text and table.concat(text, "\n") or ""
+	local a = (self.textBuffer ~= "" and "\n" or "")
+	self.textBuffer = self.textBuffer .. a .. concat
+	if text == nil then self.textBuffer = "" end
+	self.coolText.text = self.textBuffer
 end
 
 function TitleState:beat(b)
@@ -178,19 +172,19 @@ function TitleState:beat(b)
 
 	if not self.skippedIntro then
 		switch(b, {
-			[{4, 12}] = function() self:deleteCoolText() end,
-			[1] = function() self:createCoolText({'The', "Funkin' Crew Inc."}) end,
-			[3] = function() self:addMoreText('present') end,
-			[5] = function() self:createCoolText({'In association', 'with'}) end,
+			[{4, 12}] = function() self:setText() end,
+			[1] = function() self:setText({'The', "Funkin' Crew Inc."}) end,
+			[3] = function() self:setText('present') end,
+			[5] = function() self:setText({'In association', 'with'}) end,
 			[{7, 8}] = function()
-				if b == 7 then self:addMoreText('newgrounds') else self:deleteCoolText() end
+				if b == 7 then self:setText('newgrounds') else self:setText() end
 				self.ngSpr.visible = not self.ngSpr.visible
 			end,
-			[9] = function() self:createCoolText({self.curWacky[1]}) end,
-			[11] = function() self:addMoreText(self.curWacky[2]) end,
-			[13] = function() self:addMoreText('Friday') end,
-			[14] = function() self:addMoreText('Night') end,
-			[15] = function() self:addMoreText('Funkin') end,
+			[9] = function() self:setText({self.curWacky[1]}) end,
+			[11] = function() self:setText(self.curWacky[2]) end,
+			[13] = function() self:setText('Friday') end,
+			[14] = function() self:setText('Night') end,
+			[15] = function() self:setText('Funkin') end,
 			[16] = function() self:skipIntro() end
 		})
 	end
@@ -199,7 +193,7 @@ end
 function TitleState:skipIntro()
 	if not self.skippedIntro then
 		self:remove(self.ngSpr)
-		self:remove(self.textGroup)
+		self:remove(self.coolText)
 		self:add(self.gfDance)
 		self:add(self.logoBl)
 		self:add(self.titleText)
@@ -210,7 +204,10 @@ end
 
 function TitleState:leave()
 	self.script:call("leave")
-	if self.notCreated then return end
+	if self.notCreated then
+		self.script:call("postLeave")
+		return
+	end
 	self.script:call("postLeave")
 end
 

@@ -23,71 +23,57 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ]]
---
+-- Modified for FNF-LÖVE
 
--- default gamestate produces error on every callback
-local state_init = setmetatable({leave = __NULL__},
-	{__index = function() error("Gamestate not initialized. Use Gamestate.switch()") end})
-local stack = {state_init}
-local initialized_states = setmetatable({}, {__mode = "k"})
-local state_is_dirty = true
+local state_init = setmetatable({leave = __NULL__}, {
+	__index = function()
+		error("Use Gamestate.switch() to initialize")
+	end
+})
+local stack, state_is_dirty = {state_init}, true
+local initialized_states = setmetatable({}, {__mode = "kv"})
+local errarg = "Missing argument: Gamestate to %s"
 
 local GS = {stack = stack}
-function GS.new(t) return t or {} end -- constructor - deprecated!
 
 local function change_state(stack_offset, to, ...)
-	local pre = stack[#stack]
+	assert(to, errarg:format(stack_offset > 0 and "push" or "switch to"))
+	if stack_offset <= 0 then
+		(stack[#stack].leave or __NULL__)(stack[#stack])
+		state_is_dirty = true
+	end
 
-	-- initialize only on first call
+	local pre = stack[#stack]
 	; (initialized_states[to] or to.init or __NULL__)(to)
 	initialized_states[to] = __NULL__
-
 	stack[#stack + stack_offset] = to
-	return (to.enter or __NULL__)(to, pre, ...)
+
+	if #stack > 2 then stack[#stack - 2] = nil end
+
+	if to.enter then return to.enter(to, pre, ...) end
 end
 
-function GS.switch(to, ...)
-	assert(to, "Missing argument: Gamestate to switch to")
-	assert(to ~= GS, "Can't call switch with colon operator")
-	; (stack[#stack].leave or __NULL__)(stack[#stack])
-	state_is_dirty = true
-	return change_state(0, to, ...)
-end
-
-function GS.push(to, ...)
-	assert(to, "Missing argument: Gamestate to switch to")
-	assert(to ~= GS, "Can't call push with colon operator")
-	return change_state(1, to, ...)
-end
+function GS.current() return stack[#stack] end
+function GS.switch(to, ...) return change_state(0, to, ...) end
+function GS.push(to, ...) return change_state(1, to, ...) end
 
 function GS.pop(index, ...)
 	assert(#stack > 1, "No more states to pop!")
-	if index == nil then index = #stack end
+	index = index or #stack
 	local pre, to = stack[index], stack[index - 1]
 	stack[index] = nil
+
+	if index - 2 > 0 then stack[index - 2] = nil end
 	; (pre.leave or __NULL__)(pre)
-	--state_is_dirty = true
+
 	return (to.resume or __NULL__)(to, pre, ...)
 end
 
-function GS.current()
-	return stack[#stack]
-end
-
--- XXX: don't overwrite love.errorhandler by default:
---      this callback is different than the other callbacks
---      (see http://love2d.org/wiki/love.errorhandler)
---      overwriting thi callback can result in random crashes (issue #95)
-local all_callbacks = {}
-
--- fetch event callbacks from love.handlers
-for k in pairs(love.handlers) do
-	all_callbacks[#all_callbacks + 1] = k
-end
-
+local all_callbacks = table.keys(love.handlers)
 function GS.registerEvents(callbacks)
-	local registry = {}
 	callbacks = callbacks or all_callbacks
+	local registry = {}
+
 	for _, f in ipairs(callbacks) do
 		registry[f] = love[f] or __NULL__
 		love[f] = function(...)
@@ -97,17 +83,14 @@ function GS.registerEvents(callbacks)
 	end
 end
 
-local function_cache = {}
-
--- forward any undefined functions
+local function_cache = setmetatable({}, {__mode = "kv"})
 setmetatable(GS, {
 	__index = function(_, func)
-		-- call function only if at least one 'update' was called beforehand
-		-- (see issue #46)
-		if not state_is_dirty or func == 'update' then
+		if func == "update" or not state_is_dirty then
 			state_is_dirty = false
 			function_cache[func] = function_cache[func] or function(...)
-				return (stack[#stack][func] or __NULL__)(stack[#stack], ...)
+					return (stack[#stack][func] or __NULL__)(stack[#stack], ...)
+				end
 			end
 			return function_cache[func]
 		end

@@ -1,17 +1,17 @@
 local ModsState = State:extend("ModsState")
+local ModCard = require "funkin.ui.mods.card"
 
-function ModsState:enter()
+function ModsState:enter(pre)
 	Mods.loadMods()
 	self.prevMods = nil
-	self.curSelected = table.find(Mods.mods, Mods.currentMod) or 1
+	self.previousState = pre
 	self.switchingMods = false
 	self.curColor = Color.WHITE
 
 	self.bg = Sprite()
 	self.bg:loadTexture(paths.getImage('menus/menuDesat'))
-	self.bg:setScrollFactor()
-	self.bg:screenCenter()
-	self.bg:setGraphicSize(math.floor(self.bg.width * (game.width / self.bg.width)))
+	self.bg:setGraphicSize(math.floor(
+		self.bg.width * (game.width / self.bg.width)))
 	self.bg:updateHitbox()
 	self.bg:screenCenter()
 	self:add(self.bg)
@@ -21,28 +21,25 @@ function ModsState:enter()
 	self.bd.alpha = 0.5
 	self:add(self.bd)
 
-	self.cardGroup = Group()
-	self:add(self.cardGroup)
+	self.cards = MenuList(paths.getSound("scrollMenu"), false, "horizontal")
+	self.cards.curSelected = table.find(Mods.mods, Mods.currentMod) or 1
+	self.cards.changeCallback = bind(self, self.changeSelection)
+	self:add(self.cards)
 
 	if #Mods.mods == 0 then
-		self.noModsTxt = Alphabet(0, 0, 'No mods here', 'bold', false)
+		self.noModsTxt = AtlasText(0, 0, 'No mods here', "bold")
 		self.noModsTxt:screenCenter()
 		self:add(self.noModsTxt)
 	end
 
-	self.camFollow = {x = game.width / 2, y = game.height / 2}
-
 	if #Mods.mods > 0 then
 		for i = 1, #Mods.mods do
-			local card = ModCard(-50 + (i * 580), 50, Mods.mods[i])
-			card.ID = i
-			self.cardGroup:add(card)
+			local card = ModCard(0, 0, Mods.mods[i])
+			self.cards:add(card)
+			card.xAdd = (game.width - 432) / 2
+			card.xMult = 400
 		end
-
-		self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
 	end
-	game.camera:follow(self.camFollow, nil, 12)
-	game.camera:snapToTarget()
 
 	self.infoTxt = Text(6, game.height * 0.96, 'Select the current mod to disable it',
 		paths.getFont('phantommuff.ttf', 24))
@@ -76,9 +73,15 @@ function ModsState:enter()
 		self:add(self.buttons)
 	end
 
-	self:changeSelection()
 	self.bg.color = self.curColor
 	self.bd.color = Color.saturate(self.bg.color, 0.4)
+
+	if #Mods.mods > 0 then
+		self.cards:changeSelection()
+		self:changeSelection()
+		self.bg.color = self.curColor
+		self.bd.color = Color.saturate(self.bg.color, 0.4)
+	end
 
 	ModsState.super.enter(self)
 end
@@ -86,21 +89,18 @@ end
 function ModsState:update(dt)
 	ModsState.super.update(self, dt)
 
-	for _, mod in pairs(self.cardGroup.members) do
-		local yPos = self.curSelected == mod.ID and 50 or 502
+	for _, mod in pairs(self.cards.members) do
+		local yPos = self.cards.curSelected == mod.ID and 50 or 502
 		mod.y = util.coolLerp(mod.y, yPos, 12, dt)
 	end
 
 	if not self.switchingMods then
 		if #Mods.mods > 0 then
-			if controls:pressed('ui_left') then self:changeSelection(-1) end
-			if controls:pressed('ui_right') then self:changeSelection(1) end
-
 			if controls:pressed('accept') then self:selectMods() end
 		end
 
 		if controls:pressed('back') then
-			game.switchState(MainMenuState())
+			game.switchState(self.previousState)
 		end
 	end
 
@@ -109,8 +109,8 @@ function ModsState:update(dt)
 end
 
 function ModsState:selectMods()
-	local card = self.cardGroup.members[self.curSelected]
-	local selectedMods = Mods.mods[self.curSelected]
+	local card = self.cards.members[self.cards.curSelected]
+	local selectedMods = Mods.mods[self.cards.curSelected]
 	if selectedMods == Mods.currentMod then
 		Mods.currentMod = nil
 
@@ -125,7 +125,7 @@ function ModsState:selectMods()
 
 		Timer.tween(0.5, card.enableCheck.color, {[1] = 0, [2] = 1, [3] = 0}, "out-circ")
 		if self.prevMods then
-			local prevCard = self.cardGroup.members[self.prevMods]
+			local prevCard = self.cards.members[self.prevMods]
 			Timer.tween(0.5, prevCard.enableCheck.color, {[1] = 1, [2] = 0, [3] = 0}, "out-circ")
 		end
 
@@ -143,24 +143,15 @@ function ModsState:selectMods()
 	game.save.data.currentMod = Mods.currentMod
 	self.switchingMods = true
 
+	self.cards.lock = true
+
 	TitleState.initialized = false
 end
 
 function ModsState:changeSelection(change)
-	if change == nil then change = 0 end
-
-	self.prevMods = self.curSelected
-
-	self.curSelected = self.curSelected + change
-	self.curSelected = (self.curSelected - 1) % #Mods.mods + 1
-
-	local color = Color.fromString(Mods.getMetadata(Mods.mods[self.curSelected]).color or "#1F1F1F")
+	local color = Color.fromString(Mods.getMetadata(
+		Mods.mods[self.cards.curSelected]).color or "#1F1F1F")
 	self.curColor = {color[1] or 1, color[2] or 1, color[3] or 1}
-
-	if #Mods.mods > 0 then
-		util.playSfx(paths.getSound('scrollMenu'))
-		self.camFollow.x = self.cardGroup.members[self.curSelected].x + 210
-	end
 end
 
 return ModsState

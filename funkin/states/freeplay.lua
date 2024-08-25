@@ -1,17 +1,15 @@
 local json = require "lib.json".encode
 local FreeplayState = State:extend("FreeplayState")
-
-FreeplayState.curSelected = 1
 FreeplayState.curDifficulty = 2
 
 function FreeplayState:enter()
-	FreeplayState.super.enter(self)
-
 	self.notCreated = false
 
 	self.script = Script("data/states/freeplay", false)
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
+		FreeplayState.super.enter(self)
+		self.script:call("postCreate")
 		self.notCreated = true
 		return
 	end
@@ -24,64 +22,44 @@ function FreeplayState:enter()
 	self.lerpScore = 0
 	self.intendedScore = 0
 
-	self.inSubstate = false
+	self.selected = false
 
 	self.persistentUpdate = true
 	self.persistentDraw = true
 
 	self.songsData = {}
 	self:loadSongs()
-	local l = #self.songsData
-	if l ~= 0 and FreeplayState.curSelected > l then
-		FreeplayState.curSelected = l
-	end
 
-	FreeplayState.curSelected = math.min(FreeplayState.curSelected, #self.songsData)
+	self.bg = Sprite(0, 0, paths.getImage('menus/menuDesat'))
+	self:add(util.responsiveBG(self.bg))
 
-	self.bg = Sprite()
-	self.bg:loadTexture(paths.getImage('menus/menuDesat'))
-	self:add(self.bg)
-	self.bg:screenCenter()
-	self.bg:setGraphicSize(math.floor(self.bg.width * (game.width / self.bg.width)))
-	self.bg:updateHitbox()
-	self.bg:screenCenter()
-	if #self.songsData > 0 then
-		self.bg.color = Color.fromString(self.songsData[FreeplayState.curSelected].color)
-	end
-
-	self.grpSongs = Group()
-	self:add(self.grpSongs)
+	self.songs = MenuList(paths.getSound('scrollMenu'), true)
+	self.songs.changeCallback = bind(self, self.changeSelection)
+	self.songs.selectCallback = bind(self, self.openSong)
+	self:add(self.songs)
 
 	if #self.songsData == 0 then
-		self.noSongTxt = Alphabet(0, 0, 'No songs here', "bold", false)
+		self.noSongTxt = AtlasText(0, 0, 'No songs here', "bold")
 		self.noSongTxt:screenCenter()
 		self:add(self.noSongTxt)
 	end
 
-	self.iconTable = {}
 	if #self.songsData > 0 then
-		for i = 0, #self.songsData - 1 do
-			local songText = Alphabet(0, (70 * i) + 30,
-				self.songsData[i + 1].name, "bold", false)
-			songText.isMenuItem = true
-			songText.targetY = i
-			self.grpSongs:add(songText)
+		for i = 1, #self.songsData do
+			local songText = AtlasText(0, 0,
+				self.songsData[i].name, "bold")
+			songText.data = self.songsData[i]
+
+			local icon = HealthIcon(self.songsData[i].icon)
+			icon:updateHitbox()
 
 			if songText:getWidth() > 980 then
 				local textScale = 980 / songText:getWidth()
+				songText.origin.x = 0
 				songText.scale.x = textScale
-				for _, letter in ipairs(songText.lettersArray) do
-					letter.x = letter.x * textScale
-					letter.offset.x = letter.offset.x * textScale
-				end
 			end
 
-			local icon = HealthIcon(self.songsData[i + 1].icon)
-			icon.sprTracker = songText
-			icon:updateHitbox()
-
-			table.insert(self.iconTable, icon)
-			self:add(icon)
+			self.songs:add(songText, icon)
 		end
 	end
 
@@ -127,17 +105,46 @@ function FreeplayState:enter()
 	self.throttles = {}
 	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
 	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
-	self.throttles.up = Throttle:make({controls.down, controls, "ui_up"})
-	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
-	if #self.songsData > 0 then self:changeSelection() end
+	if #self.songsData > 0 then
+		self.songs.curSelected = math.min(#self.songsData, self.songs.curSelected)
+		self.songs:changeSelection()
+
+		self.bg.color = Color.fromString(self.songsData[self.songs.curSelected].color)
+	end
+
+	FreeplayState.super.enter(self)
 
 	self.script:call("postCreate")
 end
 
+function FreeplayState:openSong(song)
+	if not self.selected then
+		self.selected = true
+		if #self.songsData > 0 then
+			if controls:pressed('accept') then
+				PlayState.storyMode = false
+				local diff = song.data.difficulties[FreeplayState.curDifficulty]
+
+				if game.keys.pressed.SHIFT then
+					PlayState.loadSong(song.data.name, diff)
+					PlayState.storyDifficulty = diff
+					game.switchState(ChartingState())
+				else
+					game.switchState(PlayState(false, song.data.name, diff))
+				end
+			end
+		end
+	end
+end
+
 function FreeplayState:update(dt)
 	self.script:call("update", dt)
-	if self.notCreated then return end
+	if self.notCreated then
+		FreeplayState.super.update(self, dt)
+		self.script:call("postUpdate")
+		return
+	end
 
 	self.lerpScore = util.coolLerp(self.lerpScore, self.intendedScore, 24, dt)
 	if math.abs(self.lerpScore - self.intendedScore) <= 10 then
@@ -147,36 +154,20 @@ function FreeplayState:update(dt)
 
 	self:positionHighscore()
 
-	if not self.inSubstate then
+	if not self.selected then
 		if #self.songsData > 0 and self.throttles then
-			if self.throttles.up:check() then self:changeSelection(-1) end
-			if self.throttles.down:check() then self:changeSelection(1) end
 			if self.throttles.left:check() then self:changeDiff(-1) end
 			if self.throttles.right:check() then self:changeDiff(1) end
-
-			if controls:pressed('accept') then
-				PlayState.storyMode = false
-
-				local daSong = self.songsData[FreeplayState.curSelected].name
-				local diff =
-					self.songsData[self.curSelected].difficulties[FreeplayState.curDifficulty]
-
-				if game.keys.pressed.SHIFT then
-					PlayState.loadSong(daSong, diff)
-					game.switchState(ChartingState())
-				else
-					game.switchState(PlayState(false, daSong, diff))
-				end
-			end
 		end
 		if controls:pressed("back") then
 			util.playSfx(paths.getSound('cancelMenu'))
+			self.selected = true
 			game.switchState(MainMenuState())
 		end
 	end
 
 	if #self.songsData > 0 then
-		local colorBG = Color.fromString(self.songsData[FreeplayState.curSelected].color)
+		local colorBG = Color.fromString(self.songsData[self.songs.curSelected].color)
 		self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
 	end
 	FreeplayState.super.update(self, dt)
@@ -185,18 +176,18 @@ function FreeplayState:update(dt)
 end
 
 function FreeplayState:closeSubstate()
-	self.inSubstate = false
+	self.selected = false
 	FreeplayState.super.closeSubstate(self)
 end
 
 function FreeplayState:changeDiff(change)
 	if change == nil then change = 0 end
-	local songDiffs = self.songsData[self.curSelected].difficulties
+	local songDiffs = self.songsData[self.songs.curSelected].difficulties
 
 	FreeplayState.curDifficulty = FreeplayState.curDifficulty + change
 	FreeplayState.curDifficulty = (FreeplayState.curDifficulty - 1) % #songDiffs + 1
 
-	self.intendedScore = Highscore.getScore(self.songsData[self.curSelected].name,
+	self.intendedScore = Highscore.getScore(self.songsData[self.songs.curSelected].name,
 		songDiffs[FreeplayState.curDifficulty])
 
 	if #songDiffs > 1 then
@@ -209,30 +200,7 @@ function FreeplayState:changeDiff(change)
 	self:positionHighscore()
 end
 
-function FreeplayState:changeSelection(change)
-	if change == nil then change = 0 end
-
-	FreeplayState.curSelected = FreeplayState.curSelected + change
-	FreeplayState.curSelected = (FreeplayState.curSelected - 1) % #self.songsData + 1
-
-	local bullShit = 0
-
-	for _, item in pairs(self.grpSongs.members) do
-		item.targetY = bullShit - (FreeplayState.curSelected - 1)
-		bullShit = bullShit + 1
-
-		item.alpha = 0.6
-
-		if item.targetY == 0 then item.alpha = 1 end
-	end
-
-	for _, icon in next, self.iconTable do icon.alpha = 0.6 end
-	self.iconTable[FreeplayState.curSelected].alpha = 1
-
-	if #self.songsData > 1 then util.playSfx(paths.getSound('scrollMenu')) end
-
-	self:changeDiff(0)
-end
+function FreeplayState:changeSelection(change) self:changeDiff(0) end
 
 function FreeplayState:positionHighscore()
 	self.scoreText.x = game.width - self.scoreText:getWidth() - 6
@@ -297,7 +265,10 @@ end
 
 function FreeplayState:leave()
 	self.script:call("leave")
-	if self.notCreated then return end
+	if self.notCreated then
+		self.script:call("postLeave")
+		return
+	end
 
 	for _, v in ipairs(self.throttles) do v:destroy() end
 	self.throttles = nil

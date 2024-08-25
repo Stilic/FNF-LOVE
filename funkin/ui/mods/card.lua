@@ -6,7 +6,7 @@ function ModCard:new(x, y, mods)
 	local metadata = Mods.getMetadata(mods)
 
 	local enabledColor = (Mods.currentMod == mods and Color.GREEN or Color.RED)
-	self.enableCheck = Graphic(-3, -3, 438, 606, enabledColor, nil, "line")
+	self.enableCheck = Graphic(0, 0, 432, 600, enabledColor, nil, "line")
 	self.enableCheck.line.width = 3
 	self.enableCheck.config.round = {16, 16}
 	self:add(self.enableCheck)
