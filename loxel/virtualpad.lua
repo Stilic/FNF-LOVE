@@ -151,7 +151,6 @@ function VirtualPad._press(key, time)
 	local code = love.keyboard.getScancodeFromKey(key)
 	keys[key], sc[code] = true, true
 	love.keypressed(key, code, false, time)
-	print("bum")
 end
 
 function VirtualPad._release(key, time)
