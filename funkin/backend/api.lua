@@ -151,8 +151,10 @@ function API.chart.readDiff(bpm, data, isV1)
 		for _, s in ipairs(data) do
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
-					local col, time, length, type = tonumber(n[2]), tonumber(n[1]),
-						tonumber(n[3]) or 0, tonumber(n[4]) or 0 -- ?
+					local col, time, length = tonumber(n[2]), tonumber(n[1]),
+						tonumber(n[3]) or 0
+					local type = n[4]
+					type = tonumber(type) or type
 					local hit = s.mustHitSection
 					if col > 3 then hit = not hit end
 

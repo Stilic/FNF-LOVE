@@ -56,8 +56,8 @@ function Notefield:makeLane(direction, y)
 	return lane
 end
 
-function Notefield:makeNote(time, col, sustain, skin)
-	local note = Note(time, col, sustain, skin or self.skin)
+function Notefield:makeNote(time, column, sustain, type, skin)
+	local note = Note(time, column, sustain, type, skin or self.skin)
 	return note, self:addNote(note)
 end
 

@@ -467,7 +467,7 @@ function PlayState:generateNote(notefield, n)
 		if sustainTime > 0 then
 			sustainTime = math.max(sustainTime / 1000, 0.125)
 		end
-		notefield:makeNote(n.t / 1000, n.d % 4, sustainTime)
+		notefield:makeNote(n.t / 1000, n.d % 4, sustainTime, n.k)
 	end
 end
 

@@ -16,7 +16,7 @@ function Note.init()
 	for i = 1, 16 do susVerts[i] = table.new(9, 0) end
 end
 
-function Note:new(time, direction, sustainTime, skin)
+function Note:new(time, direction, sustainTime, type, skin)
 	Note.init()
 	Note.super.new(self)
 	self.ignoreAffectByGroup = true
@@ -30,7 +30,7 @@ function Note:new(time, direction, sustainTime, skin)
 	self.tooLate, self.ignoreNote, self.lastPress = false, false, false, false, nil
 	self.priority, self.earlyHitMult, self.lateHitMult = 0, 1, 1
 	self.showNote, self.showNoteOnHit = true, false
-	self.type = ""
+	self.type = type
 	self.group = nil
 
 	self.sustainSegments = Note.defaultSustainSegments
@@ -41,7 +41,7 @@ function Note:new(time, direction, sustainTime, skin)
 end
 
 function Note:clone()
-	local clone = Note(self.time, self.direction, self.sustainTime, self.skin)
+	local clone = Note(self.time, self.direction, self.sustainTime, self.type, self.skin)
 	clone.scale.x, clone.scale.y, clone.scale.z = self.scale.x, self.scale.y, self.scale.z
 	clone.zoom.x, clone.zoom.y, clone.zoom.z = self.zoom.x, self.zoom.y, self.zoom.z
 	clone.rotation.x, clone.rotation.y, clone.rotation.z = self.rotation.x, self.rotation.y, self.rotation.z
