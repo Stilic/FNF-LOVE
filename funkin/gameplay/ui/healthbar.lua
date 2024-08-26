@@ -42,7 +42,7 @@ function HealthBar:update(dt)
 	HealthBar.super.update(self, dt)
 	self.bar:setValue(self.value)
 	local lerpValue, healthPercent, y =
-		util.coolLerp(self.iconScale, 1, 15, dt), self.bar.percent, self.bar.y
+		util.coolLerp(self.iconScale, 1, 15, dt), self.bar.percent, self.bar.y - 75
 	self.iconScale, self.iconP1.health, self.iconP2.health =
 		lerpValue, healthPercent, healthPercent
 	self.iconP1:setScale(lerpValue)
@@ -53,9 +53,7 @@ function HealthBar:update(dt)
 	self.iconP2.x = self.bar.x + (self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
 			0) * 0.01)) - (150 * self.iconP2.scale.x) / 2 - iconOffset * 2
-	self.iconP1.y, self.iconP2.y =
-		y - self.iconP1.height / self.iconP1.scale.y / 2,
-		y - self.iconP2.height / self.iconP2.scale.y / 2
+	self.iconP1.y, self.iconP2.y = y, y
 end
 
 function HealthBar:screenCenter(axes)
