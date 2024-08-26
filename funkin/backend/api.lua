@@ -157,9 +157,13 @@ function API.chart.readDiff(bpm, data, isV1)
 					type = tonumber(type) or type
 					local hit = s.mustHitSection
 					if col > 3 then hit = not hit end
-
-					if hit then table.insert(bf, {t = time, d = col % 4, l = length, k = type}) end
-					if not hit then table.insert(dad, {t = time, d = col % 4, l = length, k = type}) end
+					table.insert(hit and bf or dad, {
+						t = time,
+						d = col % 4,
+						l = length,
+						k = type,
+						gf = not hit and s.gfSection
+					})
 				end
 
 				focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)

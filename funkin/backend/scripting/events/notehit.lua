@@ -2,7 +2,7 @@ local CancellableEvent = require "funkin.backend.scripting.events.cancellable"
 
 local NoteHitEvent = CancellableEvent:extend("NoteHitEvent")
 
-function NoteHitEvent:new(notefield, note, rating)
+function NoteHitEvent:new(notefield, note, character, rating)
 	NoteHitEvent.super.new(self)
 
 	self.cancelledAnim = false
@@ -12,6 +12,7 @@ function NoteHitEvent:new(notefield, note, rating)
 
 	self.notefield = notefield
 	self.note = note
+	self.character = character
 	self.rating = rating
 end
 

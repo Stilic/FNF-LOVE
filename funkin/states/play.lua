@@ -467,7 +467,8 @@ function PlayState:generateNote(notefield, n)
 		if sustainTime > 0 then
 			sustainTime = math.max(sustainTime / 1000, 0.125)
 		end
-		notefield:makeNote(n.t / 1000, n.d % 4, sustainTime, n.k)
+		local note = notefield:makeNote(n.t / 1000, n.d % 4, sustainTime, n.k)
+		note.gfNote = n.gf
 	end
 end
 
@@ -954,7 +955,8 @@ function PlayState:goodNoteHit(note, time)
 	local notefield, dir, isSustain =
 		note.parent, note.direction, note.sustain
 	local event = self.scripts:event("onNoteHit",
-		Events.NoteHit(notefield, note, rating))
+		Events.NoteHit(notefield, note,
+			note.gfNote and self.gf or notefield.character, rating))
 	if not event.cancelled and not note.wasGoodHit then
 		note.wasGoodHit = true
 
@@ -963,19 +965,17 @@ function PlayState:goodNoteHit(note, time)
 			if vocals then vocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
 		end
 
-		if not event.cancelledAnim then
-			local char = notefield.character
-			if char then
-				local lastSustain = notefield.lastSustain
-				if lastSustain and not isSustain
-					and lastSustain.sustainTime > note.sustainTime then
-					local dir = lastSustain.direction
-					if char.dirAnim ~= dir then
-						char:sing(dir, nil, false)
-					end
-				else
-					char:sing(dir, animType)
+		local char = event.character
+		if char and not event.cancelledAnim then
+			local lastSustain = notefield.lastSustain
+			if lastSustain and not isSustain
+				and lastSustain.sustainTime > note.sustainTime then
+				local dir = lastSustain.direction
+				if char.dirAnim ~= dir then
+					char:sing(dir, nil, false)
 				end
+			else
+				char:sing(dir, animType)
 			end
 		end
 
@@ -1023,7 +1023,8 @@ function PlayState:goodSustainHit(note, time, fullyHeldSustain)
 	local notefield, dir, fullScore =
 		note.parent, note.direction, fullyHeldSustain ~= nil
 	local event = self.scripts:event("onSustainHit",
-		Events.NoteHit(notefield, note))
+		Events.NoteHit(notefield, note,
+			note.gfNote and self.gf or notefield.character))
 	if not event.cancelled and not note.wasGoodSustainHit then
 		note.wasGoodSustainHit = true
 
@@ -1055,7 +1056,8 @@ function PlayState:miss(note, dir)
 
 	local notefield = ghostMiss and note or note.parent
 	local event = self.scripts:event(ghostMiss and "onMiss" or "onNoteMiss",
-		Events.Miss(notefield, dir, ghostMiss and nil or note, ghostMiss))
+		Events.Miss(notefield, dir, ghostMiss and nil or note,
+			note.gfNote and self.gf or notefield.character, ghostMiss))
 	if not event.cancelled and (ghostMiss or not note.tooLate) then
 		if not ghostMiss then
 			note.tooLate = true
@@ -1068,8 +1070,8 @@ function PlayState:miss(note, dir)
 				love.math.random(1, 2) / 10)
 		end
 
-		local char = notefield.character
-		if not event.cancelledAnim then char:sing(dir, "miss") end
+		local char = event.character
+		if char and not event.cancelledAnim then char:sing(dir, "miss") end
 
 		if notefield == self.playerNotefield then
 			if self.gf and not event.cancelledSadGF and self.combo >= 10

@@ -58,13 +58,14 @@ end
 
 function Notefield:makeNote(time, column, sustain, type, skin)
 	local note = Note(time, column, sustain, type, skin or self.skin)
-	return note, self:addNote(note)
+	self:addNote(note)
+	return note
 end
 
 function Notefield:addNote(note)
 	note.parent = self
 	table.insert(self.notes, note)
-	return #self.notes
+	return note
 end
 
 function Notefield:copyNotesfromNotefield(notefield)

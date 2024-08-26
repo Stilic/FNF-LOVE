@@ -2,7 +2,7 @@ local CancellableEvent = require "funkin.backend.scripting.events.cancellable"
 
 local MissEvent = CancellableEvent:extend("MissEvent")
 
-function MissEvent:new(notefield, direction, note, sound)
+function MissEvent:new(notefield, direction, note, character, sound)
 	MissEvent.super.new(self)
 
 	self.muteVocals = true
@@ -13,6 +13,7 @@ function MissEvent:new(notefield, direction, note, sound)
 	self.notefield = notefield
 	self.direction = direction
 	self.note = note
+	self.character = character
 end
 
 function MissEvent:cancelAnim()
