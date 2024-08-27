@@ -1,7 +1,5 @@
-local DialogueBox = require "funkin.gameplay.ui.dialoguebox"
+local doof, music
 
-local doof
-local music
 function create()
 	local dialogue = love.filesystem.read(paths.getPath('songs/thorns/dialogue.txt')):split('\n')
 	local red = Graphic(-150, -150, game.width * 2, game.height * 2, Color.convert({255, 27, 49}))

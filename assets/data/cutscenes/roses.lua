@@ -1,5 +1,3 @@
-local DialogueBox = require "funkin.gameplay.ui.dialoguebox"
-
 local doof
 
 function create()

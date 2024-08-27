@@ -54,6 +54,7 @@ BackgroundDancer = require "funkin.gameplay.backgrounddancer"
 BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 Character = require "funkin.gameplay.character"
 Stage = require "funkin.gameplay.stage"
+DialogueBox = require "funkin.gameplay.ui.dialoguebox"
 TankmenBG = require "funkin.gameplay.tankmenbg"
 
 AtlasText = require "funkin.ui.atlastext"
