@@ -976,7 +976,7 @@ function PlayState:goodNoteHit(note, time)
 					char:sing(dir, nil, false)
 				end
 			else
-				char:sing(dir, animType)
+				char:sing(dir)
 			end
 		end
 
