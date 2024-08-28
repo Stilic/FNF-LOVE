@@ -68,7 +68,7 @@ function Notefield:addNote(note)
 	return note
 end
 
-function Notefield:copyNotesfromNotefield(notefield)
+function Notefield:copyNotesFromNotefield(notefield)
 	for i, note in ipairs(notefield.notes) do
 		local parent, grp = note.parent, note.group
 		note.parent, note.group = nil
@@ -84,7 +84,7 @@ function Notefield:copyNotesfromNotefield(notefield)
 	table.sort(self.notes, Conductor.sortByTime)
 end
 
-function Notefield:removeNotefromIndex(idx)
+function Notefield:removeNoteFromIndex(idx)
 	local note = self.notes[idx]
 	if not note then return end
 	if self.lastSustain == note then
@@ -105,7 +105,7 @@ end
 function Notefield:removeNote(note)
 	local idx = table.find(self.notes, note)
 	if idx then
-		return self:removeNotefromIndex(idx)
+		return self:removeNoteFromIndex(idx)
 	end
 end
 

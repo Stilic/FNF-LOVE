@@ -151,18 +151,18 @@ function API.chart.readDiff(bpm, data, isV1)
 		for _, s in ipairs(data) do
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
-					local col, time, length = tonumber(n[2]), tonumber(n[1]),
-						tonumber(n[3]) or 0
-					local type = n[4]
-					type = tonumber(type) or type
+					local kind = n[4]
+					kind = tonumber(kind) or kind
+					local column, gf = tonumber(n[2]), kind == "GF Sing"
+					if gf then kind = nil end
 					local hit = s.mustHitSection
-					if col > 3 then hit = not hit end
+					if column > 3 then hit = not hit end
 					table.insert(hit and bf or dad, {
-						t = time,
-						d = col % 4,
-						l = length,
-						k = type,
-						gf = not hit and s.gfSection
+						t = tonumber(n[1]),
+						d = column % 4,
+						l = tonumber(n[3]) or 0,
+						k = kind,
+						gf = gf or not hit and s.gfSection
 					})
 				end
 
@@ -194,12 +194,13 @@ function API.chart.readDiff(bpm, data, isV1)
 		end
 	else
 		for _, n in ipairs(data) do
-			local col, time, length = tonumber(n.d), tonumber(n.t), tonumber(n.l) or 0
-			local hit = true
-			if col > 3 then hit = false end
-
-			if hit then table.insert(bf, {t = time, d = col % 4, l = length, k = n.k}) end
-			if not hit then table.insert(dad, {t = time, d = col % 4, l = length, k = n.k}) end
+			local column = tonumber(n.d)
+			table.insert(column > 3 and dad or bf, {
+				t = tonumber(n.t),
+				d = column % 4,
+				l = tonumber(n.l) or 0,
+				k = n.k
+			})
 		end
 	end
 	return {enemy = dad, player = bf}, events, bpmChanges
