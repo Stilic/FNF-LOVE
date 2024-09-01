@@ -1093,7 +1093,7 @@ function PlayState:miss(note, dir)
 end
 
 function PlayState:recalculateRating(rating)
-	self.scoreText.content = "Score:" .. math.floor(self.score)
+	self.scoreText.content = "Score: " .. util.formatNumber(math.floor(self.score))
 	if rating then
 		local field = rating .. "s"
 		self[field] = (self[field] or 0) + 1

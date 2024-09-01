@@ -63,6 +63,17 @@ function util.formatTime(seconds, includeMS)
 	return str .. ms:format(seconds - math.floor(seconds)):sub(2)
 end
 
+function util.formatNumber(number)
+	if math.abs(number) < 1000 then return tostring(number) end
+	local int, frac = tostring(number):match("([^%.]+)%.?(.*)")
+	int = int:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+
+	if int:sub(1, 1) == "," then int = int:sub(2) end
+	if frac ~= "" then int = int .. "." .. frac end
+
+	return int
+end
+
 function util.playMenuMusic(fade)
 	local menu = paths.getMusic("freakyMenu")
 	if not game.sound.music or not game.sound.music:isPlaying() or game.sound.music.__source ~= menu then
