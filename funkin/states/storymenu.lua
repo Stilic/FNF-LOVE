@@ -194,7 +194,6 @@ function StoryMenuState:update(dt)
 
 	if #self.weeksData > 0 and not self.movedBack and not self.selectedWeek and
 		not self.inSubstate and self.throttles then
-
 		if controls:down("ui_left") then
 			self.leftArrow:play('press')
 		else
@@ -329,16 +328,20 @@ function StoryMenuState:loadWeeks()
 	if paths.exists(func('data/weekList.txt'), 'file') then
 		for _, week in pairs(paths.getText('weekList'):gsub('\r', ''):split('\n')) do
 			local data = paths.getJSON('data/weeks/weeks/' .. week)
-			data.file = week
-			table.insert(self.weeksData, data)
+			if not data.hide_sm then
+				data.file = week
+				table.insert(self.weeksData, data)
+			end
 		end
 	else
 		for _, str in pairs(love.filesystem.getDirectoryItems(func('data/weeks/weeks'))) do
 			if str:endsWith('.json') then
 				local week = str:withoutExt()
 				local data = paths.getJSON('data/weeks/weeks/' .. week)
-				data.file = week
-				table.insert(self.weeksData, data)
+				if not data.hide_sm then
+					data.file = week
+					table.insert(self.weeksData, data)
+				end
 			end
 		end
 	end

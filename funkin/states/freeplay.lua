@@ -239,8 +239,10 @@ function FreeplayState:loadSongs()
 				'\n')
 			for _, week in pairs(listData) do
 				local weekData = paths.getJSON('data/weeks/weeks/' .. week)
-				for _, song in ipairs(weekData.songs) do
-					table.insert(self.songsData, getSongMetadata(song))
+				if not weekData.hide_fm then
+					for _, song in ipairs(weekData.songs) do
+						table.insert(self.songsData, getSongMetadata(song))
+					end
 				end
 			end
 		else
@@ -249,8 +251,10 @@ function FreeplayState:loadSongs()
 				if str:endsWith('.json') then
 					local weekData = paths.getJSON(
 						'data/weeks/weeks/' .. weekName)
-					for _, song in ipairs(weekData.songs) do
-						table.insert(self.songsData, getSongMetadata(song))
+					if not weekData.hide_fm then
+						for _, song in ipairs(weekData.songs) do
+							table.insert(self.songsData, getSongMetadata(song))
+						end
 					end
 				end
 			end
