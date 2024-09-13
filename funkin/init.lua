@@ -26,13 +26,13 @@ end
 Timer = require "lib.timer"
 Https = require "lib.https"
 
+Mods = require "funkin.backend.mods"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
 ClientPrefs = require "funkin.backend.clientprefs"
 Conductor = require "funkin.backend.conductor"
 Highscore = require "funkin.backend.highscore"
-Mods = require "funkin.backend.mods"
 Throttle = require "funkin.backend.throttle"
 
 if love.system.getDevice() == "Desktop" then

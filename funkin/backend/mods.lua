@@ -1,11 +1,15 @@
 local Mods = {
+	root = "mods",
 	mods = {},
 	currentMod = nil
 }
+if love.filesystem.isFused() and love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "root") then
+	Mods.root = "root/" .. Mods.root
+end
 
 function Mods.getBanner(mods)
 	local loadedBanner = nil
-	local banner = 'mods/' .. mods .. '/banner.png'
+	local banner = Mods.root .. "/" .. mods .. "/banner.png"
 	local obj = paths.images[banner]
 	if obj then loadedBanner = obj end
 	if paths.exists(banner, "file") then
@@ -13,7 +17,7 @@ function Mods.getBanner(mods)
 		paths.images[banner] = obj
 		loadedBanner = obj
 	else
-		local emptyBanner = paths.getPath('images/menus/modsEmptyBanner.png')
+		local emptyBanner = paths.getPath("images/menus/modsEmptyBanner.png")
 		obj = paths.images[emptyBanner]
 		if obj then loadedBanner = obj end
 		if paths.exists(emptyBanner, "file") then
@@ -27,9 +31,9 @@ end
 
 function Mods.getMetadata(mod)
 	local function readMetaFile()
-		if paths.exists("mods", "directory") and paths.exists('mods/' .. mod .. '/meta.json', "file") then
+		if paths.exists(Mods.root, "directory") and paths.exists(Mods.root .. "/" .. mod .. "/meta.json", "file") then
 			local json = (require "lib.json").decode(
-				love.filesystem.read('mods/' .. mod .. '/meta.json'))
+				love.filesystem.read(Mods.root .. "/" .. mod .. "/meta.json"))
 			return json
 		end
 		return {
@@ -45,10 +49,10 @@ end
 
 function Mods.loadMods()
 	Mods.mods = {}
-	if not paths.exists("mods", "directory") then return end
+	if not paths.exists(Mods.root, "directory") then return end
 
-	for _, dir in ipairs(love.filesystem.getDirectoryItems('mods')) do
-		if love.filesystem.getInfo('mods/' .. dir, 'directory') ~= nil then
+	for _, dir in ipairs(love.filesystem.getDirectoryItems(Mods.root)) do
+		if love.filesystem.getInfo(Mods.root .. "/" .. dir, "directory") ~= nil then
 			table.insert(Mods.mods, dir)
 		end
 	end

@@ -1,5 +1,14 @@
 local decodeJson = (require "lib.json").decode
 
+local paths = {
+	images = {},
+	audio = {},
+	atlases = {},
+	fonts = {},
+	noteskins = {},
+	persistantAssets = {"music/freakyMenu.ogg"}
+}
+
 local function readFile(key)
 	if paths.exists(key, "file") then return love.filesystem.read(key) end
 	return nil
@@ -9,7 +18,7 @@ local function excludeAssets(path)
 	local i, n = path:find("assets/")
 	if i == 1 then
 		return path:sub(n + 1)
-	elseif path:find("mods/") == 1 then
+	elseif path:find(Mods.root .. "/") == 1 then
 		i = path:find("/", 6)
 		if i then return path:sub(i + 1) end
 	end
@@ -22,15 +31,6 @@ local function insertFile(path, file, type, tbl)
 		table.insert(tbl, file)
 	end
 end
-
-local paths = {
-	images = {},
-	audio = {},
-	atlases = {},
-	fonts = {},
-	noteskins = {},
-	persistantAssets = {"music/freakyMenu.ogg"}
-}
 
 function paths.addPersistant(path)
 	path = excludeAssets(path)
@@ -76,10 +76,11 @@ function paths.clearCache()
 end
 
 function paths.getMods(key)
+	local root = Mods.root .. "/"
 	if Mods.currentMod then
-		return "mods/" .. Mods.currentMod .. "/" .. key
+		return root .. Mods.currentMod .. "/" .. key
 	end
-	return "mods/" .. key
+	return root .. key
 end
 
 function paths.getPath(key, allowMods)
