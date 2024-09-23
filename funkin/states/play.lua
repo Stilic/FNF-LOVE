@@ -1243,6 +1243,7 @@ function PlayState:onKeyRelease(key, type, scancode, time)
 end
 
 function PlayState:closeSubstate()
+	self.scripts:call("substateClosed")
 	PlayState.super.closeSubstate(self)
 
 	game.camera:unfreeze()
@@ -1268,6 +1269,8 @@ function PlayState:closeSubstate()
 	if self.buttons then
 		self:add(self.buttons)
 	end
+
+	self.scripts:call("postSubstateClosed")
 end
 
 function PlayState:endSong(skip)
