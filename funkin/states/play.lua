@@ -601,7 +601,9 @@ function PlayState:section(s)
 end
 
 function PlayState:focus(f)
+	self.scripts:call("focus", f)
 	if Discord and love.autoPause then self:updateDiscordRPC(not f) end
+	self.scripts:call("postFocus", f)
 end
 
 function PlayState:executeEvent(event)
