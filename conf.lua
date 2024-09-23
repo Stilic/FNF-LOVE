@@ -20,5 +20,4 @@ function love.conf(t)
 	-- reason why is, we need it for mobile window to not be bugging
 	t.modules.window = false
 	t.modules.physics = false
-	t.modules.video = false
 end
