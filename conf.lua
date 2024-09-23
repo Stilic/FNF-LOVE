@@ -17,7 +17,7 @@ function love.conf(t)
 	--t.excluderenderers = {"vulkan"}
 
 	-- we'll initialize the window in loxel/init.lua
-	-- reason why is, we need it for mobile window to not be bugging
+	-- we need it for mobile to not be bugging
 	t.modules.window = false
 	t.modules.physics = false
 end
