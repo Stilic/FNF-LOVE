@@ -12,10 +12,15 @@ function Character:new(x, y, char, isPlayer)
 		self.script:call("create")
 	end
 
+	self:changeCharacter(char, isPlayer)
+end
+
+function Character:changeCharacter(char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
-	self.__reverseDraw = false
+	self.animAtlases = {}
+	self.__reverseDraw = self.__reverseDraw or false
 
 	self.dirAnim, self.holdTime, self.lastHit, self.waitReleaseAfterSing =
 		nil, 4, math.negative_infinity, false
@@ -24,7 +29,8 @@ function Character:new(x, y, char, isPlayer)
 	local jsonData = paths.getJSON("data/characters/" .. char)
 	if jsonData == nil then jsonData = paths.getJSON("data/characters/bf") end
 
-	self:setFrames(paths.getAtlas(jsonData.sprite))
+	self.ogFrames = paths.getAtlas(jsonData.sprite)
+	self:setFrames(self.ogFrames)
 
 	self.imageFile = jsonData.sprite
 	self.jsonScale = 1
@@ -50,7 +56,7 @@ function Character:new(x, y, char, isPlayer)
 	end
 
 	self.icon = jsonData.icon or char
-	self.iconColor = jsonData.color == nil and nil or jsonData.color
+	self.iconColor = jsonData.color
 
 	self.flipX = jsonData.flip_x == true
 	self.jsonFlipX = self.flipX
@@ -59,33 +65,7 @@ function Character:new(x, y, char, isPlayer)
 	self.antialiasing = ClientPrefs.data.antialiasing and self.jsonAntialiasing or false
 
 	self.animationsTable = jsonData.animations
-	if self.animationsTable and #self.animationsTable > 0 then
-		for _, anim in ipairs(self.animationsTable) do
-			local animAnim = '' .. anim[1]
-			local animName = '' .. anim[2]
-			local animIndices = anim[3]
-			local animFps = anim[4]
-			local animLoop = anim[5]
-			local animOffsets = anim[6]
-			if animIndices ~= nil and #animIndices > 0 then
-				self:addAnimByIndices(animAnim, animName, animIndices, nil,
-					animFps, animLoop)
-			else
-				self:addAnimByPrefix(animAnim, animName, animFps, animLoop)
-			end
-
-			if animOffsets ~= nil and #animOffsets > 1 then
-				self:addOffset(animAnim, animOffsets[1], animOffsets[2])
-			end
-		end
-	end
-
-	if self.isPlayer ~= self.flipX then
-		self.__reverseDraw = true
-		self:switchAnim("singLEFT", "singRIGHT")
-		self:switchAnim("singLEFTmiss", "singRIGHTmiss")
-		self:switchAnim("singLEFT-loop", "singRIGHT-loop")
-	end
+	self:resetAnimations()
 	if self.isPlayer then self.flipX = not self.flipX end
 
 	if self.__animations['danceLeft'] and self.__animations['danceRight'] then
@@ -98,6 +78,41 @@ function Character:new(x, y, char, isPlayer)
 	self:dance()
 	if self.curAnim and not self.curAnim.looped then
 		self:finish()
+	end
+end
+
+function Character:resetAnimations(skipSwap)
+	if self.animationsTable and #self.animationsTable > 0 then
+		for _, anim in ipairs(self.animationsTable) do
+			local animAnim = '' .. anim[1]
+			local animName = '' .. anim[2]
+			local animIndices = anim[3]
+			local animFps = anim[4]
+			local animLoop = anim[5]
+			local animOffsets = anim[6]
+			local animAtlas = anim[7]
+
+			if animAtlas and animAtlas ~= "" then
+				self:addAtlas(animAnim, animAtlas)
+			end
+
+			if animIndices ~= nil and #animIndices > 0 then
+				self:addAnimByIndices(animAnim, animName, animIndices, nil,
+					animFps, animLoop)
+			else
+				self:addAnimByPrefix(animAnim, animName, animFps, animLoop)
+			end
+
+			if animOffsets ~= nil and #animOffsets > 1 then
+				self:addOffset(animAnim, animOffsets[1], animOffsets[2])
+			end
+		end
+	end
+	if self.isPlayer ~= self.flipX and not skipSwap then
+		self.__reverseDraw = true
+		self:switchAnim("singLEFT", "singRIGHT")
+		self:switchAnim("singLEFTmiss", "singRIGHTmiss")
+		self:switchAnim("singLEFT-loop", "singRIGHT-loop")
 	end
 end
 
@@ -161,6 +176,14 @@ function Character:beat(b)
 end
 
 function Character:playAnim(anim, force, frame)
+	if self.animAtlases[anim] and self.__frames ~= self.animAtlases[anim].frames then
+		self:setFrames(self.animAtlases[anim])
+		self:resetAnimations(true)
+	elseif self.animAtlases[anim] == nil and self.__frames ~= self.ogFrames.frames then
+		self:setFrames(self.ogFrames)
+		self:resetAnimations(true)
+	end
+
 	Character.super.play(self, anim, force, frame)
 	self.dirAnim = nil
 
@@ -228,6 +251,11 @@ function Character:addOffset(anim, x, y)
 	if x == nil then x = 0 end
 	if y == nil then y = 0 end
 	self.animOffsets[anim] = {x = x, y = y}
+end
+
+function Character:addAtlas(anim, atlasName)
+	local atlas = paths.getAtlas(atlasName)
+	self.animAtlases[anim] = atlas
 end
 
 return Character
