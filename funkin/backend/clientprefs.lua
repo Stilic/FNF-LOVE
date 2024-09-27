@@ -63,7 +63,7 @@ ClientPrefs.controls = {
 	back = {"key:x", "key:backspace", "key:escape"},
 	pause = {"key:p", "key:return", "key:escape"},
 
-	fullscreen = {"key:f"},
+	fullscreen = {"key:f11"},
 	pick_mods = {"key:tab"},
 
 	debug_1 = {"key:7"},
