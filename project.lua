@@ -9,20 +9,19 @@ return {
 	package = "com.stilic.fnflove",
 	width = 1280,
 	height = 720,
+	FPS = 60,
 	company = "Stilic",
 
 	flags = {
-		CheckForUpdates = false,
+		checkForUpdates = false,
 
-		InitialAutoFocus = true,
-		InitialParallelUpdate = true,
-		InitialAsyncInput = false,
+		loxelInitialAutoPause = true,
+		loxelInitialParallelUpdate = true,
+		loxelInitialAsyncInput = false,
 
-		LoxelInitWindow = false,
-		LoxelForceRenderCameraComplex = false,
-		LoxelDisableRenderCameraComplex = false,
-		LoxelDisableScissorOnRenderCameraSimple = false,
-		LoxelDefaultClipCamera = true,
-		LoxelShowPrintsInScreen = false
+		loxelForceRenderCameraComplex = false,
+		loxelDisableRenderCameraComplex = false,
+		loxelDisableScissorOnRenderCameraSimple = false,
+		loxelDefaultClipCamera = true
 	}
 }

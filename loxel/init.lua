@@ -55,10 +55,10 @@ local eventhandlers = {
 	gamepadreleased = function(t, j, b) if love.gamepadreleased then return love.gamepadreleased(j, b, t) end end,
 }
 function love.run()
-	love.FPScap, love.unfocusedFPScap = math.max(select(3, love.window.getMode()).refreshrate, 60), 16
-	love.autoPause = Project.flags.InitialAutoFocus
-	love.parallelUpdate = Project.flags.InitialParallelUpdate
-	love.asyncInput, thread_event = Project.flags.InitialAsyncInput, love.thread.newThread(thread_event_code)
+	love.FPScap, love.unfocusedFPScap = Project.FPS, 16
+	love.autoPause = Project.flags.loxelInitialAutoPause
+	love.parallelUpdate = Project.flags.loxelInitialParallelUpdate
+	love.asyncInput, thread_event = Project.flags.loxelInitialAsyncInput, love.thread.newThread(thread_event_code)
 
 	if love.math then love.math.setRandomSeed(os.time()) end
 	if love.load then love.load(love.arg.parseGameArguments(arg), arg) end

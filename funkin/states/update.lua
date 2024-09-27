@@ -3,7 +3,7 @@ local UpdateState = State:extend("UpdateState")
 local updateVersion = ''
 
 function UpdateState.check(goToState)
-	if Project.flags.CheckForUpdates and not UpdateState.closed then
+	if Project.flags.checkForUpdates and not UpdateState.closed then
 		print('Checking for updates...')
 
 		local code, response = Https.request("https://raw.githubusercontent.com/Stilic/FNF-LOVE/main/project.lua")

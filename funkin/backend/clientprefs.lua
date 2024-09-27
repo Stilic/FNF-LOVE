@@ -12,14 +12,12 @@ ClientPrefs.data = {
 	noteSplash = true,
 	backgroundDim = 0,
 	flashingLights = true,
-	-- notesBelowHUD = true,
 	botplayMode = false,
-	-- timeType = 'left',
 	playback = 1,
 	gameOverInfos = true,
 
 	-- audio
-	pauseMusic = 'railways',
+	pauseMusic = "railways",
 	hitSound = 0,
 	songOffset = 0,
 	menuMusicVolume = 80,
@@ -76,7 +74,12 @@ function ClientPrefs.saveData()
 	game.save.data.prefs = ClientPrefs.data
 	game.save.data.controls = ClientPrefs.controls
 
-	game.save.bind('funkin')
+	game.save.bind("funkin")
 end
+
+-- load save on start
+game.save.init("funkin")
+pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
+pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
 
 return ClientPrefs

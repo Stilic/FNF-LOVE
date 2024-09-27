@@ -90,33 +90,6 @@ local TransitionFade = loxreq "transition.transitionfade"
 local SplashScreen = require "funkin.states.splash"
 
 function funkin.setup()
-	game.save.init('funkin')
-
-	pcall(table.merge, ClientPrefs.data, game.save.data.prefs)
-	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
-
-	if game.save.data.prefs then
-		love.FPScap = ClientPrefs.data.fps
-		love.parallelUpdate = ClientPrefs.data.parallelUpdate
-		love.asyncInput = ClientPrefs.data.asyncInput
-		love.autoPause = ClientPrefs.data.autoPause
-	else
-		ClientPrefs.data.fps = love.FPScap
-		ClientPrefs.data.parallelUpdate = love.parallelUpdate
-		ClientPrefs.data.resolution = -1
-	end
-
-	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
-
-	pcall(table.merge, ClientPrefs.controls, game.save.data.controls)
-
-	local config = {controls = table.clone(ClientPrefs.controls)}
-	if controls == nil then
-		controls = (require "lib.baton").new(config)
-	else
-		controls:reset(config)
-	end
-
 	local res, isMobile = math.abs(ClientPrefs.data.resolution),
 		love.system.getDevice() == "Mobile"
 	Camera.defaultResolution = res
@@ -129,6 +102,27 @@ function funkin.setup()
 		vsync = 0,
 		usedpiscale = false
 	})
+
+	if game.save.data.prefs then
+		love.FPScap = ClientPrefs.data.fps
+		love.parallelUpdate = ClientPrefs.data.parallelUpdate
+		love.asyncInput = ClientPrefs.data.asyncInput
+		love.autoPause = ClientPrefs.data.autoPause
+	else
+		love.FPScap = math.max(select(3, love.window.getMode()).refreshrate, love.FPScap)
+		ClientPrefs.data.fps = love.FPScap
+		ClientPrefs.data.parallelUpdate = love.parallelUpdate
+		ClientPrefs.data.resolution = -1
+	end
+
+	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
+
+	local config = {controls = table.clone(ClientPrefs.controls)}
+	if controls == nil then
+		controls = (require "lib.baton").new(config)
+	else
+		controls:reset(config)
+	end
 
 	if Project.bgColor then
 		love.graphics.setBackgroundColor(Project.bgColor)

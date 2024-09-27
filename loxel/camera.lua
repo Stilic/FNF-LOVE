@@ -29,7 +29,7 @@ function Camera:new(x, y, width, height)
 	self.isSimple = true -- indicates if its in simple render
 
 	-- these will turn complex rendering mode in some cases
-	self.clipCam = Project.flags.LoxelDefaultClipCamera == nil and true or Project.flags.LoxelDefaultClipCamera
+	self.clipCam = Project.flags.loxelDefaultClipCamera == nil and true or Project.flags.loxelDefaultClipCamera
 	self.antialiasing = true
 
 	self:resize(
@@ -308,7 +308,7 @@ function Camera:drawSimple(_skipCheck)
 	_ogSetColor, grap.setColor = grap.setColor, setSimpleColor
 
 	game.__pushBoundScissor(w, h, sx, sy)
-	if not Project.flags.LoxelDisableScissorOnRenderCameraSimple then
+	if not Project.flags.loxelDisableScissorOnRenderCameraSimple then
 		if self.clipCam then
 			grap.setScissor(x, y, w, h)
 		else
@@ -450,9 +450,9 @@ function Camera:drawComplex(_skipCheck)
 	if self.shader then grap.setShader(shader) end
 end
 
-if Project.flags.LoxelForceRenderCameraComplex then
+if Project.flags.loxelForceRenderCameraComplex then
 	Camera.draw = Camera.drawComplex
-elseif Project.flags.LoxelDisableRenderCameraComplex then
+elseif Project.flags.loxelDisableRenderCameraComplex then
 	Camera.draw = Camera.drawSimple
 end
 

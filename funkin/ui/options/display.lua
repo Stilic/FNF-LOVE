@@ -3,7 +3,6 @@ local Settings = require "funkin.ui.options.settings"
 local resolutions = {0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1, 768 / 720, 1.125}
 local resolutionf, resolutionf2 = "%sx (%dx%d)", "%sx/Full (%dx%d)"
 
-local fpsf, fpsu2 = "%shz", "Unlimited"
 local data = {
 	{"GRAPHICS"},
 	{"antialiasing", "Antialiasing", "boolean", function()
@@ -57,15 +56,15 @@ local data = {
 	end},
 	{"fps", "FPS", "number", function(add)
 		local value = math.floor(ClientPrefs.data.fps)
-		local _, _, modes = love.window.getMode()
-		local expect, diff = value + add, value - modes.refreshrate
+		local _, _, mode = love.window.getMode()
+		local expect, diff = value + add, value - mode.refreshrate
 		local prev, clamped = value, math.clamp(expect, 30, 360)
 		if value >= 1000 then
 			if add < 0 then
-				value = modes.refreshrate > 360 and modes.refreshrate or 360
+				value = mode.refreshrate > 360 and mode.refreshrate or 360
 			end
 		elseif (math.abs(diff) <= 1 or expect ~= clamped) and math.abs(diff + add) < math.abs(diff) then
-			value = modes.refreshrate
+			value = mode.refreshrate
 		else
 			value = clamped
 		end
@@ -76,11 +75,9 @@ local data = {
 		ClientPrefs.data.fps = value
 		love.FPScap = value
 	end, function(value)
-		local _, _, modes = love.window.getMode()
 		value = math.truncate(value, 3)
-		if value >= 1000 then return fpsu2 end
-		return math.truncate(modes.refreshrate, 3) == value and
-			fpsf:format(tostring(value)) or tostring(value)
+		return math.truncate(select(3, love.window.getMode()).refreshrate, 3) == value and
+			("%shz"):format(tostring(value)) or tostring(value)
 	end},
 	{"parallelUpdate", "Parallel update", "boolean", function()
 		local value = not ClientPrefs.data.parallelUpdate
