@@ -7,10 +7,7 @@ function MainMenuState:enter()
 
 	self.notCreated = false
 
-	self.versionFormat = "FNF LÖVE v%version\nFriday Night Funkin' v0.3.0"
-	self.versionText = Text(12, 0, self.versionFormat:gsub("%%version", Project.version),
-		paths.getFont("vcr.ttf", 16))
-	self.versionText.y = game.height - self.versionText:getHeight() - 8
+	self.versionText = Text(0, game.height - 18, "v" .. Project.version, paths.getFont("vcr.ttf", 16))
 	self.versionText.antialiasing = false
 	self.versionText.outline.width = 1
 	self.versionText:setScrollFactor()
