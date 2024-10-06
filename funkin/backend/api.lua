@@ -139,7 +139,7 @@ function API.chart.parse(song, diff, returnRaw)
 	table.sort(chart.notes.player, sortByTime)
 	table.sort(chart.events, sortByTime)
 
-	return (returnRaw and data or chart), meta
+	return returnRaw and data or chart, meta
 end
 
 function API.chart.readDiff(bpm, data, isV1)
@@ -152,15 +152,18 @@ function API.chart.readDiff(bpm, data, isV1)
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
 					local kind = n[4]
-					kind = tonumber(kind) or kind
-					local column, gf = tonumber(n[2]), kind == "GF Sing"
-					if gf then kind = nil end
+					local column, gf = n[2], kind == "GF Sing"
 					local hit = s.mustHitSection
 					if column > 3 then hit = not hit end
+					if kind == true or kind == 1 or (not hit and s.altAnim) then
+						kind = "alt"
+					elseif gf or type(kind) ~= "string" then
+						kind = nil
+					end
 					table.insert(hit and bf or dad, {
-						t = tonumber(n[1]),
+						t = n[1],
 						d = column % 4,
-						l = tonumber(n[3]) or 0,
+						l = n[3],
 						k = kind,
 						gf = gf or not hit and s.gfSection
 					})
@@ -194,11 +197,11 @@ function API.chart.readDiff(bpm, data, isV1)
 		end
 	else
 		for _, n in ipairs(data) do
-			local column = tonumber(n.d)
-			table.insert(column > 3 and dad or bf, {
-				t = tonumber(n.t),
-				d = column % 4,
-				l = tonumber(n.l) or 0,
+			local data = n.d
+			table.insert(data > 3 and dad or bf, {
+				t = n.t,
+				d = data % 4,
+				l = n.l or 0,
 				k = n.k
 			})
 		end

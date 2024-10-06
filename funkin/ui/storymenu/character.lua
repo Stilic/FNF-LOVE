@@ -3,7 +3,6 @@ local StoryCharacter = Sprite:extend("StoryCharacter")
 
 function StoryCharacter:new(x, char)
 	StoryCharacter.super.new(self, x)
-
 	self:changeCharacter(char)
 end
 

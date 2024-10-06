@@ -12,10 +12,6 @@ function Character:new(x, y, char, isPlayer)
 		self.script:call("create")
 	end
 
-	self:changeCharacter(char, isPlayer)
-end
-
-function Character:changeCharacter(char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
@@ -213,14 +209,10 @@ end
 
 function Character:sing(dir, type, force)
 	local anim = "sing" .. string.upper(Character.directions[dir + 1])
-	local suffix
 	if type then
-		switch(type:lower(), {
-			["miss"] = function() suffix = "miss" end,
-			["alt"] = function() suffix = "-alt" end
-		})
+		local altAnim = anim .. (type == "miss" and type or "-" .. type)
+		if self.__animations[altAnim] then anim = altAnim end
 	end
-	if suffix and self.__animations[anim .. suffix] then anim = anim .. suffix end
 	self:playAnim(anim, force == nil and true or force)
 
 	self.dirAnim = type == "miss" and nil or dir

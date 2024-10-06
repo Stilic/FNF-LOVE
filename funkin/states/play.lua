@@ -968,15 +968,16 @@ function PlayState:goodNoteHit(note, time)
 
 		local char = event.character
 		if char and not event.cancelledAnim then
-			local lastSustain = notefield.lastSustain
+			local lastSustain, type = notefield.lastSustain, note.type
+			if type ~= "alt" then type = nil end
 			if lastSustain and not isSustain
 				and lastSustain.sustainTime > note.sustainTime then
 				local dir = lastSustain.direction
 				if char.dirAnim ~= dir then
-					char:sing(dir, nil, false)
+					char:sing(dir, type, false)
 				end
 			else
-				char:sing(dir)
+				char:sing(dir, type)
 			end
 		end
 
