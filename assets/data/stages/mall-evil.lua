@@ -20,4 +20,6 @@ function create()
 	local evilSnow = Sprite(-200, 700)
 	evilSnow:loadTexture(paths.getImage(SCRIPT_PATH .. 'evilSnow'))
 	self:add(evilSnow)
+
+	close()
 end

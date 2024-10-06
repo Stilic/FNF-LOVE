@@ -31,51 +31,7 @@ vec4 effect(vec4 color, Image tex, vec2 coords, vec2 _) {
 }
 ]]
 
-function create()
-	self.dadCam.y = 34
-
-	base = Graphic(-350, -260, 2000, 2000, Color.fromString("#32325A"))
-	base:setScrollFactor()
-	base.shader = love.graphics.newShader(shader)
-	self:add(base)
-
-	window = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
-	window.shader = love.graphics.newShader(shader)
-	self:add(window)
-
-	local windowBlend = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
-	windowBlend.blend = "add"
-	windowBlend.alpha = 0.22
-	self:add(windowBlend)
-
-	back = Sprite(-200, -100, paths.getImage(SCRIPT_PATH .. "bg_shadows"))
-	back.shader = love.graphics.newShader(shader)
-	self:add(back)
-
-	reflect = Sprite(262, 609, paths.getImage(SCRIPT_PATH .. "windowReflect"))
-	reflect.alpha = 0.5
-	reflect.blend = "add"
-	reflect.shader = window.shader
-	self:add(reflect)
-
-	modify(base, 1, 1, 1)
-	modify(back, 1, 1, 1)
-	modify(window, 1, 1, 1)
-end
-
-local lightningStrikeBeat = 0
-local lightningOffset = love.math.random(8, 24)
-function beat()
-	if love.math.randomBool(10) and curBeat > lightningStrikeBeat +
-		lightningOffset then
-		lightingAnimation()
-
-		lightningStrikeBeat = curBeat
-		lightningOffset = love.math.random(8, 24)
-	end
-end
-
-function lightingAnimation()
+local function lightingAnimation()
 	if ClientPrefs.data.flashingLights then
 		modify(base, 1, 0.8, 1.6)
 		modify(back, 1.25, 1.5, 0.8)
@@ -129,9 +85,53 @@ function lightingAnimation()
 	end)
 end
 
-function modify(obj, c, s, b)
+local function modify(obj, c, s, b)
 	obj.shader:send("isGraphic", obj:is(Graphic))
 	obj.shader:send("modf", {c, s, b})
+end
+
+function create()
+	self.dadCam.y = 34
+
+	base = Graphic(-350, -260, 2000, 2000, Color.fromString("#32325A"))
+	base:setScrollFactor()
+	base.shader = love.graphics.newShader(shader)
+	self:add(base)
+
+	window = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
+	window.shader = love.graphics.newShader(shader)
+	self:add(window)
+
+	local windowBlend = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
+	windowBlend.blend = "add"
+	windowBlend.alpha = 0.22
+	self:add(windowBlend)
+
+	back = Sprite(-200, -100, paths.getImage(SCRIPT_PATH .. "bg_shadows"))
+	back.shader = love.graphics.newShader(shader)
+	self:add(back)
+
+	reflect = Sprite(262, 609, paths.getImage(SCRIPT_PATH .. "windowReflect"))
+	reflect.alpha = 0.5
+	reflect.blend = "add"
+	reflect.shader = window.shader
+	self:add(reflect)
+
+	modify(base, 1, 1, 1)
+	modify(back, 1, 1, 1)
+	modify(window, 1, 1, 1)
+end
+
+local lightningStrikeBeat = 0
+local lightningOffset = love.math.random(8, 24)
+function beat()
+	if love.math.randomBool(10) and curBeat > lightningStrikeBeat +
+		lightningOffset then
+		lightingAnimation()
+
+		lightningStrikeBeat = curBeat
+		lightningOffset = love.math.random(8, 24)
+	end
 end
 
 function close()

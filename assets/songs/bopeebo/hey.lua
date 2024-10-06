@@ -1,5 +1,5 @@
 function beat()
-	if curBeat % 8 == 7 then
+	if not state.startingSong and curBeat % 8 == 7 then
 		state.gf:playAnim('cheer', true)
 		state.gf.lastHit = PlayState.conductor.time
 		if curBeat ~= 79 then

@@ -20,8 +20,7 @@ function create()
 end
 
 function postCreate()
-	local trailFx = Trail(state.dad, 4, 24, 0.3, 0.069)
-	state:insert(state:indexOf(state.dad), trailFx)
+	state:insert(state:indexOf(state.dad), Trail(state.dad, 4, 24, 0.3, 0.069))
 end
 
 function onGameOver(event)

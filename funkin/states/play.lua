@@ -586,11 +586,9 @@ function PlayState:section(s)
 	self.scripts:set("curSection", s)
 	self.scripts:call("section", s)
 
-	if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
-		self.scripts:set("bpm", PlayState.conductor.bpm)
-		self.scripts:set("crotchet", PlayState.conductor.crotchet)
-		self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
-	end
+	self.scripts:set("bpm", PlayState.conductor.bpm)
+	self.scripts:set("crotchet", PlayState.conductor.crotchet)
+	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
 
 	if self.camZooming and game.camera.zoom < 1.35 then
 		game.camera.zoom = game.camera.zoom + 0.015
