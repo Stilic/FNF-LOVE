@@ -151,11 +151,11 @@ function API.chart.readDiff(bpm, data, isV1)
 		for _, s in ipairs(data) do
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
+					local hit = s.mustHitSection
 					local kind = n[4]
 					local column, gf = n[2], kind == "GF Sing"
-					local hit = s.mustHitSection
 					if column > 3 then hit = not hit end
-					if kind == true or kind == 1 or (not hit and s.altAnim) then
+					if not gf and (kind == true or kind == 1 or (not hit and s.altAnim)) then
 						kind = "alt"
 					elseif gf or type(kind) ~= "string" then
 						kind = nil
