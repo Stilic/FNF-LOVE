@@ -1042,7 +1042,9 @@ function PlayState:goodSustainHit(note, time, fullyHeldSustain)
 			self:recalculateRating()
 		end
 
-		self:resetStroke(notefield, dir, fullyHeldSustain)
+		if not event.cancelledAnim then
+			self:resetStroke(notefield, dir, fullyHeldSustain)
+		end
 		if fullScore then notefield:removeNote(note) end
 	end
 
