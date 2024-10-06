@@ -9,7 +9,7 @@ end
 
 local wasPlayer
 function onCameraMove(event)
-	if not self.startingSong then
+	if not state.startingSong then
 		local isPlayer = event.target.isPlayer
 		if isPlayer == wasPlayer then return end
 		wasPlayer = isPlayer
