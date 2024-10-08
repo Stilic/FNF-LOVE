@@ -304,10 +304,10 @@ function PlayState:enter()
 	self.health = 1
 
 	self.ratings = {
-		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
-		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
-		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
-		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
+		{name = "perfect", time = 0.0125, score = 400, splash = true,  mod = 1},
+		{name = "sick",    time = 0.045, score = 350, splash = true,  mod = 0.98},
+		{name = "good",    time = 0.090, score = 200, splash = false, mod = 0.7},
+		{name = "bad",     time = 0.135, score = 100, splash = false, mod = 0.4},
 		{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
 	}
 	for _, r in ipairs(self.ratings) do
