@@ -1,12 +1,22 @@
 local decodeJSON = (require "lib.json").decode
 
 local Mods = {
-	root = "mods",
 	mods = {},
+	root = "mods",
 	currentMod = nil
 }
+
 if love.filesystem.isFused() and love.system.getDevice() == "Desktop" and love.filesystem.mount(love.filesystem.getSourceBaseDirectory(), "root") then
 	Mods.root = "root/" .. Mods.root
+end
+
+local function createMeta(mod)
+	return {
+		name = mod or "Unknown",
+		color = "#1F1F1F",
+		description = "No description provided.",
+		version = 1
+	}
 end
 
 function Mods.getBanner(mods)
@@ -32,16 +42,17 @@ function Mods.getBanner(mods)
 end
 
 function Mods.getMetadata(mod)
-  local path = Mods.root .. "/" .. mod .. "/meta.json"
-  if paths.exists(Mods.root, "directory") and paths.exists(path, "file") then
-		return decodeJSON(path)
+	local path = Mods.root .. "/" .. mod .. "/meta.json"
+	if paths.exists("mods", "directory") and paths.exists(path, "file") then
+		local s, jsonOrErr = pcall(decodeJSON, love.filesystem.read('mods/' .. mod .. '/meta.json'))
+		if s then
+			return jsonOrErr
+		else
+			print(mod .. "'s JSON metadata returned a error: " .. jsonOrErr)
+			return createMeta(mod)
+		end
 	end
-	return {
-		name = mod,
-		color = "#1F1F1F",
-		description = "No description provided.",
-		version = 1
-	}
+	return createMeta(mod)
 end
 
 function Mods.loadMods()
