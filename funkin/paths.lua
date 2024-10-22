@@ -1,14 +1,5 @@
 local decodeJson = (require "lib.json").decode
 
-local paths = {
-	images = {},
-	audio = {},
-	atlases = {},
-	fonts = {},
-	noteskins = {},
-	persistantAssets = {"music/freakyMenu.ogg"}
-}
-
 local function readFile(key)
 	if paths.exists(key, "file") then return love.filesystem.read(key) end
 	return nil
@@ -32,6 +23,21 @@ local function insertFile(path, file, type, tbl)
 	end
 end
 
+local paths = {
+	images = {},
+	videos = {},
+	audio = {},
+	atlases = {},
+	fonts = {},
+	noteskins = {},
+	persistantAssets = {"music/freakyMenu.ogg"}
+}
+
+local _pathfields = {}
+for k, v in pairs(paths) do
+	if k ~= "persistantAssets" then _pathfields[k] = true end
+end
+
 function paths.addPersistant(path)
 	path = excludeAssets(path)
 	if not table.find(paths.persistantAssets, path) then
@@ -48,28 +54,17 @@ function paths.isPersistant(path)
 end
 
 function paths.clearCache()
-	for k, o in pairs(paths.images) do
-		if not paths.isPersistant(k) then
-			o:release()
-			paths.images[k] = nil
-		end
-	end
-	for k, o in pairs(paths.audio) do
-		if not paths.isPersistant(k) then
-			o:release()
-			paths.audio[k] = nil
-		end
-	end
-	for k, o in pairs(paths.atlases) do
-		if not paths.isPersistant(k) then
-			o.texture:release()
-			for _, f in ipairs(o.frames) do f.quad:release() end
-			paths.atlases[k] = nil
-		end
-	end
-	for k, o in pairs(paths.noteskins) do
-		if not paths.isPersistant(k) then
-			paths.noteskins[k] = nil
+	for field in pairs(_pathfields) do
+		for k, o in pairs(paths[field]) do
+			if not paths.isPersistant(k) then
+				if o.release then o:release() end
+				if field == "atlases" then
+					for _, f in ipairs(o.frames) do
+						f.quad:release()
+					end
+				end
+				paths[field][k] = nil
+			end
 		end
 	end
 	collectgarbage()
@@ -94,7 +89,7 @@ function paths.exists(path, type)
 	return info ~= nil and (not type or info.type == type:lower())
 end
 
-function paths.getItems(key, type, excludeMods)
+function paths.getItems(key, type, ext, excludeMods)
 	type = type or "any"
 	local mods, base = paths.getMods(key) .. "/", paths.getPath(key, false) .. "/"
 	local files, getItems = {}, love.filesystem.getDirectoryItems
@@ -102,12 +97,24 @@ function paths.getItems(key, type, excludeMods)
 	if paths.exists(mods, "directory") or paths.exists(base, "directory") then
 		if not excludeMods then
 			for _, v in ipairs(getItems(mods)) do
-				insertFile(mods .. v, v, type, files)
+				if not ext then
+					insertFile(mods .. v, v, type, files)
+				else
+					if v:endsWith(ext) then
+						insertFile(mods .. v, v, type, files)
+					end
+				end
 			end
 		end
 		for _, v in ipairs(getItems(base)) do
 			if not table.find(files, v) then
-				insertFile(base .. v, v, type, files)
+				if not ext then
+					insertFile(base .. v, v, type, files)
+				else
+					if v:endsWith(ext) then
+						insertFile(base .. v, v, type, files)
+					end
+				end
 			end
 		end
 	end
@@ -132,7 +139,7 @@ function paths.getSkin(key)
 	if obj then return obj end
 	obj = paths.getJSON("data/skins/" .. key)
 	if obj then
-		obj.skin = key
+		obj.skin = obj.skin or key
 		paths.noteskins[key] = obj
 		return obj
 	end
@@ -141,14 +148,15 @@ function paths.getSkin(key)
 	return nil
 end
 
-function paths.getFont(key, size)
+function paths.getFont(key, size, hint)
 	if size == nil then size = 12 end
+	if hint == nil then hint = "light" end
 
 	local path = paths.getPath("fonts/" .. key)
 	local obj = paths.fonts[path .. "_" .. size]
 	if obj then return obj end
 	if paths.exists(path, "file") then
-		obj = love.graphics.newFont(path, size)
+		obj = love.graphics.newFont(path, size, hint)
 		paths.fonts[path .. "_" .. size] = obj
 		return obj
 	end
@@ -171,7 +179,21 @@ function paths.getImage(key)
 	return nil
 end
 
-function paths.getAudio(key, stream, logError)
+function paths.getVideo(key)
+	local path = paths.getPath("videos/" .. key .. ".ogv")
+	local obj = paths.videos[path]
+	if obj then return obj end
+	if paths.exists(path, "file") then
+		obj = love.graphics.newVideo(path)
+		paths.videos[path] = obj
+		return obj
+	end
+
+	print('oh no its returning "video" null NOOOO: ' .. key)
+	return nil
+end
+
+	function paths.getAudio(key, stream, logError)
 	local path = paths.getPath(key .. ".ogg")
 	local obj = paths.audio[path]
 	if obj then return obj end

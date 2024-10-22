@@ -46,23 +46,24 @@ function VirtualPad:leave()
 	end
 end
 
-local function press(button, id)
+local function press(button, id, time)
 	if not button or button.pressed then return end
 	button.pressed = true
-	VirtualPad._press(button.key, love.timer.getTime())
+	VirtualPad._press(button.key, time or love.timer.getTime())
 	VirtualPad.active[id] = button
 end
 
-local function release(button, id)
+local function release(button, id, time)
 	if not button or not button.pressed then return end
 	button.pressed = false
-	VirtualPad._release(button.key, love.timer.getTime())
+	VirtualPad._release(button.key, time or love.timer.getTime())
 	VirtualPad.active[id] = nil
 end
 
+local activeTouches = {}
 function VirtualPad.updatePress()
 	local touches = love.touch.getTouches()
-	local activeTouches = {}
+	activeTouches = {}
 
 	for _, id in ipairs(touches) do
 		local x, y = love.touch.getPosition(id)
@@ -87,7 +88,7 @@ function VirtualPad.updatePress()
 		end
 
 		if not found and active then
-			release(active, id)
+			-- release(active, id)
 			release(button, id)
 		end
 	end
@@ -97,6 +98,22 @@ function VirtualPad.updatePress()
 			release(button, id)
 		end
 	end
+end
+
+function VirtualPad.press(id, x, y, p, time)
+	x, y = VirtualPad.remap(x, y)
+	local active = VirtualPad.active[id]
+	for _, button in ipairs(VirtualPad.instances) do
+		if button:check(x, y) and not active then
+			press(button, id, time)
+			break
+		end
+	end
+end
+
+function VirtualPad.release(id, x, y, p, time)
+	local active = VirtualPad.active[id]
+	if active then release(active, id, time) end
 end
 
 function VirtualPad:update(dt)

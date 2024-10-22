@@ -168,10 +168,23 @@ end
 function Receptor:spawnCover(note)
 	if not self.skin or not self.skin.covers then return end
 
+	-- no reason to stay if they aren't in end animation
+	-- looks bad and stays infinitely on spikelags so get rid of them
+	for _, cover in ipairs(self.covers.members) do
+		if cover.exists and cover.curAnim then
+			if cover.curAnim.name ~= "end" then
+				cover:kill()
+			end
+		end
+	end
+
 	local cover = self.covers:recycle(ActorSprite, self.coverFactory)
 	cover:play("start", true)
 	cover:updateHitbox()
 	cover.parent, cover.visible = note, true
+
+	cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
+
 	return cover
 end
 
@@ -190,7 +203,8 @@ function Receptor:update(dt)
 		self.holdTime = self.holdTime - dt
 		if self.holdTime <= 0 then
 			self.holdTime = 0
-			self:play("static")
+			self:play((self.parent and self.parent.bot)
+				and "static" or "pressed")
 		end
 	end
 

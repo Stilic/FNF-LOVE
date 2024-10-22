@@ -3,6 +3,9 @@ local function checkCollisionFast(
 	x1, y1, w1, h1, sx1, sy1, ox1, oy1, a1,
 	x2, y2, w2, h2, sx2, sy2, ox2, oy2, a2
 )
+	if w1 < 0 then w1 = w1 * 2; x1 = x1 + w1 end
+	if h1 < 0 then h1 = h1 * 2; x1 = x1 + w1 end
+	w1, h1 = math.abs(w1), math.abs(h1)
 	local hw1, hw2, hh1, hh2 = w1 / 2, w2 / 2, h1 / 2, h2 / 2
 	local rad1, rad2 = rad(a1), rad(a2)
 	local sin1, cos1 = abs(sin(rad1)), abs(cos(rad1))
@@ -168,7 +171,7 @@ end
 function Object:isOnScreen(cameras)
 	local sf = self.scrollFactor
 	local sfx, sfy, x, y, w, h, sx, sy, ox, oy = sf and sf.x or 1, sf and sf.y or 1,
-		self:_getBoundary()
+		self:_getBoundary(cameras)
 
 	if cameras.x then return self:_isOnScreen(x, y, w, h, sx, sy, ox, oy, sfx, sfy, cameras) end
 
@@ -189,7 +192,10 @@ function Object:_getBoundary()
 	if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
 	if self.getCurrentFrame then
 		local f = self:getCurrentFrame()
-		if f then x, y = x - f.offset.x, y - f.offset.y end
+		if f then
+			x = x - f.offset.x * (self.flipX and -1 or 1)
+			y = y - f.offset.y * (self.flipY and -1 or 1)
+		end
 	end
 
 	local w, h
@@ -199,6 +205,9 @@ function Object:_getBoundary()
 		w, h = (self.getFrameWidth and self:getFrameWidth() or self.width or 0),
 			(self.getFrameHeight and self:getFrameHeight() or self.height or 0)
 	end
+
+	if self.flipX then x = x + self.width; w = -w end
+	if self.flipY then y = y + self.height; h = -h end
 
 	return x, y, w, h, abs(self.scale.x * self.zoom.x), abs(self.scale.y * self.zoom.y),
 		self.origin.x, self.origin.y

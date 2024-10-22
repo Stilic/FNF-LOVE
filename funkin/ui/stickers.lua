@@ -4,7 +4,7 @@ Stickers.previous = nil
 local function sortByTime(a, b) return a.time < b.time end
 local random = math.random
 
-function Stickers:new(stickerSet)
+function Stickers:new(stickerSet, state)
 	Stickers.super.new(self)
 
 	self.curState = game.getState()
@@ -14,31 +14,31 @@ function Stickers:new(stickerSet)
 	self.cameras = {cam}
 
 	if self.stickerSet == nil then
-		local sets = paths.getItems("data/stickers", "file")
+		local sets = paths.getItems("data/stickers", "file", "json")
 		self.stickerSet = table.random(sets):withoutExt()
 	else
 		self.stickerSet = stickerSet
 	end
 
 	self.sounds = {}
+	self.timer = Timer()
 
 	local folders = paths.getItems("sounds/stickers", "directory")
 	if #folders > 0 then
 		local r = random(#folders)
 		local folder = "sounds/stickers/" .. folders[r]
-		local sounds = paths.getItems(folder, "file")
+		local sounds = paths.getItems(folder, "file", "ogg")
 
 		if #sounds > 0 then
 			for _, sound in ipairs(sounds) do
-				if sound:ext("ogg") then
-					table.insert(self.sounds, "stickers/" .. folders[r]
-						.. "/" .. sound:withoutExt())
-				end
+				table.insert(self.sounds, "stickers/" .. folders[r]
+					.. "/" .. sound:withoutExt())
 			end
 		end
 	end
 
 	if not Stickers.previous then self:setup() end
+	if state then self:start(state) end
 end
 
 function Stickers:createSticker(set, name, x, y)
@@ -62,9 +62,7 @@ function Stickers:setup()
 
 	local data, stks = self:getStickers(self.stickerSet), {}
 	for _, set in ipairs(data.packs["all"]) do stks[set] = data.stickers[set] end
-	local keys = {}
-	-- for key, _ in pairs(stks) do table.insert(keys, key) end
-	table.keys(stks, true, keys)
+	local keys = table.keys(stks, true)
 
 	local xPos, yPos = -100, -100
 	while xPos <= game.width do
@@ -80,6 +78,8 @@ function Stickers:setup()
 			end
 		end
 	end
+
+	self.isDirty = true
 end
 
 function Stickers:spawn()
@@ -88,12 +88,12 @@ function Stickers:spawn()
 	for i, sticker in ipairs(self.members) do
 		sticker.time = math.remapToRange(i, 0, #self.members, 0, 0.9)
 
-		Timer.after(sticker.time, function()
+		Timer():start(sticker.time, function()
 			sticker.visible = true
 			if sticker.sound then util.playSfx(sticker.sound) end
 
 			local timer = (i == #self.members) and 2 or random(0, 200) / 100
-			Timer.after((1 / 24) * timer, function()
+			Timer():start((1 / 24) * timer, function()
 				sticker.scale = {x = 1, y = 1}
 
 				if i == #self.members then
@@ -136,7 +136,7 @@ function Stickers:unspawn()
 	end
 
 	for i, sticker in ipairs(self.members) do
-		Timer.after(sticker.time, function()
+		Timer():start(sticker.time, function()
 			sticker.visible = false
 			if sticker.sound then util.playSfx(sticker.sound) end
 
@@ -155,13 +155,28 @@ function Stickers:start(target)
 	-- semicolon is to avoid ambiguous syntax error!!
 end
 
+function Stickers:update(dt)
+	-- avoid some visual problems
+	if self.isDirty then
+		self.isDirty = nil
+		self.nextIsDirty = true
+		return
+	elseif self.nextIsDirty then
+		self.nextIsDirty = nil
+		return
+	end
+
+	Stickers.super.update(self, dt)
+	self.timer:update(dt)
+end
+
 function Stickers:getStickers(set)
 	local json = paths.getJSON('data/stickers/' .. set)
 	return {
 		name = json.name or set,
-		artist = json.artist,
-		packs = json.stickerPacks,
-		stickers = json.stickers
+		artist = json.artist or "unknown",
+		packs = json.stickerPacks or {},
+		stickers = json.stickers or {}
 	}
 end
 

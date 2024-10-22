@@ -28,10 +28,12 @@ function Countdown:doCountdown(beat)
 		countdownSprite.antialiasing = self.antialiasing
 		countdownSprite:centerOffsets()
 
-		Timer.tween(self.duration, countdownSprite, {alpha = 0}, "in-out-cubic", function()
+		local state = game.getState()
+		state.tween:tween(countdownSprite, {alpha = 0}, self.duration,
+				{ease = "cubeInOut", onComplete = function()
 			self:remove(countdownSprite)
 			countdownSprite:destroy()
-		end)
+		end})
 		self:add(countdownSprite)
 	end
 end

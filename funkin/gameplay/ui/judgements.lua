@@ -1,16 +1,25 @@
 local Judgements = SpriteGroup:extend("Judgements")
-Judgements.area = {width = 336, height = 135}
+Judgements.area = {width = 328, height = 132}
 
-function Judgements:new(x, y, skin)
-	Judgements.super.new(self, x, y)
+function Judgements:new(skin)
+	Judgements.super.new(self)
 	self.timer = Timer()
 
 	self.ratingVisible = true
 	self.comboNumVisible = true
 
-	skin = skin or "default"
-	self.skin = skin
+	self.skin = skin or "default"
 	self.antialiasing = not skin:endsWith("-pixel")
+
+	self.noStack = false
+end
+
+function Judgements:precache(ratings)
+	local path = "skins/" .. self.skin .. "/"
+	for _, r in ipairs(self.ratings) do paths.getImage(path .. r.name) end
+	for _, num in ipairs({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "negative"}) do
+		paths.getImage(path .. "num" .. num)
+	end
 end
 
 function Judgements:update(dt)
@@ -32,17 +41,29 @@ function Judgements:createSprite(name, scale, alpha, duration)
 	sprite.velocity.y = 0
 	sprite.acceleration.y = 0
 	sprite.antialiasing = self.antialiasing
-	self.timer:after(duration, function()
-		self.timer:tween(0.2, sprite, {alpha = 0}, "linear", function()
-			self.timer:cancelTweensOf(sprite)
+
+	local state = game.getState()
+	state.tween:cancelTweensOf(sprite)
+	if sprite._timer then
+		sprite._timer:destroy()
+		sprite._timer = nil
+	end
+	sprite._timer = Timer()
+
+	sprite._timer:start(duration, function()
+		state.tween:tween(sprite, {alpha = 0}, 0.2, {onComplete = function()
 			sprite:kill()
-		end)
+		end})
 	end)
+
 	return sprite
 end
 
 function Judgements:spawn(rating, combo)
+	if not self.visible then return end
+
 	local accel = PlayState.conductor.crotchet * 0.001
+	if self.noStack then for _, member in ipairs(self.members) do member:kill() end end
 
 	if rating and self.ratingVisible then
 		local areaHeight = self.area.height / 2
@@ -63,7 +84,7 @@ function Judgements:spawn(rating, combo)
 			char = combo:sub(i, i)
 			comboNum = self:createSprite("num" .. (char == "-" and "negative" or char),
 				self.antialiasing and 0.5 or 4.5, 1, accel * 2)
-			x, comboNum.x, comboNum.y = x + comboNum.width,
+			x, comboNum.x, comboNum.y = x + comboNum.width - 8,
 				x, self.area.height - comboNum.height
 			comboNum.acceleration.y, comboNum.velocity.x, comboNum.velocity.y = math.random(200, 300),
 				math.random(-5.0, 5.0), comboNum.velocity.y - math.random(140, 160)
@@ -74,6 +95,7 @@ end
 function Judgements:screenCenter()
 	self.x, self.y = (game.width - self.area.width) / 2,
 		(game.height - self.area.height) / 2
+	return self
 end
 
 return Judgements

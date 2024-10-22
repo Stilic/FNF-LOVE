@@ -1,4 +1,4 @@
-loxreq = {path = (...) .. "."}; setmetatable(loxreq, {
+loxreq = setmetatable({path = (...) .. "."}, {
 	__call = function(_, f) return require(loxreq.path .. f) end
 })
 
@@ -53,6 +53,9 @@ local eventhandlers = {
 	joystickreleased = function(t, j, b) if love.joystickreleased then return love.joystickreleased(j, b, t) end end,
 	gamepadpressed = function(t, j, b) if love.gamepadpressed then return love.gamepadpressed(j, b, t) end end,
 	gamepadreleased = function(t, j, b) if love.gamepadreleased then return love.gamepadreleased(j, b, t) end end,
+	touchpressed = function(t, id, x, y, dx, dy, p) return love.touchpressed(id, x, y, dx, dy, p, t) end,
+	-- touchmoved = function(t, id, x, y, dx, dy, p) return love.touchmoved(id, x, y, dx, dy, p, t) end,
+	touchreleased = function(t, id, x, y, dx, dy, p) return love.touchreleased(id, x, y, dx, dy, p, t) end,
 }
 function love.run()
 	love.FPScap, love.unfocusedFPScap = Project.FPS, 16
@@ -191,50 +194,42 @@ function love.errorhandler_quit()
 	pcall(love.quit, true)
 end
 
-local Gamestate = loxreq "lib.gamestate"
-Classic = loxreq "lib.classic"
+local Gamestate = relreq "lib.gamestate"
+Classic = relreq "lib.classic"
 
-Basic = loxreq "basic"
-Object = loxreq "object"
-Sound = loxreq "sound"
-Graphic = loxreq "graphic"
-Sprite = loxreq "sprite"
-Camera = loxreq "camera"
-Text = loxreq "text"
-TypeText = loxreq "typetext"
-Stencil = loxreq "stencil"
+Basic = relreq "basic"
+Object = relreq "object"
+Sound = relreq "sound"
+Graphic = relreq "graphic"
+Sprite = relreq "sprite"
+Camera = relreq "camera"
+Text = relreq "text"
+TypeText = relreq "typetext"
 
-Bar = loxreq "ui.bar"
-Group = loxreq "group.group"
-SpriteGroup = loxreq "group.spritegroup"
-TransitionData = loxreq "transition.transitiondata"
-Transition = loxreq "transition.transition"
-State = loxreq "state"
-Substate = loxreq "substate"
-Flicker = loxreq "effects.flicker"
-BackDrop = loxreq "effects.backdrop"
-Trail = loxreq "effects.trail"
-Color = loxreq "util.color"
-Actor = loxreq "3d.actor"
-ActorSprite = loxreq "3d.actorsprite"
-ActorGroup = loxreq "group.actorgroup"
+Bar = relreq "ui.bar"
+Group = relreq "group.group"
+SpriteGroup = relreq "group.spritegroup"
+TransitionData = relreq "transition.transitiondata"
+Transition = relreq "transition.transition"
+State = relreq "state"
+Substate = relreq "substate"
+Flicker = relreq "effects.flicker"
+BackDrop = relreq "effects.backdrop"
+Trail = relreq "effects.trail"
+Actor = relreq "3d.actor"
+ActorSprite = relreq "3d.actorsprite"
+ActorGroup = relreq "group.actorgroup"
 
-VirtualPad = loxreq "virtualpad"
-VirtualPadGroup = loxreq "group.virtualpadgroup"
+VirtualPad = relreq "virtualpad"
+VirtualPadGroup = relreq "group.virtualpadgroup"
 
-Toast = loxreq "system.toast"
+Color = relreq "util.color"
+Timer = loxreq "util.timer"
+Tween = loxreq "util.tween"
+Signal = loxreq "util.signal"
 
-ui = {
-	UINavbar = loxreq "ui.navbar",
-	UIWindow = loxreq "ui.window",
-	UIButton = loxreq "ui.button",
-	UICheckbox = loxreq "ui.checkbox",
-	UIDropDown = loxreq "ui.dropdown",
-	UIGrid = loxreq "ui.grid",
-	UIInputTextBox = loxreq "ui.inputtextbox",
-	UINumericStepper = loxreq "ui.numericstepper",
-	UISlider = loxreq "ui.slider"
-}
+Toast = relreq "system.toast"
+ui = relreq "ui"
 
 local function temp() return true end
 local metatemp = setmetatable(table, {__index = function() return temp end})
@@ -249,11 +244,11 @@ game = {
 	isSwitchingState = false,
 	dt = 0,
 
-	keys = loxreq "input.keyboard",
-	mouse = loxreq "input.mouse",
-	cameras = loxreq "managers.cameramanager",
-	sound = loxreq "managers.soundmanager",
-	save = loxreq "util.save"
+	keys = relreq "input.keyboard",
+	mouse = relreq "input.mouse",
+	cameras = relreq "managers.cameramanager",
+	sound = relreq "managers.soundmanager",
+	save = relreq "util.save"
 }
 Classic.implement(game, Group)
 Classic.implement(game.bound, Group)
@@ -300,7 +295,7 @@ function game.init(app, state, ...)
 	Toast.init(love.graphics.getDimensions())
 	game:add(Toast)
 
-	local path = loxreq.path:gsub("%.", "/")
+	local path = relreq.path():gsub("%.", "/")
 	Sprite.defaultTexture = love.graphics.newImage(path .. "/assets/default.png")
 
 	Camera.__init()
@@ -315,17 +310,13 @@ function game.init(app, state, ...)
 	Gamestate.switch(state(...))
 end
 
-function game.keypressed(...)
-	game.keys.onPressed(...)
-	-- for _, o in ipairs(game.bound.members) do triggerCallback(o.keypressed, o, ...) end
-	-- for _, o in ipairs(game.members) do triggerCallback(o.keypressed, o, ...) end
-end
+function game.keypressed(...) game.keys.onPressed(...) end
 
-function game.keyreleased(...)
-	game.keys.onReleased(...)
-	-- for _, o in ipairs(game.bound.members) do triggerCallback(o.keyreleased, o, ...) end
-	-- for _, o in ipairs(game.members) do triggerCallback(o.keyreleased, o, ...) end
-end
+function game.keyreleased(...) game.keys.onReleased(...) end
+
+function game.touchpressed(id, x, y, dx, dy, p, time) VirtualPad.press(id, x, y, p, time) end
+
+function game.touchreleased(id, x, y, dx, dy, p, time) VirtualPad.release(id, x, y, p, time) end
 
 function game.wheelmoved(x, y) game.mouse.wheel = y end
 
@@ -336,11 +327,13 @@ function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
 
 local function switch(state)
-	Timer.clear()
-
 	game.cameras.reset()
 	game.sound.destroy()
+
 	VirtualPad.reset()
+
+	Timer.globalManager:clear()
+	Tween.clear()
 
 	triggerCallback(game.onPreStateSwitch, state)
 
@@ -373,19 +366,28 @@ function game.update(real_dt)
 	local low = math.min(math.log(1.101 + dt), 0.1)
 	dt = real_dt - dt > low and dt + low or real_dt
 
-	if requestedState ~= nil then
-		dt, game.isSwitchingState = 0, true
-		requestedState = switch(requestedState)
-	end
 	game.dt = dt
 
 	for _, o in ipairs(Flicker.instances) do o:update(dt) end
 	game.sound.update(dt)
 
+	if requestedState ~= nil then
+		dt, game.isSwitchingState = 0, true
+		requestedState = switch(requestedState)
+	end
+
+	if dt ~= 0 then
+		if Timer.globalManager then
+			Timer.globalManager:update(dt)
+		end
+		Tween.update(dt)
+	end
+
 	if not game.isSwitchingState then Gamestate.update(dt) end
-	VirtualPad.updatePress()
 	for _, o in ipairs(game.bound.members) do triggerCallback(o.update, o, dt) end
 	for _, o in ipairs(game.members) do triggerCallback(o.update, o, dt) end
+
+	if dt ~= 0 then VirtualPad.updatePress() end
 
 	game.keys.reset()
 	game.mouse.reset()

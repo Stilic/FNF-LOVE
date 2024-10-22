@@ -136,13 +136,4 @@ function HealthIcon:fixOffsets(width, height)
 	end
 end
 
-function HealthIcon:update(dt)
-	HealthIcon.super.update(self, dt)
-	self:updateAnimation()
-	if self.sprTracker then
-		self:setPosition(self.sprTracker.x + self.sprTracker:getWidth() + 10,
-			self.sprTracker.y - 30)
-	end
-end
-
 return HealthIcon

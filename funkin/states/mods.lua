@@ -79,6 +79,7 @@ function ModsState:enter(pre)
 	if #Mods.mods > 0 then
 		self.cards:changeSelection()
 		self:changeSelection()
+		self.cards.selectCallback = bind(self, self.selectMods)
 		self.bg.color = self.curColor
 		self.bd.color = Color.saturate(self.bg.color, 0.4)
 	end
@@ -95,10 +96,6 @@ function ModsState:update(dt)
 	end
 
 	if not self.switchingMods then
-		if #Mods.mods > 0 then
-			if controls:pressed('accept') then self:selectMods() end
-		end
-
 		if controls:pressed('back') then
 			game.switchState(self.previousState)
 		end
@@ -108,49 +105,46 @@ function ModsState:update(dt)
 	self.bd.color = Color.saturate(self.bg.color, 0.4)
 end
 
-function ModsState:selectMods()
-	local card = self.cards.members[self.cards.curSelected]
+function ModsState:selectMods(card)
 	local selectedMods = Mods.mods[self.cards.curSelected]
 	if selectedMods == Mods.currentMod then
 		Mods.currentMod = nil
 
-		Timer.tween(0.5, card.enableCheck.color, {[1] = 1, [2] = 0, [3] = 0}, "out-circ", function()
-			Timer.tween(1, game.camera, {zoom = 1.15, alpha = 0}, "in-sine", function()
-				game.sound.music:stop()
-				Timer.after(1, function() game.switchState(TitleState(), true) end)
-			end)
-		end)
+		Tween.tween(card.enableCheck.color, {[1] = 1, [2] = 0, [3] = 0}, 0.5, {ease = "circOut", onComplete = function()
+			Tween.tween(game.camera, {zoom = 1.15, alpha = 0}, 1.5, {ease = "sineIn", onComplete = function()
+				if game.sound.music then game.sound.music:stop() end
+				Timer():start(1, function() game.switchState(TitleState(), true) end)
+			end})
+		end})
 	else
 		Mods.currentMod = selectedMods
 
-		Timer.tween(0.5, card.enableCheck.color, {[1] = 0, [2] = 1, [3] = 0}, "out-circ")
+		Tween.tween(card.enableCheck.color, {[1] = 0, [2] = 1, [3] = 0}, 0.5, {ease = "circOut"})
 		if self.prevMods then
 			local prevCard = self.cards.members[self.prevMods]
-			Timer.tween(0.5, prevCard.enableCheck.color, {[1] = 1, [2] = 0, [3] = 0}, "out-circ")
+			Tween.tween(prevCard.enableCheck.color, {[1] = 1, [2] = 0, [3] = 0}, 0.5, {ease = "circOut"})
 		end
 
-		Timer.tween(0.5, game.camera, {zoom = 1.05}, "out-circ", function()
-			Timer.tween(1, game.camera, {zoom = 1.15, alpha = 0}, "in-sine", function()
-				game.sound.music:stop()
-				Timer.after(1, function() game.switchState(TitleState(), true) end)
-			end)
-		end)
+		Tween.tween(game.camera, {zoom = 1.05}, 0.5, {ease = "circOut", onComplete = function()
+			Tween.tween(game.camera, {zoom = 1.15, alpha = 0}, 1.5, {ease = "sineIn", onComplete = function()
+				if game.sound.music then game.sound.music:stop() end
+				Timer():start(1, function() game.switchState(TitleState(), true) end)
+			end})
+		end})
 	end
 
 	util.playSfx(paths.getSound('confirmMenu'))
-	game.sound.music:fade(1.5, 1, 0)
+	if game.sound.music then game.sound.music:fade(1.5, 1, 0) end
 
 	game.save.data.currentMod = Mods.currentMod
 	self.switchingMods = true
 
-	self.cards.lock = true
-
 	TitleState.initialized = false
 end
 
-function ModsState:changeSelection(change)
-	local color = Color.fromString(Mods.getMetadata(
-		Mods.mods[self.cards.curSelected]).color or "#1F1F1F")
+function ModsState:changeSelection(_, mod)
+	if not mod then return end
+	local color = Color.fromString(mod.metadata.color or "#1F1F1F")
 	self.curColor = {color[1] or 1, color[2] or 1, color[3] or 1}
 end
 

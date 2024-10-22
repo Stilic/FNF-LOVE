@@ -32,6 +32,7 @@ function VirtualPadGroup:leave()
 end
 
 function VirtualPadGroup:enable(delay)
+	self:disable()
 	self.stunDelay = delay or 0.2
 	self.elapsedTime = 0
 	self.pendingEnable = true

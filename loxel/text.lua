@@ -20,7 +20,7 @@ function Text:new(x, y, content, font, color, align, limit)
 
 		-- these affects the outline quality
 		precision = 8,
-		antialiasing = true
+		antialiasing = nil
 	}
 
 	self.__content = nil
@@ -102,15 +102,17 @@ function Text:_getBoundary()
 	if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
 	local w, h = self.limit ~= nil and self.limit or self:getWidth(), self:getHeight()
 
+	if self.outline then
+		x, y, w, h = x - self.outline.width, y - self.outline.width,
+			w + self.outline.width, h + self.outline.width
+	end
+
 	return x, y, w, h, abs(self.scale.x * self.zoom.x), abs(self.scale.y * self.zoom.y),
 		self.origin.x, self.origin.y
 end
 
 function Text:__render(camera)
-	local r, g, b, a = love.graphics.getColor()
-	local shader = self.shader and love.graphics.getShader()
-	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local font = love.graphics.getFont()
+	love.graphics.push("all")
 
 	local min, mag, anisotropy = self.font:getFilter()
 	local mode = self.antialiasing and "linear" or "nearest"
@@ -131,6 +133,8 @@ function Text:__render(camera)
 
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 	love.graphics.setFont(self.font)
+
+	if not self.antialiasing then x, y = math.floor(x), math.floor(y) end
 
 	if outline then
 		color = outline.color
@@ -166,10 +170,7 @@ function Text:__render(camera)
 	love.graphics.printf(content, x, y, width, align, rad, sx, sy, ox, oy)
 
 	self.font:setFilter(min, mag, anisotropy)
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.setFont(font)
-	love.graphics.setBlendMode(blendMode, alphaMode)
-	if self.shader then love.graphics.setShader(shader) end
+	love.graphics.pop()
 end
 
 return Text

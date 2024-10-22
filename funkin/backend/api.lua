@@ -29,8 +29,6 @@ API.chart.base = {
 	timeChanges = nil
 }
 
-API.character.base = {}
-
 local function sortByTime(a, b) return a.t < b.t end
 local function set(tbl, key, v) if v ~= nil then tbl[key] = v end end
 
@@ -145,28 +143,44 @@ end
 function API.chart.readDiff(bpm, data, isV1)
 	local dad, bf, events, bpmChanges =
 		{}, {}, {}, Conductor.newBPMChanges(bpm)
+
+	local function compareInsert(noteList, newNote)
+		for i, existingNote in ipairs(noteList) do
+			if existingNote.t == newNote.t and existingNote.d == newNote.d then
+				if (newNote.l > existingNote.l) or
+					(newNote.l == existingNote.l and newNote.k ~= nil and existingNote.k == nil) or
+					(newNote.l == existingNote.l and newNote.k == existingNote.k and newNote.gf and not existingNote.gf) then
+					noteList[i] = newNote
+				end
+				return
+			end
+		end
+		table.insert(noteList, newNote)
+	end
+
 	if isV1 then
 		local time, steps, total,
 		add, focus, lastFocus = 0, 0, 0
 		for _, s in ipairs(data) do
 			if s and s.sectionNotes then
 				for _, n in ipairs(s.sectionNotes) do
-					local hit = s.mustHitSection
 					local kind = n[4]
 					local column, gf = n[2], kind == "GF Sing"
+					local hit = s.mustHitSection
 					if column > 3 then hit = not hit end
-					if not gf and (kind == true or kind == 1 or (not hit and s.altAnim)) then
+					if kind == true or kind == 1 or (not hit and s.altAnim) then
 						kind = "alt"
 					elseif gf or type(kind) ~= "string" then
 						kind = nil
 					end
-					table.insert(hit and bf or dad, {
+					local newNote = {
 						t = n[1],
 						d = column % 4,
 						l = n[3],
 						k = kind,
 						gf = gf or not hit and s.gfSection
-					})
+					}
+					compareInsert(hit and bf or dad, newNote)
 				end
 
 				focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)
@@ -197,17 +211,19 @@ function API.chart.readDiff(bpm, data, isV1)
 		end
 	else
 		for _, n in ipairs(data) do
-			local data = n.d
-			table.insert(data > 3 and dad or bf, {
-				t = n.t,
-				d = data % 4,
-				l = n.l or 0,
+			local column = tonumber(n.d)
+			local newNote = {
+				t = tonumber(n.t),
+				d = column % 4,
+				l = tonumber(n.l) or 0,
 				k = n.k
-			})
+			}
+			compareInsert(column > 3 and dad or bf, newNote)
 		end
 	end
 	return {enemy = dad, player = bf}, events, bpmChanges
 end
+
 
 --[[
 This moves a lot of playData info to charts, then it gets
@@ -222,6 +238,7 @@ function API.chart.adjustMeta(song, tbl)
 		set(tbl, "song", data.songName or data.song)
 		set(tbl, "stage", info.stage)
 		set(tbl, "skin", info.skin)
+		set(tbl, "hud", info.hud)
 
 		set(tbl, "difficulties", info.difficulties)
 		set(tbl, "timeChanges", data.timeChanges)

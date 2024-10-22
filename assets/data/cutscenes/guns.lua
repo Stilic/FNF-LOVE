@@ -18,7 +18,7 @@ function create()
 end
 
 function postCreate()
-	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true, true)
+	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true)
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 

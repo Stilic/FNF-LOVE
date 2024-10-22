@@ -34,7 +34,7 @@ function FreeplayState:enter()
 	self:add(util.responsiveBG(self.bg))
 
 	self.songs = MenuList(paths.getSound('scrollMenu'), true)
-	self.songs.changeCallback = bind(self, self.changeSelection)
+	self.songs.changeCallback = function() return self:changeDiff(0) end
 	self.songs.selectCallback = bind(self, self.openSong)
 	self:add(self.songs)
 
@@ -121,6 +121,7 @@ end
 function FreeplayState:openSong(song)
 	if not self.selected then
 		self.selected = true
+		game.sound.music:fade(0.4, ClientPrefs.data.menuMusicVolume / 100, 0)
 		if #self.songsData > 0 then
 			if controls:pressed('accept') then
 				PlayState.storyMode = false
@@ -162,6 +163,7 @@ function FreeplayState:update(dt)
 		if controls:pressed("back") then
 			util.playSfx(paths.getSound('cancelMenu'))
 			self.selected = true
+			self.songs.lock = true
 			game.switchState(MainMenuState())
 		end
 	end
@@ -200,8 +202,6 @@ function FreeplayState:changeDiff(change)
 	self:positionHighscore()
 end
 
-function FreeplayState:changeSelection(change) self:changeDiff(0) end
-
 function FreeplayState:positionHighscore()
 	self.scoreText.x = game.width - self.scoreText:getWidth() - 6
 	self.scoreBG.width = self.scoreText:getWidth() + 12
@@ -239,10 +239,8 @@ function FreeplayState:loadSongs()
 				'\n')
 			for _, week in pairs(listData) do
 				local weekData = paths.getJSON('data/weeks/weeks/' .. week)
-				if not weekData.hide_fm then
-					for _, song in ipairs(weekData.songs) do
-						table.insert(self.songsData, getSongMetadata(song))
-					end
+				for _, song in ipairs(weekData.songs) do
+					table.insert(self.songsData, getSongMetadata(song))
 				end
 			end
 		else
@@ -251,10 +249,8 @@ function FreeplayState:loadSongs()
 				if str:endsWith('.json') then
 					local weekData = paths.getJSON(
 						'data/weeks/weeks/' .. weekName)
-					if not weekData.hide_fm then
-						for _, song in ipairs(weekData.songs) do
-							table.insert(self.songsData, getSongMetadata(song))
-						end
+					for _, song in ipairs(weekData.songs) do
+						table.insert(self.songsData, getSongMetadata(song))
 					end
 				end
 			end

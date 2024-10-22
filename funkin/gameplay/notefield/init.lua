@@ -1,3 +1,7 @@
+Receptor = relreq "receptor"
+Note = relreq "note"
+NoteMods = relreq "notemods"
+
 local Notefield = ActorGroup:extend("Notefield")
 
 function Notefield:new(x, y, keys, skin, character, vocals, speed)
@@ -201,6 +205,16 @@ function Notefield:destroy()
 	end
 end
 
+function Notefield:fadeInReceptors()
+	for i = 1, #self.lanes do
+		local receptor = self.lanes[i].receptor
+		receptor.y = receptor.y - 10
+		receptor.alpha = 0
+
+		Tween.tween(receptor, {y = receptor.y + 10, alpha = 1}, 1, {ease = "circOut", startDelay = 0.16 + (0.2 * i)})
+	end
+end
+
 function Notefield:__prepareLane(direction, lane, time)
 	local notes, receptor, speed, drawSize, drawSizeOffset =
 		self.notes, lane.receptor,
@@ -288,4 +302,4 @@ function Notefield:__render(camera)
 	end
 end
 
-return Notefield
+return Notefield, Receptor, Note, NoteMods

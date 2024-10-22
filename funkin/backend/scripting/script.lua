@@ -15,12 +15,12 @@ local function errformat(s)
 	local file = info.short_src or "unknown file"
 	local line = tostring(info.currentline) or "unknown line"
 
-	print(string.format("%s:%s: %s isn't allowed on scripts", file, line, s))
+	print(string.format("%s on line %s: %s isn't allowed on scripts", file, line, s))
 end
 
 local redirect = {
-	require = function() errformat("require"); return {} end,
 	loxreq = function() errformat("loxreq"); return {} end,
+	relreq = function() errformat("relreq"); return {} end,
 	dofile = function() errformat("dofile"); return {} end,
 	loadfile = function() errformat("loadfile"); return {} end,
 	loadstring = function() errformat("loadstring"); return {} end,
@@ -45,16 +45,18 @@ local redirect = {
 	}
 }
 
+redirect.require = setmetatable({}, {
+	__call = function(_, path)
+		return Script("data/classes/" .. path:gsub("%.", "/")).chunk()
+	end
+})
+
 function Script.addToEnv(k, v) env[k] = redirect[k] or v end
 
 for k, f in pairs(_G) do env[k] = redirect[k] or f end
 for k, f in pairs(os) do env.os[k] = redirect.os[k] or f end
 for k, f in pairs(string) do env.string[k] = redirect.string[k] or f end
 env._G = env
-
--- Even through you can't use require directly, you can use
--- Script(path).chunk() instead. It works the same way, but
--- it can be reloaded.
 
 local chunkMt = {__index = env}
 
@@ -68,6 +70,9 @@ function Script:new(path, notFoundMsg)
 	self.closed = false
 	self.chunk = nil
 	self.__failedfunc = {}
+
+	self.errorCallback = Signal()
+	self.closeCallback = Signal()
 
 	local s, err = pcall(function()
 		local p, vars = path, self.variables
@@ -96,6 +101,7 @@ function Script:new(path, notFoundMsg)
 	if not s then
 		print(string.format('Failed to load script: %s', err))
 		self.closed = true
+		self.errorCallback:dispatch("chunk")
 	end
 end
 
@@ -120,6 +126,7 @@ function Script:call(func, ...)
 		else
 			print(string.format('Script failed at %s: %s', func, err))
 			self.__failedfunc[func] = true
+			self.errorCallback:dispatch(func)
 		end
 	end
 	return
@@ -131,7 +138,9 @@ function Script:close()
 	self.closed = true
 	self.variables = nil
 	self.chunk = nil
-	self.__failedfunc = nil
+	self.__failedfunc = {}
+
+	self.closeCallback:dispatch()
 end
 
 return Script
