@@ -23,7 +23,6 @@
 - [json](https://github.com/actboy168/json.lua)\*
 - [lua-discordRPC](https://github.com/pfirsich/lua-discordRPC)
 - [lua-https](https://github.com/love2d/lua-https)
-- [timer](https://github.com/vrld/hump/blob/master/timer.lua)\*
 - [Lua-Simple-XML-Parser](https://github.com/Cluain/Lua-Simple-XML-Parser)\*
 
 * Was modified for our needs.
