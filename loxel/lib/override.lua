@@ -343,3 +343,104 @@ if --[[not love.markDeprecated actually this is better and]] debug then
 		print(__warning__:format(info.source:sub(2), info.currentline, what, name, extra or __none__))
 	end
 end
+
+-- messy implementation of uft8.upper/lower
+local function newcasemap(ranges)
+	local upper, lower = {}, {}
+
+	for _, range in pairs(ranges) do
+		local u1, u2, l1, l2 = unpack(range)
+		local lower_cp = l1
+
+		for codepoint = u1, u2 do
+			local char1 = utf8.char(codepoint)
+			local char2 = utf8.char(lower_cp)
+			lower[char1] = char2
+			upper[char2] = char1
+			lower_cp = lower_cp + 1
+		end
+	end
+
+	return upper, lower
+end
+
+local upcase, lowcase = newcasemap({
+	-- latin
+	{0x00C0, 0x00DF, 0x00E0, 0x00FF},
+	-- cyrillic
+	{0x0400, 0x040F, 0x0450, 0x045F},
+	{0x0410, 0x042F, 0x0430, 0x044F},
+	-- i may add more in the future??
+})
+
+local function utf8_upper(input)
+	local result = {}
+	for _, c in utf8.codes(input) do
+		c = utf8.char(c)
+		table.insert(result, upcase[c] or c:upper())
+	end
+	return table.concat(result)
+end
+
+local function utf8_lower(input)
+	local result = {}
+	for _, c in utf8.codes(input) do
+		c = utf8.char(c)
+		table.insert(result, lowcase[c] or c:lower())
+	end
+	return table.concat(result)
+end
+
+-- cancEer
+local function utf8_split(str, pattern)
+	local tbl = {}
+	if pattern then
+		local last_end = 1
+		local s, e, cap = str:find(pattern, last_end)
+		while s do
+			if s > last_end then
+				local prefix = str:sub(last_end, s - 1)
+				if #prefix > 0 then
+					table.insert(tbl, prefix)
+				end
+			end
+			table.insert(tbl, cap or str:sub(s, e))
+			last_end = e + 1
+			s, e, cap = str:find(pattern, last_end)
+		end
+		if last_end <= #str then table.insert(tbl, str:sub(last_end)) end
+	else
+		for _, char in utf8.codes(str) do
+			table.insert(tbl, utf8.char(char))
+		end
+	end
+	return tbl
+end
+
+utf8.upper = utf8_upper
+utf8.lower = utf8_lower
+utf8.split = utf8_split
+
+-- iterator. equivalent to:
+-- for i, member in ipairs(table) do
+-- useful when you don't need index as first value
+function each(t)
+	local i = 0
+	return function()
+		i = i + 1
+		if t[i] then return t[i], i end
+	end
+end
+
+relreq = setmetatable({}, {
+	__call = function(_, f)
+		local path = (debug.getinfo(2, "S").source:match("^@(.+)$")):
+			match("(.*[/\\])") or ""
+		return require(path:gsub("[/\\]", ".") .. f)
+	end
+})
+
+function relreq.path()
+	return (debug.getinfo(2, "S").source:match("^@(.+)$")):
+			match("(.*[/\\])") or ""
+end
