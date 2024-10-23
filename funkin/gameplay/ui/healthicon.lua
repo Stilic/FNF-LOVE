@@ -136,4 +136,9 @@ function HealthIcon:fixOffsets(width, height)
 	end
 end
 
+function HealthIcon:update(dt)
+	HealthIcon.super.update(self, dt)
+	self:updateAnimation()
+end
+
 return HealthIcon
