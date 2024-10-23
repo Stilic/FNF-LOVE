@@ -7,7 +7,7 @@ return {
 	icon = "art/icon.png",
 	version = "0.7.1",
 	package = "com.stilic.fnflove",
-	width = 1280,notemods
+	width = 1280,
 	height = 720,
 	FPS = 60,
 	company = "Stilic",

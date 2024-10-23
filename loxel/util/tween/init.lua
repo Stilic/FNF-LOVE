@@ -1,5 +1,4 @@
--- * This is a manager.
-local Instance = relreq "instance"
+local Instance = loxreq "util.tween.instance"
 
 local Tween = {}
 Tween.__index = Tween

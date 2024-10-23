@@ -1,6 +1,6 @@
-Receptor = relreq "receptor"
-Note = relreq "note"
-NoteMods = relreq "notemods"
+Receptor = require "funkin.gameplay.notefield.receptor"
+Note = require "funkin.gameplay.notefield.note"
+NoteMods = require "funkin.gameplay.notefield.notemods"
 
 local Notefield = ActorGroup:extend("Notefield")
 

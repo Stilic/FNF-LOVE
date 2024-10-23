@@ -168,6 +168,7 @@ function TitleState:setText(text)
 	self.textBuffer = self.textBuffer .. a .. concat
 	if text == nil then self.textBuffer = "" end
 	self.coolText.text = self.textBuffer
+	print(self.textBuffer)
 end
 
 function TitleState:beat(b)

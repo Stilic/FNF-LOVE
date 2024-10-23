@@ -1,5 +1,5 @@
 local UserCard = SpriteGroup:extend("UserCard")
-local MediaCard = relreq "mediacard"
+local MediaCard = require "funkin.ui.credits.mediacard"
 
 function UserCard:new(x, y, width, height)
 	UserCard.super.new(self, x, y)

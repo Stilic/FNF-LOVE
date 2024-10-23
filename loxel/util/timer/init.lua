@@ -1,12 +1,8 @@
-local Manager = relreq "manager"
+TimerManager = loxreq "util.timer.manager"
 
 local Timer = Classic:extend("Timer")
 
-Timer.globalManager = Manager()
-
-function Timer.newManager(timeScale)
-	return Manager(timeScale)
-end
+Timer.globalManager = TimerManager()
 
 function Timer:new(manager)
 	self.manager = manager or Timer.globalManager

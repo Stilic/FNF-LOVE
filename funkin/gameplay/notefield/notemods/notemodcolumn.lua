@@ -1,4 +1,4 @@
-local NoteModBeat = relreq "notemodscroll"
+local NoteModBeat = require "funkin.gameplay.notefield.notemods.notemodbeat"
 
 local NoteModColumn = NoteModifier:extend("NoteModColumn")
 

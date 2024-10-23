@@ -180,7 +180,7 @@ function StoryMenuState:enter()
 	self.script:call("postCreate")
 end
 
-local tweenDifficulty = Timer.new()
+local tweenDifficulty = Timer()
 function StoryMenuState:update(dt)
 	self.script:call("update", dt)
 	if self.notCreated then

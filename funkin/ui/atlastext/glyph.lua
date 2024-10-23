@@ -1,6 +1,8 @@
 local Glyph = Sprite:extend("Glyph")
 -- !! INTENDED TO BE USED ONLY WITH ATLASTEXT
 
+local utf8char = (require "utf8").char
+
 function Glyph:new(x, y, glyph, parent)
 	Glyph.super.new(self, x or 0, y or 0)
 
@@ -28,12 +30,12 @@ function Glyph:setFont()
 end
 
 function Glyph:set(glyph)
-	self.glyph = glyph or self.glyph
+	self.glyph = utf8char(glyph or self.glyph)
 
 	local font = self.parent.font or AtlasText.defaultFont
 
-	self.glyph = font.noUpper and utf8.lower(self.glyph) or
-		(font.noLower and utf8.upper(self.glyph) or self.glyph)
+	self.glyph = font.noUpper and string.lower(self.glyph) or
+		(font.noLower and string.upper(self.glyph) or self.glyph)
 
 	local glyphData = font.glyphs and font.glyphs[self.glyph]
 	if glyphData then
@@ -119,7 +121,7 @@ function Glyph:__render(camera)
 		if self.__forceUpdate then self.__forceUpdate = false end
 	end
 
-	batch:setColor(r, g, b, a)
+	batch:setColor(r or 1, g or 1, b or 1, a or 1)
 end
 
 function Glyph:destroy()

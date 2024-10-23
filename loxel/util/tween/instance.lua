@@ -1,4 +1,4 @@
-local Ease = relreq "ease"
+local Ease = loxreq "util.tween.ease"
 
 local Tween = Classic:extend("Tween")
 

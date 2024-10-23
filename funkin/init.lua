@@ -1,6 +1,6 @@
 local funkin = {}
 
-API = relreq "backend.api"
+API = require "funkin.backend.api"
 
 local prn = print
 function print(...)
@@ -25,64 +25,64 @@ end
 
 Https = require "lib.https"
 
-paths = relreq "paths"
-util = relreq "util"
+paths = require "funkin.paths"
+util = require "funkin.util"
 
-ClientPrefs = relreq "backend.clientprefs"
-Conductor = relreq "backend.conductor"
-Highscore = relreq "backend.highscore"
-Mods = relreq "backend.mods"
-Throttle = relreq "backend.throttle"
+ClientPrefs = require "funkin.backend.clientprefs"
+Conductor = require "funkin.backend.conductor"
+Highscore = require "funkin.backend.highscore"
+Mods = require "funkin.backend.mods"
+Throttle = require "funkin.backend.throttle"
 
 if love.system.getDevice() == "Desktop" then
-	Discord = relreq "backend.discord"
+	Discord = require "funkin.backend.discord"
 end
 
-Notefield = relreq "gameplay.notefield"
-Countdown = relreq "gameplay.ui.countdown"
-HealthIcon = relreq "gameplay.ui.healthicon"
-HealthBar = relreq "gameplay.ui.healthbar"
-ProgressArc = relreq "gameplay.ui.progressarc"
-Judgements = relreq "gameplay.ui.judgements"
+Notefield = require "funkin.gameplay.notefield"
+Countdown = require "funkin.gameplay.ui.countdown"
+HealthIcon = require "funkin.gameplay.ui.healthicon"
+HealthBar = require "funkin.gameplay.ui.healthbar"
+ProgressArc = require "funkin.gameplay.ui.progressarc"
+Judgements = require "funkin.gameplay.ui.judgements"
 
-Character = relreq "gameplay.character"
-Stage = relreq "gameplay.stage"
-DialogueBox = relreq "gameplay.ui.dialoguebox"
+Character = require "funkin.gameplay.character"
+Stage = require "funkin.gameplay.stage"
+DialogueBox = require "funkin.gameplay.ui.dialoguebox"
 
-AtlasText = relreq "ui.atlastext"
-Marquee = relreq "ui.marquee"
-MenuList = relreq "ui.menulist"
-Options = relreq "ui.options"
-Stickers = relreq "ui.stickers"
+AtlasText = require "funkin.ui.atlastext"
+Marquee = require "funkin.ui.marquee"
+MenuList = require "funkin.ui.menulist"
+Options = require "funkin.ui.options"
+Stickers = require "funkin.ui.stickers"
 
-StatsCounter = relreq "ui.statscounter"
+StatsCounter = require "funkin.ui.statscounter"
 
 CalibrationState = require 'funkin.states.calibration'
-CreditsState = relreq "states.credits"
-TitleState = relreq "states.title"
-MainMenuState = relreq "states.mainmenu"
-ModsState = relreq "states.mods"
-StoryMenuState = relreq "states.storymenu"
-FreeplayState = relreq "states.freeplay"
-PlayState = relreq "states.play"
+CreditsState = require "funkin.states.credits"
+TitleState = require "funkin.states.title"
+MainMenuState = require "funkin.states.mainmenu"
+ModsState = require "funkin.states.mods"
+StoryMenuState = require "funkin.states.storymenu"
+FreeplayState = require "funkin.states.freeplay"
+PlayState = require "funkin.states.play"
 
-GameOverSubstate = relreq "substates.gameover"
+GameOverSubstate = require "funkin.substates.gameover"
 
-EditorMenu = relreq "ui.editor.editormenu"
-CutsceneState = relreq "states.editors.cutscene"
-CharacterEditor = relreq "states.editors.character"
-ChartingState = relreq "states.editors.charting"
-ChartingNote = relreq "ui.editor.charting.chartingnote"
+EditorMenu = require "funkin.ui.editor.editormenu"
+CutsceneState = require "funkin.states.editors.cutscene"
+CharacterEditor = require "funkin.states.editors.character"
+ChartingState = require "funkin.states.editors.charting"
+ChartingNote = require "funkin.ui.editor.charting.chartingnote"
 
-Shader = relreq "shaders"
-RGBShader = relreq "shaders.rgb"
-Video = relreq "gameplay.video"
+Shader = require "funkin.shaders"
+RGBShader = require "funkin.shaders.rgb"
+Video = require "funkin.gameplay.video"
 
-Script = relreq "backend.scripting.script"
-ScriptsHandler = relreq "backend.scripting.scriptshandler"
+Script = require "funkin.backend.scripting.script"
+ScriptsHandler = require "funkin.backend.scripting.scriptshandler"
 
 local TransitionFade = loxreq "transition.transitionfade"
-local SplashScreen = relreq "states.splash"
+local SplashScreen = require "funkin.states.splash"
 
 function funkin.setup()
 	local res, isMobile = math.abs(ClientPrefs.data.resolution),
@@ -138,7 +138,7 @@ function funkin.setup()
 	end
 
 	local dimen = love.graphics.getDimensions()
-	local SoundTray = relreq "ui.soundtray".init(dimen).new()
+	local SoundTray = require "funkin.ui.soundtray".init(dimen).new()
 	game:add(SoundTray)
 
 	game.init(Project, Project.splashScreen and SplashScreen or TitleState)

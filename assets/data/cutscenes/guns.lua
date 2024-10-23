@@ -2,7 +2,7 @@ local bgMusic
 local cutsceneTimer
 
 function create()
-	cutsceneTimer = Timer.new()
+	cutsceneTimer = Timer()
 
 	state.dad.alpha = 0
 	state.camHUD.visible, state.camNotes.visible = false, false

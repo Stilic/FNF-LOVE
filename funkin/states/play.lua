@@ -80,7 +80,7 @@ function PlayState:enter()
 	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
-	self.timer = Timer.newManager()
+	self.timer = TimerManager()
 	self.tween = Tween()
 	self.camPosTween = nil
 

@@ -4,7 +4,7 @@ AtlasText:exclude(
 	"getWidth", "getHeight"
 )
 
-local Glyph = relreq "glyph"
+local Glyph = require "funkin.ui.atlastext.glyph"
 local Boundary = loxreq "util.boundary"
 
 function AtlasText.getFont(font, size)
@@ -87,7 +87,7 @@ function AtlasText:setText(text)
 
 	local line, lines, width, cache, idx = "", {}, 0, {}, 1
 
-	for _, char in ipairs(utf8.split(self.text)) do
+	for _, char in utf8.codes(self.text) do
 		local c = Glyph(0, 0, char, self)
 		cache[idx] = c
 		idx = idx + (char ~= "\n" and 1 or 0)

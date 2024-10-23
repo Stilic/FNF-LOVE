@@ -1,11 +1,11 @@
 return {
-	UINavbar = relreq "navbar",
-	UIWindow = relreq "window",
-	UIButton = relreq "button",
-	UICheckbox = relreq "checkbox",
-	UIDropDown = relreq "dropdown",
-	UIGrid = relreq "grid",
-	UIInputTextBox = relreq "inputtextbox",
-	UINumericStepper = relreq "numericstepper",
-	UISlider = relreq "slider"
+	UINavbar = loxreq "ui.navbar",
+	UIWindow = loxreq "ui.window",
+	UIButton = loxreq "ui.button",
+	UICheckbox = loxreq "ui.checkbox",
+	UIDropDown = loxreq "ui.dropdown",
+	UIGrid = loxreq "ui.grid",
+	UIInputTextBox = loxreq "ui.inputtextbox",
+	UINumericStepper = loxreq "ui.numericstepper",
+	UISlider = loxreq "ui.slider"
 }
