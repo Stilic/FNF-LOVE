@@ -85,7 +85,6 @@ function Glyph:set(glyph)
 		local font = self.parent.font or AtlasText.defaultFont
 		self.glyph = font.noUpper and lower(self.glyph) or
 			(font.noLower and upper(self.glyph) or self.glyph)
-		print(self.glyph)
 
 		local glyphData = font.glyphs and font.glyphs[self.glyph]
 		if glyphData then
