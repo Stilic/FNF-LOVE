@@ -7,10 +7,7 @@ function MainMenuState:enter()
 
 	self.notCreated = false
 
-	self.versionFormat = "v%version"
-	self.versionText = Text(12, 0, self.versionFormat:gsub("%%version", Project.version),
-		paths.getFont("vcr.ttf", 16))
-	self.versionText.y = game.height - self.versionText:getHeight() - 8
+	self.versionText = Text(0, game.height - 18, "v" .. Project.version, paths.getFont("vcr.ttf", 16))
 	self.versionText.antialiasing = false
 	self.versionText.outline.width = 1
 	self.versionText:setScrollFactor()
@@ -50,9 +47,9 @@ function MainMenuState:enter()
 	self.menuYellow = paths.getImage('menus/menuBG')
 	self.menuMagenta = paths.getImage('menus/menuBGMagenta')
 
-	self.menuList = MenuList(paths.getSound("scrollMenu"), true, "centered", function(this, obj)
-		for spr in each(this.members) do
-			spr.yAdd = 50 + (this.curSelected) * (80 - game.height * 0.005)
+	self.menuList = MenuList(paths.getSound("scrollMenu"), true, "centered", function(self, obj)
+		for _, spr in ipairs(self.members) do
+			spr.yAdd = 50 + (self.curSelected) * (80 - game.height * 0.005)
 		end
 	end)
 	self.menuList.selectCallback = function(menuItem)
@@ -104,7 +101,7 @@ function MainMenuState:enter()
 	end
 
 	self.menuList.changeCallback = function(curSelected, item)
-		for spr in each(self.menuList.members) do
+		for _, spr in ipairs(self.menuList.members) do
 			spr:play('idle')
 			spr:updateHitbox()
 		end
@@ -212,11 +209,14 @@ function MainMenuState:enterSelection(choice)
 	Flicker(selectedItem, 1, 0.05, not switch[1], false, function()
 		self.selectedSomethin = not switch[2](self)
 	end)
-	for spr in each(self.menuList.members) do
+	for _, spr in ipairs(self.menuList.members) do
 		if switch[1] and self.menuList.curSelected ~= spr.ID then
-			Tween.tween(spr, {alpha = 0}, 0.4, {ease = "quadOut", onComplete = function()
-				spr:destroy()
-			end})
+			Tween.tween(spr, {alpha = 0}, 0.4, {
+				ease = "quadOut",
+				onComplete = function()
+					spr:destroy()
+				end
+			})
 		end
 	end
 end
@@ -228,7 +228,7 @@ function MainMenuState:leave()
 		return
 	end
 
-	for v in each(self.throttles) do v:destroy() end
+	for _, v in ipairs(self.throttles) do v:destroy() end
 
 	self.script:call("postLeave")
 end

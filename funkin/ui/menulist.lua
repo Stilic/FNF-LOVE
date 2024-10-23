@@ -76,7 +76,7 @@ function MenuList:add(obj, child, unselectable)
 	obj.yMult = obj.yMult or 120
 	obj.xAdd = obj.xAdd or 60
 	obj.xMult = obj.xMult or 1
-	obj.spaceFactor = obj.spaceFactor or 1.5
+	obj.spaceFactor = obj.spaceFactor or 1.25
 
 	if child then
 		child.xAdd = child.xAdd or 10
@@ -107,7 +107,7 @@ function MenuList:updatePositions(dt, time)
 		if scrollFunc then scrollFunc(self, obj, dt, time) end
 		if obj.child then
 			obj.child:setPosition(self.childPos == "left" and obj.x + obj:getWidth() +
-					obj.child.xAdd or obj.x - obj.child.width - obj.child.xAdd,
+				obj.child.xAdd or obj.x - obj.child.width - obj.child.xAdd,
 				obj.y + obj.child.yAdd)
 			obj.child:update(dt)
 		end

@@ -60,7 +60,6 @@ function Character:changeCharacter(char, isPlayer)
 	end
 
 	self.icon = jsonData.icon or char
-	self.iconColor = jsonData.color
 
 	self.flipX = jsonData.flip_x == true
 	self.jsonFlipX = self.flipX

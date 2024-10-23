@@ -1,10 +1,11 @@
+local Ease = loxreq "util.tween.ease"
+
 local Cutscene = Classic:extend("Cutscene")
 
 function Cutscene:new(isEnd, onComplete)
 	self.onComplete = onComplete or __NULL__
 
 	self.state = game.getState()
-	self.timer = self.state.timer or Timer()
 
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 	local suffix = ""
@@ -50,7 +51,7 @@ function Cutscene:new(isEnd, onComplete)
 				end
 
 				for i, event in ipairs(cutsceneData.cutscene) do
-					self.timer:after(event.time / 1000, function()
+					Timer.wait(event.time / 1000, function()
 						self:execute(event.event, isEnd)
 					end)
 				end
@@ -61,21 +62,16 @@ function Cutscene:new(isEnd, onComplete)
 	end
 end
 
-function Cutscene:update(dt)
-	if self.state.timer == nil then self.timer:update(dt) end
-	Cutscene.super.update(self, dt)
-end
-
 function Cutscene:execute(event, isEnd)
 	switch(event.name, {
 		['Camera Position'] = function()
 			local xCam, yCam = event.params[1], event.params[2]
 			local isTweening = event.params[3]
 			local time = event.params[4]
-			local ease = event.params[6] .. '-' .. event.params[5]
+			local ease = event.params[5]
 			if isTweening then
 				game.camera:follow(self.state.camFollow, nil)
-				self.timer:tween(time, self.state.camFollow, {x = xCam, y = yCam}, ease)
+				Tween.tween(self.state.camFollow, {x = xCam, y = yCam}, time, {ease = Ease[ease]})
 			else
 				self.state.camFollow:set(xCam, yCam)
 				game.camera:follow(self.state.camFollow, nil, 2.4 * self.state.camSpeed)
@@ -85,9 +81,9 @@ function Cutscene:execute(event, isEnd)
 			local zoomCam = event.params[1]
 			local isTweening = event.params[2]
 			local time = event.params[3]
-			local ease = event.params[5] .. '-' .. event.params[4]
+			local ease = event.params[4]
 			if isTweening then
-				self.timer:tween(time, game.camera, {zoom = zoomCam}, ease)
+				Tween.tween(game.camera, {zoom = zoomCam}, time, {ease = Ease[ease]})
 			else
 				game.camera.zoom = zoomCam
 			end

@@ -186,9 +186,9 @@ function PlayState:enter()
 	table.insert(self.notefields, {character = self.gf})
 
 	if PlayState.canFadeInReceptors then
-		for notefield in each(self.notefields) do
+		for _, notefield in ipairs(self.notefields) do
 			if notefield.is then
-				for receptor in each(notefield.receptors) do
+				for _, receptor in ipairs(notefield.receptors) do
 					receptor.alpha = 0
 				end
 			end
@@ -340,7 +340,7 @@ function PlayState:startCountdown()
 	self.timer.timeScale = self.playback
 	self.tween.timeScale = self.playback
 
-	for notefield in each(self.notefields) do
+	for _, notefield in ipairs(self.notefields) do
 		if notefield.is then
 			if PlayState.canFadeInReceptors then
 				notefield:fadeInReceptors()
@@ -452,7 +452,6 @@ end
 function PlayState:focus(f)
 	self.scripts:call("focus", f)
 	if Discord and love.autoPause then self:updateDiscordRPC(not f) end
-	PlayState.super.focus(self, f)
 	self.scripts:call("postFocus", f)
 end
 
@@ -722,8 +721,9 @@ function PlayState:goodSustainHit(note, time, fullyHeldSustain)
 			end
 			self:recalculateRating()
 		end
-
-		self:resetStroke(notefield, dir, fullyHeldSustain)
+		if not event.cancelledAnim then
+			self:resetStroke(notefield, dir, fullyHeldSustain)
+		end
 		if fullScore then notefield:removeNote(note) end
 	end
 

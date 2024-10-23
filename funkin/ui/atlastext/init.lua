@@ -43,8 +43,10 @@ function AtlasText:new(x, y, text, font, limit, align)
 		self.frames.texture, 1, "stream")
 
 	self.oldProps = {
-		text  = self.text, align = self.align,
-		limit = self.limit, font = self.font
+		text = self.text,
+		align = self.align,
+		limit = self.limit,
+		font = self.font
 	}
 end
 
@@ -90,14 +92,15 @@ function AtlasText:setText(text)
 	for _, char in utf8.codes(self.text) do
 		local c = Glyph(0, 0, char, self)
 		cache[idx] = c
-		idx = idx + (char ~= "\n" and 1 or 0)
+		idx = idx + 1
 
-		if char == "\n" or (self.limit > 0 and width + c.width >= self.limit) then
+		local realChar = utf8.char(char)
+		if realChar == "\n" or (self.limit > 0 and width + c.width >= self.limit) then
 			table.insert(lines, {t = line, w = width})
-			line = char == "\n" and "" or char
-			width = char == "\n" and 0 or c.width
+			line = realChar
+			width = c.width
 		else
-			line = line .. char
+			line = line .. realChar
 			width = width + c.width
 		end
 	end

@@ -22,7 +22,7 @@ function GUI:new()
 		return
 	end
 
-	self.healthBar = HealthBar(self.state.boyfriend, self.state.dad)
+	self.healthBar = HealthBar(self.state.boyfriend.icon, self.state.dad.icon)
 	self.healthBar:screenCenter("x")
 	self:add(self.healthBar)
 

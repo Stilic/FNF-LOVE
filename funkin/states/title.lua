@@ -168,7 +168,6 @@ function TitleState:setText(text)
 	self.textBuffer = self.textBuffer .. a .. concat
 	if text == nil then self.textBuffer = "" end
 	self.coolText.text = self.textBuffer
-	print(self.textBuffer)
 end
 
 function TitleState:beat(b)
@@ -185,7 +184,7 @@ function TitleState:beat(b)
 		switch(b, {
 			[{4, 12}] = function() self:setText() end,
 			[1] = function() self:setText({'The', "Funkin' Crew Inc."}) end,
-			[3] = function() self:setText('present') end,
+			[3] = function() self:setText('presents') end,
 			[5] = function() self:setText({'In association', 'with'}) end,
 			[{7, 8}] = function()
 				if b == 7 then self:setText('newgrounds') else self:setText() end

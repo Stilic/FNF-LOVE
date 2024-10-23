@@ -7,8 +7,7 @@
 					1.1,
 					true,
 					0.6,
-					"circ",
-					"out"
+					"circOut"
 				]
 			},
 			"time": 1000
@@ -21,8 +20,7 @@
 					600,
 					true,
 					0.2,
-					"quint",
-					"out"
+					"quintOut"
 				]
 			},
 			"time": 1200
@@ -79,8 +77,7 @@
 					490,
 					true,
 					0.25,
-					"circ",
-					"out"
+					"circOut"
 				]
 			},
 			"time": 1400
@@ -93,8 +90,7 @@
 					600,
 					true,
 					0.3,
-					"sine",
-					"in"
+					"sineIn"
 				]
 			},
 			"time": 1550
@@ -161,8 +157,7 @@
 					560,
 					true,
 					0.4,
-					"circ",
-					"out"
+					"circOut"
 				]
 			},
 			"time": 2000
@@ -174,8 +169,7 @@
 					1,
 					true,
 					0.3,
-					"back",
-					"out"
+					"backOut"
 				]
 			},
 			"time": 2000
@@ -187,8 +181,7 @@
 					0.9,
 					true,
 					1.4,
-					"sine",
-					"in-out"
+					"sineInOut"
 				]
 			},
 			"time": 2300

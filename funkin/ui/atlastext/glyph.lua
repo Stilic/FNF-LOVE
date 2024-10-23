@@ -31,39 +31,41 @@ end
 
 function Glyph:set(glyph)
 	self.glyph = utf8char(glyph or self.glyph)
+	if self.glyph == "\n" then
+		self.visible = false
+		self.width = 0
+	else
+		local font = self.parent.font or AtlasText.defaultFont
+		self.glyph = font.noUpper and string.lower(self.glyph) or
+			(font.noLower and string.upper(self.glyph) or self.glyph)
 
-	local font = self.parent.font or AtlasText.defaultFont
-
-	self.glyph = font.noUpper and string.lower(self.glyph) or
-		(font.noLower and string.upper(self.glyph) or self.glyph)
-
-	local glyphData = font.glyphs and font.glyphs[self.glyph]
-	if glyphData then
-		if self.glyph == "\t" or self.glyph == " " then
-			self.visible = false
-			self.width, self.height = glyphData[1], glyphData[1]
-		else
-			self.glyph = glyphData[1]
-			if glyphData[2] then
-				self.letterOffset.x, self.letterOffset.y =
-					glyphData[2][1], glyphData[2][2]
+		local glyphData = font.glyphs and font.glyphs[self.glyph]
+		if glyphData then
+			if self.glyph == "\t" or self.glyph == " " then
+				self.visible = false
+				self.width, self.height = glyphData[1], glyphData[1]
+			else
+				self.glyph = glyphData[1]
+				if glyphData[2] then
+					self.letterOffset.x, self.letterOffset.y =
+						glyphData[2][1], glyphData[2][2]
+				end
 			end
 		end
-	end
 
-	-- Animation handling
-	if self.glyph ~= "\n" and self.glyph ~= " " then
-		local framerate = font.framerate or 24
-		local looped = font.looped ~= nil and font.looped or true
+		-- Animation handling
+		if self.glyph ~= "\n" and self.glyph ~= " " then
+			local framerate = font.framerate or 24
+			local looped = font.looped ~= nil and font.looped or true
 
-		self:addAnimByPrefix(self.glyph, self.glyph, framerate, looped)
-		if self.__animations and self.__animations[self.glyph] then
-			self:play(self.glyph)
+			self:addAnimByPrefix(self.glyph, self.glyph, framerate, looped)
+			if self.__animations and self.__animations[self.glyph] then
+				self:play(self.glyph)
+			end
+			self:updateHitbox()
 		end
-		self:updateHitbox()
 	end
 end
-
 
 function Glyph:updateHitbox()
 	Glyph.super.updateHitbox(self)
