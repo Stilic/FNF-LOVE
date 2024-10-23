@@ -1,7 +1,54 @@
+local utf8 = require "utf8"
+
+-- messy implementation of uft8.upper/lower
+local function newcasemap(ranges)
+	local upper, lower = {}, {}
+
+	for _, range in pairs(ranges) do
+		local u1, u2, l1, l2 = unpack(range)
+		local lower_cp = l1
+
+		for codepoint = u1, u2 do
+			local char1 = utf8.char(codepoint)
+			local char2 = utf8.char(lower_cp)
+			lower[char1] = char2
+			upper[char2] = char1
+			lower_cp = lower_cp + 1
+		end
+	end
+
+	return upper, lower
+end
+
+local upcase, lowcase = newcasemap({
+	-- latin
+	{0x00C0, 0x00DF, 0x00E0, 0x00FF},
+	-- cyrillic
+	{0x0400, 0x040F, 0x0450, 0x045F},
+	{0x0410, 0x042F, 0x0430, 0x044F},
+	-- i may add more in the future??
+})
+
+local function lower(input)
+	local result = {}
+	for _, c in utf8.codes(input) do
+		c = utf8.char(c)
+		table.insert(result, lowcase[c] or c:lower())
+	end
+	return table.concat(result)
+end
+
+local function upper(input)
+	local result = {}
+	for _, c in utf8.codes(input) do
+		c = utf8.char(c)
+		table.insert(result, upcase[c] or c:upper())
+	end
+	return table.concat(result)
+end
+
 local Glyph = Sprite:extend("Glyph")
 -- !! INTENDED TO BE USED ONLY WITH ATLASTEXT
-
-local utf8char = (require "utf8").char
 
 function Glyph:new(x, y, glyph, parent)
 	Glyph.super.new(self, x or 0, y or 0)
@@ -30,14 +77,15 @@ function Glyph:setFont()
 end
 
 function Glyph:set(glyph)
-	self.glyph = utf8char(glyph or self.glyph)
+	self.glyph = utf8.char(glyph or self.glyph)
 	if self.glyph == "\n" then
 		self.visible = false
 		self.width = 0
 	else
 		local font = self.parent.font or AtlasText.defaultFont
-		self.glyph = font.noUpper and string.lower(self.glyph) or
-			(font.noLower and string.upper(self.glyph) or self.glyph)
+		self.glyph = font.noUpper and lower(self.glyph) or
+			(font.noLower and upper(self.glyph) or self.glyph)
+		print(self.glyph)
 
 		local glyphData = font.glyphs and font.glyphs[self.glyph]
 		if glyphData then
@@ -54,7 +102,7 @@ function Glyph:set(glyph)
 		end
 
 		-- Animation handling
-		if self.glyph ~= "\n" and self.glyph ~= " " then
+		if self.glyph ~= " " then
 			local framerate = font.framerate or 24
 			local looped = font.looped ~= nil and font.looped or true
 
