@@ -145,7 +145,7 @@ function funkin.setup()
 	local SoundTray = require "funkin.ui.soundtray".init(dimen).new()
 	game:add(SoundTray)
 
-	game.init(Project, PlayState)
+	game.init(Project, SplashScreen)
 
 	if ClientPrefs.data.resolution == -1 then
 		Camera.defaultResolution = love.graphics.getFixedScale()

@@ -21,6 +21,7 @@ function Splash:startSplash()
 	self.funkinLogo:screenCenter()
 	self:add(self.funkinLogo)
 
+	-- TODO: fix icon centering
 	self.stilicIcon = HealthIcon('stilic')
 	self.stilicIcon.scale = {x = 1.8, y = 1.8}
 	self.stilicIcon.visible = false
