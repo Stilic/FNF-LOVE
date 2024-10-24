@@ -82,7 +82,7 @@ function Receptor:getValue(pos, axis)
 	local spline, nextSpline = splineAxis[got], splineAxis[got + 1]
 
 	local start, length = spline.position, nextSpline.position - spline.position
-	local tween, ease, s = Timer.tween[spline.tween], spline.ease, (pos - start) / length
+	local tween, ease, s = Ease[spline.tween .. "In"], spline.ease, (pos - start) / length
 	local value, toValue = spline.value, nextSpline.value - spline.value
 	if ease == "out" then
 		return value + (1 - tween(1 - s)) * toValue

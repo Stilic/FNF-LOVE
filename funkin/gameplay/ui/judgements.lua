@@ -1,5 +1,5 @@
 local Judgements = SpriteGroup:extend("Judgements")
-Judgements.area = {width = 336, height = 135}
+Judgements.area = {width = 328, height = 132}
 
 function Judgements:new(x, y, skin)
 	Judgements.super.new(self, x, y)
@@ -8,8 +8,7 @@ function Judgements:new(x, y, skin)
 	self.ratingVisible = true
 	self.comboNumVisible = true
 
-	skin = skin or "default"
-	self.skin = skin
+	self.skin = skin or "default"
 	self.antialiasing = not skin:endsWith("-pixel")
 end
 
@@ -32,16 +31,29 @@ function Judgements:createSprite(name, scale, duration)
 	sprite.velocity.y = 0
 	sprite.acceleration.y = 0
 	sprite.antialiasing = self.antialiasing
-	self.timer:after(duration, function()
-		self.timer:tween(0.2, sprite, {alpha = 0}, "linear", function()
-			self.timer:cancelTweensOf(sprite)
-			sprite:kill()
-		end)
+
+	local state = game.getState()
+	state.tween:cancelTweensOf(sprite)
+	if sprite._timer then
+		sprite._timer:destroy()
+		sprite._timer = nil
+	end
+	sprite._timer = Timer()
+
+	sprite._timer:start(duration, function()
+		state.tween:tween(sprite, {alpha = 0}, 0.2, {
+			onComplete = function()
+				sprite:kill()
+			end
+		})
 	end)
+
 	return sprite
 end
 
 function Judgements:spawn(rating, combo)
+	if not self.visible then return end
+
 	local accel = PlayState.conductor.crotchet * 0.001
 
 	if rating and self.ratingVisible then
@@ -73,6 +85,7 @@ end
 function Judgements:screenCenter()
 	self.x, self.y = (game.width - self.area.width) / 2,
 		(game.height - self.area.height) / 2
+	return self
 end
 
 return Judgements

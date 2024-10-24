@@ -3,8 +3,6 @@ local PauseSubstate = Substate:extend("PauseSubstate")
 function PauseSubstate:new()
 	PauseSubstate.super.new(self)
 
-	Timer.setSpeed(1)
-
 	self.menuItems = {"Resume", "Restart song", "Options", "Exit to menu"}
 	if #PlayState.SONG.difficulties > 1 then
 		table.insert(self.menuItems, 3, "Change difficulty")
@@ -57,8 +55,6 @@ function PauseSubstate:new()
 	self.deathsText.x = game.width - self.deathsText:getWidth() - 28
 	self.deathsText.alpha = 0
 	self:add(self.deathsText)
-
-	self.timer = Timer()
 end
 
 function PauseSubstate:loadMusic()
@@ -70,13 +66,13 @@ function PauseSubstate:enter()
 	self.music:play(0, true)
 	self.music:fade(6, 0, ClientPrefs.data.menuMusicVolume / 100)
 
-	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
-	Timer.tween(0.4, self.songText, {y = self.songText.y + 5, alpha = 1},
-		'in-out-quart')
-	Timer.tween(0.4, self.diffText, {y = self.diffText.y + 5, alpha = 1},
-		'in-out-quart', nil, 0.2)
-	Timer.tween(0.4, self.deathsText, {y = self.deathsText.y + 5, alpha = 1},
-		'in-out-quart', nil, 0.4)
+	Tween.tween(self.bg, {alpha = 0.6}, 0.4, {ease = 'quartInOut'})
+	Tween.tween(self.songText, {y = self.songText.y + 5, alpha = 1},
+		0.4, {ease = 'quartInOut'})
+	Tween.tween(self.diffText, {y = self.diffText.y + 5, alpha = 1},
+		0.4, {ease = 'quartInOut', startDelay = 0.2})
+	Tween.tween(self.deathsText, {y = self.deathsText.y + 5, alpha = 1},
+		0.4, {ease = 'quartInOut', startDelay = 0.4})
 
 	if love.system.getDevice() == "Mobile" then
 		self.buttons = VirtualPadGroup()
@@ -114,10 +110,7 @@ function PauseSubstate:selectOption(daChoice)
 	if self.blockInput then return end
 
 	switch(tostring(daChoice):lower(), {
-		["resume"] = function()
-			Timer.setSpeed(self.parent.playback)
-			self:close()
-		end,
+		["resume"] = function() self:close() end,
 		["restart song"] = function()
 			game.resetState(true)
 		end,
@@ -151,11 +144,16 @@ function PauseSubstate:selectOption(daChoice)
 			PlayState.startPos = 0
 			if PlayState.storyMode then
 				PlayState.seenCutscene = false
-				self.parent.__stickers:start(StoryMenuState())
+				local stickers = Stickers()
+				stickers:start(StoryMenuState())
+				self:add(stickers)
 			else
-				self.parent.__stickers:start(FreeplayState())
+				local stickers = Stickers()
+				stickers:start(FreeplayState())
+				self:add(stickers)
 			end
 			GameOverSubstate.deaths = 0
+			PlayState.canFadeInReceptors = true
 		end,
 		default = function() print("missing option") end
 	})
@@ -167,8 +165,6 @@ function PauseSubstate:update(dt)
 	if controls:pressed("back") and self.diffList.open then
 		self:closeDifficultyMenu()
 	end
-
-	self.timer:update(dt)
 end
 
 function PauseSubstate:openDifficultyMenu()
@@ -179,9 +175,9 @@ function PauseSubstate:openDifficultyMenu()
 	self:add(self.diffTextList)
 	self.diffTextList.alpha = 0
 
-	self.timer:cancelTweensOf(self.diffList)
-	self.timer:cancelTweensOf(self.diffTextList)
-	self.timer:cancelTweensOf(self.menuList)
+	Tween.cancelTweensOf(self.diffList)
+	Tween.cancelTweensOf(self.diffTextList)
+	Tween.cancelTweensOf(self.menuList)
 
 	for i = 1, #self.diffList.members do
 		self.diffList.members[i].target = 0
@@ -191,14 +187,14 @@ function PauseSubstate:openDifficultyMenu()
 
 	self.menuList.lock = true
 	self.blockInput = true
-	self.timer:after(0.1, function() self.diffList.lock = false end)
+	Timer(self.timer):start(0.1, function() self.diffList.lock = false end)
 
 	self.diffList.x = -300
-	self.timer:tween(0.4, self.diffList, {x = 120}, "out-circ", function()
+	Tween.tween(self.diffList, {x = 120}, 0.4, {ease = "circOut", onComplete = function()
 		self.diffList.open = true
-	end)
-	self.timer:tween(0.4, self.menuList, {alpha = 0}, "out-circ")
-	self.timer:tween(0.2, self.diffTextList, {alpha = 1}, "out-circ")
+	end})
+	Tween.tween(self.menuList, {alpha = 0}, 0.4, {ease = "circOut"})
+	Tween.tween(self.diffTextList, {alpha = 1}, 0.2, {ease = "circOut"})
 end
 
 function PauseSubstate:closeDifficultyMenu()
@@ -206,17 +202,17 @@ function PauseSubstate:closeDifficultyMenu()
 	util.playSfx(paths.getSound("cancelMenu"))
 
 	self.diffList.closing = true
-	self.timer:tween(0.21, self.diffList, {x = -300}, "in-circ", function()
+	Tween.tween(self.diffList, {x = -300}, 0.21, {ease = "circIn", onComplete = function()
 		self:remove(self.diffList)
 		self.diffList.closing = false
 		self.diffList.open = false
-	end)
-	self.timer:tween(0.21, self.menuList, {alpha = 1}, "in-circ", function()
-		self.timer:cancelTweensOf(self.menuList)
-	end)
-	self.timer:tween(0.2, self.diffTextList, {alpha = 0}, "out-circ", function()
+	end})
+	Tween.tween(self.menuList, {alpha = 1}, 0.21, {ease = "circIn", onComplete = function()
+		Tween.cancelTweensOf(self.menuList)
+	end})
+	Tween.tween(self.diffTextList, {alpha = 0}, 0.2, {ease = "circOut", onComplete = function()
 		self:remove(self.diffTextList)
-	end)
+	end})
 
 	self.menuList.lock = false
 	self.diffList.lock = true

@@ -13,7 +13,7 @@ function Bar:new(x, y, width, height, min, max, isFilled)
 	self.fillWidth = 0
 	self.percent = 0
 
-	self.color = Color.GREEN
+	self.color = Color.LIME
 	self.color.bg = Color.RED
 
 	self:updateValues()

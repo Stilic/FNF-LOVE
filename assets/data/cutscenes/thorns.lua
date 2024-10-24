@@ -1,6 +1,6 @@
 local doof, music
 
-function create()
+function postCreate()
 	local dialogue = love.filesystem.read(paths.getPath('songs/thorns/dialogue.txt')):split('\n')
 	local red = Graphic(-150, -150, game.width * 2, game.height * 2, Color.convert({255, 27, 49}))
 	local white = Graphic(-150, -150, game.width * 2, game.height * 2, Color.WHITE)
@@ -23,6 +23,8 @@ function create()
 	doof.cameras = {state.camNotes}
 	doof.finishThing = function()
 		state:startCountdown()
+		if state.buttons then state:add(state.buttons) end
+		doof:destroy()
 		close()
 	end
 
@@ -36,7 +38,7 @@ function create()
 	state:add(black)
 
 	for delay = 1, 7 do
-		Timer.after(0.3 * delay, function()
+		Timer():start(0.3 * delay, function()
 			black.alpha = black.alpha - 0.15
 			if black.alpha < 0 then
 				state:remove(black)
@@ -46,17 +48,17 @@ function create()
 
 	state.camHUD.visible, state.camNotes.visible = false, false
 
-	Timer.after(2.1, function()
+	Timer():start(2.1, function()
 		state:add(senpaiEvil)
 		senpaiEvil.alpha = 0
 		state:add(white)
 		for delay = 1, 7 do
-			Timer.after(0.3 * delay, function()
+			Timer():start(0.3 * delay, function()
 				senpaiEvil.alpha = senpaiEvil.alpha + 0.15
 				if senpaiEvil.alpha > 1 then
 					senpaiEvil.alpha = 1
 
-					Timer.tween(2.4, game.camera, {zoom = state.stage.camZoom - 0.2}, 'in-sine')
+					Tween.tween(game.camera, {zoom = state.stage.camZoom - 0.2}, 2.4, {ease = Ease.sineIn})
 
 					senpaiEvil:play('idle')
 					game.sound.play(paths.getSound('gameplay/Senpai_Dies'), 1, false, true, function()
@@ -68,18 +70,19 @@ function create()
 						state.camHUD.visible, state.camNotes.visible = true, true
 						state.camHUD:flash(Color.WHITE, 4)
 					end)
-					Timer.after(2.4, function()
+					Timer():start(2.4, function()
 						game.camera.zoom = 1.4
-						Timer.tween(1, game.camera, {zoom = state.stage.camZoom - 0.2}, 'out-circ')
+						Tween.tween(game.camera, {zoom = state.stage.camZoom - 0.2}, 1, {ease = Ease.circOut})
 						game.camera:shake(0.005, 2.5)
 					end)
-					Timer.after(3.2, function()
-						Timer.tween(1.6, white, {alpha = 1})
+					Timer():start(3.2, function()
+						Tween.tween(white, {alpha = 1}, 1.6)
 					end)
 				end
 			end)
 		end
 	end)
+	if state.buttons then state:remove(state.buttons) end
 end
 
 function postUpdate(dt)

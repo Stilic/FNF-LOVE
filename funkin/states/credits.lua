@@ -6,13 +6,13 @@ local UserCard = require "funkin.ui.credits.usercard"
 -- would it be funny if the x renamed to twitter instead to mock elon musk
 CreditsState.defaultData = {
 	{
-		header = "Engine Team",
+		header = "Port contributors",
 		credits = {
 			{
 				name = "Stilic",
 				icon = "stilic",
 				color = "#FFCA45",
-				description = "something",
+				description = "Main director and programmer",
 				social = {
 					{name = "X",      text = "@stilic_dev"},
 					{name = "Github", text = "/Stilic"}
@@ -22,7 +22,7 @@ CreditsState.defaultData = {
 				name = "Raltyro",
 				icon = "ralty",
 				color = "#FF4545",
-				description = "something",
+				description = "Artist and programmer",
 				social = {
 					{name = "X",       text = "@raltyro"},
 					{name = "Youtube", text = "@Raltyro"},
@@ -33,7 +33,7 @@ CreditsState.defaultData = {
 				name = "Fellyn",
 				icon = "fellyn",
 				color = "#E49CFA",
-				description = "something",
+				description = 'Composer of "Railways", programmer and logo creator',
 				social = {
 					{name = "X",       text = "@FellynnLol_"},
 					{name = "Youtube", text = "@FellynnMusic_"},
@@ -44,7 +44,7 @@ CreditsState.defaultData = {
 				name = "Victor Kaoy",
 				icon = "vickaoy",
 				color = "#D1794D",
-				description = "something",
+				description = "Artist and programmer",
 				social = {
 					{name = "X", text = "@vk15_"}
 				}
@@ -53,7 +53,7 @@ CreditsState.defaultData = {
 				name = "Blue Colorsin",
 				icon = "bluecolorsin",
 				color = "#2B56FF",
-				description = "something",
+				description = "Programmer",
 				social = {
 					{name = "X",       text = "@BlueColorsin"},
 					{name = "Youtube", text = "@BlueColorsin"},
@@ -61,20 +61,15 @@ CreditsState.defaultData = {
 				}
 			},
 			{
-				name = "Ralsin",
-				icon = "ralsin",
+				name = "FowluhhDev",
+				icon = "fowluhh",
 				color = "#383838",
-				description = "something",
-				social = {
-					{name = "X",       text = "@ralsi_"},
-					{name = "Youtube", text = "@ralsin"},
-					{name = "Github",  text = "/Ralsin"}
-				}
+				description = "Programmer"
 			}
 		}
 	},
 	{
-		header = "Funkin' Team",
+		header = "Funkin' Crew",
 		credits = {
 			{
 				name = "Ninjamuffin99",
@@ -137,7 +132,7 @@ function CreditsState:enter()
 	game.camera:follow(self.camFollow, nil, 8)
 	game.camera:snapToTarget()
 
-	self.bg = Sprite(0, 0, paths.getImage('menus/menuDesat'))
+	self.bg = Sprite(0, 0, paths.getImage("menus/menuDesat"))
 	self:add(util.responsiveBG(self.bg))
 
 	self.bd = BackDrop(0, 0, game.width, game.height, 72, nil, {0, 0, 0, 0}, 26)
@@ -153,11 +148,13 @@ function CreditsState:enter()
 		table.insert(self.data, self.defaultData[i])
 	end
 
-	self.userList = UserList(self.data)
+	self.userList = UserList(self.data, game.width * 0.35)
+	self.userList.parent = self
 	self:add(self.userList)
 
 	self.userCard = UserCard(10 + self.userList:getWidth() + 10, 10,
 		game.width - self.userList:getWidth() - 30, game.height - 130)
+	self.userCard:setScrollFactor()
 	self:add(self.userCard)
 
 	self:changeSelection()
@@ -176,11 +173,9 @@ function CreditsState:enter()
 
 		local down = VirtualPad("down", 0, game.height - w)
 		local up = VirtualPad("up", 0, down.y - w)
-		local back = VirtualPad("escape", game.width - w, down.y, nil, nil, Color.RED)
 
 		self.buttons:add(down)
 		self.buttons:add(up)
-		self.buttons:add(back)
 
 		self:add(self.buttons)
 	end
@@ -199,9 +194,9 @@ function CreditsState:update(dt)
 
 	local u = self.userList
 	if u.bar.y > game.camera.scroll.y + game.height - u.bar.height then
-		self.camFollow.y = u.bar.y - game.height / 2 + 74
+		self.camFollow.y = u.bar.y - game.height / 2 + 84
 	elseif u.bar.y < self.camFollow.y - game.height / 2 + 74 then
-		self.camFollow.y = u.bar.y + game.height / 2 - 94
+		self.camFollow.y = u.bar.y + game.height / 2 - 84
 	end
 
 	local colorBG = Color.fromString(self.userList:getCurrent().color or "#DF7B29")

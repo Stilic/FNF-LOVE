@@ -1,3 +1,5 @@
+local BackgroundDancer = require "backgrounddancer"
+
 local bgLimo
 local grpLimoDancers
 local limo
@@ -18,7 +20,7 @@ local function fastCarDrive()
 
     fastCar.velocity.x = fastCarSpeed / game.dt
     fastCarCanDrive = false
-    Timer.after(2, function() resetFastCar() end)
+    Timer.wait(2, function() resetFastCar() end)
 end
 
 function create()

@@ -17,9 +17,7 @@ function MainMenuState:enter()
 	if event == Script.Event_Cancel then
 		self.notCreated = true
 		MainMenuState.super.enter(self)
-
 		self:add(self.versionText)
-
 		self.script:call("postCreate")
 		return
 	end
@@ -29,13 +27,15 @@ function MainMenuState:enter()
 		Discord.changePresence({details = "In the Menus", state = "Main Menu"})
 	end
 
-	self.optionShit = {'storymode', 'freeplay', 'credits', 'options', 'donate'}
+	self.menuItems = {'storymode', 'freeplay', 'credits', 'options', 'donate'}
 
 	self.selectedSomethin = false
 
 	game.camera.target = {x = 0, y = 0}
+	self.camFollow = {x = 0, y = 0}
+	game.camera:follow(self.camFollow, nil, 10)
 
-	local yScroll = math.max(0.25 - (0.05 * (#self.optionShit - 4)), 0.1)
+	local yScroll = math.max(0.25 - (0.05 * (#self.menuItems - 4)), 0.1)
 	self.menuBg = Sprite()
 	self.menuBg:loadTexture(paths.getImage('menus/menuBG'))
 	self.menuBg:setScrollFactor(0, yScroll)
@@ -44,41 +44,32 @@ function MainMenuState:enter()
 	self.menuBg:screenCenter()
 	self:add(self.menuBg)
 
-	self.magentaBg = Sprite()
-	self.magentaBg:loadTexture(paths.getImage('menus/menuBGMagenta'))
-	self.magentaBg.visible = false
-	self.magentaBg:setScrollFactor(0, yScroll)
-	self.magentaBg:setGraphicSize(math.floor(self.magentaBg.width * 1.175))
-	self.magentaBg:updateHitbox()
-	self.magentaBg:screenCenter()
-	self:add(self.magentaBg)
+	self.menuYellow = paths.getImage('menus/menuBG')
+	self.menuMagenta = paths.getImage('menus/menuBGMagenta')
 
-	self.menuItems = Group()
-	self:add(self.menuItems)
+	self.menuList = MenuList(paths.getSound("scrollMenu"), true, "centered", function(self, obj)
+		for _, spr in ipairs(self.members) do
+			spr.yAdd = 50 + (self.curSelected) * (80 - game.height * 0.005)
+		end
+	end)
+	self.menuList.selectCallback = function(menuItem)
+		self:enterSelection(self.menuItems[menuItem.ID])
+	end
+	self.menuList.speed = 8
+	self.menuList:setScrollFactor()
 
-	local scale = 1
-	for i = 0, #self.optionShit - 1 do
-		local offset = 98 - (math.max(#self.optionShit, 4) - 4) * 80
-		local menuItem = Sprite(0, (i * 140) + offset)
-		menuItem.scale = {x = scale, y = scale}
-		menuItem:setFrames(paths.getSparrowAtlas(
-			'menus/mainmenu/' .. self.optionShit[i + 1]))
-		menuItem:addAnimByPrefix('idle', self.optionShit[i + 1] .. ' idle', 24)
-		menuItem:addAnimByPrefix('selected', self.optionShit[i + 1] .. ' selected',
-			24)
-		menuItem:play('idle')
-		menuItem.ID = (i + 1)
-		menuItem:screenCenter('x')
-		self.menuItems:add(menuItem)
-		local scr = (#self.optionShit - 4) * 0.135
-		if #self.optionShit < 4 then scr = 0 end
-		menuItem:setScrollFactor(0, scr)
-		menuItem:updateHitbox()
+	for i = 0, #self.menuItems - 1 do
+		local item = Sprite(0, 0)
+		item:setFrames(paths.getSparrowAtlas('menus/mainmenu/' .. self.menuItems[i + 1]))
+		item:addAnimByPrefix('idle', self.menuItems[i + 1] .. ' idle', 24)
+		item:addAnimByPrefix('selected', self.menuItems[i + 1] .. ' selected', 24)
+		item:play('idle')
+		item.yAdd = 50 + (self.menuList.curSelected) * (80 - game.height * 0.005)
+
+		self.menuList:add(item)
 	end
 
-	self.camFollow = {x = 0, y = 0}
-	game.camera:follow(self.camFollow, nil, 10)
-
+	self:add(self.menuList)
 	self:add(self.versionText)
 
 	self.throttles = {}
@@ -109,23 +100,33 @@ function MainMenuState:enter()
 		self:add(self.buttons)
 	end
 
-	self:changeSelection()
+	self.menuList.changeCallback = function(curSelected, item)
+		for _, spr in ipairs(self.menuList.members) do
+			spr:play('idle')
+			spr:updateHitbox()
+		end
+
+		item:play('selected')
+		local y = 120 * curSelected
+		self.camFollow.x, self.camFollow.y = 0, y
+		item:fixOffsets()
+	end
+	self.menuList:changeSelection()
+	self.menuList:updatePositions(0, 0)
 
 	self.script:call("postCreate")
 end
 
 function MainMenuState:update(dt)
 	self.script:call("update", dt)
+
 	if self.notCreated then
 		MainMenuState.super.update(self, dt)
 		self.script:call("postUpdate", dt)
 		return
 	end
 
-	if not self.selectedSomethin and self.throttles then
-		if self.throttles.up:check() then self:changeSelection(-1) end
-		if self.throttles.down:check() then self:changeSelection(1) end
-
+	if not self.selectedSomethin then
 		if controls:pressed("back") then
 			game.sound.play(paths.getSound('cancelMenu'))
 			game.switchState(TitleState())
@@ -134,20 +135,9 @@ function MainMenuState:update(dt)
 		if controls:pressed("pick_mods") then
 			game.switchState(ModsState())
 		end
-
-		if controls:pressed("accept") then
-			self:enterSelection(self.optionShit[MainMenuState.curSelected])
-		end
-
-		if controls:pressed("debug_1") then
-			self:openEditorMenu()
-		end
 	end
 
-	for _, spr in ipairs(self.menuItems.members) do spr:screenCenter('x') end
-
 	MainMenuState.super.update(self, dt)
-
 	self.script:call("postUpdate", dt)
 end
 
@@ -164,7 +154,7 @@ local triggerChoices = {
 	options = {false, function(self)
 		if self.buttons then self:remove(self.buttons) end
 		self.optionsUI = self.optionsUI or Options(true, function()
-			self.selectedSomethin = false
+			self.menuList.lock = false
 
 			if Discord then
 				Discord.changePresence({details = "In the Menus", state = "Main Menu"})
@@ -179,6 +169,7 @@ local triggerChoices = {
 	end},
 	donate = {false, function(self)
 		love.system.openURL('https://ninja-muffin24.itch.io/funkin')
+		self.menuList.lock = false
 		return true
 	end}
 }
@@ -204,39 +195,28 @@ function MainMenuState:enterSelection(choice)
 	self.selectedSomethin = true
 
 	game.sound.play(paths.getSound('confirmMenu'))
-	Flicker(self.magentaBg, switch[1] and 1.1 or 1, 0.15, false)
-
-	for i, spr in ipairs(self.menuItems.members) do
-		if MainMenuState.curSelected == spr.ID then
-			Flicker(spr, 1, 0.05, not switch[1], false, function()
-				self.selectedSomethin = not switch[2](self)
-			end)
-		elseif switch[1] then
-			Timer.tween(0.4, spr, {alpha = 0}, 'out-quad', function()
-				spr:destroy()
-			end)
-		end
+	local flicker = Flicker(self.menuBg, switch[1] and 1.1 or 1, 0.15, true)
+	local magenta = false
+	flicker.onFlicker = function()
+		magenta = not magenta
+		self.menuBg:loadTexture(magenta and self.menuMagenta or self.menuYellow)
 	end
-end
+	flicker.completionCallback = function()
+		self.menuBg:loadTexture(self.menuYellow)
+	end
 
-function MainMenuState:changeSelection(huh)
-	if huh == nil then huh = 0 end
-	game.sound.play(paths.getSound('scrollMenu'))
-
-	MainMenuState.curSelected = MainMenuState.curSelected + huh
-	MainMenuState.curSelected = (MainMenuState.curSelected - 1) % #self.optionShit + 1
-
-	for _, spr in ipairs(self.menuItems.members) do
-		spr:play('idle')
-		spr:updateHitbox()
-
-		if spr.ID == MainMenuState.curSelected then
-			spr:play('selected')
-			local add = 0
-			if #self.menuItems > 4 then add = #self.menuItems * 8 end
-			local x, y = spr:getGraphicMidpoint()
-			self.camFollow.x, self.camFollow.y = x, y - add
-			spr:fixOffsets()
+	local selectedItem = self.menuList.members[self.menuList.curSelected]
+	Flicker(selectedItem, 1, 0.05, not switch[1], false, function()
+		self.selectedSomethin = not switch[2](self)
+	end)
+	for _, spr in ipairs(self.menuList.members) do
+		if switch[1] and self.menuList.curSelected ~= spr.ID then
+			Tween.tween(spr, {alpha = 0}, 0.4, {
+				ease = "quadOut",
+				onComplete = function()
+					spr:destroy()
+				end
+			})
 		end
 	end
 end
@@ -248,14 +228,7 @@ function MainMenuState:leave()
 		return
 	end
 
-	if self.optionsUI then self.optionsUI:destroy() end
-	self.optionsUI = nil
-
-	if self.editorUI then self.editorUI:destroy() end
-	self.editorUI = nil
-
 	for _, v in ipairs(self.throttles) do v:destroy() end
-	self.throttles = nil
 
 	self.script:call("postLeave")
 end

@@ -7,7 +7,7 @@ function print(...)
 	local v = {...}
 	for i = 1, #v do v[i] = tostring(v[i]) end
 	if ClientPrefs and ClientPrefs.data.toastPrints then
-		Toast.new(table.concat(v, ", "))
+		Toast.new(table.concat(v, "    "))
 	end
 	prn(...)
 end
@@ -23,22 +23,20 @@ if love.system.getOS() == "Windows" then
 	end
 end
 
-Timer = require "lib.timer"
 Https = require "lib.https"
 
-Mods = require "funkin.backend.mods"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
 ClientPrefs = require "funkin.backend.clientprefs"
 Conductor = require "funkin.backend.conductor"
 Highscore = require "funkin.backend.highscore"
+Mods = require "funkin.backend.mods"
 Throttle = require "funkin.backend.throttle"
 
 if love.system.getDevice() == "Desktop" then
 	Discord = require "funkin.backend.discord"
 end
-
 Receptor = require "funkin.gameplay.receptor"
 Note = require "funkin.gameplay.note"
 Notefield = require "funkin.gameplay.notefield"
@@ -50,14 +48,12 @@ ProgressArc = require "funkin.gameplay.ui.progressarc"
 Judgements = require "funkin.gameplay.ui.judgements"
 
 NoteMods = require "funkin.gameplay.notemods"
-BackgroundDancer = require "funkin.gameplay.backgrounddancer"
-BackgroundGirls = require "funkin.gameplay.backgroundgirls"
 Character = require "funkin.gameplay.character"
 Stage = require "funkin.gameplay.stage"
 DialogueBox = require "funkin.gameplay.ui.dialoguebox"
-TankmenBG = require "funkin.gameplay.tankmenbg"
 
 AtlasText = require "funkin.ui.atlastext"
+Marquee = require "funkin.ui.marquee"
 MenuList = require "funkin.ui.menulist"
 Options = require "funkin.ui.options"
 Stickers = require "funkin.ui.stickers"
@@ -81,13 +77,14 @@ CharacterEditor = require "funkin.states.editors.character"
 ChartingState = require "funkin.states.editors.charting"
 ChartingNote = require "funkin.ui.editor.charting.chartingnote"
 
+Shader = require "funkin.shaders"
 RGBShader = require "funkin.shaders.rgb"
+Video = require "funkin.gameplay.video"
 
 Script = require "funkin.backend.scripting.script"
 ScriptsHandler = require "funkin.backend.scripting.scriptshandler"
 
 local TransitionFade = loxreq "transition.transitionfade"
-local SplashScreen = require "funkin.states.splash"
 
 function funkin.setup()
 	local res, isMobile = math.abs(ClientPrefs.data.resolution),
@@ -139,13 +136,14 @@ function funkin.setup()
 		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
 		end
+		Shader.clear()
 	end
 
 	local dimen = love.graphics.getDimensions()
 	local SoundTray = require "funkin.ui.soundtray".init(dimen).new()
 	game:add(SoundTray)
 
-	game.init(Project, SplashScreen)
+	game.init(Project, TitleState)
 
 	if ClientPrefs.data.resolution == -1 then
 		Camera.defaultResolution = love.graphics.getFixedScale()
@@ -173,7 +171,7 @@ end
 function funkin.update(dt)
 	controls:update()
 	Throttle:update(dt)
-	Timer.update(dt)
+	Shader.updateTime(dt)
 
 	if Discord then Discord.update() end
 	if controls:pressed("fullscreen") then

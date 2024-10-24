@@ -17,7 +17,7 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 		angle = {0, 360},
 		round = {0, 0},
 		segments = 36,
-		vertices = nil
+		vertices = {}
 	}
 
 	self.line = {
@@ -27,21 +27,52 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 	}
 end
 
+function Graphic:updateHitbox()
+	Graphic.super.updateHitbox(self)
+	if self.type ~= "polygon" or #self.config.vertices == 0 then return end
+
+	local min, max, v = math.huge, -math.huge
+	for i = 1, #self.config.vertices, 2 do
+		v = self.config.vertices[i]
+		min = math.min(min, v)
+		max = math.max(max, v)
+	end
+	self.width = max - min
+
+	min, max = math.huge, -math.huge
+	for i = 2, #self.config.vertices, 2 do
+		v = self.config.vertices[i]
+		min = math.min(min, v)
+		max = math.max(max, v)
+	end
+	self.height = max - min
+end
+
+function Graphic:_getBoundary()
+	local x, y = self.x or 0, self.y or 0
+	if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
+	local w, h = self.width, self.height
+	if self.lined then
+		local lw = (self.line.width or 1)
+		x, w = x - lw / 2, w + lw
+		y, h = y - lw / 2, h + lw
+	end
+
+	return x, y, w, h, math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y),
+		self.origin.x, self.origin.y
+end
+
 function Graphic:_canDraw()
 	return (self.width > 0 or self.height > 0 or
-		self.config.vertices) and Graphic.super._canDraw(self)
+		#self.config.vertices ~= 0) and Graphic.super._canDraw(self)
 end
 
 function Graphic:__render(camera)
-	local r, g, b, a = love.graphics.getColor()
-	local shader = self.shader and love.graphics.getShader()
-	local blendMode, alphaMode = love.graphics.getBlendMode()
-	local lineStyle = love.graphics.getLineStyle()
-	local lineWidth = love.graphics.getLineWidth()
-	local lineJoin = love.graphics.getLineJoin()
+	love.graphics.push("all")
 
 	local line = self.line
 	local linesize = line.width
+
 	love.graphics.setLineStyle(self.antialiasing and "smooth" or "rough")
 	love.graphics.setLineWidth(linesize)
 	love.graphics.setLineJoin(line.join)
@@ -74,7 +105,6 @@ function Graphic:__render(camera)
 	love.graphics.setBlendMode(self.blend)
 	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
 
-	love.graphics.push()
 	love.graphics.translate(x, y)
 	love.graphics.rotate(math.rad(self.angle))
 	love.graphics.scale(sx, sy)
@@ -106,13 +136,6 @@ function Graphic:__render(camera)
 	end
 
 	love.graphics.pop()
-
-	love.graphics.setColor(r, g, b, a)
-	love.graphics.setBlendMode(blendMode, alphaMode)
-	love.graphics.setLineStyle(lineStyle)
-	love.graphics.setLineWidth(lineWidth)
-	love.graphics.setLineJoin(lineJoin)
-	if self.shader then love.graphics.setShader(shader) end
 end
 
 return Graphic

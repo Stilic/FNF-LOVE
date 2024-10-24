@@ -16,6 +16,7 @@ local SoundTray = {
 local DEFAULT_VOLUME = 10
 local prev = DEFAULT_VOLUME
 local n = DEFAULT_VOLUME
+local SCALE = 0.5
 
 function SoundTray.init(width, height)
 	SoundTray.game.width = width
@@ -37,21 +38,22 @@ function SoundTray.new()
 	this.silent = false
 	this.canSpawn = false
 	this.timer = 0
+	this.alpha = 1
 
 	this.box = {
 		image = this.images.box,
 		x = 0,
 		y = 0,
-		width = this.images.box:getWidth(),
-		height = this.images.box:getHeight()
+		width = this.images.box:getWidth() * SCALE,
+		height = this.images.box:getHeight() * SCALE
 	}
 
 	this.bars = {
 		image = this.images.bars,
 		x = 0,
 		y = 0,
-		width = this.images.bars:getWidth(),
-		height = this.images.bars:getHeight()
+		width = this.images.bars:getWidth() * SCALE,
+		height = this.images.bars:getHeight() * SCALE
 	}
 
 	this.throttles = {}
@@ -68,7 +70,7 @@ function SoundTray.adjust()
 
 	this.box.x = (this.game.width - this.box.width) / 2
 	this.bars.x = (this.game.width - this.bars.width) / 2
-	this.bars.y = (this.box.y + (this.box.width - this.bars.width) / 2) - 11
+	this.bars.y = (this.box.y + (this.box.width - this.bars.width) / 2) - 11 * SCALE
 end
 
 function SoundTray.adjustVolume(amount)
@@ -116,10 +118,12 @@ function SoundTray:update(dt)
 
 	if this.canSpawn then
 		this.visible = true
-		this.box.y = math.lerp(25, this.box.y, math.exp(-dt * 14))
+		this.alpha = 1
+		this.box.y = math.lerp(25 * SCALE, this.box.y, math.exp(-dt * 14))
 	else
-		this.box.y = math.lerp(-230, this.box.y, math.exp(-dt * 7))
-		if this.box.y < -160 then this.visible = false end
+		this.box.y = math.lerp(-180 * SCALE, this.box.y, math.exp(-dt * 2.6))
+		this.alpha = this.alpha - 6.22 * dt
+		if this.alpha <= 0 then self.visible = false end
 	end
 
 	this.adjust()
@@ -142,23 +146,23 @@ function SoundTray:__render()
 
 	if this.visible then
 		local lg = love.graphics
-		local state = Object.saveDrawState()
-		lg.setColor(1, 1, 1, 1)
-		lg.draw(this.box.image, this.box.x, this.box.y)
+		lg.push("all")
+		lg.setColor(1, 1, 1, this.alpha)
+		lg.draw(this.box.image, this.box.x, this.box.y, 0, SCALE, SCALE)
 
-		lg.setColor(1, 1, 1, 0.4)
-		lg.draw(this.bars.image, this.bars.x, this.bars.y)
+		lg.setColor(1, 1, 1, math.clamp(this.alpha - 0.4, 0, 1))
+		lg.draw(this.bars.image, this.bars.x, this.bars.y, 0, SCALE, SCALE)
 
-		lg.setColor(1, 1, 1, 1)
+		lg.setColor(1, 1, 1, this.alpha)
 		lg.stencil(function()
-			local width = n * 20
+			local width = n * 20 * SCALE
 			lg.rectangle("fill", this.bars.x, this.bars.y, width, this.bars.height)
 		end, "replace", 1)
 		lg.setStencilTest("greater", 0)
-		lg.draw(this.bars.image, this.bars.x, this.bars.y)
+		lg.draw(this.bars.image, this.bars.x, this.bars.y, 0, SCALE, SCALE)
 
 		lg.setStencilTest()
-		Object.loadDrawState(state)
+		lg.pop()
 	end
 end
 

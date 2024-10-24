@@ -10,7 +10,7 @@ function DialogueBox:new(dialogueList, delayFirst)
 	self:add(self.bgFade)
 
 	for loop = 1, 5 do
-		Timer.after(0.83 * loop, function()
+		Timer.wait(0.83 * loop, function()
 			self.bgFade.alpha = self.bgFade.alpha + (1 / 5) * 0.7
 			if self.bgFade.alpha > 0.7 then
 				self.bgFade.alpha = 0.7
@@ -124,7 +124,7 @@ function DialogueBox:update(dt)
 		if self.box.curAnim.name == 'normalOpen' and self.box.animFinished then
 			self.box:play('normal')
 			if self.delayFirst > 0 then
-				Timer.after(self.delayFirst, function() self.dialogueOpened = true end)
+				Timer.wait(self.delayFirst, function() self.dialogueOpened = true end)
 			else
 				self.dialogueOpened = true
 			end
@@ -144,7 +144,7 @@ function DialogueBox:update(dt)
 					util.playSfx(paths.getSound('gameplay/clickText'))
 
 					for loop = 1, 5 do
-						Timer.after(0.2 * loop, function()
+						Timer.wait(0.2 * loop, function()
 							self.box.alpha = self.box.alpha - 1 / 5
 							self.bgFade.alpha = self.bgFade.alpha - 1 / 5 * 0.7
 							self.portraitLeft.visible = false
@@ -154,7 +154,7 @@ function DialogueBox:update(dt)
 						end)
 					end
 
-					Timer.after(1, function()
+					Timer.wait(1, function()
 						self.finishThing()
 						self:kill()
 					end)

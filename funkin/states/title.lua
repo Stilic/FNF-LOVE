@@ -25,6 +25,7 @@ function TitleState:enter()
 	self.skippedIntro = false
 	self.danceLeft = false
 	self.confirmed = false
+	self.textBuffer = ""
 
 	self.gfDance = Sprite(game.width - 762, 40)
 	self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
@@ -49,11 +50,16 @@ function TitleState:enter()
 	self.titleText:play("idle")
 	self.titleText:screenCenter("x")
 	self.titleText:updateHitbox()
-	self.titleText.colors = {{50, 60, 205}, {50, 255, 255}}
+
+	self.titleText.color = Color.fromHEX(0x50FFFF)
+	local daColor = Color.fromHEX(0x5060DF)
+	Tween.tween(self.titleText.color, daColor,
+		2, {ease = "smoothStepInOut", type = "pingpong"})
+	Tween.tween(self.titleText, {alpha = 0.5},
+		2, {ease = "smoothStepInOut", type = "pingpong"})
 
 	self.coolText = AtlasText(0, 160, "", "bold", game.width, "center")
 	self:add(self.coolText)
-	self.textBuffer = ""
 
 	self.ngSpr = Sprite(0, game.height * 0.52):loadTexture(paths.getImage(
 		'menus/title/newgrounds_logo'))
@@ -113,13 +119,17 @@ function TitleState:update(dt)
 
 	if pressedEnter and not self.confirmed and self.skippedIntro then
 		self.confirmed = true
-		self.titleText:play("press")
 		util.playSfx(paths.getSound("confirmMenu"))
-		game.camera:flash(Color.WHITE, 1)
+		local flash = ClientPrefs.data.flashingLights
+		if flash then game.camera:flash(Color.WHITE, 0.5) end
 
-		Timer.after(1.5, function() game.switchState(MainMenuState()) end)
+		Tween.cancelTweensOf(self.titleText)
+		self.titleText:play("press")
+		self.titleText.color = Color.WHITE
+		self.titleText.alpha = 1
+
+		Timer():start(1.5, function() game.switchState(MainMenuState()) end)
 	end
-	self:updateEnterColor()
 
 	if pressedEnter and not self.skippedIntro and TitleState.initialized then
 		self:skipIntro()
@@ -174,7 +184,7 @@ function TitleState:beat(b)
 		switch(b, {
 			[{4, 12}] = function() self:setText() end,
 			[1] = function() self:setText({'The', "Funkin' Crew Inc."}) end,
-			[3] = function() self:setText('present') end,
+			[3] = function() self:setText('presents') end,
 			[5] = function() self:setText({'In association', 'with'}) end,
 			[{7, 8}] = function()
 				if b == 7 then self:setText('newgrounds') else self:setText() end
@@ -197,7 +207,9 @@ function TitleState:skipIntro()
 		self:add(self.gfDance)
 		self:add(self.logoBl)
 		self:add(self.titleText)
-		game.camera:flash(Color.WHITE, 4)
+
+		local flash = ClientPrefs.data.flashingLights
+		game.camera:flash(flash and Color.WHITE or Color.BLACK, 1.02)
 		self.skippedIntro = true
 	end
 end

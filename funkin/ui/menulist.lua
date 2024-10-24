@@ -1,12 +1,14 @@
 local MenuList = SpriteGroup:extend("MenuList")
 
 MenuList.selectionCache = {}
+
+-- scrolling stuff --
 MenuList.scrollTypes = {}
 MenuList.hoverTypes = {}
 
 MenuList.scrollTypes.default = function(self, obj, dt, time)
 	obj.y = self:lerp(dt, obj, "y", time)
-	obj.x = self:lerp(dt, obj, "x", time, obj.target * 20)
+	obj.x = self:lerp(dt, obj, "x", time, obj.target * 26)
 end
 MenuList.scrollTypes.vertical = function(self, obj, dt, time)
 	obj.y = self:lerp(dt, obj, "y", time)
@@ -19,31 +21,13 @@ MenuList.scrollTypes.centered = function(self, obj, dt, time)
 	obj.y = self:lerp(dt, obj, "y", time)
 end
 
-function MenuList.addScrollType(name, func)
-	for _, k in pairs(
-			{"default", "vertical", "horizontal", "centered"}) do
-		if name == k then
-			print("Do not override default scroll types")
-			return
-		end
-	end
-	MenuList.scrollTypes[name] = func
-end
-
 MenuList.hoverTypes.default = function(self, obj)
-	obj.alpha = obj.target == 0 and 1 or 0.5
+	obj.alpha = obj.target == 0 and 1 or 0.6
 	if obj.child then
 		obj.child.alpha = obj.alpha
 	end
 end
-
-function MenuList.addHoverType(name, func)
-	if name == "default" then
-		print("Do not override default hover type")
-		return
-	end
-	MenuList.hoverTypes[name] = func
-end
+-- --
 
 function MenuList:new(sound, cache, scroll, hover)
 	MenuList.super.new(self, 0, 0)
@@ -92,7 +76,7 @@ function MenuList:add(obj, child, unselectable)
 	obj.yMult = obj.yMult or 120
 	obj.xAdd = obj.xAdd or 60
 	obj.xMult = obj.xMult or 1
-	obj.spaceFactor = obj.spaceFactor or 1.18
+	obj.spaceFactor = obj.spaceFactor or 1.25
 
 	if child then
 		child.xAdd = child.xAdd or 10
@@ -105,25 +89,25 @@ end
 
 function MenuList:lerp(dt, obj, d, time, targ)
 	targ = targ or obj.target
+	time = time or self.speed
 	local mult = d == "y" and obj.yMult or obj.xMult
 	local add = d == "y" and obj.yAdd or obj.xAdd
 	local factor = obj.spaceFactor
 
 	local formula = (math.remapToRange(targ, 0, 1, 0, factor) * mult) + add
-	if time and time <= 0 then
-		return formula
-	end
-	return util.coolLerp(obj[d], formula, time or self.speed, dt)
+	if time <= 0 then return formula end
+	return util.coolLerp(obj[d], formula, time, dt)
 end
 
 function MenuList:updatePositions(dt, time)
-	local scrollFunc = MenuList.scrollTypes[self.scroll or "default"]
+	local scrollFunc = type(self.scroll) == "function" and self.scroll or
+		MenuList.scrollTypes[self.scroll or "default"]
 	for i = 1, #self.members do
 		local obj = self.members[i]
 		if scrollFunc then scrollFunc(self, obj, dt, time) end
 		if obj.child then
 			obj.child:setPosition(self.childPos == "left" and obj.x + obj:getWidth() +
-					obj.child.xAdd or obj.x - obj.child.width - obj.child.xAdd,
+				obj.child.xAdd or obj.x - obj.child.width - obj.child.xAdd,
 				obj.y + obj.child.yAdd)
 			obj.child:update(dt)
 		end
@@ -141,17 +125,20 @@ function MenuList:update(dt)
 
 	for i = 1, #self.members do
 		local obj = self.members[i]
-		local hoverFunc = MenuList.hoverTypes[self.hover or "default"]
-		if hoverFunc then hoverFunc(self, obj, dt) end
+		local hoverFunc = type(self.hover) == "function" and self.hover or
+			MenuList.hoverTypes[self.hover or "default"]
+		if obj.active and hoverFunc then hoverFunc(self, obj, dt) end
 	end
 
 	if not self.lock and controls:pressed("accept") and self.selectCallback
 		and #self.members > 0 then
 		self.selectCallback(self.members[self.curSelected])
+		self.lock = true
 	end
 
 	self:updatePositions(dt)
 end
+
 function MenuList:changeSelection(c, blockSound)
 	c = c or 0
 	if #self.members == 0 then return end
@@ -191,7 +178,7 @@ function MenuList:__render(c)
 
 	for i = 1, #self.members do
 		local obj = self.members[i]
-		if obj.child then
+		if obj.child and obj.child:isOnScreen(c) then
 			obj.child:__render(c)
 		end
 	end
@@ -202,5 +189,45 @@ end
 function MenuList:getWidth() return self.width end
 
 function MenuList:getHeight() return self.height end
+
+function MenuList:_getBoundary()
+	local tx, ty = self.x or 0, self.y or 0
+	if self.offset ~= nil then tx, ty = tx - self.offset.x, ty - self.offset.y end
+
+	local xmin, ymin, xmax, ymax = math.huge, math.huge, -math.huge, -math.huge
+
+	for _, member in ipairs(self.members) do
+		local x, y, w, h, sx, sy = member:_getBoundary()
+
+		x, y = x or 0, y or 0
+		w, h = w or 0, h or 0
+		sx, sy = sx or 1, sy or 1
+
+		local mxmin, mxmax, mymin, mymax = x, x + w, y, y + h
+
+		if mxmin < xmin then xmin = mxmin end
+		if mxmax > xmax then xmax = mxmax end
+		if mymin < ymin then ymin = mymin end
+		if mymax > ymax then ymax = mymax end
+
+		if member.child then
+			x, y, w, h, sx, sy = member.child:_getBoundary()
+			x, y = x or 0, y or 0
+			w, h = w or 0, h or 0
+
+			mxmin, mxmax, mymin, mymax = x, x + w, y, y + h
+
+			if mxmin < xmin then xmin = mxmin end
+			if mxmax > xmax then xmax = mxmax end
+			if mymin < ymin then ymin = mymin end
+			if mymax > ymax then ymax = mymax end
+		end
+	end
+
+	tx, ty = tx + xmin, ty + ymin
+	return tx, ty, xmax - xmin, ymax - ymin,
+		math.abs(self.scale.x * self.zoom.x), math.abs(self.scale.y * self.zoom.y),
+		self.origin.x, self.origin.y
+end
 
 return MenuList

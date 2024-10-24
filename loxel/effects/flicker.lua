@@ -32,7 +32,11 @@ function Flicker:update(dt)
 		self.flickerTime = self.flickerTime + dt
 
 		if self.flickerTime >= self.interval then
-			self.object.visible = not self.object.visible
+			if self.onFlicker then
+				self.onFlicker()
+			else
+				self.object.visible = not self.object.visible
+			end
 			self.flickerTime = self.flickerTime - self.interval
 		end
 	end
@@ -54,6 +58,7 @@ function Flicker:destroy()
 	self.forceRestart = false
 	self.completionCallback = nil
 	self.progressCallback = nil
+	self.onFlicker = nil
 	self.flickerTime = 0
 	self.timer = 0
 end

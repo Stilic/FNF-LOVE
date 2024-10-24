@@ -180,7 +180,6 @@ function StoryMenuState:enter()
 	self.script:call("postCreate")
 end
 
-local tweenDifficulty = Timer.new()
 function StoryMenuState:update(dt)
 	self.script:call("update", dt)
 	if self.notCreated then
@@ -220,8 +219,6 @@ function StoryMenuState:update(dt)
 
 	StoryMenuState.super.update(self, dt)
 
-	tweenDifficulty:update(dt)
-
 	self.script:call("postUpdate", dt)
 end
 
@@ -252,7 +249,7 @@ function StoryMenuState:selectWeek()
 			self.weekList.lock = true
 		end
 
-		Timer.after(1, function() game.switchState(toState) end)
+		Timer():start(1, function() game.switchState(toState) end)
 	else
 		util.playSfx(paths.getSound('cancelMenu'))
 	end
@@ -277,9 +274,9 @@ function StoryMenuState:changeDifficulty(change)
 		self.sprDifficulty.y = self.leftArrow.y - 15
 		self.sprDifficulty.alpha = 0
 
-		Timer:cancelTweensOf(tweenDifficulty)
-		tweenDifficulty:tween(0.07, self.sprDifficulty,
-			{y = self.leftArrow.y + 15, alpha = 1})
+		Tween.cancelTweensOf(self.sprDifficulty)
+		Tween.tween(self.sprDifficulty,
+			{y = self.leftArrow.y + 15, alpha = 1}, 0.07)
 	end
 
 	self.intendedScore = Highscore.getWeekScore(self.weeksData[self.weekList.curSelected].file,
@@ -328,20 +325,16 @@ function StoryMenuState:loadWeeks()
 	if paths.exists(func('data/weekList.txt'), 'file') then
 		for _, week in pairs(paths.getText('weekList'):gsub('\r', ''):split('\n')) do
 			local data = paths.getJSON('data/weeks/weeks/' .. week)
-			if not data.hide_sm then
-				data.file = week
-				table.insert(self.weeksData, data)
-			end
+			data.file = week
+			table.insert(self.weeksData, data)
 		end
 	else
 		for _, str in pairs(love.filesystem.getDirectoryItems(func('data/weeks/weeks'))) do
 			if str:endsWith('.json') then
 				local week = str:withoutExt()
 				local data = paths.getJSON('data/weeks/weeks/' .. week)
-				if not data.hide_sm then
-					data.file = week
-					table.insert(self.weeksData, data)
-				end
+				data.file = week
+				table.insert(self.weeksData, data)
 			end
 		end
 	end

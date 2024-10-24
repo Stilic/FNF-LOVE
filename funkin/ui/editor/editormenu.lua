@@ -66,7 +66,7 @@ function EditorMenu:enter(parent)
 	self.grpIcon.x = 0
 	self.x = 0
 
-	Timer.tween(0.4, self.bg, {alpha = 0.6}, 'in-out-quart')
+	Tween.tween(self.bg, {alpha = 0.6}, 0.4, {ease = Ease.quartInOut})
 
 	self:revive()
 	self.visible = true
@@ -92,16 +92,19 @@ function EditorMenu:update(dt)
 			util.playSfx(paths.getSound('cancelMenu'))
 			self.exit = true
 
-			Timer.cancelTweensOf(self.grpText)
-			Timer.tween(0.4, self.grpText, {x = -720, alpha = 0}, 'in-circ')
+			Tween.cancelTweensOf(self.grpText)
+			Tween.tween(self.grpText, {x = -720, alpha = 0}, 0.4, {ease = Ease.circIn})
 
-			Timer.cancelTweensOf(self.grpIcon)
-			Timer.tween(0.4, self.grpIcon, {x = -720, alpha = 0}, 'in-circ')
+			Tween.cancelTweensOf(self.grpIcon)
+			Tween.tween(self.grpIcon, {x = -720, alpha = 0}, 0.4, {ease = Ease.circIn})
 
-			Timer.cancelTweensOf(self.bg)
-			Timer.tween(0.4, self.bg, {alpha = 0}, 'in-out-quart', function()
-				return self.parent:remove(self)
-			end)
+			Tween.cancelTweensOf(self.bg)
+			Tween.tween(self.bg, {alpha = 0}, 0.4, {
+				ease = Ease.quartInOut,
+				onComplete = function()
+					return self.parent:remove(self)
+				end
+			})
 		end
 
 		if controls:pressed('accept') then

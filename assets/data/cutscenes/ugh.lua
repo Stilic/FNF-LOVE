@@ -1,9 +1,9 @@
 local bgMusic
 local cutsceneTimer
+local isVideo = ClientPrefs.data.lowQuality
 
 function create()
-	cutsceneTimer = Timer.new()
-
+	if isVideo then return end
 	state.dad.alpha = 0
 	state.camHUD.visible, state.camNotes.visible = false, false
 
@@ -19,29 +19,40 @@ function create()
 end
 
 function postCreate()
+	if isVideo then
+		local cutscene = Video(0, 0, paths.getVideo("ughCutscene"), true, true)
+		cutscene:setScrollFactor()
+		cutscene.cameras = {state.camOther}
+		cutscene:play()
+		state:add(cutscene)
+		cutscene.onComplete = function()
+			close()
+		end
+		return
+	end
 	bgMusic = Sound():load(paths.getMusic('gameplay/DISTORTO'), 0.5, true, true)
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 
-	cutsceneTimer:after(0.1, function()
+	Timer():start(0.1, function()
 		game.sound.play(paths.getSound('gameplay/wellWellWell'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	cutsceneTimer:after(3, function()
+	Timer():start(3, function()
 		state.camFollow.x = state.camFollow.x + 650
 		state.camFollow.y = state.camFollow.y + 100
 	end)
 
-	cutsceneTimer:after(4.5, function()
+	Timer():start(4.5, function()
 		state.boyfriend:playAnim('singUP', true)
 		game.sound.play(paths.getSound('gameplay/bfBeep'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	cutsceneTimer:after(5.2, function()
+	Timer():start(5.2, function()
 		state.boyfriend:playAnim('idle', true)
 	end)
 
-	cutsceneTimer:after(6, function()
+	Timer():start(6, function()
 		state.camFollow.x = state.camFollow.x - 650
 		state.camFollow.y = state.camFollow.y - 100
 
@@ -51,20 +62,17 @@ function postCreate()
 		game.sound.play(paths.getSound('gameplay/killYou'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	cutsceneTimer:after(12, function()
+	Timer():start(12, function()
 		tankman:destroy()
 		state.dad.alpha = 1
 		state.camHUD.visible, state.camNotes.visible = true, true
 
 		local times = PlayState.conductor.crotchet / 1000 * 4.5
-		Timer.tween(times, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad')
+		state.tween:tween(game.camera, {zoom = state.stage.camZoom}, times, {ease = 'quadInOut'})
 		state:startCountdown()
 	end)
 end
 
 function songStart()
-	bgMusic:stop()
-	close()
+	if not isVideo then bgMusic:stop(); close() end
 end
-
-function update(dt) cutsceneTimer:update(dt) end

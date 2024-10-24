@@ -2,7 +2,7 @@ local bgMusic
 local cutsceneTimer
 
 function create()
-	cutsceneTimer = Timer.new()
+	cutsceneTimer = Timer()
 
 	state.dad.alpha = 0
 	state.camHUD.visible, state.camNotes.visible = false, false
@@ -18,20 +18,20 @@ function create()
 end
 
 function postCreate()
-	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true, true)
+	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true)
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 
 	game.sound.play(paths.getSound('gameplay/tankSong2'), ClientPrefs.data.vocalVolume / 100)
-	Timer.tween(4, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
+	Tween.tween(game.camera, {zoom = state.stage.camZoom * 1.2}, 4, {ease = Ease.quadInOut})
 
 	cutsceneTimer:after(4, function()
-		Timer.tween(0.5, game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 'in-out-quad')
+		Tween.tween(game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 0.5, {ease = Ease.quadInOut})
 		state.gf:playAnim('sad', true)
 	end)
 
 	cutsceneTimer:after(4.5, function()
-		Timer.tween(1, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
+		Tween.tween(game.camera, {zoom = state.stage.camZoom * 1.2}, 1, {ease = Ease.quadInOut})
 	end)
 
 	cutsceneTimer:after(11.5, function()
@@ -39,8 +39,8 @@ function postCreate()
 		state.dad.alpha = 1
 		state.camHUD.visible, state.camNotes.visible = true, true
 
-		local times = PlayState.conductor.crotchet / 1000 * 4.5
-		Timer.tween(times, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad')
+		Tween.tween(game.camera, {zoom = state.stage.camZoom},
+			PlayState.conductor.crotchet / 1000 * 4.5, {ease = Ease.quadInOut})
 		state:startCountdown()
 	end)
 end

@@ -13,7 +13,7 @@ function onCameraMove(event)
 		local isPlayer = event.target.isPlayer
 		if isPlayer == wasPlayer then return end
 		wasPlayer = isPlayer
-		Timer.tween((PlayState.conductor.stepCrotchet * 4 / 1000),
-			game.camera, {zoom = getZoom(isPlayer)}, "in-out-elastic")
+		Tween.tween(game.camera, {zoom = getZoom(isPlayer)},
+			PlayState.conductor.stepCrotchet * 4 / 1000, {ease = Ease.elasticInOut})
 	end
 end

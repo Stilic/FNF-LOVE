@@ -90,7 +90,8 @@ function PlayState:enter()
 	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
-	self.timer = Timer.new()
+	self.timer = TimerManager()
+	self.tween = Tween()
 	self.camPosTween = nil
 
 	self.scripts = ScriptsHandler()
@@ -121,7 +122,8 @@ function PlayState:enter()
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
 	self.playback = 1
-	Timer.setSpeed(1)
+	self.timer.timeScale = 1
+	self.tween.timeScale = 1
 
 	self.scripts:set("bpm", PlayState.conductor.bpm)
 	self.scripts:set("crotchet", PlayState.conductor.crotchet)
@@ -387,7 +389,7 @@ function PlayState:enter()
 					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName)
 
 					for i, event in ipairs(cutsceneData.cutscene) do
-						self.timer:after(event.time / 1000, function()
+						Timer.wait(event.time / 1000, function()
 							self:executeCutsceneEvent(event.event)
 						end)
 					end
@@ -476,7 +478,8 @@ function PlayState:startCountdown()
 	if event == Script.Event_Cancel then return end
 
 	self.playback = ClientPrefs.data.playback
-	Timer.setSpeed(self.playback)
+	self.timer.timeScale = self.playback
+	self.tween.timeScale = self.playback
 
 	local vocals
 	for _, notefield in ipairs(self.notefields) do
@@ -613,10 +616,10 @@ function PlayState:executeCutsceneEvent(event, isEnd)
 			local xCam, yCam = event.params[1], event.params[2]
 			local isTweening = event.params[3]
 			local time = event.params[4]
-			local ease = event.params[6] .. '-' .. event.params[5]
+			local ease = event.params[5]
 			if isTweening then
 				game.camera:follow(self.camFollow, nil)
-				self.timer:tween(time, self.camFollow, {x = xCam, y = yCam}, ease)
+				Tween.tween(self.camFollow, {x = xCam, y = yCam}, time, {ease = Ease[ease]})
 			else
 				self.camFollow:set(xCam, yCam)
 				game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
@@ -626,9 +629,9 @@ function PlayState:executeCutsceneEvent(event, isEnd)
 			local zoomCam = event.params[1]
 			local isTweening = event.params[2]
 			local time = event.params[3]
-			local ease = event.params[5] .. '-' .. event.params[4]
+			local ease = event.params[4]
 			if isTweening then
-				self.timer:tween(time, game.camera, {zoom = zoomCam}, ease)
+				Tween.tween(game.camera, {zoom = zoomCam}, time, {ease = Ease[ease]})
 			else
 				game.camera.zoom = zoomCam
 			end
@@ -694,7 +697,7 @@ end
 function PlayState:update(dt)
 	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
-	self.timer:update(dt)
+	self.tween:update(dt)
 
 	if self.startedCountdown then
 		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
@@ -704,7 +707,8 @@ function PlayState:update(dt)
 
 			-- reload playback for countdown skip
 			self.playback = ClientPrefs.data.playback
-			Timer.setSpeed(self.playback)
+			self.timer.timeScale = self.playback
+			self.tween.timeScale = self.playback
 
 			local time, vocals = self.startPos / 1000
 			game.sound.music:setPitch(self.playback)
@@ -917,7 +921,8 @@ function PlayState:onSettingChange(category, setting)
 			end,
 			["playback"] = function()
 				self.playback = ClientPrefs.data.playback
-				Timer.setSpeed(self.playback)
+				self.timer.timeScale = self.playback
+				self.tween.timeScale = self.playback
 				game.sound.music:setPitch(self.playback)
 				local vocals
 				for _, notefield in ipairs(self.notefields) do
@@ -1309,7 +1314,7 @@ function PlayState:endSong(skip)
 				["data"] = function()
 					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName .. '-end')
 					for i, event in ipairs(cutsceneData.cutscene) do
-						self.timer:after(event.time / 1000, function()
+						Timer.wait(event.time / 1000, function()
 							self:executeCutsceneEvent(event.event, true)
 						end)
 					end
@@ -1419,7 +1424,8 @@ function PlayState:leave()
 
 	PlayState.prevCamFollow = self.camFollow
 	PlayState.conductor = nil
-	Timer.setSpeed(1)
+	self.timer.timeScale = 1
+	self.tween.timeScale = 1
 
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)

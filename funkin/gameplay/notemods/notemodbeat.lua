@@ -3,9 +3,9 @@ local NoteModBeat = NoteModifier:extend("NoteModBeat")
 local function getAmplitude(curBeat)
 	local beat, amp = curBeat % 1, 0
 	if beat <= 0.3 then
-		amp = Timer.tween.sine((0.3 - beat) / 0.3) * 0.3
+		amp = Ease.sineIn((0.3 - beat) / 0.3) * 0.3
 	elseif beat >= 0.7 then
-		amp = -(1 - Timer.tween.sine(1 - (beat - 0.7) / 0.3)) * 0.3
+		amp = -(1 - Ease.sineIn(1 - (beat - 0.7) / 0.3)) * 0.3
 	end
 	return amp / 0.3 * (curBeat % 2 >= 1 and -1 or 1)
 end

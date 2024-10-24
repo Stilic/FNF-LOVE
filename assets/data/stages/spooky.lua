@@ -40,7 +40,7 @@ local function lightingAnimation()
 		reflect.alpha = 1
 	end
 
-	state.timer:after(1 / 12, function()
+	state.timer:wait(1 / 12, function()
 		local eh = {c = 3, s = 2, b = 0.9}
 		local eh2 = {b = 10}
 
@@ -56,7 +56,7 @@ local function lightingAnimation()
 			eh.c, eh.s = 1.5, 1
 		end
 
-		state.timer:after(1 / 24, function()
+		state.timer:wait(1 / 24, function()
 			game.camera:shake(0.001, 1.4)
 			state.camHUD:shake(0.001, 1.4)
 

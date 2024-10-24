@@ -1,17 +1,37 @@
+local function fromRGB(r, g, b)
+	return {r / 255, g / 255, b / 255}
+end
+
+local function fromHEX(hex)
+	return fromRGB(bit.band(bit.rshift(hex, 16), 0xFF),
+		bit.band(bit.rshift(hex, 8), 0xFF),
+		bit.band(hex, 0xFF))
+end
+
 ---@class ColorTable
 local colorTable = {
-	WHITE = {1, 1, 1},
-	BLACK = {0, 0, 0},
-	RED = {1, 0, 0},
-	GREEN = {0, 1, 0},
-	BLUE = {0, 0, 1},
-	PURPLE = {1, 0, 1},
-	CYAN = {0, 1, 1},
-	YELLOW = {1, 1, 0}
+	BLACK   = fromHEX(0x000000),
+	BLUE    = fromHEX(0x0000FF),
+	BROWN   = fromHEX(0x8B4513),
+	CYAN    = fromHEX(0x00FFFF),
+	GRAY    = fromHEX(0x808080),
+	GREEN   = fromHEX(0x008000),
+	LIME    = fromHEX(0x00FF00),
+	MAGENTA = fromHEX(0xFF00FF),
+	ORANGE  = fromHEX(0xFFA500),
+	PINK    = fromHEX(0xFFC0CB),
+	PURPLE  = fromHEX(0x800080),
+	RED     = fromHEX(0xFF0000),
+	WHITE   = fromHEX(0xFFFFFF),
+	YELLOW  = fromHEX(0xFFFF00)
 }
 
 ---@class Color:ColorTable
 local Color = {}
+
+function Color.fromHEX(hex) return fromHEX(hex) end
+
+function Color.fromRGB(...) return fromRGB(...) end
 
 function Color.HSLtoRGB(h, s, l)
 	local c = (1 - math.abs(l + l - 1)) * s
@@ -68,10 +88,6 @@ function Color.fromString(str)
 	return Color.fromRGB(tonumber('0x' .. str:sub(1, 2)),
 		tonumber('0x' .. str:sub(3, 4)),
 		tonumber('0x' .. str:sub(5, 6)))
-end
-
-function Color.fromRGB(r, g, b)
-	return {r / 255, g / 255, b / 255}
 end
 
 function Color.convert(rgb)
