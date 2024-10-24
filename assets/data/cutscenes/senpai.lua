@@ -10,6 +10,7 @@ function postCreate()
 	doof:setScrollFactor()
 	doof.cameras = {state.camNotes}
 	doof.finishThing = function()
+		state:startCountdown()
 		if state.buttons then state:add(state.buttons) end
 		doof:destroy()
 		close()
