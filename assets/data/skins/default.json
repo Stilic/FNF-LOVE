@@ -45,7 +45,6 @@
 			{}
 		],
 
-		"alpha": 0.6,
 		"scale": 0.7,
 		"antialiasing": true
 	},
@@ -71,7 +70,6 @@
 			{}
 		],
 
-		"alpha": 0.6,
 		"scale": 0.7,
 		"antialiasing": true
 	},

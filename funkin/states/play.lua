@@ -73,7 +73,7 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-	if PlayState.SONG == nil then PlayState.loadSong('test') end
+	if PlayState.SONG == nil then PlayState.loadSong('fresh', 'hard') end
 	PlayState.SONG.skin = util.getSongSkin(PlayState.SONG)
 
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
@@ -179,9 +179,7 @@ function PlayState:enter()
 
 	self:add(self.stage.foreground)
 
-	self.judgeSprites = Judgements(0, 0, PlayState.SONG.skin)
-	self.judgeSprites:screenCenter("x")
-	self.judgeSprites.y = self.judgeSprites.area.height * 1.5
+	self.judgeSprites = Judgements(game.width / 3, 264, PlayState.SONG.skin)
 	self:add(self.judgeSprites)
 
 	game.camera.zoom, self.camZoom, self.camZooming,
@@ -227,7 +225,7 @@ function PlayState:enter()
 	self.enemyNotefield.canSpawnSplash = ClientPrefs.data.botplayMode, true, false
 	self.playerNotefield.cameras, self.enemyNotefield.cameras = {self.camNotes}, {self.camNotes}
 	self.notefields = {self.playerNotefield, self.enemyNotefield, {character = self.gf}}
-	self:centerNotefields()
+	self:positionNotefields()
 
 	for _, n in ipairs(PlayState.SONG.notes.enemy) do
 		self:generateNote(self.enemyNotefield, n)
@@ -305,10 +303,10 @@ function PlayState:enter()
 
 	self.ratings = {
 		{name = "perfect", time = 0.0125, score = 400, splash = true,  mod = 1},
-		{name = "sick",    time = 0.045, score = 350, splash = true,  mod = 0.98},
-		{name = "good",    time = 0.090, score = 200, splash = false, mod = 0.7},
-		{name = "bad",     time = 0.135, score = 100, splash = false, mod = 0.4},
-		{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
+		{name = "sick",    time = 0.045,  score = 350, splash = true,  mod = 0.98},
+		{name = "good",    time = 0.090,  score = 200, splash = false, mod = 0.7},
+		{name = "bad",     time = 0.135,  score = 100, splash = false, mod = 0.4},
+		{name = "shit",    time = -1,     score = 50,  splash = false, mod = 0.2}
 	}
 	for _, r in ipairs(self.ratings) do
 		self[r.name .. "s"] = 0
@@ -428,7 +426,7 @@ function PlayState:enter()
 	game.camera:snapToTarget()
 end
 
-function PlayState:centerNotefields()
+function PlayState:positionNotefields()
 	if self.middleScroll then
 		self.playerNotefield:screenCenter("x")
 
@@ -438,10 +436,9 @@ function PlayState:centerNotefields()
 			end
 		end
 	else
-		self.playerNotefield:screenCenter("x")
-		self.enemyNotefield:screenCenter("x")
-		self.playerNotefield.x = self.playerNotefield.x + game.width / 4
-		self.enemyNotefield.x = self.enemyNotefield.x - game.width / 4
+		local baseX = 44
+		self.playerNotefield.x = game.width / 2 + baseX
+		self.enemyNotefield.x = baseX
 
 		for _, notefield in ipairs(self.notefields) do
 			if notefield.is then notefield.visible = true end
@@ -908,7 +905,7 @@ function PlayState:onSettingChange(category, setting)
 			end,
 			["middleScroll"] = function()
 				self.middleScroll = ClientPrefs.data.middleScroll
-				self:centerNotefields()
+				self:positionNotefields()
 			end,
 			["botplayMode"] = function()
 				self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode

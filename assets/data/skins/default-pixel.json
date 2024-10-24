@@ -46,7 +46,6 @@
 			["#FF884E", "#FFF9FF", "#6C0000"]
 		],
 
-		"alpha": 0.6,
 		"scale": 6,
 		"antialiasing": false
 	},
@@ -69,7 +68,6 @@
 			["#FF884E", "#FFF9FF", "#6C0000"]
 		],
 
-		"alpha": 0.6,
 		"scale": 6,
 		"antialiasing": false
 	},

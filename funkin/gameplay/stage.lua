@@ -5,7 +5,7 @@ function Stage:new(name)
 
 	self.name = name
 
-	self.camZoom, self.camSpeed, self.camZoomSpeed = 1.05, 1, 1
+	self.camZoom, self.camSpeed, self.camZoomSpeed = 1.1, 1, 1
 
 	self.boyfriendPos = {x = 770, y = 100}
 	self.gfPos = {x = 400, y = 130}

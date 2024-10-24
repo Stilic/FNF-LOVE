@@ -1,6 +1,4 @@
 function create()
-	self.camZoom = 0.9
-
 	local bg = Sprite(-600, -200):loadTexture(
 		paths.getImage(SCRIPT_PATH .. "stageback"))
 	bg.antialiasing = true

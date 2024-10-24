@@ -18,13 +18,13 @@ function Judgements:update(dt)
 	self.timer:update(dt)
 end
 
-function Judgements:createSprite(name, scale, alpha, duration)
+function Judgements:createSprite(name, scale, duration)
 	local sprite = self:recycle()
 	sprite:loadTexture(paths.getImage("skins/" .. self.skin .. "/" .. name))
 	sprite:setGraphicSize(math.floor(sprite.width * scale))
 	sprite.x, sprite.y = 0, 0
 	sprite:updateHitbox()
-	sprite.alpha = alpha
+	sprite.alpha = 1
 	sprite.antialiasing = antialias
 
 	sprite.moves = true
@@ -46,8 +46,7 @@ function Judgements:spawn(rating, combo)
 
 	if rating and self.ratingVisible then
 		local areaHeight = self.area.height / 2
-		local ratingSpr = self:createSprite(rating, self.antialiasing and 0.7 or 4.7,
-			1, accel)
+		local ratingSpr = self:createSprite(rating, self.antialiasing and 0.65 or 4.2, accel)
 		ratingSpr.x = (self.area.width - ratingSpr.width) / 2
 		ratingSpr.y = (self.area.height - ratingSpr.height) / 2 - self.area.height / 3
 		ratingSpr.acceleration.y = 550
@@ -58,11 +57,11 @@ function Judgements:spawn(rating, combo)
 
 	if combo and self.comboNumVisible and (combo > 9 or combo < 0) then
 		combo = string.format(combo < 0 and "-%03d" or "%03d", math.abs(combo))
-		local l, x, char, comboNum = #combo, 38
+		local l, x, char, comboNum = #combo, 36
 		for i = 1, l do
 			char = combo:sub(i, i)
 			comboNum = self:createSprite("num" .. (char == "-" and "negative" or char),
-				self.antialiasing and 0.5 or 4.5, 1, accel * 2)
+				self.antialiasing and 0.45 or 4.2, accel * 2)
 			x, comboNum.x, comboNum.y = x + comboNum.width,
 				x, self.area.height - comboNum.height
 			comboNum.acceleration.y, comboNum.velocity.x, comboNum.velocity.y = math.random(200, 300),
