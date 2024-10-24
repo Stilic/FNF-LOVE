@@ -217,7 +217,7 @@ function Receptor:update(dt)
 						cover:play(anim, true)
 					end
 					cover.visible = hasInput
-					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 1.95, self._z
+					cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2 - 4, self._z
 				end
 				if note.wasGoodSustainHit then
 					if not self.parent.canSpawnSplash or not ClientPrefs.data.noteSplash then
@@ -225,7 +225,7 @@ function Receptor:update(dt)
 					elseif anim ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
-						cover.x, cover.y, cover.visible = cover.x - cover.width / 7, cover.y - cover.height / 7.5, true
+						cover.x, cover.y, cover.visible = cover.x - cover.width / 6.4, cover.y - cover.height / 8, true
 					end
 				end
 				if cover.animFinished then
