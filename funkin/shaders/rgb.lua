@@ -40,7 +40,7 @@ function RGBShader.getKey(r, g, b)
 end
 
 function RGBShader.create(r, g, b, unique)
-	r, g, b = r or Color.RED, g or Color.GREEN, b or Color.BLUE
+	r, g, b = r or Color.RED, g or Color.LIME, b or Color.BLUE
 
 	local key = RGBShader.getKey(r, g, b)
 	local shader = RGBShader.cache[key]
@@ -53,7 +53,7 @@ function RGBShader.create(r, g, b, unique)
 end
 
 function RGBShader.actorCreate(r, g, b, unique)
-	r, g, b = r or Color.RED, g or Color.GREEN, b or Color.BLUE
+	r, g, b = r or Color.RED, g or Color.LIME, b or Color.BLUE
 
 	local key = "actor_" .. RGBShader.getKey(r, g, b)
 	local shader = RGBShader.cache[key]

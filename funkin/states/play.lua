@@ -321,7 +321,7 @@ function PlayState:enter()
 
 		local left = VirtualPad("left", 0, 0, w, h, Color.PURPLE)
 		local down = VirtualPad("down", w, 0, w, h, Color.BLUE)
-		local up = VirtualPad("up", w * 2, 0, w, h, Color.GREEN)
+		local up = VirtualPad("up", w * 2, 0, w, h, Color.LIME)
 		local right = VirtualPad("right", w * 3, 0, w, h, Color.RED)
 
 		self.buttons:add(left)

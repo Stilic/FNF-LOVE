@@ -86,7 +86,7 @@ function MainMenuState:enter()
 		mods:screenCenter("y")
 
 		local enter = VirtualPad("return", game.width - w, down.y)
-		enter.color = Color.GREEN
+		enter.color = Color.LIME
 		local back = VirtualPad("escape", enter.x - w, down.y)
 		back.color = Color.RED
 

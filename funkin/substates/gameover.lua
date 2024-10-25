@@ -43,7 +43,7 @@ function GameOverSubstate:new(x, y)
 		local w = 134
 
 		local enter = VirtualPad("return", game.width - w, game.height - w)
-		enter.color = Color.GREEN
+		enter.color = Color.LIME
 		local back = VirtualPad("escape", enter.x - w, enter.y)
 		back.color = Color.RED
 

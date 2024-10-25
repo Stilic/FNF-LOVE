@@ -83,7 +83,7 @@ function PauseSubstate:enter()
 		local up = VirtualPad("up", 0, down.y - w)
 
 		local enter = VirtualPad("return", gw - w, down.y)
-		enter.color = Color.GREEN
+		enter.color = Color.LIME
 		local back = VirtualPad("escape", enter.x - w, down.y)
 		back.color = Color.RED
 

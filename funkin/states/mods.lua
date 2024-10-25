@@ -61,7 +61,7 @@ function ModsState:enter(pre)
 		local right = VirtualPad("right", w, left.y)
 
 		local enter = VirtualPad("return", game.width - w, left.y)
-		enter.color = Color.GREEN
+		enter.color = Color.LIME
 		local back = VirtualPad("escape", enter.x - w, left.y, w, w)
 		back.color = Color.RED
 

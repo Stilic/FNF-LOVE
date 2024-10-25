@@ -154,7 +154,7 @@ function StoryMenuState:enter()
 		local right = VirtualPad("right", down.x + w, left.y)
 
 		local enter = VirtualPad("return", game.width - w, left.y)
-		enter.color = Color.GREEN
+		enter.color = Color.LIME
 		local back = VirtualPad("escape", enter.x - w, left.y)
 		back.color = Color.RED
 

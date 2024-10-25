@@ -225,7 +225,7 @@ function Receptor:update(dt)
 					elseif anim ~= "end" then
 						cover:play("end")
 						cover:updateHitbox()
-						cover.x, cover.y, cover.visible = cover.x - cover.width / 6.4, cover.y - cover.height / 8, true
+						cover.x, cover.y, cover.visible = cover.x - cover.width / 6.3, cover.y - cover.height / 8, true
 					end
 				end
 				if cover.animFinished then
