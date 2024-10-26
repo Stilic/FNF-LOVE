@@ -249,7 +249,7 @@ function StoryMenuState:selectWeek()
 			self.weekList.lock = true
 		end
 
-		Timer():start(1, function() game.switchState(toState) end)
+		Timer.wait(1, function() game.switchState(toState) end)
 	else
 		util.playSfx(paths.getSound('cancelMenu'))
 	end

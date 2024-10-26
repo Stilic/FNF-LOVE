@@ -186,7 +186,7 @@ function PlayState:enter()
 
 	game.camera.zoom, self.camZoom, self.camZooming,
 	self.camZoomSpeed, self.camSpeed, self.camTarget =
-		self.stage.camZoom, self.stage.camZoom, true,
+		self.stage.camZoom, self.stage.camZoom, false,
 		self.stage.camZoomSpeed, self.stage.camSpeed
 	if PlayState.prevCamFollow then
 		self.camFollow = PlayState.prevCamFollow
@@ -704,6 +704,7 @@ function PlayState:update(dt)
 
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
+			self.camZooming = true
 
 			-- reload playback for countdown skip
 			self.playback = ClientPrefs.data.playback

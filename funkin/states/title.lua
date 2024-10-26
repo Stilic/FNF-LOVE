@@ -128,7 +128,7 @@ function TitleState:update(dt)
 		self.titleText.color = Color.WHITE
 		self.titleText.alpha = 1
 
-		Timer():start(1.5, function() game.switchState(MainMenuState()) end)
+		Timer.wait(1.5, function() game.switchState(MainMenuState()) end)
 	end
 
 	if pressedEnter and not self.skippedIntro and TitleState.initialized then

@@ -231,10 +231,10 @@ function PauseSubstate:onSettingChange(setting, option)
 				self.activeTimer = nil
 			end
 
-			self.activeTimer = Timer.after(1, function()
+			self.activeTimer = Timer.start(1, function()
 				if not self.parent or ClientPrefs.data.pauseMusic == self.curPauseMusic then return end
 				self.music:fade(0.7, self.music:getVolume(), 0)
-				Timer.after(0.8, function()
+				Timer.start(0.8, function()
 					if ClientPrefs.data.pauseMusic == self.curPauseMusic then return end
 					self.music:stop()
 					self.music:cancelFade()

@@ -88,12 +88,12 @@ function Stickers:spawn()
 	for i, sticker in ipairs(self.members) do
 		sticker.time = math.remapToRange(i, 0, #self.members, 0, 0.9)
 
-		Timer():start(sticker.time, function()
+		Timer.wait(sticker.time, function()
 			sticker.visible = true
 			if sticker.sound then util.playSfx(sticker.sound) end
 
 			local timer = (i == #self.members) and 2 or random(0, 200) / 100
-			Timer():start((1 / 24) * timer, function()
+			Timer.wait((1 / 24) * timer, function()
 				sticker.scale = {x = 1, y = 1}
 
 				if i == #self.members then
@@ -136,7 +136,7 @@ function Stickers:unspawn()
 	end
 
 	for i, sticker in ipairs(self.members) do
-		Timer():start(sticker.time, function()
+		Timer.wait(sticker.time, function()
 			sticker.visible = false
 			if sticker.sound then util.playSfx(sticker.sound) end
 

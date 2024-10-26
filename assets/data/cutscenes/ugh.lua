@@ -34,25 +34,25 @@ function postCreate()
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 
-	Timer():start(0.1, function()
+	Timer.wait(0.1, function()
 		game.sound.play(paths.getSound('gameplay/wellWellWell'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	Timer():start(3, function()
+	Timer.wait(3, function()
 		state.camFollow.x = state.camFollow.x + 650
 		state.camFollow.y = state.camFollow.y + 100
 	end)
 
-	Timer():start(4.5, function()
+	Timer.wait(4.5, function()
 		state.boyfriend:playAnim('singUP', true)
 		game.sound.play(paths.getSound('gameplay/bfBeep'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	Timer():start(5.2, function()
+	Timer.wait(5.2, function()
 		state.boyfriend:playAnim('idle', true)
 	end)
 
-	Timer():start(6, function()
+	Timer.wait(6, function()
 		state.camFollow.x = state.camFollow.x - 650
 		state.camFollow.y = state.camFollow.y - 100
 
@@ -62,7 +62,7 @@ function postCreate()
 		game.sound.play(paths.getSound('gameplay/killYou'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	Timer():start(12, function()
+	Timer.wait(12, function()
 		tankman:destroy()
 		state.dad.alpha = 1
 		state.camHUD.visible, state.camNotes.visible = true, true

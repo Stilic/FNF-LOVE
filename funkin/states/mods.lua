@@ -113,7 +113,7 @@ function ModsState:selectMods(card)
 		Tween.tween(card.enableCheck.color, {[1] = 1, [2] = 0, [3] = 0}, 0.5, {ease = "circOut", onComplete = function()
 			Tween.tween(game.camera, {zoom = 1.15, alpha = 0}, 1.5, {ease = "sineIn", onComplete = function()
 				if game.sound.music then game.sound.music:stop() end
-				Timer():start(1, function() game.switchState(TitleState(), true) end)
+				Timer.wait(1, function() game.switchState(TitleState(), true) end)
 			end})
 		end})
 	else
@@ -128,7 +128,7 @@ function ModsState:selectMods(card)
 		Tween.tween(game.camera, {zoom = 1.05}, 0.5, {ease = "circOut", onComplete = function()
 			Tween.tween(game.camera, {zoom = 1.15, alpha = 0}, 1.5, {ease = "sineIn", onComplete = function()
 				if game.sound.music then game.sound.music:stop() end
-				Timer():start(1, function() game.switchState(TitleState(), true) end)
+				Timer.wait(1, function() game.switchState(TitleState(), true) end)
 			end})
 		end})
 	end

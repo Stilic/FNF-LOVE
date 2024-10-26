@@ -23,7 +23,7 @@ function postCreate()
 	game.discardTransition()
 
 	for delay = 1, 7 do
-		Timer():start(0.3 * delay, function()
+		Timer.wait(0.3 * delay, function()
 			black.alpha = black.alpha - 0.15
 			if black.alpha < 0 then
 				state:remove(black)

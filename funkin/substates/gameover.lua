@@ -106,7 +106,7 @@ function GameOverSubstate:update(dt)
 			self.boyfriend:playAnim('deathConfirm', true)
 			game.sound.music:stop()
 			game.sound.play(paths.getMusic(GameOverSubstate.endSoundName), ClientPrefs.data.musicVolume / 100)
-			Timer():start(0.7, function()
+			Timer.wait(0.7, function()
 				Tween.tween(self.boyfriend, {alpha = 0}, 2, {onComplete = function()
 					game.resetState()
 					if love.system.getDevice() == "Mobile" then
@@ -136,7 +136,7 @@ function GameOverSubstate:update(dt)
 			local lose, par = self.lose, self.parent
 			if par and lose then
 				lose.cameras = {self.parent.camOther}
-				Timer():start(1 - self.followTime, function()
+				Timer.wait(1 - self.followTime, function()
 					if self.parent ~= par then return end
 					lose:play('lose')
 					self:add(lose)

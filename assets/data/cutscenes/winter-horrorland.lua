@@ -18,7 +18,7 @@ function create()
 		end
 	})
 
-	Timer():start(1, function()
+	Timer.wait(1, function()
 		state.camHUD.visible, state.camNotes.visible = true, true
 		Tween.tween(game.camera, {zoom = state.stage.camZoom},
 			1.2, {ease = Ease.quadInOut, onComplete = function() state:startCountdown() end})
