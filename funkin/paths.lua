@@ -148,7 +148,7 @@ function paths.getFont(key, size)
 	local obj = paths.fonts[path .. "_" .. size]
 	if obj then return obj end
 	if paths.exists(path, "file") then
-		obj = love.graphics.newFont(path, size)
+		obj = love.graphics.newFont(path, size, "light")
 		paths.fonts[path .. "_" .. size] = obj
 		return obj
 	end

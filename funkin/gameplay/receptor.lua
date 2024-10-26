@@ -190,7 +190,7 @@ function Receptor:update(dt)
 		self.holdTime = self.holdTime - dt
 		if self.holdTime <= 0 then
 			self.holdTime = 0
-			self:play("static")
+			self:play(self.parent.bot and "static" or "pressed")
 		end
 	end
 
