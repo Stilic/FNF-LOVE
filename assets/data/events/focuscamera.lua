@@ -22,7 +22,7 @@ function event(params)
 				state:cameraMovement(
 					ox,
 					oy,
-					params.v.ease:gsub("(%w+)In", "in-%1"):gsub("(%w+)Out", "out-%1"):lower(),
+					params.v.ease,
 					stepCrotchet * params.v.duration / 1000
 				)
 			end

@@ -10,7 +10,6 @@ function postCreate()
 	doof:setScrollFactor()
 	doof.cameras = {state.camNotes}
 	doof.finishThing = function()
-		state:startCountdown()
 		if state.buttons then state:add(state.buttons) end
 		doof:destroy()
 		close()
@@ -23,7 +22,7 @@ function postCreate()
 	game.discardTransition()
 
 	for delay = 1, 7 do
-		Timer.wait(0.3 * delay, function()
+		Timer():start(0.3 * delay, function()
 			black.alpha = black.alpha - 0.15
 			if black.alpha < 0 then
 				state:remove(black)

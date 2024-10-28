@@ -132,7 +132,7 @@ function paths.getSkin(key)
 	if obj then return obj end
 	obj = paths.getJSON("data/skins/" .. key)
 	if obj then
-		obj.skin = key
+		obj.skin = obj.skin or key
 		paths.noteskins[key] = obj
 		return obj
 	end

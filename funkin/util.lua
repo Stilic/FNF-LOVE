@@ -2,16 +2,17 @@ local util = {}
 
 function util.getSongSkin(song)
 	if song.meta and song.meta.skin then
-		return song.meta.skin
+		return paths.getSkin(song.meta.skin).skin
 	elseif song.skin then
-		return song.skin
+		return paths.getSkin(song.skin).skin
 	end
 	return "default"
 end
 
 -- also handles caching of the asset located in said path
 function util.getSkinPath(skin, key, type)
-	local path, obj = "skins/" .. skin .. "/" .. key
+	local data = paths.getSkin(skin)
+	local path, obj = "skins/" .. data.skin .. "/" .. key
 	switch(type, {
 		["image"] = function()
 			obj = paths.getImage(path)
@@ -64,14 +65,9 @@ function util.formatTime(seconds, includeMS)
 end
 
 function util.formatNumber(number)
-	if math.abs(number) < 1000 then return tostring(number) end
-	local int, frac = tostring(number):match("([^%.]+)%.?(.*)")
-	int = int:reverse():gsub("(%d%d%d)", "%1,"):reverse()
-
-	if int:sub(1, 1) == "," then int = int:sub(2) end
-	if frac ~= "" then int = int .. "." .. frac end
-
-	return int
+	if number < 1000 and number > -1000 then return tostring(number) end
+	local _, _, minus, int, frac = tostring(number):find('([-]?)(%d+)([.]?%d*)')
+	return minus .. int:reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,", "") .. frac
 end
 
 function util.playMenuMusic(fade)

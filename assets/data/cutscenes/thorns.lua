@@ -38,7 +38,7 @@ function postCreate()
 	state:add(black)
 
 	for delay = 1, 7 do
-		Timer.wait(0.3 * delay, function()
+		Timer():start(0.3 * delay, function()
 			black.alpha = black.alpha - 0.15
 			if black.alpha < 0 then
 				state:remove(black)
@@ -48,17 +48,17 @@ function postCreate()
 
 	state.camHUD.visible, state.camNotes.visible = false, false
 
-	Timer.wait(2.1, function()
+	Timer():start(2.1, function()
 		state:add(senpaiEvil)
 		senpaiEvil.alpha = 0
 		state:add(white)
 		for delay = 1, 7 do
-			Timer.wait(0.3 * delay, function()
+			Timer():start(0.3 * delay, function()
 				senpaiEvil.alpha = senpaiEvil.alpha + 0.15
 				if senpaiEvil.alpha > 1 then
 					senpaiEvil.alpha = 1
 
-					Tween.tween(game.camera, {zoom = state.stage.camZoom - 0.2}, 2.4, {ease = Ease.sineIn})
+					Timer.tween(2.4, game.camera, {zoom = state.stage.camZoom - 0.2}, 'in-sine')
 
 					senpaiEvil:play('idle')
 					game.sound.play(paths.getSound('gameplay/Senpai_Dies'), 1, false, true, function()
@@ -70,13 +70,13 @@ function postCreate()
 						state.camHUD.visible, state.camNotes.visible = true, true
 						state.camHUD:flash(Color.WHITE, 4)
 					end)
-					Timer.wait(2.4, function()
+					Timer():start(2.4, function()
 						game.camera.zoom = 1.4
-						Tween.tween(game.camera, {zoom = state.stage.camZoom - 0.2}, 1, {ease = Ease.circOut})
+						Timer.tween(1, game.camera, {zoom = state.stage.camZoom - 0.2}, 'out-circ')
 						game.camera:shake(0.005, 2.5)
 					end)
-					Timer.wait(3.2, function()
-						Tween.tween(white, {alpha = 1}, 1.6)
+					Timer():start(3.2, function()
+						Timer.tween(1.6, white, {alpha = 1})
 					end)
 				end
 			end)

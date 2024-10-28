@@ -1,18 +1,11 @@
 local Events = require "funkin.backend.scripting.events"
 local PauseSubstate = require "funkin.substates.pause"
---[[ LIST TODO OR NOTES
-	- ralty
-	maybe make scripts vars just include conductor itself instead of the properties of conductor
-	NVM NVM, maybe do make a var conductor but keep props
-
-	rewrite timers. to just be dependancy to loxel,. just rewrite timers with new codes.
-
-	- kaoy
-	remake stuff like cameramove to be handled by events. also uuh do it softcoded mayb
-]]
+local Cutscene = require "funkin.gameplay.cutscene"
+local GUI = require "funkin.gameplay.gui"
 
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
+PlayState.EVENTS = Events
 PlayState.defaultDifficulty = "normal"
 
 PlayState.inputDirections = {
@@ -36,19 +29,19 @@ PlayState.storyScore = 0
 PlayState.storyWeekFile = ""
 
 PlayState.seenCutscene = false
-
+PlayState.canFadeInReceptors = true
 PlayState.prevCamFollow = nil
 
 -- Charting Stuff
 PlayState.chartingMode = false
 PlayState.startPos = 0
 
+PlayState:implement(require "funkin.gameplay.playbase")
+
 function PlayState.loadSong(song, diff)
 	diff = diff or PlayState.defaultDifficulty
 	PlayState.songDifficulty = diff
-
 	PlayState.SONG = API.chart.parse(song, diff)
-
 	return true
 end
 
@@ -73,16 +66,13 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:enter()
-	if PlayState.SONG == nil then PlayState.loadSong("test") end
+	if PlayState.SONG == nil then PlayState.loadSong('test') end
 	PlayState.SONG.skin = util.getSongSkin(PlayState.SONG)
 
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
 
-	local conductor = Conductor():setSong(PlayState.SONG)
+	local conductor = self:setupConductorSong(PlayState.SONG)
 	conductor.time = self.startPos - conductor.crotchet * 5
-	conductor.onStep = bind(self, self.step)
-	conductor.onBeat = bind(self, self.beat)
-	conductor.onSection = bind(self, self.section)
 	PlayState.conductor = conductor
 
 	self.skipConductor = false
@@ -90,7 +80,7 @@ function PlayState:enter()
 	Note.defaultSustainSegments = 3
 	NoteModifier.reset()
 
-	self.timer = TimerManager()
+	self.timer = Timer.newManager()
 	self.tween = Tween()
 	self.camPosTween = nil
 
@@ -110,7 +100,6 @@ function PlayState:enter()
 
 	if Discord then self:updateDiscordRPC() end
 
-	self.startingSong = true
 	self.startedCountdown = false
 	self.doCountdownAtBeats = nil
 	self.lastCountdownBeats = nil
@@ -121,9 +110,8 @@ function PlayState:enter()
 	self.usedBotPlay = ClientPrefs.data.botplayMode
 	self.downScroll = ClientPrefs.data.downScroll
 	self.middleScroll = ClientPrefs.data.middleScroll
+
 	self.playback = 1
-	self.timer.timeScale = 1
-	self.tween.timeScale = 1
 
 	self.scripts:set("bpm", PlayState.conductor.bpm)
 	self.scripts:set("crotchet", PlayState.conductor.crotchet)
@@ -139,12 +127,6 @@ function PlayState:enter()
 	game.cameras.add(self.camOther, false)
 
 	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
-
-	if game.sound.music then game.sound.music:reset(true) end
-	game.sound.loadMusic(paths.getInst(songName))
-	game.sound.music:setLooping(false)
-	game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100)
-	game.sound.music.onComplete = function() self:endSong() end
 
 	self.stage = Stage(PlayState.SONG.stage)
 	self:add(self.stage)
@@ -181,12 +163,9 @@ function PlayState:enter()
 
 	self:add(self.stage.foreground)
 
-	self.judgeSprites = Judgements(game.width / 3, 264, PlayState.SONG.skin)
-	self:add(self.judgeSprites)
-
 	game.camera.zoom, self.camZoom, self.camZooming,
 	self.camZoomSpeed, self.camSpeed, self.camTarget =
-		self.stage.camZoom, self.stage.camZoom, false,
+		self.stage.camZoom, self.stage.camZoom, true,
 		self.stage.camZoomSpeed, self.stage.camSpeed
 	if PlayState.prevCamFollow then
 		self.camFollow = PlayState.prevCamFollow
@@ -203,40 +182,18 @@ function PlayState:enter()
 		}
 	end
 
-	local playerVocals, enemyVocals, volume =
-		paths.getVoices(songName, PlayState.SONG.player1, true)
-		or paths.getVoices(songName, "Player", true)
-		or paths.getVoices(songName, nil, true),
-		paths.getVoices(songName, PlayState.SONG.player2, true)
-		or paths.getVoices(songName, "Opponent", true),
-		ClientPrefs.data.vocalVolume / 100
-	if playerVocals then
-		playerVocals = game.sound.load(playerVocals)
-		playerVocals:setVolume(volume)
-	end
-	if enemyVocals then
-		enemyVocals = game.sound.load(enemyVocals)
-		enemyVocals:setVolume(volume)
-	end
-	local y, keys, volume = game.height / 2, 4, ClientPrefs.data.vocalVolume / 100
-	self.playerNotefield = Notefield(0, y, keys, PlayState.SONG.skin,
-		self.boyfriend, playerVocals, PlayState.SONG.speed)
-	self.enemyNotefield = Notefield(0, y, keys, PlayState.SONG.skin,
-		self.dad, enemyVocals, PlayState.SONG.speed)
-	self.playerNotefield.bot, self.enemyNotefield.bot,
-	self.enemyNotefield.canSpawnSplash = ClientPrefs.data.botplayMode, true, false
-	self.playerNotefield.cameras, self.enemyNotefield.cameras = {self.camNotes}, {self.camNotes}
-	self.notefields = {self.playerNotefield, self.enemyNotefield, {character = self.gf}}
-	self:positionNotefields()
+	self:generateNotefields(4, songName, self.camNotes)
+	table.insert(self.notefields, {character = self.gf})
 
-	for _, n in ipairs(PlayState.SONG.notes.enemy) do
-		self:generateNote(self.enemyNotefield, n)
+	if PlayState.canFadeInReceptors then
+		for notefield in each(self.notefields) do
+			if notefield.is then
+				for receptor in each(notefield.receptors) do
+					receptor.alpha = 0
+				end
+			end
+		end
 	end
-	for _, n in ipairs(PlayState.SONG.notes.player) do
-		self:generateNote(self.playerNotefield, n)
-	end
-	self:add(self.enemyNotefield)
-	self:add(self.playerNotefield)
 
 	local notefield
 	for i, event in ipairs(self.events) do
@@ -250,6 +207,7 @@ function PlayState:enter()
 	end
 
 	self.countdown = Countdown()
+	self.countdown.cameras = {self.camHUD}
 	self.countdown:screenCenter()
 	self:add(self.countdown)
 
@@ -278,25 +236,9 @@ function PlayState:enter()
 		self.countdown.antialiasing = event.antialiasing
 	end
 
-	self.healthBar = HealthBar(self.boyfriend, self.dad)
-	self.healthBar:screenCenter("x").y = game.height * 0.9
-	self:add(self.healthBar)
-
-	local fontScore = paths.getFont("vcr.ttf", 16)
-	self.scoreText = Text(0, 0, "", fontScore, Color.WHITE, "right")
-	self.scoreText.outline.width = 1
-	self.scoreText.antialiasing = false
-	self:add(self.scoreText)
-
-	self.botplayText = Text(0, 0, "BOTPLAY", fontScore, Color.WHITE)
-	self.botplayText.outline.width = 1
-	self.botplayText.antialiasing = false
-	self.botplayText.visible = self.usedBotPlay
-	self:add(self.botplayText)
-
-	for _, o in ipairs({
-		self.judgeSprites, self.countdown, self.healthBar, self.scoreText, self.botplayText
-	}) do o.cameras = {self.camHUD} end
+	self.gui = GUI()
+	self.gui.cameras = {self.camHUD}
+	self:add(self.gui)
 
 	self.score = 0
 	self.combo = 0
@@ -304,11 +246,11 @@ function PlayState:enter()
 	self.health = 1
 
 	self.ratings = {
-		{name = "perfect", time = 0.0125, score = 400, splash = true,  mod = 1},
-		{name = "sick",    time = 0.045,  score = 350, splash = true,  mod = 0.98},
-		{name = "good",    time = 0.090,  score = 200, splash = false, mod = 0.7},
-		{name = "bad",     time = 0.135,  score = 100, splash = false, mod = 0.4},
-		{name = "shit",    time = -1,     score = 50,  splash = false, mod = 0.2}
+		{name = "perfect", time = 0.026, score = 400, splash = true,  mod = 1},
+		{name = "sick",    time = 0.038, score = 350, splash = true,  mod = 0.98},
+		{name = "good",    time = 0.096, score = 200, splash = false, mod = 0.7},
+		{name = "bad",     time = 0.138, score = 100, splash = false, mod = 0.4},
+		{name = "shit",    time = -1,    score = 50,  splash = false, mod = 0.2}
 	}
 	for _, r in ipairs(self.ratings) do
 		self[r.name .. "s"] = 0
@@ -321,7 +263,7 @@ function PlayState:enter()
 
 		local left = VirtualPad("left", 0, 0, w, h, Color.PURPLE)
 		local down = VirtualPad("down", w, 0, w, h, Color.BLUE)
-		local up = VirtualPad("up", w * 2, 0, w, h, Color.LIME)
+		local up = VirtualPad("up", w * 2, 0, w, h, Color.GREEN)
 		local right = VirtualPad("right", w * 3, 0, w, h, Color.RED)
 
 		self.buttons:add(left)
@@ -336,10 +278,7 @@ function PlayState:enter()
 			cameras = {self.camOther},
 			config = {round = {0, 0}}
 		})
-	end
-
-	if self.buttons then
-		self:add(self.buttons); self.buttons:disable()
+		self.buttons:disable()
 	end
 
 	self.lastTick = love.timer.getTime()
@@ -354,50 +293,20 @@ function PlayState:enter()
 		for _, notefield in ipairs(self.notefields) do
 			if notefield.is then notefield.downscroll = true end
 		end
-		self.healthBar.y = -self.healthBar.y + self.healthBar.offset.y * 2 +
-			(game.height - self.healthBar:getHeight())
 	end
-	self:positionText()
 
 	if self.storyMode and not PlayState.seenCutscene then
 		PlayState.seenCutscene = true
 
-		local fileExist, cutsceneType
-		for i, path in ipairs({
-			paths.getMods('data/cutscenes/' .. songName .. '.lua'),
-			paths.getMods('data/cutscenes/' .. songName .. '.json'),
-			paths.getPath('data/cutscenes/' .. songName .. '.lua'),
-			paths.getPath('data/cutscenes/' .. songName .. '.json')
-		}) do
-			if paths.exists(path, 'file') then
-				fileExist = true
-				switch(path:ext(), {
-					["lua"] = function() cutsceneType = "script" end,
-					["json"] = function() cutsceneType = "data" end,
-				})
+		local cutscene = Cutscene(false, function(event)
+			local skipCountdown = event and event.params[1] or false
+			if skipCountdown then
+				self:startSong()
+				if self.buttons then self:add(self.buttons) end
+			else
+				self:startCountdown()
 			end
-		end
-		if fileExist then
-			switch(cutsceneType, {
-				["script"] = function()
-					local cutsceneScript = Script('data/cutscenes/' .. songName)
-
-					cutsceneScript:call("create")
-					self.scripts:add(cutsceneScript)
-				end,
-				["data"] = function()
-					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName)
-
-					for i, event in ipairs(cutsceneData.cutscene) do
-						Timer.wait(event.time / 1000, function()
-							self:executeCutsceneEvent(event.event)
-						end)
-					end
-				end
-			})
-		else
-			self:startCountdown()
-		end
+		end)
 	else
 		self:startCountdown()
 	end
@@ -405,19 +314,12 @@ function PlayState:enter()
 
 	-- PRELOAD STUFF TO GET RID OF THE FATASS LAGS!!
 	local path = "skins/" .. PlayState.SONG.skin .. "/"
-	for _, r in ipairs(self.ratings) do paths.getImage(path .. r.name) end
-	for _, num in ipairs({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "negative"}) do
-		paths.getImage(path .. "num" .. num)
-	end
 	local sprite
 	for i, part in pairs(paths.getSkin(PlayState.SONG.skin)) do
 		sprite = part.sprite
 		if sprite then paths.getImage(path .. sprite) end
 	end
 	if ClientPrefs.data.hitSound > 0 then paths.getSound("hitsound") end
-
-	self.__stickers = Stickers()
-	self:add(self.__stickers)
 
 	PlayState.super.enter(self)
 	collectgarbage()
@@ -428,65 +330,24 @@ function PlayState:enter()
 	game.camera:snapToTarget()
 end
 
-function PlayState:positionNotefields()
-	if self.middleScroll then
-		self.playerNotefield:screenCenter("x")
-
-		for _, notefield in ipairs(self.notefields) do
-			if notefield.is and notefield ~= self.playerNotefield then
-				notefield.visible = false
-			end
-		end
-	else
-		local baseX = 44
-		self.playerNotefield.x = game.width / 2 + baseX
-		self.enemyNotefield.x = baseX
-
-		for _, notefield in ipairs(self.notefields) do
-			if notefield.is then notefield.visible = true end
-		end
-	end
-end
-
-function PlayState:positionText()
-	self.scoreText.x, self.scoreText.y = self.healthBar.x + self.healthBar.bg.width - 190, self.healthBar.y + 30
-	self.botplayText.x, self.botplayText.y = game.width - self.botplayText:getWidth() - 36, self.scoreText.y
-end
-
-function PlayState:getRating(a, b)
-	local diff = math.abs(a - b)
-	for _, r in ipairs(self.ratings) do
-		if diff <= (r.time < 0 and Note.safeZoneOffset or r.time) then return r end
-	end
-end
-
-function PlayState:generateNote(notefield, n)
-	if n.t >= PlayState.startPos then
-		local sustainTime = n.l or 0
-		if sustainTime > 0 then
-			sustainTime = math.max(sustainTime / 1000, 0.125)
-		end
-		local note = notefield:makeNote(n.t / 1000, n.d % 4, sustainTime, n.k)
-		if n.gf then note.character = self.gf end
-	end
-end
-
 function PlayState:startCountdown()
 	if self.buttons then self:add(self.buttons) end
 
 	local event = self.scripts:call("startCountdown")
 	if event == Script.Event_Cancel then return end
 
-	self.playback = ClientPrefs.data.playback
+	self.playback = self:setSongPlayback(ClientPrefs.data.playback)
 	self.timer.timeScale = self.playback
 	self.tween.timeScale = self.playback
 
-	local vocals
-	for _, notefield in ipairs(self.notefields) do
-		vocals = notefield.vocals
-		if vocals then vocals:setPitch(self.playback) end
+	for notefield in each(self.notefields) do
+		if notefield.is then
+			if PlayState.canFadeInReceptors then
+				notefield:fadeInReceptors()
+			end
+		end
 	end
-	game.sound.music:setPitch(self.playback)
+	PlayState.canFadeInReceptors = false
 
 	self.startedCountdown = true
 	self.doCountdownAtBeats = PlayState.startPos / PlayState.conductor.crotchet - 4
@@ -514,14 +375,14 @@ function PlayState:cameraMovement(ox, oy, ease, time)
 	local event = self.scripts:event("onCameraMove", Events.CameraMove(self.camTarget))
 	local camX, camY = (ox or 0) + event.offset.x, (oy or 0) + event.offset.y
 	if self.camPosTween then
-		self.timer:cancel(self.camPosTween)
+		self.tween:cancel(self.camPosTween)
 	end
 	if ease then
 		if game.camera.followLerp then
 			game.camera:follow(self.camFollow, nil)
 		end
 		self.camPosTween =
-			self.timer:tween(time, self.camFollow, {x = camX, y = camY}, ease, function()
+			self.tween:tween(time, self.camFollow, {x = camX, y = camY}, ease, function()
 				self.camFollow.tweening = false
 			end)
 	else
@@ -537,18 +398,7 @@ function PlayState:step(s)
 	if self.skipConductor then return end
 
 	if not self.startingSong then
-		local time, rate = game.sound.music:tell(), math.max(self.playback, 1)
-		if math.abs(time - PlayState.conductor.time / 1000) > 0.015 * rate then
-			PlayState.conductor.time = time * 1000
-		end
-		local maxDelay, vocals = 0.0088 * rate
-		for _, notefield in ipairs(self.notefields) do
-			vocals = notefield.vocals
-			if vocals and vocals:isPlaying()
-				and math.abs(time - vocals:tell()) > maxDelay then
-				vocals:seek(time)
-			end
-		end
+		self:resyncVocals()
 
 		if Discord then
 			coroutine.wrap(PlayState.updateDiscordRPC)(self)
@@ -557,6 +407,7 @@ function PlayState:step(s)
 
 	self.scripts:set("curStep", s)
 	self.scripts:call("step", s)
+	self.gui:step(s)
 	self.scripts:call("postStep", s)
 end
 
@@ -572,10 +423,7 @@ function PlayState:beat(b)
 		if character then character:beat(b) end
 	end
 
-	local val, healthBar = 1.2, self.healthBar
-	healthBar.iconScale = val
-	healthBar.iconP1:setScale(val)
-	healthBar.iconP2:setScale(val)
+	self.gui:beat(b)
 
 	self.scripts:call("postBeat", b)
 end
@@ -586,21 +434,25 @@ function PlayState:section(s)
 	self.scripts:set("curSection", s)
 	self.scripts:call("section", s)
 
-	self.scripts:set("bpm", PlayState.conductor.bpm)
-	self.scripts:set("crotchet", PlayState.conductor.crotchet)
-	self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
+	if PlayState.SONG.notes[s] and PlayState.SONG.notes[s].changeBPM then
+		self.scripts:set("bpm", PlayState.conductor.bpm)
+		self.scripts:set("crotchet", PlayState.conductor.crotchet)
+		self.scripts:set("stepCrotchet", PlayState.conductor.stepCrotchet)
+	end
 
 	if self.camZooming and game.camera.zoom < 1.35 then
 		game.camera.zoom = game.camera.zoom + 0.015
 		self.camHUD.zoom = self.camHUD.zoom + 0.03
 	end
 
+	self.gui:section(s)
 	self.scripts:call("postSection", s)
 end
 
 function PlayState:focus(f)
 	self.scripts:call("focus", f)
 	if Discord and love.autoPause then self:updateDiscordRPC(not f) end
+	PlayState.super.focus(self, f)
 	self.scripts:call("postFocus", f)
 end
 
@@ -608,71 +460,6 @@ function PlayState:executeEvent(event)
 	for _, s in pairs(self.eventScripts) do
 		if s.belongsTo == event.e then s:call("event", event) end
 	end
-end
-
-function PlayState:executeCutsceneEvent(event, isEnd)
-	switch(event.name, {
-		['Camera Position'] = function()
-			local xCam, yCam = event.params[1], event.params[2]
-			local isTweening = event.params[3]
-			local time = event.params[4]
-			local ease = event.params[5]
-			if isTweening then
-				game.camera:follow(self.camFollow, nil)
-				Tween.tween(self.camFollow, {x = xCam, y = yCam}, time, {ease = Ease[ease]})
-			else
-				self.camFollow:set(xCam, yCam)
-				game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
-			end
-		end,
-		['Camera Zoom'] = function()
-			local zoomCam = event.params[1]
-			local isTweening = event.params[2]
-			local time = event.params[3]
-			local ease = event.params[4]
-			if isTweening then
-				Tween.tween(game.camera, {zoom = zoomCam}, time, {ease = Ease[ease]})
-			else
-				game.camera.zoom = zoomCam
-			end
-		end,
-		['Play Sound'] = function()
-			local soundPath = event.params[1]
-			local volume = event.params[2]
-			local isFading = event.params[3]
-			local time = event.params[4]
-			local volStart, volEnd = event.params[5], event.params[6]
-
-			local sound = game.sound.play(paths.getSound(soundPath), volume)
-			if isFading then sound:fade(time, volStart, volEnd) end
-		end,
-		['Play Animation'] = function()
-			local character = nil
-			switch(event.params[1], {
-				['bf'] = function() character = self.boyfriend end,
-				['gf'] = function() character = self.gf end,
-				['dad'] = function() character = self.dad end
-			})
-			local animation = event.params[2]
-
-			if character then character:playAnim(animation, true) end
-		end,
-		['End Cutscene'] = function()
-			game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
-			if isEnd then
-				self:endSong(true)
-			else
-				local skipCountdown = event.params[1]
-				if skipCountdown then
-					PlayState.conductor.time = 0
-					self.startedCountdown = true
-					if self.buttons then self:add(self.buttons) end
-				else
-					self:startCountdown()
-				end
-			end
-		end,
-	})
 end
 
 function PlayState:doCountdown(beat)
@@ -686,43 +473,23 @@ function PlayState:doCountdown(beat)
 	end
 end
 
-function PlayState:resetStroke(notefield, dir, doPress)
-	local receptor = notefield.receptors[dir + 1]
-	if receptor then
-		receptor:play((doPress and not notefield.bot)
-			and "pressed" or "static")
-	end
-end
-
 function PlayState:update(dt)
 	dt = dt * self.playback
 	self.lastTick = love.timer.getTime()
 	self.tween:update(dt)
 
 	if self.startedCountdown then
-		PlayState.conductor.time = PlayState.conductor.time + dt * 1000
+		if not self.paused then PlayState.conductor.time = PlayState.conductor.time + dt * 1000 end
 
 		if self.startingSong and PlayState.conductor.time >= self.startPos then
 			self.startingSong = false
-			self.camZooming = true
 
 			-- reload playback for countdown skip
 			self.playback = ClientPrefs.data.playback
 			self.timer.timeScale = self.playback
 			self.tween.timeScale = self.playback
 
-			local time, vocals = self.startPos / 1000
-			game.sound.music:setPitch(self.playback)
-			game.sound.music:seek(time)
-			for _, notefield in ipairs(self.notefields) do
-				vocals = notefield.vocals
-				if vocals then
-					vocals:setPitch(self.playback)
-					vocals:seek(time)
-					vocals:play()
-				end
-			end
-			game.sound.music:play()
+			self:playSong(self.startPos / 1000)
 
 			self:section(0)
 			self.scripts:call("songStart")
@@ -753,69 +520,7 @@ function PlayState:update(dt)
 		end
 	end
 
-	local time = PlayState.conductor.time / 1000
-	local missOffset = time - Note.safeZoneOffset / 1.25
-	for _, notefield in ipairs(self.notefields) do
-		if notefield.is then
-			notefield.time, notefield.beat = time, PlayState.conductor.currentBeatFloat
-
-			local isPlayer, sustainHitOffset, noSustainHit, sustainTime,
-			noteTime, lastPress, dir, fullyHeldSustain, char, hasInput, resetVolume =
-				not notefield.bot, 0.25 / notefield.speed
-			for _, note in ipairs(notefield:getNotes(time, nil, true)) do
-				noteTime, lastPress, dir, noSustainHit, char =
-					note.time, note.lastPress, note.direction,
-					not note.wasGoodSustainHit, note.character or notefield.character
-				hasInput = not isPlayer or controls:down(PlayState.keysControls[dir])
-
-				if note.wasGoodHit then
-					sustainTime = note.sustainTime
-
-					if hasInput then
-						-- sustain hitting
-						note.lastPress = time
-						lastPress = time
-						resetVolume = true
-					else
-						lastPress = note.lastPress
-					end
-
-					if not note.wasGoodSustainHit and lastPress ~= nil then
-						if noteTime + sustainTime - sustainHitOffset <= lastPress then
-							-- end of sustain hit
-							fullyHeldSustain = noteTime + sustainTime <= lastPress
-							if fullyHeldSustain or not hasInput then
-								self:goodSustainHit(note, time, fullyHeldSustain)
-								noSustainHit = false
-							end
-						elseif not hasInput and isPlayer and noteTime <= time then
-							-- early end of sustain hit (no full score)
-							self:goodSustainHit(note, time)
-							noSustainHit, note.tooLate = false, true
-						end
-					end
-
-					if noSustainHit and hasInput and char then
-						char.lastHit = PlayState.conductor.time
-					end
-				elseif isPlayer then
-					if noSustainHit
-						and (lastPress or noteTime) <= missOffset then
-						-- miss note
-						self:miss(note)
-					end
-				elseif noteTime <= time then
-					-- botplay hit
-					self:goodNoteHit(note, time)
-				end
-			end
-
-			if resetVolume then
-				local vocals = notefield.vocals or self.playerNotefield.vocals
-				if vocals then vocals:setVolume(ClientPrefs.data.vocalVolume / 100) end
-			end
-		end
-	end
+	self:updateInput(dt)
 
 	self.scripts:call("update", dt)
 	PlayState.super.update(self, dt)
@@ -826,8 +531,7 @@ function PlayState:update(dt)
 	end
 	self.camNotes.zoom = self.camHUD.zoom
 
-	self.healthBar.value = util.coolLerp(self.healthBar.value, self.health, 15, dt)
-	if not self.isDead and self.healthBar.value <= 0 then self:tryGameOver() end
+	if not self.isDead and self.health <= 0 then self:tryGameOver() end
 
 	if self.startedCountdown then
 		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
@@ -836,23 +540,13 @@ function PlayState:update(dt)
 
 		if controls:pressed("debug_1") then
 			game.camera:unfollow()
-			game.sound.music:pause()
-			local vocals
-			for _, notefield in ipairs(self.notefields) do
-				vocals = notefield.vocals
-				if vocals then vocals:pause() end
-			end
+			self:pauseSong()
 			game.switchState(ChartingState())
 		end
 
 		if controls:pressed("debug_2") then
 			game.camera:unfollow()
-			game.sound.music:pause()
-			local vocals
-			for _, notefield in ipairs(self.notefields) do
-				vocals = notefield.vocals
-				if vocals then vocals:pause() end
-			end
+			self:pauseSong()
 			CharacterEditor.onPlayState = true
 			game.switchState(CharacterEditor())
 		end
@@ -896,40 +590,23 @@ function PlayState:onSettingChange(category, setting)
 				for _, notefield in ipairs(self.notefields) do
 					if notefield.is then notefield.downscroll = downscroll end
 				end
-				if downscroll ~= self.downScroll then
-					if downscroll then
-						self.healthBar.y = -self.healthBar.y + self.healthBar.offset.y * 2 +
-							(game.height - self.healthBar:getHeight())
-					else
-						self.healthBar.y = self.healthBar.offset.y * 2 + game.height -
-							(self.healthBar.y + self.healthBar:getHeight())
-					end
-				end
-				self:positionText()
 				self.downScroll = downscroll
 			end,
 			["middleScroll"] = function()
 				self.middleScroll = ClientPrefs.data.middleScroll
-				self:positionNotefields()
+				self:centerNotefields()
 			end,
 			["botplayMode"] = function()
-				self.boyfriend.waitReleaseAfterSing = not ClientPrefs.data.botplayMode
+				self.usedBotPlay = true
 				self.playerNotefield.bot = ClientPrefs.data.botplayMode
-				self.botplayText.visible = ClientPrefs.data.botplayMode
 			end,
 			["backgroundDim"] = function()
 				self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 			end,
 			["playback"] = function()
-				self.playback = ClientPrefs.data.playback
+				self.playback = self:setSongPlayback(ClientPrefs.data.playback)
 				self.timer.timeScale = self.playback
 				self.tween.timeScale = self.playback
-				game.sound.music:setPitch(self.playback)
-				local vocals
-				for _, notefield in ipairs(self.notefields) do
-					vocals = notefield.vocals
-					if vocals then vocals:setPitch(self.playback) end
-				end
 			end
 		})
 
@@ -949,12 +626,13 @@ function PlayState:onSettingChange(category, setting)
 		self.bindedKeyRelease = bind(self, self.onKeyRelease)
 		controls:bindRelease(self.bindedKeyRelease)
 	end
+	self.gui:onSettingChange(category, setting)
 
 	self.scripts:call("onSettingChange", category, setting)
 end
 
 function PlayState:goodNoteHit(note, time)
-	self.scripts:call("goodNoteHit", note, rating)
+	self.scripts:call("goodNoteHit", note)
 
 	local notefield, dir, isSustain =
 		note.parent, note.direction, note.sustain
@@ -984,27 +662,26 @@ function PlayState:goodNoteHit(note, time)
 			end
 		end
 
-		if isSustain then
-			notefield.lastSustain = note
-		else
-			notefield:removeNote(note)
-			notefield.lastSustain = nil
-		end
-
 		local rating = self:getRating(note.time, time)
+
+		notefield.lastSustain = isSustain and note or nil
+		if (rating.name == "bad" or rating.name == "shit") then
+			note:ghost()
+		else
+			if not isSustain then notefield:removeNote(note) end
+		end
 
 		local receptor = notefield.receptors[dir + 1]
 		if receptor then
 			if not event.strumGlowCancelled then
-				local snap = notefield.bot and receptor.holdTime ~= 0
 				receptor:play("confirm", true)
-				if not note.sustain then receptor.holdTime = snap and 0.05 or 0.25 end
 				if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
 					receptor:spawnSplash()
 				end
+				receptor.holdTime = not isSustain and 0.18 or 0
 			end
 			if isSustain and not event.coverSpawnCancelled then
-				receptor:spawnCover(note)
+				local cover = receptor:spawnCover(note)
 			end
 		end
 
@@ -1019,6 +696,7 @@ function PlayState:goodNoteHit(note, time)
 			end
 		end
 	end
+	self.gui:goodNoteHit(note, time, rating)
 
 	self.scripts:call("postGoodNoteHit", note, rating)
 end
@@ -1045,9 +723,7 @@ function PlayState:goodSustainHit(note, time, fullyHeldSustain)
 			self:recalculateRating()
 		end
 
-		if not event.cancelledAnim then
-			self:resetStroke(notefield, dir, fullyHeldSustain)
-		end
+		self:resetStroke(notefield, dir, fullyHeldSustain)
 		if fullScore then notefield:removeNote(note) end
 	end
 
@@ -1092,29 +768,19 @@ function PlayState:miss(note, dir)
 			self.score, self.misses, self.combo =
 				self.score - 100, self.misses + 1, math.min(self.combo, 0) - 1
 			self:recalculateRating()
-			self:popUpScore()
 		end
 	end
+	self.gui:noteMiss(note, dir)
 
 	self.scripts:call(ghostMiss and "postMiss" or "postNoteMiss", funcParam)
 end
 
 function PlayState:recalculateRating(rating)
-	self.scoreText.content = "Score: " .. util.formatNumber(math.floor(self.score))
 	if rating then
 		local field = rating .. "s"
 		self[field] = (self[field] or 0) + 1
-		self:popUpScore(rating)
 	end
-end
-
-function PlayState:popUpScore(rating)
-	local event = self.scripts:event('onPopUpScore', Events.PopUpScore())
-	if not event.cancelled then
-		self.judgeSprites.ratingVisible = not event.hideRating
-		self.judgeSprites.comboNumVisible = not event.hideScore
-		self.judgeSprites:spawn(rating, self.combo)
-	end
+	self.gui:recalculateRating(rating)
 end
 
 function PlayState:tryPause()
@@ -1125,14 +791,7 @@ function PlayState:tryPause()
 		self.camNotes:freeze()
 		self.camHUD:freeze()
 
-		game.sound.music:pause()
-		local vocals
-		for _, notefield in ipairs(self.notefields) do
-			vocals = notefield.vocals
-			if vocals then vocals:pause() end
-		end
-
-		self.paused = true
+		self:pauseSong()
 
 		if self.buttons then
 			self:remove(self.buttons)
@@ -1147,16 +806,10 @@ end
 function PlayState:tryGameOver()
 	local event = self.scripts:event("onGameOver", Events.GameOver())
 	if not event.cancelled then
-		self.paused = event.pauseGame
-
 		if event.pauseSong then
-			game.sound.music:pause()
-			local vocals
-			for _, notefield in ipairs(self.notefields) do
-				vocals = notefield.vocals
-				if vocals then vocals:pause() end
-			end
+			self:pauseSong()
 		end
+		self.paused = event.pauseGame
 
 		self.camHUD.visible, self.camNotes.visible = false, false
 		self.boyfriend.visible = false
@@ -1181,72 +834,6 @@ function PlayState:tryGameOver()
 	end
 end
 
-function PlayState:getKeyFromEvent(controls)
-	for _, control in pairs(controls) do
-		local dir = PlayState.inputDirections[control]
-		if dir ~= nil then return dir end
-	end
-	return -1
-end
-
-function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
-	if self.substate and not self.persistentUpdate then return end
-	local controls = controls:getControlsFromSource(type .. ":" .. key)
-
-	if not controls then return end
-	key = self:getKeyFromEvent(controls)
-	if key < 0 then return end
-
-	local fixedKey, offset = key + 1,
-		(time - self.lastTick) * game.sound.music:getActualPitch()
-	for _, notefield in ipairs(self.notefields) do
-		if notefield.is and not notefield.bot then
-			time = notefield.time + offset
-			local hitNotes, hasSustain = notefield:getNotes(time, key)
-			local l = #hitNotes
-			if l == 0 then
-				local receptor = notefield.receptors[fixedKey]
-				if receptor then
-					receptor:play(hasSustain and "confirm" or "pressed")
-				end
-				if not hasSustain and not ClientPrefs.data.ghostTap then
-					self:miss(notefield, key)
-				end
-			else
-				-- remove stacked notes (this is dedicated to spam songs)
-				local i, firstNote, note = 2, hitNotes[1]
-				while i <= l do
-					note = hitNotes[i]
-					if note and math.abs(note.time - firstNote.time) < 0.01 then
-						notefield:removeNote(note)
-					else
-						break
-					end
-					i = i + 1
-				end
-				self:goodNoteHit(firstNote, time)
-			end
-		end
-	end
-end
-
-function PlayState:onKeyRelease(key, type, scancode, time)
-	if self.substate and not self.persistentUpdate then return end
-	local controls = controls:getControlsFromSource(type .. ":" .. key)
-
-	if not controls then return end
-	key = self:getKeyFromEvent(controls)
-
-	if key < 0 then return end
-
-	local fixedKey = key + 1
-	for _, notefield in ipairs(self.notefields) do
-		if notefield.is and not notefield.bot then
-			self:resetStroke(notefield, key)
-		end
-	end
-end
-
 function PlayState:closeSubstate()
 	self.scripts:call("substateClosed")
 	PlayState.super.closeSubstate(self)
@@ -1258,22 +845,12 @@ function PlayState:closeSubstate()
 	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 
 	if not self.startingSong then
-		game.sound.music:play()
-		local time, vocals = game.sound.music:tell()
-		for _, notefield in ipairs(self.notefields) do
-			vocals = notefield.vocals
-			if vocals then
-				vocals:seek(time)
-				vocals:play()
-			end
-		end
-		PlayState.conductor.time = time * 1000
+		self:playSong()
 		if Discord then self:updateDiscordRPC() end
 	end
 
-	if self.buttons then
-		self:add(self.buttons)
-	end
+	if self.buttons then self:add(self.buttons) end
+	self.paused = false
 
 	self.scripts:call("postSubstateClosed")
 end
@@ -1287,53 +864,19 @@ function PlayState:endSong(skip)
 	if self.storyMode and not PlayState.seenCutscene and not skip then
 		PlayState.seenCutscene = true
 
-		local songName = paths.formatToSongPath(PlayState.SONG.song)
-		local cutscenePaths = {
-			paths.getMods('data/cutscenes/' .. songName .. '-end.lua'),
-			paths.getMods('data/cutscenes/' .. songName .. '-end.json'),
-			paths.getPath('data/cutscenes/' .. songName .. '-end.lua'),
-			paths.getPath('data/cutscenes/' .. songName .. '-end.json')
-		}
-
-		local fileExist, cutsceneType
-		for i, path in ipairs(cutscenePaths) do
-			if paths.exists(path, 'file') then
-				fileExist = true
-				switch(path:ext(), {
-					["lua"] = function() cutsceneType = "script" end,
-					["json"] = function() cutsceneType = "data" end,
-				})
-			end
-		end
-		if fileExist then
-			switch(cutsceneType, {
-				["script"] = function()
-					local cutsceneScript = Script('data/cutscenes/' .. songName .. '-end')
-					cutsceneScript:call("create")
-					self.scripts:add(cutsceneScript)
-					cutsceneScript:call("postCreate")
-				end,
-				["data"] = function()
-					local cutsceneData = paths.getJSON('data/cutscenes/' .. songName .. '-end')
-					for i, event in ipairs(cutsceneData.cutscene) do
-						Timer.wait(event.time / 1000, function()
-							self:executeCutsceneEvent(event.event, true)
-						end)
-					end
-				end
-			})
-			return
-		else
+		local cutscene = Cutscene(true, function(event)
 			self:endSong(true)
-			return
-		end
+		end)
+		return
 	end
 
 	local event = self.scripts:call("endSong")
 	if event == Script.Event_Cancel then return end
 	game.sound.music.onComplete = nil
 
-	Highscore.saveScore(PlayState.SONG.song, self.score, self.songDifficulty)
+	if not self.usedBotPlay then
+		Highscore.saveScore(PlayState.SONG.song, self.score, self.songDifficulty)
+	end
 
 	if self.chartingMode then
 		game.switchState(ChartingState())
@@ -1348,10 +891,12 @@ function PlayState:endSong(skip)
 	end
 
 	if self.storyMode then
-		PlayState.storyScore = PlayState.storyScore + self.score
+		PlayState.canFadeInReceptors = false
+		if not self.usedBotPlay then
+			PlayState.storyScore = PlayState.storyScore + self.score
+		end
 
 		table.remove(PlayState.storyPlaylist, 1)
-
 		if #PlayState.storyPlaylist > 0 then
 			game.sound.music:stop()
 
@@ -1368,19 +913,29 @@ function PlayState:endSong(skip)
 			PlayState.loadSong(PlayState.storyPlaylist[1], PlayState.songDifficulty)
 			game.resetState(true)
 		else
-			Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
-			self.__stickers:start(StoryMenuState())
 			GameOverSubstate.deaths = 0
+			PlayState.canFadeInReceptors = true
+			if not self.usedBotPlay then
+				Highscore.saveWeekScore(self.storyWeekFile, self.storyScore, self.songDifficulty)
+			end
+
+			local stickers = Stickers(nil, StoryMenuState())
+			self:add(stickers)
 
 			util.playMenuMusic()
 		end
 	else
-		game.camera:unfollow()
-		self.__stickers:start(FreeplayState())
 		GameOverSubstate.deaths = 0
+		PlayState.canFadeInReceptors = true
+		game.camera:unfollow()
+
+		local stickers = Stickers(nil, FreeplayState())
+		self:add(stickers)
 
 		util.playMenuMusic()
 	end
+	controls:unbindPress(self.bindedKeyPress)
+	controls:unbindRelease(self.bindedKeyRelease)
 
 	self.scripts:call("postEndSong")
 end
@@ -1427,7 +982,6 @@ function PlayState:leave()
 	PlayState.prevCamFollow = self.camFollow
 	PlayState.conductor = nil
 	self.timer.timeScale = 1
-	self.tween.timeScale = 1
 
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)

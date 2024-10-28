@@ -12,6 +12,11 @@ function Character:new(x, y, char, isPlayer)
 		self.script:call("create")
 	end
 
+	self:changeCharacter(char, isPlayer)
+end
+
+-- this is a function so characters can be reloaded by some kind of event
+function Character:changeCharacter(char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
@@ -52,6 +57,7 @@ function Character:new(x, y, char, isPlayer)
 	end
 
 	self.icon = jsonData.icon or char
+	self.iconColor = jsonData.color
 
 	self.flipX = jsonData.flip_x == true
 	self.jsonFlipX = self.flipX
@@ -129,8 +135,7 @@ end
 
 function Character:update(dt)
 	if self.curAnim then
-		if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~=
-			nil then
+		if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~= nil then
 			self:playAnim(self.curAnim.name .. '-loop')
 		end
 		local offset = self.animOffsets[self.curAnim.name]
@@ -144,10 +149,12 @@ function Character:update(dt)
 			self.offset.x, self.offset.y = 0, 0
 		end
 	end
-	if self.lastHit > 0 and self.lastHit +
-		PlayState.conductor.stepCrotchet * self.holdTime
+
+	if self.lastHit > 0 and self.lastHit
+		+ PlayState.conductor.stepCrotchet * self.holdTime
 		< PlayState.conductor.time then
 		local canDance = true
+
 		if self.waitReleaseAfterSing then
 			for input, _ in pairs(PlayState.inputDirections) do
 				if controls:down(input) then
@@ -156,11 +163,23 @@ function Character:update(dt)
 				end
 			end
 		end
-		if canDance then
+
+		if canDance and self.__animations[self.curAnim.name .. "-end"] and
+			not self.curAnim.name:endsWith("-end") then
+			self:playAnim(self.curAnim.name .. '-end')
+			self.isPlayingEnd = true
+			canDance = false
+		elseif canDance and not self.isPlayingEnd then
 			self:dance()
 			self.lastHit = math.negative_infinity
 		end
 	end
+
+	if self.isPlayingEnd and self.animFinished then
+		self:dance()
+		self.isPlayingEnd = false
+	end
+
 	Character.super.update(self, dt)
 end
 
@@ -181,6 +200,7 @@ function Character:playAnim(anim, force, frame)
 
 	Character.super.play(self, anim, force, frame)
 	self.dirAnim = nil
+	self.isPlayingEnd = false
 
 	local offset = self.animOffsets[anim]
 	if offset then

@@ -1,6 +1,9 @@
 local bgMusic
+local cutsceneTimer
 
 function create()
+	cutsceneTimer = Timer.new()
+
 	state.dad.alpha = 0
 	state.camHUD.visible, state.camNotes.visible = false, false
 
@@ -17,26 +20,27 @@ end
 function postCreate()
 	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true)
 	bgMusic:play()
+	game.camera.zoom = game.camera.zoom * 1.2
 
 	game.sound.play(paths.getSound('gameplay/tankSong2'), ClientPrefs.data.vocalVolume / 100)
-	Tween.tween(game.camera, {zoom = state.stage.camZoom * 1.2}, 4, {ease = Ease.quadInOut})
+	Timer.tween(4, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
 
-	Timer.wait(4, function()
-		Tween.tween(game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 0.5, {ease = Ease.quadInOut})
+	cutsceneTimer:after(4, function()
+		Timer.tween(0.5, game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 'in-out-quad')
 		state.gf:playAnim('sad', true)
 	end)
 
-	Timer.wait(4.5, function()
-		Tween.tween(game.camera, {zoom = state.stage.camZoom * 1.2}, 1, {ease = Ease.quadInOut})
+	cutsceneTimer:after(4.5, function()
+		Timer.tween(1, game.camera, {zoom = state.stage.camZoom * 1.2}, 'in-out-quad')
 	end)
 
-	Timer.wait(11.5, function()
+	cutsceneTimer:after(11.5, function()
 		tankman:destroy()
 		state.dad.alpha = 1
 		state.camHUD.visible, state.camNotes.visible = true, true
 
-		Tween.tween(game.camera, {zoom = state.stage.camZoom},
-			PlayState.conductor.crotchet / 1000 * 4.5, {ease = Ease.quadInOut})
+		local times = PlayState.conductor.crotchet / 1000 * 4.5
+		Timer.tween(times, game.camera, {zoom = state.stage.camZoom}, 'in-out-quad')
 		state:startCountdown()
 	end)
 end
@@ -45,3 +49,5 @@ function songStart()
 	bgMusic:stop()
 	close()
 end
+
+function update(dt) cutsceneTimer:update(dt) end
