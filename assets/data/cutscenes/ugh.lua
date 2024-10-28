@@ -1,6 +1,7 @@
 local bgMusic
 local cutsceneTimer
 local isVideo = ClientPrefs.data.lowQuality
+local cutscene
 
 function create()
 	if isVideo then return end
@@ -20,7 +21,7 @@ end
 
 function postCreate()
 	if isVideo then
-		local cutscene = Video(0, 0, paths.getVideo("ughCutscene"), true, true)
+		cutscene = Video(0, 0, "ughCutscene", true, true)
 		cutscene:setScrollFactor()
 		cutscene.cameras = {state.camOther}
 		cutscene:play()
@@ -34,25 +35,25 @@ function postCreate()
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 
-	Timer():start(0.1, function()
+	Timer(timer):start(0.1, function()
 		game.sound.play(paths.getSound('gameplay/wellWellWell'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	Timer():start(3, function()
+	Timer(timer):start(3, function()
 		state.camFollow.x = state.camFollow.x + 650
 		state.camFollow.y = state.camFollow.y + 100
 	end)
 
-	Timer():start(4.5, function()
+	Timer(timer):start(4.5, function()
 		state.boyfriend:playAnim('singUP', true)
 		game.sound.play(paths.getSound('gameplay/bfBeep'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	Timer():start(5.2, function()
+	Timer(timer):start(5.2, function()
 		state.boyfriend:playAnim('idle', true)
 	end)
 
-	Timer():start(6, function()
+	Timer(timer):start(6, function()
 		state.camFollow.x = state.camFollow.x - 650
 		state.camFollow.y = state.camFollow.y - 100
 
@@ -62,17 +63,21 @@ function postCreate()
 		game.sound.play(paths.getSound('gameplay/killYou'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
-	Timer():start(12, function()
+	Timer(timer):start(12, function()
 		tankman:destroy()
 		state.dad.alpha = 1
 		state.camHUD.visible, state.camNotes.visible = true, true
 
 		local times = PlayState.conductor.crotchet / 1000 * 4.5
 		state.tween:tween(game.camera, {zoom = state.stage.camZoom}, times, {ease = 'quadInOut'})
-		state:startCountdown()
+		close()
 	end)
 end
 
 function songStart()
 	if not isVideo then bgMusic:stop(); close() end
 end
+
+function pause() if isVideo then cutscene:pause() end end
+
+function substateClosed() if isVideo then cutscene:play() end end

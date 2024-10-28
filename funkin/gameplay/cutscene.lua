@@ -1,23 +1,26 @@
 local Cutscene = Classic:extend("Cutscene")
 
 function Cutscene:new(isEnd, onComplete)
-	self.onComplete = onComplete or __NULL__
+	self.onComplete = onComplete
 
 	self.state = game.getState()
-	self.timer = self.state.timer or Timer()
 
-	local songName = paths.formatToSongPath(PlayState.SONG.song)
-	local suffix = ""
-	if isEnd then suffix = "-end" end
+	self.timer = TimerManager()
+	self.tween = Tween()
+
+	local name = paths.formatToSongPath(PlayState.SONG.song)
+	if isEnd then name = name .. "-end" end
+
+	self.isEnd = isEnd
 
 	local fileExist, cutsceneType, cutsceneScript
-	for i, path in ipairs({
-		paths.getMods('data/cutscenes/' .. songName .. suffix .. '.lua'),
-		paths.getMods('data/cutscenes/' .. songName .. suffix .. '.json'),
-		paths.getPath('data/cutscenes/' .. songName .. suffix .. '.lua'),
-		paths.getPath('data/cutscenes/' .. songName .. suffix .. '.json')
+	for _, path in ipairs({
+		paths.getMods("data/cutscenes/" .. name .. ".lua"),
+		paths.getMods("data/cutscenes/" .. name .. ".json"),
+		paths.getPath("data/cutscenes/" .. name .. ".lua"),
+		paths.getPath("data/cutscenes/" .. name .. ".json")
 	}) do
-		if paths.exists(path, 'file') then
+		if paths.exists(path, "file") then
 			fileExist = true
 			switch(path:ext(), {
 				["lua"] = function() cutsceneType = "script" end,
@@ -28,42 +31,51 @@ function Cutscene:new(isEnd, onComplete)
 	if fileExist then
 		switch(cutsceneType, {
 			["script"] = function()
-				cutsceneScript = Script('data/cutscenes/' .. songName .. suffix)
-				cutsceneScript.errorCallback:addOnce(function()
+				cutsceneScript = Script("data/cutscenes/" .. name)
+				cutsceneScript.errorCallback:add(function()
 					print("Cutscene returned a error. Skipping")
 					cutsceneScript:close()
 				end)
-				cutsceneScript.closeCallback:addOnce(function()
-					self.onComplete()
+				cutsceneScript.closeCallback:add(function()
+					if self.onComplete then self.onComplete() end
 				end)
 
 				cutsceneScript:call("create")
-				self.state.scripts:add(cutsceneScript)
 				if isEnd then cutsceneScript:call("postCreate") end
+
+				self.state.scripts:add(cutsceneScript)
+				cutsceneScript:set("timer", self.timer)
+				cutsceneScript:set("tween", self.tween)
 			end,
 			["data"] = function()
-				local s, cutsceneData = pcall(paths.getJSON, 'data/cutscenes/' .. songName .. suffix)
+				local s, data = pcall(paths.getJSON, "data/cutscenes/" .. name)
 				if not s then
-					print("Cutscene returned a error. Skipping")
-					self.onComplete()
+					print("JSON cutscene returned a error. Skipping")
+					if self.onComplete then self.onComplete() end
 					return
 				end
 
-				for i, event in ipairs(cutsceneData.cutscene) do
-					self.timer:after(event.time / 1000, function()
-						self:execute(event.event, isEnd)
+				for i, event in ipairs(data.cutscene) do
+					Timer(self.timer):start(event.time / 1000, function()
+						self:execute(event.event)
 					end)
 				end
 			end
 		})
 	else
 		self.onComplete()
+		self:destroy()
 	end
 end
 
 function Cutscene:update(dt)
-	if self.state.timer == nil then self.timer:update(dt) end
-	Cutscene.super.update(self, dt)
+	self.timer:update(dt)
+	self.tween:update(dt)
+end
+
+function Cutscene:destroy()
+	self.timer:clear()
+	self.tween:clear()
 end
 
 function Cutscene:execute(event, isEnd)
@@ -72,27 +84,27 @@ function Cutscene:execute(event, isEnd)
 			local xCam, yCam = event.params[1], event.params[2]
 			local isTweening = event.params[3]
 			local time = event.params[4]
-			local ease = event.params[6] .. '-' .. event.params[5]
+			local ease = event.params[5]
 			if isTweening then
-				game.camera:follow(self.state.camFollow, nil)
-				self.timer:tween(time, self.state.camFollow, {x = xCam, y = yCam}, ease)
+				game.camera:follow(self.camFollow, nil)
+				Tween.tween(self.camFollow, {x = xCam, y = yCam}, time, {ease = Ease[ease]})
 			else
 				self.state.camFollow:set(xCam, yCam)
-				game.camera:follow(self.state.camFollow, nil, 2.4 * self.state.camSpeed)
+				game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 			end
 		end,
 		['Camera Zoom'] = function()
 			local zoomCam = event.params[1]
 			local isTweening = event.params[2]
 			local time = event.params[3]
-			local ease = event.params[5] .. '-' .. event.params[4]
+			local ease = event.params[4]
 			if isTweening then
-				self.timer:tween(time, game.camera, {zoom = zoomCam}, ease)
+				Tween.tween(game.camera, {zoom = zoomCam}, time, {ease = Ease[ease]})
 			else
 				game.camera.zoom = zoomCam
 			end
 		end,
-		['Play Sound'] = function()
+		["Play Sound"] = function()
 			local soundPath = event.params[1]
 			local volume = event.params[2]
 			local isFading = event.params[3]
@@ -102,20 +114,18 @@ function Cutscene:execute(event, isEnd)
 			local sound = game.sound.play(paths.getSound(soundPath), volume)
 			if isFading then sound:fade(time, volStart, volEnd) end
 		end,
-		['Play Animation'] = function()
-			local character = nil
+		["Play Animation"] = function()
+			local character, nf, anim = nil, self.state.notefields, event.params[2]
 			switch(event.params[1], {
-				['bf'] = function() character = self.state.boyfriend end,
-				['gf'] = function() character = self.state.gf end,
-				['dad'] = function() character = self.state.dad end
+				[{"bf", "boyfriend", "player"}] = function() character = nf[1].character end,
+				[{"gf", "girlfriend", "bystander"}] = function() character = nf[3].character end,
+				[{"dad", "enemy", "opponent"}] = function() character = nf[2].character end
 			})
-			local animation = event.params[2]
-
-			if character then character:playAnim(animation, true) end
+			if character then character:playAnim(anim, true) end
 		end,
-		['End Cutscene'] = function()
+		["End Cutscene"] = function()
 			game.camera:follow(self.state.camFollow, nil, 2.4 * self.state.camSpeed)
-			self.onComplete(event)
+			if self.onComplete then self.onComplete() end
 		end
 	})
 end

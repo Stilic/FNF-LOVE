@@ -17,7 +17,7 @@ function postCreate()
 	game.camera:shake(0.001, 0.8)
 	state.camHUD:shake(0.001, 0.8)
 
-	Timer():start(1.5, function()
+	Timer(timer):start(1.5, function()
 		util.playSfx(paths.getSound('gameplay/ANGRY'))
 		game.camera:shake(0.001, 0.1)
 		state.camHUD:shake(0.001, 0.1)
@@ -25,3 +25,5 @@ function postCreate()
 	end)
 	if state.buttons then state:remove(state.buttons) end
 end
+
+function pause() return Event_Cancel end
