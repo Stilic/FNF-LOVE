@@ -216,7 +216,7 @@ function Note:_canDraw()
 	end
 	return (self.texture ~= nil and (self.width ~= 0 or self.height ~= 0)) and
 		(Note.super._canDraw(self) or (
-			self.clear and (self.clear:_canDraw() or self.sustainEnd:_canDraw())
+			self.sustain and (self.sustain:_canDraw() or self.sustainEnd:_canDraw())
 		))
 end
 
