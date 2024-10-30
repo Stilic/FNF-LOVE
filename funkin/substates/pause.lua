@@ -1,12 +1,15 @@
 local PauseSubstate = Substate:extend("PauseSubstate")
 
-function PauseSubstate:new()
+function PauseSubstate:new(cutscene)
 	PauseSubstate.super.new(self)
 
-	self.menuItems = {"Resume", "Restart song", "Options", "Exit to menu"}
-	if #PlayState.SONG.difficulties > 1 then
+	self.menuItems = {"Resume", (cutscene and "Skip cutscene" or "Restart song"),
+		"Options", "Exit to menu"}
+	if #PlayState.SONG.difficulties > 1 and not cutscene then
 		table.insert(self.menuItems, 3, "Change difficulty")
 	end
+	self.cutscene = cutscene
+
 	self.blockInput = false
 
 	self:loadMusic()
@@ -113,6 +116,14 @@ function PauseSubstate:selectOption(daChoice)
 		["resume"] = function() self:close() end,
 		["restart song"] = function()
 			game.resetState(true)
+		end,
+		["skip cutscene"] = function()
+			if self.cutscene.isEnd then
+				self.parent:endSong(true)
+			else
+				PlayState.seenCutscene = true
+				game.resetState(true)
+			end
 		end,
 		["change difficulty"] = function()
 			self:openDifficultyMenu()

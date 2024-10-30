@@ -34,6 +34,7 @@ function Note:new(time, direction, sustainTime, type, skin)
 	self.group = nil
 
 	self.sustainSegments = Note.defaultSustainSegments
+	self.__shaderAnimations = {}
 
 	self.direction, self.data = direction, direction -- data is for backward compatibilty
 	self:setSkin(skin)
@@ -176,6 +177,12 @@ function Note:destroySustain()
 	if self.sustain and self.sustain.destroy then self.sustain:destroy() end
 end
 
+function Note:ghost()
+	self:loadSkinData(self.skin, "receptors", self.direction)
+	self:play("pressed")
+	self.isGhost = true
+end
+
 function Note:updateHitbox()
 	local width, height = self:getFrameDimensions()
 
@@ -192,10 +199,14 @@ function Note:destroy()
 	self:destroySustain()
 end
 
-function Note:play(anim, force, frame)
+function Note:play(anim, force, frame, dontShader)
 	local toPlay = anim .. '-note' .. self.direction
 	Note.super.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
 	Note.updateHitbox(self)
+
+	if not dontShader and self.__shaderAnimations[anim] then
+		self.shader = self.__shaderAnimations[anim]
+	end
 end
 
 function Note:_canDraw()
@@ -205,7 +216,7 @@ function Note:_canDraw()
 	end
 	return (self.texture ~= nil and (self.width ~= 0 or self.height ~= 0)) and
 		(Note.super._canDraw(self) or (
-			self.sustain and (self.sustain:_canDraw() or self.sustainEnd:_canDraw())
+			self.clear and (self.clear:_canDraw() or self.sustainEnd:_canDraw())
 		))
 end
 
@@ -262,7 +273,7 @@ function Note:__render(camera)
 		self.x, self.y, self.z = nx, ny + pos, nz
 	end
 
-	local v, almult = values.size, self.tooLate and .6 or 1
+	local v, almult = values.size, self.tooLate and .5 or (self.isGhost and .6 or 1)
 	rot.x, rot.y, rot.z = rot.x + values.rotX, rot.y + values.rotY, rot.z + values.rotZ
 	sc.x, sc.y, sc.z = sc.x * values.sizeX * v, sc.y * values.sizeY * v, sc.z * values.sizeZ * v
 	self.alpha = pal * values.alpha * almult
@@ -446,7 +457,7 @@ function Note:__render(camera)
 		love.graphics.setBlendMode(blendMode, alphaMode)
 	end
 
-	if self.showNote and (not self.wasGoodHit or self.showNoteOnHit) then
+	if self.showNote and (self.isGhost or not self.wasGoodHit or self.showNoteOnHit) then
 		ActorSprite.__render(self, camera)
 	end
 

@@ -32,7 +32,7 @@ PlayState.storyScore = 0
 PlayState.storyWeekFile = ""
 
 PlayState.seenCutscene = false
-
+PlayState.canFadeInReceptors = true
 PlayState.prevCamFollow = nil
 
 -- Charting Stuff
@@ -233,6 +233,16 @@ function PlayState:enter()
 	self:add(self.enemyNotefield)
 	self:add(self.playerNotefield)
 
+	if PlayState.canFadeInReceptors then
+		for _, notefield in ipairs(self.notefields) do
+			if notefield.is then
+				for _, receptor in ipairs(notefield.receptors) do
+					receptor.alpha = 0
+				end
+			end
+		end
+	end
+
 	local notefield
 	for i, event in ipairs(self.events) do
 		if event.t > 10 then
@@ -358,10 +368,16 @@ function PlayState:enter()
 			if skipCountdown then
 				self:startSong(0)
 				if self.buttons then self:add(self.buttons) end
+				for _, notefield in ipairs(self.notefields) do
+					if notefield.is and PlayState.canFadeInReceptors then
+						notefield:fadeInReceptors()
+					end
+				end
+				PlayState.canFadeInReceptors = false
 			else
 				self:startCountdown()
 			end
-			if not self.cutscene then print("wtf"); return end
+			if not self.cutscene then return end
 			self.cutscene:destroy()
 			self.cutscene = nil
 		end)
@@ -448,6 +464,13 @@ function PlayState:startCountdown()
 	self.startedCountdown = true
 	self.countdown.duration = PlayState.conductor.crotchet / 1000
 	self.countdown.playback = 1
+
+	for _, notefield in ipairs(self.notefields) do
+		if notefield.is and PlayState.canFadeInReceptors then
+			notefield:fadeInReceptors()
+		end
+	end
+	PlayState.canFadeInReceptors = false
 end
 
 function PlayState:setPlayback(playback)
@@ -468,7 +491,7 @@ function PlayState:setPlayback(playback)
 	self.tween.timeScale = playback
 end
 
-function PlayState:playSong(time)
+function PlayState:playSong(daTime)
 	self:setPlayback(self.playback)
 
 	if daTime then game.sound.music:seek(daTime) end
@@ -534,20 +557,21 @@ function PlayState:getCameraPosition(char)
 	return camX, camY
 end
 
-function PlayState:cameraMovement(ox, oy, ease, time)
+function PlayState:cameraMovement(ox, oy, easing, time)
 	local event = self.scripts:event("onCameraMove", Events.CameraMove(self.camTarget))
 	local camX, camY = (ox or 0) + event.offset.x, (oy or 0) + event.offset.y
 	if self.camPosTween then
-		self.timer:cancel(self.camPosTween)
+		self.camPosTween:cancel()
 	end
-	if ease then
+	if easing then
 		if game.camera.followLerp then
 			game.camera:follow(self.camFollow, nil)
 		end
-		self.camPosTween =
-			self.timer:tween(time, self.camFollow, {x = camX, y = camY}, ease, function()
+		self.camPosTween = self.tween:tween(self.camFollow, {x = camX, y = camY}, time, {
+			ease = Ease[easing],
+			onComplete = function()
 				self.camFollow.tweening = false
-			end)
+			end})
 	else
 		if not game.camera.followLerp then
 			game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
@@ -900,14 +924,14 @@ function PlayState:goodNoteHit(note, time)
 			end
 		end
 
-		if isSustain then
-			notefield.lastSustain = note
-		else
-			notefield:removeNote(note)
-			notefield.lastSustain = nil
-		end
-
 		local rating = self:getRating(note.time, time)
+
+		notefield.lastSustain = isSustain and note or nil
+		if (rating.name == "bad" or rating.name == "shit") then
+			note:ghost()
+		else
+			if not isSustain then notefield:removeNote(note) end
+		end
 
 		local receptor = notefield.receptors[dir + 1]
 		if receptor then
@@ -1108,6 +1132,25 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			time = notefield.time + offset
 			local hitNotes, hasSustain = notefield:getNotes(time, key)
 			local l = #hitNotes
+			if ClientPrefs.data.ghostTap and l > 0 then
+				table.insert(notefield.recentPresses, {key = key, time = time, hit = true})
+
+				for i = #notefield.recentPresses, 1, -1 do
+					if time - notefield.recentPresses[i].time > 0.1 then
+						table.remove(notefield.recentPresses, i)
+					end
+				end
+
+				for _, press in ipairs(notefield.recentPresses) do
+					if press.key ~= key and math.abs(press.time - time) < 0.1 then
+						if not press.hit then
+							self.health = self.health - 0.081
+						end
+					end
+				end
+			elseif ClientPrefs.data.ghostTap then
+				table.insert(notefield.recentPresses, {key = key, time = time, hit = false})
+			end
 			if l == 0 then
 				local receptor = notefield.receptors[fixedKey]
 				if receptor then

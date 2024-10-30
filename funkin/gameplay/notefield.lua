@@ -20,6 +20,7 @@ function Notefield:new(x, y, keys, skin, character, vocals, speed)
 	self.character, self.vocals = character, vocals
 	self.bot = false
 	self.lastSustain = nil
+	self.recentPresses = {}
 
 	self.modifiers = {}
 
@@ -120,6 +121,19 @@ function Notefield:setSkin(skin)
 	end
 	for _, note in ipairs(self.notes) do
 		note:setSkin(skin)
+	end
+end
+
+function Notefield:fadeInReceptors()
+	for i = 1, #self.lanes do
+		local receptor = self.lanes[i].receptor
+		receptor.y = receptor.y - 10
+		receptor.alpha = 0
+
+		Tween.tween(receptor, {y = receptor.y + 10, alpha = 1}, 1, {
+			ease = "circOut",
+			startDelay = 0.16 + (0.2 * i)
+		})
 	end
 end
 
