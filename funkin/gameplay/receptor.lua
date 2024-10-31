@@ -172,6 +172,7 @@ function Receptor:spawnCover(note)
 	cover:play("start", true)
 	cover:updateHitbox()
 	cover.parent, cover.visible = note, true
+	cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2 - 4, self._z
 	return cover
 end
 
