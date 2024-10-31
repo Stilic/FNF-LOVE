@@ -1,5 +1,5 @@
 local Judgements = SpriteGroup:extend("Judgements")
-Judgements.area = {width = 328, height = 132}
+Judgements.area = {width = 328, height = 134}
 
 function Judgements:new(x, y, skin)
 	Judgements.super.new(self, x, y)
@@ -15,19 +15,19 @@ end
 
 function Judgements:precache(ratings)
 	local path = "skins/" .. self.skin .. "/"
-	for _, r in ipairs(self.ratings) do paths.getImage(path .. r.name) end
+	for _, r in ipairs(ratings) do paths.getImage(path .. r.name) end
 	for _, num in ipairs({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "negative"}) do
 		paths.getImage(path .. "num" .. num)
 	end
 end
 
-function Judgements:createSprite(name, scale, alpha, duration)
+function Judgements:createSprite(name, scale, duration)
 	local sprite = self:recycle()
 	sprite:loadTexture(paths.getImage("skins/" .. self.skin .. "/" .. name))
 	sprite:setGraphicSize(math.floor(sprite.width * scale))
 	sprite.x, sprite.y = 0, 0
 	sprite:updateHitbox()
-	sprite.alpha = alpha
+	sprite.alpha = 1
 	sprite.antialiasing = antialias
 
 	sprite.moves = true
@@ -59,8 +59,7 @@ function Judgements:spawn(rating, combo)
 
 	if rating and self.ratingVisible then
 		local areaHeight = self.area.height / 2
-		local ratingSpr = self:createSprite(rating, self.antialiasing and 0.7 or 4.7,
-			1, accel)
+		local ratingSpr = self:createSprite(rating, self.antialiasing and 0.65 or 4.2, accel)
 		ratingSpr.x = (self.area.width - ratingSpr.width) / 2
 		ratingSpr.y = (self.area.height - ratingSpr.height) / 2 - self.area.height / 3
 		ratingSpr.acceleration.y = 550
@@ -75,7 +74,7 @@ function Judgements:spawn(rating, combo)
 		for i = 1, l do
 			char = combo:sub(i, i)
 			comboNum = self:createSprite("num" .. (char == "-" and "negative" or char),
-				self.antialiasing and 0.5 or 4.5, 1, accel * 2)
+				self.antialiasing and 0.45 or 4.2, accel * 2)
 			x, comboNum.x, comboNum.y = x + comboNum.width - 8,
 				x, self.area.height - comboNum.height
 			comboNum.acceleration.y, comboNum.velocity.x, comboNum.velocity.y = math.random(200, 300),
