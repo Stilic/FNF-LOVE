@@ -5,6 +5,10 @@ API.meta.base = {
 	artist = nil,
 	charter = nil,
 
+	difficulties = {"Easy", "Normal", "Hard"},
+	icon = "face",
+	color = "#F1F1F1",
+
 	preview = {0, 1500}
 }
 
@@ -257,21 +261,23 @@ end
 
 -- Function to parse metadata song files.
 function API.meta.parse(song, isPlayable)
-	local clone = table.clone(API.meta.base)
-	local path = isPlayable and "songs/" .. song .. "/meta" or "music/" .. song .. "-meta"
+	if isPlayable == nil then isPlayable = true end
 
-	local meta = table.merge(clone, paths.getJSON(path))
+	local clone = table.clone(API.meta.base)
+	local path = isPlayable and "songs/" .. paths.formatToSongPath(song) .. "/meta"
+		or "music/" .. paths.formatToSongPath(song) .. "-meta"
+
+	local json = paths.getJSON(path)
+	local meta = table.merge(clone, json)
 	if meta == nil then meta = clone end
 
-	local info = {}
-	if meta.playData then
-		local info = meta.playData
+	if json then
+		set(meta, "song", json.songName or json.song or json.name)
 	end
+	if meta.song == nil then meta.song = song end
 
-	set(meta.preview[1], info.previewStart)
-	set(meta.preview[2], info.previewEnd)
-
-	info.previewStart, info.previewEnd = nil, nil
+	local info = meta.playData or meta
+	set(meta, "difficulties", info.difficulties)
 
 	return meta
 end

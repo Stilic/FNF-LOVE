@@ -22,8 +22,6 @@ function FreeplayState:enter()
 	self.lerpScore = 0
 	self.intendedScore = 0
 
-	self.selected = false
-
 	self.persistentUpdate = true
 	self.persistentDraw = true
 
@@ -47,7 +45,7 @@ function FreeplayState:enter()
 	if #self.songsData > 0 then
 		for i = 1, #self.songsData do
 			local songText = AtlasText(0, 0,
-				self.songsData[i].name, "bold")
+				self.songsData[i].song, "bold")
 			songText.data = self.songsData[i]
 
 			local icon = HealthIcon(self.songsData[i].icon)
@@ -119,22 +117,15 @@ function FreeplayState:enter()
 end
 
 function FreeplayState:openSong(song)
-	if not self.selected then
-		self.selected = true
-		if #self.songsData > 0 then
-			if controls:pressed('accept') then
-				PlayState.storyMode = false
-				local diff = song.data.difficulties[FreeplayState.curDifficulty]
+	PlayState.storyMode = false
+	local diff = song.data.difficulties[FreeplayState.curDifficulty]
 
-				if game.keys.pressed.SHIFT then
-					PlayState.loadSong(song.data.name, diff)
-					PlayState.storyDifficulty = diff
-					game.switchState(ChartingState())
-				else
-					game.switchState(PlayState(false, song.data.name, diff))
-				end
-			end
-		end
+	if game.keys.pressed.SHIFT then
+		PlayState.loadSong(song.data.song, diff)
+		PlayState.storyDifficulty = diff
+		game.switchState(ChartingState())
+	else
+		game.switchState(PlayState(false, song.data.song, diff))
 	end
 end
 
@@ -150,18 +141,18 @@ function FreeplayState:update(dt)
 	if math.abs(self.lerpScore - self.intendedScore) <= 10 then
 		self.lerpScore = self.intendedScore
 	end
-	self.scoreText.content = "PERSONAL BEST: " .. math.floor(self.lerpScore)
+	self.scoreText.content = "PERSONAL BEST: " .. util.formatNumber(math.floor(self.lerpScore))
 
 	self:positionHighscore()
 
-	if not self.selected then
+	if not self.songs.lock then
 		if #self.songsData > 0 and self.throttles then
 			if self.throttles.left:check() then self:changeDiff(-1) end
 			if self.throttles.right:check() then self:changeDiff(1) end
 		end
 		if controls:pressed("back") then
 			util.playSfx(paths.getSound('cancelMenu'))
-			self.selected = true
+			self.songs.lock = true
 			game.switchState(MainMenuState())
 		end
 	end
@@ -176,53 +167,36 @@ function FreeplayState:update(dt)
 end
 
 function FreeplayState:closeSubstate()
-	self.selected = false
 	FreeplayState.super.closeSubstate(self)
 end
 
 function FreeplayState:changeDiff(change)
-	if change == nil then change = 0 end
 	local songDiffs = self.songsData[self.songs.curSelected].difficulties
+	if change == nil then change = 0 end
 
 	FreeplayState.curDifficulty = FreeplayState.curDifficulty + change
 	FreeplayState.curDifficulty = (FreeplayState.curDifficulty - 1) % #songDiffs + 1
 
-	self.intendedScore = Highscore.getScore(self.songsData[self.songs.curSelected].name,
+	self.intendedScore = Highscore.getScore(self.songsData[self.songs.curSelected].song,
 		songDiffs[FreeplayState.curDifficulty])
 
+	self.diffText.content = songDiffs[FreeplayState.curDifficulty]:upper()
 	if #songDiffs > 1 then
-		self.diffText.content = "< " ..
-			songDiffs[FreeplayState.curDifficulty]:upper() ..
-			" >"
-	else
-		self.diffText.content = songDiffs[FreeplayState.curDifficulty]:upper()
+		self.diffText.content = "< " .. self.diffText.content .. " >"
 	end
+
 	self:positionHighscore()
 end
 
-function FreeplayState:changeSelection(change) self:changeDiff(0) end
+function FreeplayState:changeSelection()
+	self:changeDiff(0)
+end
 
 function FreeplayState:positionHighscore()
 	self.scoreText.x = game.width - self.scoreText:getWidth() - 6
 	self.scoreBG.width = self.scoreText:getWidth() + 12
 	self.scoreBG.x = self.scoreText.x - 6
 	self.diffText.x = math.floor(self.scoreBG.x + (self.scoreBG.width - self.diffText:getWidth()) / 2)
-end
-
-local function getSongMetadata(song)
-	local song_metadata = paths.getJSON(
-		'songs/' .. paths.formatToSongPath(song) ..
-		'/meta')
-	if song_metadata == nil then
-		song_metadata = {}
-	end
-	return {
-		name = song_metadata.name or song,
-		icon = song_metadata.icon or 'face',
-		color = song_metadata.color or '#0F0F0F',
-		difficulties = song_metadata.difficulties or
-			{'Easy', PlayState.defaultDifficulty, 'Hard'}
-	}
 end
 
 function FreeplayState:loadSongs()
@@ -241,7 +215,7 @@ function FreeplayState:loadSongs()
 				local weekData = paths.getJSON('data/weeks/weeks/' .. week)
 				if not weekData.hide_fm then
 					for _, song in ipairs(weekData.songs) do
-						table.insert(self.songsData, getSongMetadata(song))
+						table.insert(self.songsData, API.meta.parse(song))
 					end
 				end
 			end
@@ -253,7 +227,7 @@ function FreeplayState:loadSongs()
 						'data/weeks/weeks/' .. weekName)
 					if not weekData.hide_fm then
 						for _, song in ipairs(weekData.songs) do
-							table.insert(self.songsData, getSongMetadata(song))
+							table.insert(self.songsData, API.meta.parse(song))
 						end
 					end
 				end
@@ -263,7 +237,7 @@ function FreeplayState:loadSongs()
 	end
 	listData = listData:gsub('\r', ''):split('\n')
 	for _, song in pairs(listData) do
-		table.insert(self.songsData, getSongMetadata(song))
+		table.insert(self.songsData, API.meta.parse(song))
 	end
 end
 
