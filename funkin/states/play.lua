@@ -287,20 +287,13 @@ function PlayState:enter()
 	self.healthBar:screenCenter("x").y = game.height * (self.downScroll and 0.1 or 0.9)
 	self:add(self.healthBar)
 
-	local fontScore = paths.getFont("vcr.ttf", 16)
-	self.scoreText = Text(0, 0, "", fontScore, Color.WHITE, "right")
+	self.scoreText = Text(0, 0, "", paths.getFont("vcr.ttf", 16), Color.WHITE, "right")
 	self.scoreText.outline.width = 1
 	self.scoreText.antialiasing = false
 	self:add(self.scoreText)
 
-	self.botplayText = Text(0, 0, "BOTPLAY", fontScore, Color.WHITE)
-	self.botplayText.outline.width = 1
-	self.botplayText.antialiasing = false
-	self.botplayText.visible = ClientPrefs.data.botPlay
-	self:add(self.botplayText)
-
 	for _, o in ipairs({
-		self.judgeSprites, self.countdown, self.healthBar, self.scoreText, self.botplayText
+		self.judgeSprites, self.countdown, self.healthBar, self.scoreText
 	}) do o.cameras = {self.camHUD} end
 
 	self.score = 0
@@ -430,7 +423,6 @@ end
 
 function PlayState:positionText()
 	self.scoreText.x, self.scoreText.y = self.healthBar.x + self.healthBar.bg.width - 190, self.healthBar.y + 30
-	self.botplayText.x, self.botplayText.y = game.width - self.botplayText:getWidth() - 36, self.scoreText.y
 end
 
 function PlayState:getRating(a, b)
@@ -862,7 +854,7 @@ function PlayState:onSettingChange(category, setting)
 			end,
 			["botplayMode"] = function()
 				self.playerNotefield.bot = ClientPrefs.data.botplayMode
-				self.botplayText.visible = ClientPrefs.data.botplayMode
+				self:recalculateRating()
 				self.usedBotplay = true
 			end,
 			["backgroundDim"] = function()
@@ -1040,7 +1032,8 @@ function PlayState:miss(note, dir)
 end
 
 function PlayState:recalculateRating(rating)
-	self.scoreText.content = "Score: " .. util.formatNumber(math.floor(self.score))
+	self.scoreText.content = ClientPrefs.data.botplayMode and "Botplay Enabled" or
+		"Score: " .. util.formatNumber(math.floor(self.score))
 	if rating then
 		local field = rating .. "s"
 		self[field] = (self[field] or 0) + 1
@@ -1086,9 +1079,7 @@ function PlayState:tryGameOver()
 		self.camHUD.visible, self.camNotes.visible = false, false
 		self.boyfriend.visible = false
 
-		if self.buttons then
-			self:remove(self.buttons)
-		end
+		if self.buttons then self:remove(self.buttons) end
 
 		GameOverSubstate.characterName = event.characterName
 		GameOverSubstate.deathSoundName = event.deathSoundName
