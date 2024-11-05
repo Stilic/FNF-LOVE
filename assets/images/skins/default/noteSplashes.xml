@@ -1,7 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <TextureAtlas imagePath="noteSplashes.png">
-	<!-- Created with Adobe Animate version 21.0.1.37179 -->
-	<!-- http://www.adobe.com/products/animate.html -->
+	<!-- Created with Adobe Flash CS6 version 12.0.0.481 -->
+	<!-- http://www.adobe.com/products/flash.html -->
 	<SubTexture name="impact 10000" x="0" y="0" width="198" height="279" frameX="-32" frameY="-11" frameWidth="268" frameHeight="305"/>
 	<SubTexture name="impact 10001" x="200" y="0" width="222" height="274" frameX="-27" frameY="-21" frameWidth="268" frameHeight="305"/>
 	<SubTexture name="impact 10002" x="424" y="0" width="260" height="299" frameX="-4" frameY="-6" frameWidth="268" frameHeight="305"/>

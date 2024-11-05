@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <TextureAtlas imagePath="NOTE_assets.png">
 	<!-- Created with Adobe Flash CS6 version 12.0.0.481 -->
 	<!-- http://www.adobe.com/products/flash.html -->
@@ -8,8 +8,8 @@
 	<SubTexture name="confirm0003" x="176" y="0" width="164" height="162" frameX="-5" frameY="-5" frameWidth="174" frameHeight="172"/>
 	<SubTexture name="confirm glow0000" x="0" y="174" width="234" height="231"/>
 	<SubTexture name="confirm glow0001" x="236" y="174" width="234" height="231"/>
-	<SubTexture name="confirm glow0002" x="0" y="407" width="215" height="211" frameX="-11" frameY="-10" frameWidth="234" frameHeight="231"/>
-	<SubTexture name="confirm glow0003" x="0" y="407" width="215" height="211" frameX="-11" frameY="-10" frameWidth="234" frameHeight="231"/>
+	<SubTexture name="confirm glow0002" x="0" y="407" width="215" height="211" frameX="-10" frameY="-10" frameWidth="234" frameHeight="231"/>
+	<SubTexture name="confirm glow0003" x="0" y="407" width="215" height="211" frameX="-10" frameY="-10" frameWidth="234" frameHeight="231"/>
 	<SubTexture name="hold end0000" x="217" y="407" width="50" height="64"/>
 	<SubTexture name="hold piece0000" x="269" y="407" width="50" height="44"/>
 	<SubTexture name="note0000" x="321" y="407" width="157" height="154"/>
