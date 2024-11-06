@@ -9,9 +9,34 @@ local tweens = {
 	expo = function(t) return 2 ^ (10 * (t - 1)) end,
 	circ = function(t) return 1 - math.sqrt(1 - t * t) end,
 
+	back = function(t) return t * t * (2.70158 * t - 1.70158) end,
+	elastic = function(t)
+		t = t - 1
+		return -(1 * (2 ^
+			(10 * t)) * math.sin((t - (0.4 / (2 * math.pi) * math.asin(1))) * (2 * math.pi) / 0.4))
+	end,
+	bounce = function(t)
+		local function out(t)
+			if t < (1 / 2.75) then
+				return 7.5625 * t * t
+			elseif t < (2 / 2.75) then
+				return 7.5625 * (t - (1.5 / 2.75)) * (t - (1.5 / 2.75)) + 0.75
+			elseif t < (2.5 / 2.75) then
+				return 7.5625 * (t - (2.25 / 2.75)) * (t - (2.25 / 2.75)) + 0.9375
+			end
+			return 7.5625 * (t - (2.625 / 2.75)) * (t - (2.625 / 2.75)) + 0.984375
+		end
+
+		return 1 - out(1 - t)
+	end,
+
 	smoothStep = function(t)
 		t = t / 2
 		return 2 * t * t * (t * -2 + 3)
+	end,
+	smootherStep = function(t)
+		t = t / 2
+		return 2 * t * t * t * (t * (t * 6 - 15) + 10)
 	end
 }
 
