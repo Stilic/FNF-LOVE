@@ -134,7 +134,7 @@ function Text:__render(camera)
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 	love.graphics.setFont(self.font)
 
-	if not self.antialiasing then x, y = math.floor(x), math.floor(y) end
+	if not self.antialiasing then x, y = math.round(x), math.round(y) end
 
 	if outline then
 		color = outline.color
@@ -153,7 +153,8 @@ function Text:__render(camera)
 					local omode = outline.antialiasing and "linear" or "nearest"
 					self.font:setFilter(omode, omode, anisotropy)
 				end
-				love.graphics.printf(content, x + dx, y + dy,
+				local fdx, fdy = math.round(x + dx), math.floor(y + dy)
+				love.graphics.printf(content, fdx, fdy,
 					width, align, rad, sx, sy, ox, oy)
 			end
 		end
