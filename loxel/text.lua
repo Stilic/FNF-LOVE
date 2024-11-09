@@ -153,7 +153,7 @@ function Text:__render(camera)
 					local omode = outline.antialiasing and "linear" or "nearest"
 					self.font:setFilter(omode, omode, anisotropy)
 				end
-				local fdx, fdy = math.round(x + dx), math.floor(y + dy)
+				local fdx, fdy = math.round(x + dx), math.round(y + dy)
 				love.graphics.printf(content, fdx, fdy,
 					width, align, rad, sx, sy, ox, oy)
 			end
