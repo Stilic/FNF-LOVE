@@ -637,6 +637,7 @@ function PlayState:executeEvent(event)
 	for _, s in pairs(self.eventScripts) do
 		if s.belongsTo == event.e then s:call("event", event) end
 	end
+	self.scripts:call("onEvent", event)
 end
 
 function PlayState:doCountdown(beat)
