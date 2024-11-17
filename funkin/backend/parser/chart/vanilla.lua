@@ -1,4 +1,4 @@
-local vanilla = {name = "Vanilla/Psych"}
+local vanilla = {name = "Vanilla"}
 
 local function set(tbl, key, v) if v ~= nil then tbl[key] = v end end
 

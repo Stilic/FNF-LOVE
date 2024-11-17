@@ -1,11 +1,6 @@
 local Events = require "funkin.backend.scripting.events"
 local PauseSubstate = require "funkin.substates.pause"
 local Cutscene = require "funkin.gameplay.cutscene"
---[[ LIST TODO OR NOTES
-	- ralty
-	maybe make scripts vars just include conductor itself instead of the properties of conductor
-	NVM NVM, maybe do make a var conductor but keep props
-]]
 
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
@@ -563,7 +558,8 @@ function PlayState:cameraMovement(ox, oy, easing, time)
 			ease = Ease[easing],
 			onComplete = function()
 				self.camFollow.tweening = false
-			end})
+			end
+		})
 	else
 		if not game.camera.followLerp then
 			game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
@@ -920,18 +916,18 @@ function PlayState:goodNoteHit(note, time)
 		local rating = self:getRating(note.time, time)
 
 		notefield.lastSustain = isSustain and note or nil
-		if (rating.name == "bad" or rating.name == "shit") then
+		if not isSustain then
+			notefield:removeNote(note)
+		elseif rating.mod < 0.5 then
 			note:ghost()
-		else
-			if not isSustain then notefield:removeNote(note) end
 		end
 
 		local receptor = notefield.receptors[dir + 1]
 		if receptor then
 			if not event.strumGlowCancelled then
-				local snap = notefield.bot and receptor.holdTime or 0
+				local time = notefield.bot and receptor.holdTime
 				receptor:play("confirm", true)
-				if not note.sustain then receptor.holdTime = snap or 0.25 end
+				if not note.sustain then receptor.holdTime = time ~= 0 and time or 0.3 end
 				if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
 					receptor:spawnSplash()
 				end
