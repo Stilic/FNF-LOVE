@@ -43,7 +43,7 @@ function PlayState.loadSong(song, diff)
 	diff = diff or PlayState.defaultDifficulty
 	PlayState.songDifficulty = diff
 
-	PlayState.SONG = API.chart.parse(song, diff)
+	PlayState.SONG = Parser.getChart(song, diff)
 
 	return true
 end
@@ -930,7 +930,7 @@ function PlayState:goodNoteHit(note, time)
 			if not event.strumGlowCancelled then
 				local snap = notefield.bot and receptor.holdTime ~= 0
 				receptor:play("confirm", true)
-				if not note.sustain then receptor.holdTime = snap and 0.05 or 0.25 end
+				if not note.sustain then receptor.holdTime = snap and receptor.holdTime or 0.25 end
 				if ClientPrefs.data.noteSplash and notefield.canSpawnSplash and rating.splash then
 					receptor:spawnSplash()
 				end

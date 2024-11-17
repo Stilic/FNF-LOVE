@@ -28,6 +28,7 @@ Https = require "lib.https"
 paths = require "funkin.paths"
 util = require "funkin.util"
 
+Parser = require "funkin.backend.parser"
 ClientPrefs = require "funkin.backend.clientprefs"
 Conductor = require "funkin.backend.conductor"
 Highscore = require "funkin.backend.highscore"
