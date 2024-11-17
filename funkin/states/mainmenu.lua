@@ -3,8 +3,6 @@ local MainMenuState = State:extend("MainMenuState")
 MainMenuState.curSelected = 1
 
 function MainMenuState:enter()
-	MainMenuState.super.enter(self)
-
 	self.notCreated = false
 
 	self.versionText = Text(0, game.height - 18, "v" .. Project.version, paths.getFont("vcr.ttf", 16))
@@ -21,6 +19,7 @@ function MainMenuState:enter()
 		self.script:call("postCreate")
 		return
 	end
+	MainMenuState.super.enter(self)
 
 	-- Update Presence
 	if Discord then

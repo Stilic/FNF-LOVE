@@ -175,6 +175,11 @@ end
 
 function Notefield:update(dt)
 	Notefield.super.update(self, dt)
+	for _, lane in ipairs(self.lanes) do
+		for _, note in ipairs(lane.renderedNotes) do
+			note:update(dt)
+		end
+	end
 	for _, mod in pairs(self.modifiers) do mod:update(self.beat) end
 end
 
