@@ -31,6 +31,10 @@ function love.mousepressed(...) game.mousepressed(...) end
 
 function love.mousereleased(...) game.mousereleased(...) end
 
+function love.touchpressed(...) game.touchpressed(...) end
+
+function love.touchreleased(...) game.touchreleased(...) end
+
 function love.update(dt)
 	funkin.update(dt)
 	game.update(dt)
