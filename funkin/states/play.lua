@@ -1120,25 +1120,21 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 			time = notefield.time + offset
 			local hitNotes, hasSustain = notefield:getNotes(time, key)
 			local l = #hitNotes
-			if ClientPrefs.data.ghostTap and l > 0 then
-				table.insert(notefield.recentPresses, {key = key, time = time, hit = true})
 
+			if ClientPrefs.data.ghostTap and l > 0 then
 				for i = #notefield.recentPresses, 1, -1 do
-					if time - notefield.recentPresses[i].time > 0.1 then
+					if time - notefield.recentPresses[i] > 0.12 then
 						table.remove(notefield.recentPresses, i)
 					end
 				end
 
-				for _, press in ipairs(notefield.recentPresses) do
-					if press.key ~= key and math.abs(press.time - time) < 0.1 then
-						if not press.hit then
-							self.health = self.health - 0.081
-						end
-					end
+				for _ = 1, #notefield.recentPresses do
+					self.health = self.health - 0.09
 				end
 			elseif ClientPrefs.data.ghostTap then
-				table.insert(notefield.recentPresses, {key = key, time = time, hit = false})
+				table.insert(notefield.recentPresses, time)
 			end
+
 			if l == 0 then
 				local receptor = notefield.receptors[fixedKey]
 				if receptor then
