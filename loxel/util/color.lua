@@ -79,13 +79,9 @@ function Color.RGBtoHSL(r, g, b)
 	return h, s, l
 end
 
-function Color.fromHSL(...)
-	return {Color.HSL(...)}
-end
-
 function Color.fromString(str)
 	str = str:gsub("#", "")
-	return Color.fromRGB(tonumber('0x' .. str:sub(1, 2)),
+	return fromRGB(tonumber('0x' .. str:sub(1, 2)),
 		tonumber('0x' .. str:sub(3, 4)),
 		tonumber('0x' .. str:sub(5, 6)))
 end
@@ -109,9 +105,10 @@ function Color.lerp(x, y, i)
 end
 
 function Color.lerpDelta(x, y, i, delta)
-	return {math.lerp(y[1], x[1], math.exp(-(delta or game.dt) * i)),
-		math.lerp(y[2], x[2], math.exp(-(delta or game.dt) * i)),
-		math.lerp(y[3], x[3], math.exp(-(delta or game.dt) * i))}
+	i = math.exp(-(delta or game.dt) * i)
+	return {math.lerp(y[1], x[1], i),
+		math.lerp(y[2], x[2], i),
+		math.lerp(y[3], x[3], i)}
 end
 
 function Color.vec4(tbl, ...)
@@ -133,7 +130,8 @@ end
 
 setmetatable(Color, {
 	__index = function(tbl, key)
-		if colorTable[key] then return table.clone(colorTable[key]) end
+		tbl = colorTable[key]
+		if tbl then return table.clone(tbl) end
 	end
 })
 
