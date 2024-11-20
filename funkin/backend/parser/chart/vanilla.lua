@@ -1,4 +1,4 @@
-local vanilla = {name = "Vanilla"}
+local vanilla = {name = "Vanilla/Psych"}
 
 local function set(tbl, key, v) if v ~= nil then tbl[key] = v end end
 
@@ -19,7 +19,7 @@ local function compareInsert(noteList, newNote)
 	table.insert(noteList, newNote)
 end
 
-local function getStuff(data, eventData, bpm)
+local function getStuff(data, eventData, bpm, psych)
 	local dad, bf, events, bpmChanges =
 		{}, {}, {}, Conductor.newBPMChanges(bpm)
 
@@ -48,7 +48,7 @@ local function getStuff(data, eventData, bpm)
 			for _, n in ipairs(s.sectionNotes) do
 				local kind = n[4]
 				local column, gf = n[2], kind == "gf"
-				local hit = s.mustHitSection
+				local hit = psych or s.mustHitSection
 				if column > 3 then hit = not hit end
 				if kind == true or kind == 1 or (not hit and s.altAnim) then
 					kind = "alt"
@@ -98,7 +98,7 @@ end
 
 function vanilla.parse(data, eventData, meta)
 	local chart = table.clone(vanilla.base)
-	local realData = data.song
+	local realData = data.song or data
 
 	set(chart, "song", realData.song)
 
@@ -149,7 +149,8 @@ function vanilla.parse(data, eventData, meta)
 
 	if realData.notes then
 		chart.notes, chart.events, chart.bpmChanges =
-			getStuff(realData.notes, eventData or realData.events, chart.bpm)
+			getStuff(realData.notes, eventData or realData.events, chart.bpm,
+				realData.format and realData.format:startsWith("psych"))
 	end
 
 	return chart
