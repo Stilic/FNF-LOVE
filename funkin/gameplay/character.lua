@@ -12,11 +12,6 @@ function Character:new(x, y, char, isPlayer)
 		self.script:call("create")
 	end
 
-	self:changeCharacter(char, isPlayer)
-end
-
--- this is a function so characters can be reloaded by some kind of event
-function Character:changeCharacter(char, isPlayer)
 	self.char = char
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
