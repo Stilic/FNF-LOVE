@@ -8,13 +8,17 @@ local function getStuff(data, eventData, chart)
 
 	if eventData then
 		for i, e in ipairs(eventData.events) do
-			local eevent = e.name
-			if eevent == "Camera Movement" then eevent = "FocusCamera" end
+			local eevent, eparams
+			if e.event == "Camera Movement" then
+				eevent = "FocusCamera"
+				local val = e.params[1]
+				eparams = val ~= 2 and 1 - val or val
+			end
 
 			table.insert(events, {
 				t = e.time,
-				e = eevent,
-				v = e.params,
+				e = eevent or e.event,
+				v = eparams or e.params,
 				codename = true
 			})
 		end
