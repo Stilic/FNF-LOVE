@@ -48,16 +48,12 @@ function paths.isPersistant(path)
 end
 
 function paths.clearCache()
-	for k, o in pairs(paths.images) do
-		if not paths.isPersistant(k) then
-			o:release()
-			paths.images[k] = nil
-		end
-	end
-	for k, o in pairs(paths.audio) do
-		if not paths.isPersistant(k) then
-			o:release()
-			paths.audio[k] = nil
+	local function clear(tbl)
+		for k, o in pairs(tbl) do
+			if not paths.isPersistant(k) then
+				if o.release then o:release() end
+				tbl[k] = nil
+			end
 		end
 	end
 	for k, o in pairs(paths.atlases) do
@@ -65,13 +61,13 @@ function paths.clearCache()
 			o.texture:release()
 			for _, f in ipairs(o.frames) do f.quad:release() end
 			paths.atlases[k] = nil
+			paths.modtimes[k] = nil
 		end
 	end
-	for k, o in pairs(paths.noteskins) do
-		if not paths.isPersistant(k) then
-			paths.noteskins[k] = nil
-		end
-	end
+	clear(paths.images)
+	clear(paths.audio)
+	clear(paths.fonts)
+	clear(paths.noteskins)
 	collectgarbage()
 end
 
@@ -94,7 +90,7 @@ function paths.exists(path, type)
 	return info ~= nil and (not type or info.type == type:lower())
 end
 
-function paths.getItems(key, type, excludeMods)
+function paths.getItems(key, type, extension, excludeMods)
 	type = type or "any"
 	local mods, base = paths.getMods(key) .. "/", paths.getPath(key, false) .. "/"
 	local files, getItems = {}, love.filesystem.getDirectoryItems
@@ -102,11 +98,13 @@ function paths.getItems(key, type, excludeMods)
 	if paths.exists(mods, "directory") or paths.exists(base, "directory") then
 		if not excludeMods then
 			for _, v in ipairs(getItems(mods)) do
-				insertFile(mods .. v, v, type, files)
+				if not extension or v:ext() == extension then
+					insertFile(mods .. v, v, type, files)
+				end
 			end
 		end
 		for _, v in ipairs(getItems(base)) do
-			if not table.find(files, v) then
+			if not table.find(files, v) and (not extension or v:ext() == extension) then
 				insertFile(base .. v, v, type, files)
 			end
 		end
