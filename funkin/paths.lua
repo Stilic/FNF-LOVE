@@ -61,7 +61,6 @@ function paths.clearCache()
 			o.texture:release()
 			for _, f in ipairs(o.frames) do f.quad:release() end
 			paths.atlases[k] = nil
-			paths.modtimes[k] = nil
 		end
 	end
 	clear(paths.images)
