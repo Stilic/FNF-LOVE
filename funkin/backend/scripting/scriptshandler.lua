@@ -6,7 +6,7 @@ function ScriptsHandler:new() self.scripts = {} end
 
 ---loads a script then adds it to the handler
 ---@param file string
-function ScriptsHandler:loadScript(file) table.insert(self.scripts, Script(file)) end
+function ScriptsHandler:loadScript(file) self:add(Script(file)) end
 
 ---add script to list
 ---@param script Script
@@ -20,8 +20,8 @@ function ScriptsHandler:remove(script) table.delete(self.scripts, script) end
 ---@param ... string
 function ScriptsHandler:loadDirectory(...)
 	for _, dir in ipairs({...}) do
-		for _, file in ipairs(love.filesystem.getDirectoryItems(paths.getPath(dir))) do
-			if file:endsWith('.lua') then self:loadScript(string.withoutExt(dir .. "/" .. file)) end
+		for _, file in ipairs(paths.getItems(dir, "file", "lua")) do
+			self:loadScript(dir .. "/" .. file:withoutExt())
 		end
 	end
 end
