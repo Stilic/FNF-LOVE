@@ -229,7 +229,7 @@ function Character:sing(dir, type, force)
 	end
 	self:playAnim(anim, force == nil and true or force)
 
-	self.dirAnim = type == "miss" and nil or dir
+	self.dirAnim = dir
 	self.lastHit = PlayState.conductor.time
 end
 
