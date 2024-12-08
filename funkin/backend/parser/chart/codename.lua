@@ -25,18 +25,14 @@ local function getStuff(data, eventData, chart)
 	end
 
 	for _, s in ipairs(data.strumLines) do
-		local toAdd, gfNotes = bf
+		local toAdd, gfNotes = dad
 		if s.position == "dad" then
-			toAdd = dad
-			gfNotes = false
 			set(chart, "player2", s.characters[1])
 		elseif s.position == "girlfriend" then
-			toAdd = dad
 			gfNotes = true
 			set(chart, "gfVersion", s.characters[1])
 		elseif s.position == "boyfriend" then
 			toAdd = bf
-			gfNotes = false
 			set(chart, "player1", s.characters[1])
 		end
 
