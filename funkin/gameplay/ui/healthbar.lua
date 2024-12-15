@@ -40,7 +40,9 @@ function HealthBar:update(dt)
 	HealthBar.super.update(self, dt)
 	self.bar:setValue(self.value)
 	local lerpValue, healthPercent, y =
-		util.coolLerp(self.iconScale, 1, 15, dt), self.bar.percent, self.bar.y - 75
+		util.coolLerp(self.iconScale, 1, 15, dt),
+		self.bar.flipX and 50 - self.bar.percent + 50 or self.bar.percent,
+		self.bar.y - 75
 	self.iconScale, self.iconP1.health, self.iconP2.health =
 		lerpValue, healthPercent, healthPercent
 	self.iconP1:setScale(lerpValue)
