@@ -37,7 +37,30 @@ function Stickers:new(stickerSet, state)
 		end
 	end
 
-	if not Stickers.previous then self:setup() end
+	if not Stickers.previous then
+		self:clear()
+
+		local data, stks = self:getStickers(self.stickerSet), {}
+		for _, set in ipairs(data.packs["all"]) do stks[set] = data.stickers[set] end
+		local keys = table.keys(stks, true)
+
+		local xPos, yPos = -100, -100
+		while xPos <= game.width do
+			local sets = stks[keys[random(#keys)]]
+			local sticker = sets[random(#sets)]
+
+			local sticky = self:createSticker(data.name, sticker, xPos, yPos)
+			xPos = xPos + sticky.width / 2
+
+			if xPos >= game.width then
+				if yPos <= game.height then
+					xPos, yPos = -100, yPos + random(70.0, 120.0)
+				end
+			end
+		end
+
+		self.isDirty = true
+	end
 	if state then self:start(state) end
 end
 
@@ -55,31 +78,6 @@ function Stickers:createSticker(set, name, x, y)
 	sticker:updateHitbox()
 	self:add(sticker)
 	return sticker
-end
-
-function Stickers:setup()
-	self:clear()
-
-	local data, stks = self:getStickers(self.stickerSet), {}
-	for _, set in ipairs(data.packs["all"]) do stks[set] = data.stickers[set] end
-	local keys = table.keys(stks, true)
-
-	local xPos, yPos = -100, -100
-	while xPos <= game.width do
-		local sets = stks[keys[random(#keys)]]
-		local sticker = sets[random(#sets)]
-
-		local sticky = self:createSticker(data.name, sticker, xPos, yPos)
-		xPos = xPos + sticky.width / 2
-
-		if xPos >= game.width then
-			if yPos <= game.height then
-				xPos, yPos = -100, yPos + random(70.0, 120.0)
-			end
-		end
-	end
-
-	self.isDirty = true
 end
 
 function Stickers:spawn()
@@ -151,7 +149,7 @@ end
 
 function Stickers:start(target)
 	self.targetState = target or MainMenuState()
-	;(Stickers.previous and Stickers.unspawn or Stickers.spawn)(self)
+	; (Stickers.previous and Stickers.unspawn or Stickers.spawn)(self)
 	-- semicolon is to avoid ambiguous syntax error!!
 end
 

@@ -3,7 +3,7 @@ io.stdout:setvbuf("no")
 require "loxel"
 local funkin = require "funkin"
 
-function love.load() funkin.setup() end
+function love.load() funkin.load() end
 
 function love.resize(w, h) game.resize(w, h) end
 

@@ -1,7 +1,5 @@
 local funkin = {}
 
-API = require "funkin.backend.api"
-
 local prn = print
 function print(...)
 	local v = {...}
@@ -22,6 +20,8 @@ if love.system.getOS() == "Windows" then
 		WindowUtil.setDarkMode(true)
 	end
 end
+
+API = require "funkin.backend.api"
 
 Https = require "lib.https"
 
@@ -87,7 +87,7 @@ ScriptsHandler = require "funkin.backend.scripting.scriptshandler"
 
 local TransitionFade = loxreq "transition.transitionfade"
 
-function funkin.setup()
+function funkin.load()
 	local res, isMobile = math.abs(ClientPrefs.data.resolution),
 		love.system.getDevice() == "Mobile"
 	Camera.defaultResolution = res
