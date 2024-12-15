@@ -1,33 +1,39 @@
 local MenuList = SpriteGroup:extend("MenuList")
-
 MenuList.selectionCache = {}
 
--- scrolling stuff --
-MenuList.scrollTypes = {}
-MenuList.hoverTypes = {}
-
-MenuList.scrollTypes.default = function(self, obj, dt, time)
-	obj.y = self:lerp(dt, obj, "y", time)
-	obj.x = self:lerp(dt, obj, "x", time, obj.target * 26)
-end
-MenuList.scrollTypes.vertical = function(self, obj, dt, time)
-	obj.y = self:lerp(dt, obj, "y", time)
-end
-MenuList.scrollTypes.horizontal = function(self, obj, dt, time)
-	obj.x = self:lerp(dt, obj, "x", time)
-end
-MenuList.scrollTypes.centered = function(self, obj, dt, time)
-	obj:screenCenter("x")
-	obj.y = self:lerp(dt, obj, "y", time)
-end
-
-MenuList.hoverTypes.default = function(self, obj)
-	obj.alpha = obj.target == 0 and 1 or 0.6
-	if obj.child then
-		obj.child.alpha = obj.alpha
+local defaultScrolls = {
+	default = function(self, obj, dt, time)
+		obj.y = self:lerp(dt, obj, "y", time)
+		obj.x = self:lerp(dt, obj, "x", time, obj.target * 26)
+	end,
+	centered = function(self, obj, dt, time)
+		obj:screenCenter("x")
+		obj.y = self:lerp(dt, obj, "y", time)
+	end,
+	vertical = function(self, obj, dt, time)
+		obj.y = self:lerp(dt, obj, "y", time)
+	end,
+	horizontal = function(self, obj, dt, time)
+		obj.x = self:lerp(dt, obj, "x", time)
 	end
-end
--- --
+}
+
+local defaultHovers = {
+	default = function(self, obj)
+		obj.alpha = obj.target == 0 and 1 or 0.6
+		if obj.child then obj.child.alpha = obj.alpha end
+	end,
+	anim = function(self, obj)
+		for _, item in ipairs(self.members) do
+			if item and item.__animations["idle"] and item.curAnim.name ~= "idle" then
+				item:play("idle")
+			end
+		end
+		if obj and obj.__animations["selected"] and obj.curAnim.name ~= "selected" then
+			obj:play("selected")
+		end
+	end
+}
 
 function MenuList:new(sound, cache, scroll, hover)
 	MenuList.super.new(self, 0, 0)
@@ -101,7 +107,7 @@ end
 
 function MenuList:updatePositions(dt, time)
 	local scrollFunc = type(self.scroll) == "function" and self.scroll or
-		MenuList.scrollTypes[self.scroll or "default"]
+		defaultScrolls[self.scroll or "default"]
 	for i = 1, #self.members do
 		local obj = self.members[i]
 		if scrollFunc then scrollFunc(self, obj, dt, time) end
@@ -126,7 +132,7 @@ function MenuList:update(dt)
 	for i = 1, #self.members do
 		local obj = self.members[i]
 		local hoverFunc = type(self.hover) == "function" and self.hover or
-			MenuList.hoverTypes[self.hover or "default"]
+			defaultHovers[self.hover or "default"]
 		if obj.active and hoverFunc then hoverFunc(self, obj, dt) end
 	end
 
@@ -162,6 +168,10 @@ function MenuList:changeSelection(c, blockSound)
 	if #self.members > 1 and not blockSound and self.sound then
 		util.playSfx(self.sound)
 	end
+end
+
+function MenuList:getSelected()
+	return self.members[self.curSelected]
 end
 
 function MenuList:__render(c)
