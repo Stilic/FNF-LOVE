@@ -159,7 +159,7 @@ function CreditsState:enter()
 
 	self:changeSelection()
 
-	local colorBG = Color.fromString(self.userList:getCurrent().color or "#DF7B29")
+	local colorBG = Color.fromString(self.userList:getSelected().color or "#DF7B29")
 	self.bg.color = colorBG
 	self.bd.color = Color.saturate(self.bg.color, 0.4)
 
@@ -199,7 +199,7 @@ function CreditsState:update(dt)
 		self.camFollow.y = u.bar.y + game.height / 2 - 84
 	end
 
-	local colorBG = Color.fromString(self.userList:getCurrent().color or "#DF7B29")
+	local colorBG = Color.fromString(self.userList:getSelected().color or "#DF7B29")
 	self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
 	self.bd.color = Color.saturate(self.bg.color, 0.4)
 end
@@ -209,7 +209,7 @@ function CreditsState:changeSelection(n)
 	util.playSfx(paths.getSound('scrollMenu'))
 
 	self.userList:changeSelection(n)
-	self.userCard:reload(self.userList:getCurrent())
+	self.userCard:reload(self.userList:getSelected())
 end
 
 return CreditsState

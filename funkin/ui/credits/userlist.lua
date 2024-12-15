@@ -104,7 +104,7 @@ function UserList:update(dt)
 	end
 end
 
-function UserList:getCurrent()
+function UserList:getSelected()
 	return self.data[self.curTab].credits[self.curSelected]
 end
 
