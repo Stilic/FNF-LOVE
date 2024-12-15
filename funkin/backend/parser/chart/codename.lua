@@ -13,7 +13,7 @@ local function getStuff(data, eventData, chart)
 		{}, {}, {}
 
 	if eventData then
-		for i, e in ipairs(eventData.events) do
+		for i, e in ipairs(eventData) do
 			local eevent, eparams
 			if e.name == "Camera Movement" then
 				e.name = "FocusCamera"
@@ -69,7 +69,7 @@ function codename.parse(data, events, meta)
 	Parser.pset(chart, "stage", data.stage)
 	Parser.pset(chart, "speed", data.scrollSpeed)
 
-	chart.notes, chart.events = getStuff(data, events, chart)
+	chart.notes, chart.events = getStuff(data, events or data.events, chart)
 
 	return chart
 end

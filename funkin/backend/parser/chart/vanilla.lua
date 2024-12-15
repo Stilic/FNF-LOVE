@@ -20,8 +20,7 @@ local function getStuff(data, eventData, bpm, psych)
 	local time, steps, total, add, focus, lastFocus = 0, 0, 0
 
 	if eventData then
-		local edata = eventData.events or eventData
-		for _, e in ipairs(edata) do
+		for _, e in ipairs(eventData) do
 			local etime = e[1]
 			for _, i in ipairs(e[2]) do
 				local eevent = i[1]
@@ -90,23 +89,23 @@ local function getStuff(data, eventData, bpm, psych)
 	return {enemy = dad, player = bf}, events, bpmChanges
 end
 
-function vanilla.parse(data, eventData, meta)
+function vanilla.parse(data, events, meta)
+	data = data.song or data
 	local chart = Parser.getDummyChart(nil, true)
-	local realData = data.song or data
 
-	Parser.pset(chart, "song", realData.song)
+	Parser.pset(chart, "song", data.song)
 
 	if meta then getFromMeta(meta, chart) end
 
-	Parser.pset(chart, "bpm", realData.bpm)
-	Parser.pset(chart, "speed", realData.speed)
+	Parser.pset(chart, "bpm", data.bpm)
+	Parser.pset(chart, "speed", data.speed)
 
-	Parser.pset(chart, "stage", realData.stage)
-	Parser.pset(chart, "skin", realData.skin)
+	Parser.pset(chart, "stage", data.stage)
+	Parser.pset(chart, "skin", data.skin)
 
-	Parser.pset(chart, "player1", realData.player1)
-	Parser.pset(chart, "player2", realData.player2)
-	Parser.pset(chart, "gfVersion", realData.gfVersion)
+	Parser.pset(chart, "player1", data.player1)
+	Parser.pset(chart, "player2", data.player2)
+	Parser.pset(chart, "gfVersion", data.gfVersion)
 
 	local song = paths.formatToSongPath(chart.song)
 	if not chart.stage then
@@ -141,10 +140,10 @@ function vanilla.parse(data, eventData, meta)
 		})
 	end
 
-	if realData.notes then
+	if data.notes then
 		chart.notes, chart.events, chart.bpmChanges =
-			getStuff(realData.notes, eventData or realData.events, chart.bpm,
-				realData.format and realData.format:startsWith("psych"))
+			getStuff(data.notes, events or data.events, chart.bpm,
+				data.format and data.format:startsWith("psych"))
 	end
 
 	return chart
