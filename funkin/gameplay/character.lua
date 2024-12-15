@@ -1,4 +1,5 @@
 local Character = Sprite:extend("Character")
+Character.sustainStroke = true
 
 Character.directions = {"left", "down", "up", "right"}
 Character.editorMode = false
@@ -12,60 +13,64 @@ function Character:new(x, y, char, isPlayer)
 		self.script:call("create")
 	end
 
-	self.char = char
+	self.char = char or "bf"
 	self.isPlayer = isPlayer or false
 	self.animOffsets = {}
 	self.animAtlases = {}
+
 	self.__reverseDraw = self.__reverseDraw or false
 
-	self.dirAnim, self.holdTime, self.lastHit, self.waitReleaseAfterSing =
+	self.dirAnim, self.holdTime, self.lastHit, self.danceAfterRelease =
 		nil, 4, math.negative_infinity, false
 	self.danceSpeed, self.danced = 2, false
 
-	local jsonData = paths.getJSON("data/characters/" .. char)
-	if jsonData == nil then jsonData = paths.getJSON("data/characters/bf") end
+	local data = Parser.getCharacter(self.char)
 
-	self.ogFrames = paths.getAtlas(jsonData.sprite)
+	self.ogFrames = paths.getAtlas(data.sprite)
 	self:setFrames(self.ogFrames)
 
-	self.imageFile = jsonData.sprite
+	self.imageFile = data.sprite
 	self.jsonScale = 1
-	if jsonData.scale and jsonData.scale ~= 1 then
-		self.jsonScale = jsonData.scale
+	if data.scale and data.scale ~= 1 then
+		self.jsonScale = data.scale
 		self:setGraphicSize(math.floor(self.width * self.jsonScale))
 		self:updateHitbox()
 	end
 
-	if jsonData.sing_duration ~= nil then
-		self.holdTime = jsonData.sing_duration
+	if data.sing_duration ~= nil then
+		self.holdTime = data.sing_duration
 	end
 
 	self.positionTable = {x = 0, y = 0}
-	if jsonData.position then
-		self.positionTable.x = jsonData.position[1]
-		self.positionTable.y = jsonData.position[2]
+	if data.position then
+		self.positionTable.x = data.position[1]
+		self.positionTable.y = data.position[2]
 	end
 	self.cameraPosition = {x = 0, y = 0}
-	if jsonData.camera_points then
-		self.cameraPosition.x = jsonData.camera_points[1]
-		self.cameraPosition.y = jsonData.camera_points[2]
+	if data.camera_points then
+		self.cameraPosition.x = data.camera_points[1]
+		self.cameraPosition.y = data.camera_points[2]
 	end
 
-	self.icon = jsonData.icon or char
-	self.iconColor = jsonData.color
+	self.icon = data.icon or char
+	self.iconColor = data.color
 
-	self.flipX = jsonData.flip_x == true
+	self.flipX = data.flip_x == true
 	self.jsonFlipX = self.flipX
 
-	self.jsonAntialiasing = jsonData.antialiasing == nil and true or jsonData.antialiasing
+	self.jsonAntialiasing = data.antialiasing == nil and true or data.antialiasing
 	self.antialiasing = ClientPrefs.data.antialiasing and self.jsonAntialiasing or false
 
-	self.animationsTable = jsonData.animations
+	self.animationsTable = data.animations
 	self:resetAnimations()
 	if self.isPlayer then self.flipX = not self.flipX end
 
-	if self.__animations['danceLeft'] and self.__animations['danceRight'] then
+	if self.__animations and self.__animations['danceLeft'] and self.__animations['danceRight'] then
 		self.danceSpeed = 1
+	end
+
+	if data.dance_beats ~= nil then
+		self.danceSpeed = data.dance_beats
 	end
 
 	self.x = self.x + self.positionTable.x
@@ -133,29 +138,27 @@ function Character:update(dt)
 		if self.animFinished and self.__animations[self.curAnim.name .. '-loop'] ~= nil then
 			self:playAnim(self.curAnim.name .. '-loop')
 		end
+
 		local offset = self.animOffsets[self.curAnim.name]
 		if offset then
 			local rot = math.pi * self.angle / 180
 			local offX, offY = self.__reverseDraw and -offset.x or offset.x, offset.y
 			local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
 			local rotOffY = offX * math.sin(rot) + offY * math.cos(rot)
-			self.offset.x, self.offset.y = rotOffX, rotOffY
+			self.offset:set(rotOffX, rotOff)
 		else
-			self.offset.x, self.offset.y = 0, 0
+			self.offset:set(0, 0)
 		end
 	end
 
 	if self.lastHit > 0 and self.lastHit
 		+ PlayState.conductor.stepCrotchet * self.holdTime
-		< PlayState.conductor.time then
+		< math.abs(PlayState.conductor.time) then
 		local canDance = true
 
-		if self.waitReleaseAfterSing then
-			for input, _ in pairs(PlayState.inputDirections) do
-				if controls:down(input) then
-					canDance = false
-					break
-				end
+		if self.danceAfterRelease then
+			if self.dirAnim and controls:down(Notefield.keysControls[self.dirAnim]) then
+				canDance = false
 			end
 		end
 
@@ -204,9 +207,9 @@ function Character:playAnim(anim, force, frame)
 		if self.__reverseDraw then offX = -offX end
 		local rotOffX = offX * math.cos(rot) - offY * math.sin(rot)
 		local rotOffY = offX * math.sin(rot) + offY * math.cos(rot)
-		self.offset.x, self.offset.y = rotOffX, rotOffY
+		self.offset:set(rotOffX, rotOffY)
 	else
-		self.offset.x, self.offset.y = 0, 0
+		self.offset:set(0, 0)
 	end
 
 	if self.__animations["danceLeft"] and self.__animations["danceRight"] then
@@ -229,7 +232,7 @@ function Character:sing(dir, type, force)
 	end
 	self:playAnim(anim, force == nil and true or force)
 
-	self.dirAnim = dir
+	self.dirAnim = type == "miss" and nil or dir
 	self.lastHit = PlayState.conductor.time
 end
 

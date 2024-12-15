@@ -21,8 +21,6 @@ if love.system.getOS() == "Windows" then
 	end
 end
 
-API = require "funkin.backend.api"
-
 Https = require "lib.https"
 
 paths = require "funkin.paths"

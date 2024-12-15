@@ -6,46 +6,24 @@ local vslice = require(f .. "vslice")
 
 local ChartParse = {}
 
-local base = {
-	song = nil,
-	bpm = 100,
-	speed = 1,
-
-	difficulties = {"Easy", "Normal", "Hard"},
-
-	player1 = nil,
-	player2 = nil,
-	gfVersion = nil,
-
-	stage = nil,
-	skin = nil,
-
-	events = {},
-	notes = {
-		player = {}, enemy = {}
-	},
-	timeChanges = nil
-}
-
-for _, module in pairs({vanilla, vslice, codename}) do
-	module.base = base
-end
-
-ChartParse.base = base
-
 function ChartParse.get(song, diff)
-	local path, json = "songs/" .. song .. "/"
-	if paths.exists(paths.getPath(path .. "charts"), "directory") and
-		paths.exists(paths.getPath(path .. "charts/" .. diff .. ".json"), "file") then
-		json = paths.getJSON(path .. "charts/" .. diff)
-	else
-		json = paths.getJSON(path .. "chart-" .. diff)
-		if json == nil then
-			json = paths.getJSON(path .. "chart")
-		end
+	song = paths.formatToSongPath(song)
+
+	local path = "songs/" .. song .. "/"
+	local function getfolder(dir)
+		return {paths.getPath(path .. dir .. ".json"), path .. dir}
 	end
 
-	return json or table.clone(base), path
+	for _, p in ipairs({
+		getfolder("charts/" .. diff),
+		getfolder("chart-" .. diff),
+		getfolder(diff),
+		getfolder("chart")
+	}) do
+		if paths.exists(p[1], "file") then
+			return paths.getJSON(p[2]), path
+		end
+	end
 end
 
 function ChartParse.getParser(data)

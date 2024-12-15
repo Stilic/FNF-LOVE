@@ -73,11 +73,26 @@ function Object:new(x, y)
 	self:setPosition(x, y)
 	self.width, self.height = 0, 0
 
-	self.offset = {x = 0, y = 0}
-	self.origin = {x = 0, y = 0}
-	self.scale = {x = 1, y = 1}
-	self.zoom = {x = 1, y = 1} -- same as scale
-	self.scrollFactor = {x = 1, y = 1}
+	self.offset = {x = 0, y = 0, set = function(this, x, y)
+		this.x = x or this.x
+		this.y = y or this.y
+	end}
+	self.origin = {x = 0, y = 0, set = function(this, x, y)
+		this.x = x or this.x
+		this.y = y or this.y
+	end}
+	self.scale = {x = 1, y = 1, set = function(this, x, y)
+		this.x = x or this.x
+		this.y = y or this.y
+	end}
+	self.zoom = {x = 1, y = 1, set = function(this, x, y)
+		this.x = x or this.x
+		this.y = y or this.y
+	end} -- same as scale
+	self.scrollFactor = {x = 1, y = 1, set = function(this, x, y)
+		this.x = x or this.x
+		this.y = y or this.y
+	end}
 	self.flipX = false
 	self.flipY = false
 

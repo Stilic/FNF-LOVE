@@ -1,22 +1,16 @@
 local vanilla = {name = "Vanilla/Psych"}
 
-local function set(tbl, key, v) if v ~= nil then tbl[key] = v end end
+local function getFromMeta(data, tbl)
+	Parser.pset(tbl, "song", data.songName or data.song or data.name)
+	Parser.pset(tbl, "stage", data.stage)
+	Parser.pset(tbl, "skin", data.skin)
 
-local function compareInsert(noteList, newNote)
-	for i, existingNote in ipairs(noteList) do
-		if existingNote.t == newNote.t and existingNote.d == newNote.d then
-			if (newNote.l > existingNote.l) or
-				(newNote.l == existingNote.l and newNote.k ~= nil and
-				existingNote.k == nil) or
-				(newNote.l == existingNote.l and newNote.k == existingNote.k
-				and newNote.gf and not existingNote.gf) then
+	Parser.pset(tbl, "difficulties", data.difficulties)
 
-				noteList[i] = newNote
-			end
-			return
-		end
-	end
-	table.insert(noteList, newNote)
+	local char = data.characters or data
+	Parser.pset(tbl, "player1", char.player)
+	Parser.pset(tbl, "player2", char.opponent)
+	Parser.pset(tbl, "gfVersion", char.girlfriend)
 end
 
 local function getStuff(data, eventData, bpm, psych)
@@ -47,7 +41,7 @@ local function getStuff(data, eventData, bpm, psych)
 		if s and s.sectionNotes then
 			for _, n in ipairs(s.sectionNotes) do
 				local kind = n[4]
-				local column, gf = n[2], kind == "gf"
+				local column, gf = n[2], kind == "gf" or kind == "GF Sing"
 				local hit = psych or s.mustHitSection
 				if column > 3 then hit = not hit end
 				if kind == true or kind == 1 or (not hit and s.altAnim) then
@@ -61,9 +55,9 @@ local function getStuff(data, eventData, bpm, psych)
 					d = column % 4,
 					l = n[3],
 					k = kind,
-					gf = gf or not hit and s.gfSection
+					gf = gf or (not hit and s.gfSection)
 				}
-				compareInsert(hit and bf or dad, newNote)
+				table.insert(hit and bf or dad, newNote)
 			end
 
 			focus = s.gfSection and 2 or (s.mustHitSection and 0 or 1)
@@ -97,22 +91,22 @@ local function getStuff(data, eventData, bpm, psych)
 end
 
 function vanilla.parse(data, eventData, meta)
-	local chart = table.clone(vanilla.base)
+	local chart = Parser.getDummyChart(nil, true)
 	local realData = data.song or data
 
-	set(chart, "song", realData.song)
+	Parser.pset(chart, "song", realData.song)
 
-	if meta then vanilla.getFromMeta(meta, chart) end
+	if meta then getFromMeta(meta, chart) end
 
-	set(chart, "bpm", realData.bpm)
-	set(chart, "speed", realData.speed)
+	Parser.pset(chart, "bpm", realData.bpm)
+	Parser.pset(chart, "speed", realData.speed)
 
-	set(chart, "stage", realData.stage)
-	set(chart, "skin", realData.skin)
+	Parser.pset(chart, "stage", realData.stage)
+	Parser.pset(chart, "skin", realData.skin)
 
-	set(chart, "player1", realData.player1)
-	set(chart, "player2", realData.player2)
-	set(chart, "gfVersion", realData.gfVersion)
+	Parser.pset(chart, "player1", realData.player1)
+	Parser.pset(chart, "player2", realData.player2)
+	Parser.pset(chart, "gfVersion", realData.gfVersion)
 
 	local song = paths.formatToSongPath(chart.song)
 	if not chart.stage then
@@ -154,25 +148,6 @@ function vanilla.parse(data, eventData, meta)
 	end
 
 	return chart
-end
-
-function vanilla.getFromMeta(data, tbl)
-	local info = {}
-
-	if data then
-		set(tbl, "song", data.songName or data.song)
-		set(tbl, "stage", data.stage)
-		set(tbl, "skin", data.skin)
-
-		set(tbl, "difficulties", data.difficulties)
-
-		local char = data.characters or data
-		set(tbl, "player1", char.player)
-		set(tbl, "player2", char.opponent)
-		set(tbl, "gfVersion", char.girlfriend)
-	end
-
-	return data
 end
 
 return vanilla

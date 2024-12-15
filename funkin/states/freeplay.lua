@@ -9,8 +9,8 @@ function FreeplayState:enter()
 	local event = self.script:call("create")
 	if event == Script.Event_Cancel then
 		FreeplayState.super.enter(self)
-		self.script:call("postCreate")
 		self.notCreated = true
+		self.script:call("postCreate")
 		return
 	end
 
@@ -25,40 +25,19 @@ function FreeplayState:enter()
 	self.persistentUpdate = true
 	self.persistentDraw = true
 
-	self.songsData = {}
-	self:loadSongs()
-
 	self.bg = Sprite(0, 0, paths.getImage('menus/menuDesat'))
 	self:add(util.responsiveBG(self.bg))
 
 	self.songs = MenuList(paths.getSound('scrollMenu'), true)
 	self.songs.changeCallback = bind(self, self.changeSelection)
 	self.songs.selectCallback = bind(self, self.openSong)
+	self:loadSongs()
 	self:add(self.songs)
 
-	if #self.songsData == 0 then
+	if #self.songs.members == 0 then
 		self.noSongTxt = AtlasText(0, 0, 'No songs here', "bold")
 		self.noSongTxt:screenCenter()
 		self:add(self.noSongTxt)
-	end
-
-	if #self.songsData > 0 then
-		for i = 1, #self.songsData do
-			local songText = AtlasText(0, 0,
-				self.songsData[i].song, "bold")
-			songText.data = self.songsData[i]
-
-			local icon = HealthIcon(self.songsData[i].icon)
-			icon:updateHitbox()
-
-			if songText:getWidth() > 980 then
-				local textScale = 980 / songText:getWidth()
-				songText.origin.x = 0
-				songText.scale.x = textScale
-			end
-
-			self.songs:add(songText, icon)
-		end
 	end
 
 	self.scoreText = Text(game.width * 0.7, 5, "", paths.getFont("vcr.ttf", 32),
@@ -104,11 +83,11 @@ function FreeplayState:enter()
 	self.throttles.left = Throttle:make({controls.down, controls, "ui_left"})
 	self.throttles.right = Throttle:make({controls.down, controls, "ui_right"})
 
-	if #self.songsData > 0 then
-		self.songs.curSelected = math.min(#self.songsData, self.songs.curSelected)
+	if #self.songs.members > 0 then
+		self.songs.curSelected = math.min(#self.songs.members, self.songs.curSelected)
 		self.songs:changeSelection()
 
-		self.bg.color = Color.fromString(self.songsData[self.songs.curSelected].color)
+		self.bg.color = self.songs:getSelected().bgColor
 	end
 
 	FreeplayState.super.enter(self)
@@ -118,14 +97,15 @@ end
 
 function FreeplayState:openSong(song)
 	PlayState.storyMode = false
-	local diff = song.data.difficulties[FreeplayState.curDifficulty]
+	PlayState.META = song.meta
+	local diff = song.diffs[FreeplayState.curDifficulty]
 
 	if game.keys.pressed.SHIFT then
-		PlayState.loadSong(song.data.song, diff)
+		PlayState.loadSong(song.songName, diff)
 		PlayState.storyDifficulty = diff
 		game.switchState(ChartingState())
 	else
-		game.switchState(PlayState(false, song.data.song, diff))
+		game.switchState(PlayState(false, song.songName, diff))
 	end
 end
 
@@ -146,19 +126,19 @@ function FreeplayState:update(dt)
 	self:positionHighscore()
 
 	if not self.songs.lock then
-		if #self.songsData > 0 and self.throttles then
+		if #self.songs.members > 0 and self.throttles then
 			if self.throttles.left:check() then self:changeDiff(-1) end
 			if self.throttles.right:check() then self:changeDiff(1) end
 		end
 		if controls:pressed("back") then
-			util.playSfx(paths.getSound('cancelMenu'))
 			self.songs.lock = true
+			util.playSfx(paths.getSound('cancelMenu'))
 			game.switchState(MainMenuState())
 		end
 	end
 
-	if #self.songsData > 0 then
-		local colorBG = Color.fromString(self.songsData[self.songs.curSelected].color)
+	if #self.songs.members > 0 then
+		local colorBG = self.songs:getSelected().bgColor
 		self.bg.color = Color.lerpDelta(self.bg.color, colorBG, 3, dt)
 	end
 	FreeplayState.super.update(self, dt)
@@ -171,13 +151,13 @@ function FreeplayState:closeSubstate()
 end
 
 function FreeplayState:changeDiff(change)
-	local songDiffs = self.songsData[self.songs.curSelected].difficulties
+	local songDiffs = self.songs:getSelected().diffs
 	if change == nil then change = 0 end
 
 	FreeplayState.curDifficulty = FreeplayState.curDifficulty + change
 	FreeplayState.curDifficulty = (FreeplayState.curDifficulty - 1) % #songDiffs + 1
 
-	self.intendedScore = Highscore.getScore(self.songsData[self.songs.curSelected].song,
+	self.intendedScore = Highscore.getScore(self.songs:getSelected().songName,
 		songDiffs[FreeplayState.curDifficulty])
 
 	self.diffText.content = songDiffs[FreeplayState.curDifficulty]:upper()
@@ -203,6 +183,7 @@ function FreeplayState:loadSongs()
 	local listData, func = nil, Mods.currentMod and paths.getMods or function(...)
 		return paths.getPath(..., false)
 	end
+	local data, dont = {}
 	if paths.exists(func('data/freeplayList.txt'), 'file') then
 		listData = paths.getText('freeplayList')
 	elseif paths.exists(func('data/freeplaySonglist.txt'), 'file') then
@@ -215,7 +196,7 @@ function FreeplayState:loadSongs()
 				local weekData = paths.getJSON('data/weeks/weeks/' .. week)
 				if not weekData.hide_fm then
 					for _, song in ipairs(weekData.songs) do
-						table.insert(self.songsData, API.meta.parse(song))
+						table.insert(data, Parser.getMeta(song))
 					end
 				end
 			end
@@ -227,17 +208,43 @@ function FreeplayState:loadSongs()
 						'data/weeks/weeks/' .. weekName)
 					if not weekData.hide_fm then
 						for _, song in ipairs(weekData.songs) do
-							table.insert(self.songsData, API.meta.parse(song))
+							table.insert(data, Parser.getMeta(song))
 						end
 					end
 				end
 			end
 		end
-		return
+		dont = true
 	end
-	listData = listData:gsub('\r', ''):split('\n')
-	for _, song in pairs(listData) do
-		table.insert(self.songsData, API.meta.parse(song))
+
+	if not dont then
+		listData = listData:gsub('\r', ''):split('\n')
+		for _, song in pairs(listData) do
+			table.insert(data, Parser.getMeta(song))
+		end
+	end
+
+	if #data > 0 then
+		for i = 1, #data do
+			local songText = AtlasText(0, 0,
+				data[i].displayName, "bold")
+
+			songText.diffs = data[i].difficulties
+			songText.songName = data[i].song
+			songText.bgColor = data[i].color
+
+			local icon = HealthIcon(data[i].icon)
+			icon:updateHitbox()
+
+			if songText:getWidth() > 980 then
+				local textScale = 980 / songText:getWidth()
+				songText.origin.x = 0
+				songText.scale.x = textScale
+			end
+			songText.meta = data[i]
+
+			self.songs:add(songText, icon)
+		end
 	end
 end
 

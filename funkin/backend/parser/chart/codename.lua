@@ -1,6 +1,12 @@
 local codename = {name = "Codename"}
 
-local function set(tbl, key, v) if v ~= nil then tbl[key] = v end end
+local function getFromMeta(data, tbl)
+	Parser.pset(tbl, "song", data.displayName or data.name)
+	Parser.pset(tbl, "skin", data.skin)
+
+	Parser.pset(tbl, "difficulties", data.difficulties)
+	Parser.pset(tbl, "bpm", data.bpm)
+end
 
 local function getStuff(data, eventData, chart)
 	local dad, bf, events =
@@ -9,31 +15,35 @@ local function getStuff(data, eventData, chart)
 	if eventData then
 		for i, e in ipairs(eventData.events) do
 			local eevent, eparams
-			if e.event == "Camera Movement" then
-				eevent = "FocusCamera"
+			if e.name == "Camera Movement" then
+				e.name = "FocusCamera"
 				local val = e.params[1]
-				eparams = val ~= 2 and 1 - val or val
+				e.params = val ~= 2 and 1 - val or val
 			end
 
 			table.insert(events, {
 				t = e.time,
-				e = eevent or e.event,
-				v = eparams or e.params,
+				e = e.name,
+				v = e.params,
 				codename = true
 			})
 		end
 	end
 
 	for _, s in ipairs(data.strumLines) do
-		local toAdd, gfNotes = dad
+		local toAdd, gfNotes = bf
 		if s.position == "dad" then
-			set(chart, "player2", s.characters[1])
+			toAdd = dad
+			gfNotes = false
+			Parser.pset(chart, "player2", s.characters[1])
 		elseif s.position == "girlfriend" then
+			toAdd = dad
 			gfNotes = true
-			set(chart, "gfVersion", s.characters[1])
+			Parser.pset(chart, "gfVersion", s.characters[1])
 		elseif s.position == "boyfriend" then
 			toAdd = bf
-			set(chart, "player1", s.characters[1])
+			gfNotes = false
+			Parser.pset(chart, "player1", s.characters[1])
 		end
 
 		for _, n in ipairs(s.notes) do
@@ -51,31 +61,17 @@ local function getStuff(data, eventData, chart)
 	return {enemy = dad, player = bf}, events
 end
 
-function codename.parse(data, events, meta, diff)
-	local chart = table.clone(codename.base)
+function codename.parse(data, events, meta)
+	local chart = Parser.getDummyChart(nil, true)
 
-	if meta then codename.getFromMeta(meta, chart) end
+	if meta then getFromMeta(meta, chart) end
 
-	set(chart, "stage", data.stage)
-	set(chart, "speed", data.scrollSpeed)
+	Parser.pset(chart, "stage", data.stage)
+	Parser.pset(chart, "speed", data.scrollSpeed)
 
 	chart.notes, chart.events = getStuff(data, events, chart)
 
 	return chart
-end
-
-function codename.getFromMeta(meta, tbl)
-	local data = meta
-
-	if data then
-		set(tbl, "song", data.displayName or data.name)
-		set(tbl, "skin", data.skin)
-
-		set(tbl, "difficulties", data.difficulties)
-		set(tbl, "bpm", data.bpm)
-	end
-
-	return data
 end
 
 return codename
