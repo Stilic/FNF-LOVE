@@ -23,7 +23,7 @@ function Parser.getChart(songName, diff)
 		if parsed.song == nil then parsed.song = songName end
 
 		print("[CHART PARSER] Parsed \"" .. (parsed.song or "unknown") ..
-			"\" as " .. parser.name or "unknown")
+			"\" as " .. (parser.name or "unknown"))
 		return parsed
 	else
 		print("[CHART PARSER] Chart not found.")
