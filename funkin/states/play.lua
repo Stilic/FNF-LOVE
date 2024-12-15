@@ -141,25 +141,25 @@ function PlayState:enter()
 	self:add(self.stage)
 	self.scripts:add(self.stage.script)
 
-	if PlayState.SONG.gfVersion ~= "" then
+	local char = PlayState.SONG.gfVersion
+	if char and char ~= "" then
 		self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
-			PlayState.SONG.gfVersion, false)
+			char, false)
 		self.gf:setScrollFactor(0.95, 0.95)
 		self:add(self.gf)
 		self.scripts:add(self.gf.script)
 	end
-
-	if PlayState.SONG.player2 ~= "" then
+	char = PlayState.SONG.player2
+	if char and char ~= "" then
 		self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
-			PlayState.SONG.player2, false)
+			char, false)
 		self:add(self.dad)
 		self.scripts:add(self.dad.script)
 	end
-
-	if PlayState.SONG.player1 ~= "" then
-		self.boyfriend = Character(self.stage.boyfriendPos.x,
-			self.stage.boyfriendPos.y, PlayState.SONG.player1,
-			true)
+	char = PlayState.SONG.player1
+	if char and char ~= "" then
+		self.boyfriend = Character(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y,
+			char, true)
 		self:add(self.boyfriend)
 		self.scripts:add(self.boyfriend.script)
 	end
