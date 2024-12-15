@@ -39,21 +39,36 @@ local iconOffset = 26
 function HealthBar:update(dt)
 	HealthBar.super.update(self, dt)
 	self.bar:setValue(self.value)
+	local swap, percent = self.bar.flipX, self.bar.percent
 	local lerpValue, healthPercent, y =
 		util.coolLerp(self.iconScale, 1, 15, dt),
-		self.bar.flipX and 50 - self.bar.percent + 50 or self.bar.percent,
+		swap and 50 - percent + 50 or percent,
 		self.bar.y - 75
-	self.iconScale, self.iconP1.health, self.iconP2.health =
-		lerpValue, healthPercent, healthPercent
-	self.iconP1:setScale(lerpValue)
-	self.iconP2:setScale(lerpValue)
-	self.iconP1.x = self.bar.x + self.bar.width *
+	local p1, p2 = swap and self.iconP2 or self.iconP1,
+		swap and self.iconP1 or self.iconP2
+	self.iconScale, p1.health, p2.health = lerpValue, percent, percent
+	p1:setScale(lerpValue)
+	p2:setScale(lerpValue)
+	p1.x = self.bar.x + self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
-			0) * 0.01) + (150 * self.iconP1.scale.x - 150) / 2 - iconOffset
-	self.iconP2.x = self.bar.x + (self.bar.width *
+			0) * 0.01) + (150 * p1.scale.x - 150) / 2 - iconOffset
+	p2.x = self.bar.x + (self.bar.width *
 		(math.remapToRange(healthPercent, 0, 100, 100,
-			0) * 0.01)) - (150 * self.iconP2.scale.x) / 2 - iconOffset * 2
-	self.iconP1.y, self.iconP2.y = y, y
+			0) * 0.01)) - (150 * p2.scale.x) / 2 - iconOffset * 2
+	p1.y, p2.y = y, y
+end
+
+function HealthBar:__render(camera)
+	local swap, p1, p2 = self.bar.flipX, self.iconP1, self.iconP2
+	if swap then
+		p1.flipX = not p1.flipX
+		p2.flipX = not p2.flipX
+	end
+	HealthBar.super.__render(self, camera)
+	if swap then
+		p1.flipX = not p1.flipX
+		p2.flipX = not p2.flipX
+	end
 end
 
 function HealthBar:screenCenter(axes)
