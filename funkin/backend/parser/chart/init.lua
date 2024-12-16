@@ -29,7 +29,7 @@ end
 function ChartParse.getParser(data)
 	if data.codenameChart then
 		return codename
-	elseif data.version == nil then
+	elseif not data.version then
 		return vanilla
 	end
 	return vslice
