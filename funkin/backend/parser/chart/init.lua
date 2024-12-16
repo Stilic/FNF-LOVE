@@ -6,13 +6,13 @@ local vslice = require(f .. "vslice")
 
 local ChartParse = {}
 
-local function getFolder(dir)
-	return {paths.getPath(path .. dir .. ".json"), path .. dir}
-end
 function ChartParse.get(song, diff)
 	song = paths.formatToSongPath(song)
 
 	local path = "songs/" .. song .. "/"
+	local function getFolder(dir)
+		return {paths.getPath(path .. dir .. ".json"), path .. dir}
+	end
 
 	for _, p in ipairs({
 		getFolder("charts/" .. diff),
