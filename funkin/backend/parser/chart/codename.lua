@@ -62,7 +62,7 @@ local function getStuff(data, eventData, chart)
 end
 
 function codename.parse(data, events, meta)
-	local chart = Parser.getDummyChart(nil, true)
+	local chart = Parser.getDummyChart()
 
 	if meta then getFromMeta(meta, chart) end
 

@@ -91,7 +91,7 @@ end
 
 function vanilla.parse(data, events, meta)
 	data = data.song or data
-	local chart = Parser.getDummyChart(nil, true)
+	local chart = Parser.getDummyChart()
 
 	Parser.pset(chart, "song", data.song)
 

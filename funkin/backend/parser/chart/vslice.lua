@@ -38,7 +38,7 @@ local function getStuff(data)
 end
 
 function vslice.parse(data, _, meta, diff)
-	local chart = Parser.getDummyChart(nil, true)
+	local chart = Parser.getDummyChart()
 
 	if meta then getFromMeta(meta, chart) end
 

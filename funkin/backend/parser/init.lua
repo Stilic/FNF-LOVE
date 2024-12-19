@@ -4,6 +4,7 @@ local character = require "funkin.backend.parser.character"
 local Parser = {}
 
 function Parser.sortByTime(a, b) return a.t < b.t end
+
 function Parser.pset(tbl, key, v) if v ~= nil then tbl[key] = v end end
 
 function Parser.getChart(songName, diff)
@@ -14,7 +15,7 @@ function Parser.getChart(songName, diff)
 		local parser = chart.getParser(data)
 		local parsed =
 			parser.parse(data, paths.getJSON(path .. "events"),
-			paths.getJSON(path .. "meta"), diff)
+				paths.getJSON(path .. "meta"), diff)
 
 		table.sort(parsed.notes.enemy, Parser.sortByTime)
 		table.sort(parsed.notes.player, Parser.sortByTime)
@@ -27,25 +28,27 @@ function Parser.getChart(songName, diff)
 		return parsed
 	else
 		print("[CHART PARSER] Chart not found.")
-		return Parser.getDummyChart(songName)
+		return Parser.getDummyChart(songName, true)
 	end
 end
 
-function Parser.getDummyChart(songName, nodata)
+function Parser.getDummyChart(songName, dummyData)
 	return {
 		song = songName and paths.formatToSongPath(songName) or nil,
-		bpm = 100, speed = 1,
+		bpm = 100,
+		speed = 1,
 
 		difficulties = {"Easy", "Normal", "Hard"},
 
-		player1 = nodata and nil or "bf",
-		player2 = nodata and nil or "dad",
-		gfVersion = nodata and nil or "gf",
+		player1 = dummyData and "bf" or nil,
+		player2 = dummyData and "dad" or nil,
+		gfVersion = dummyData and "gf" or nil,
 
-		stage = nodata and nil or "stage",
-		skin = nodata and nil or "default",
+		stage = dummyData and "stage" or nil,
+		skin = dummyData and "default" or nil,
 
-		events = {}, notes = {player = {}, enemy = {}}
+		events = {},
+		notes = {player = {}, enemy = {}}
 	}
 end
 
