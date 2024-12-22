@@ -20,7 +20,9 @@ function create()
 end
 
 function postCreate()
-	state:insert(state:indexOf(state.dad), Trail(state.dad, 4, 24, 0.3, 0.069))
+	if state.dad then
+		state:insert(state:indexOf(state.dad), Trail(state.dad, 4, 24, 0.3, 0.069))
+	end
 end
 
 function onGameOver(event)

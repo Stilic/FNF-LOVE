@@ -128,7 +128,7 @@ function create()
 end
 
 function postCreate()
-	if state.gf.char == 'pico-speaker' then
+	if state.gf and state.gf.char == 'pico-speaker' then
 		local tempTankman = TankmenBG(20, 500, true)
 		tempTankman.time = 10
 		tempTankman:resetShit(20, 600, true)

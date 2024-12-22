@@ -76,11 +76,14 @@ local function lightingAnimation()
 				modify(window, 1, 1, eh2.b)
 			end)
 
-			state.boyfriend:playAnim('scared', true)
-			state.gf:playAnim('scared', true)
-
-			state.boyfriend.lastHit = PlayState.conductor.time + 300
-			state.gf.lastHit = PlayState.conductor.time + 300
+			if state.boyfriend then
+				state.boyfriend:playAnim('scared', true)
+				state.boyfriend.lastHit = PlayState.conductor.time + 300
+			end
+			if state.gf then
+				state.gf:playAnim('scared', true)
+				state.gf.lastHit = PlayState.conductor.time + 300
+			end
 		end)
 	end)
 end

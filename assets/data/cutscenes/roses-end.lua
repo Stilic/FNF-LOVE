@@ -5,7 +5,8 @@ function create()
 	state:add(black)
 
 	Timer(timer):start(0.5, function()
-		state.camFollow:set(state.dad.x + 140, state.dad.y + 40)
+		state.camFollow:set((state.dad and state.dad.x or state.stage.dadPos.x) + 140,
+			(state.dad and state.dad.y or state.stage.dadPos.y) + 40)
 		state.camZooming = false
 		Tween.tween(game.camera, {zoom = 1.5}, 1.5, {ease = Ease.quadInOut})
 		state.camHUD.visible, state.camNotes.visible = false, false

@@ -54,6 +54,9 @@ function create()
     limo:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'limoDrive'))
     limo:addAnimByPrefix('drive', "Limo stage", 24)
     limo:play('drive')
+    if not state.gf then
+        self:add(limo)
+    end
 
     fastCar = Sprite(-300, 160)
     fastCar:loadTexture(paths.getImage(SCRIPT_PATH .. 'fastCarLol'))
@@ -72,7 +75,9 @@ function create()
 end
 
 function postCreate()
-    state:insert(state:indexOf(state.gf) + 1, limo)
+    if state.gf then
+        state:insert(state:indexOf(state.gf) + 1, limo)
+    end
 end
 
 local bgLimoTime = 0

@@ -5,6 +5,8 @@ function event(params)
 		[{"dad", "opponent", "enemy"}] = function() target = state.dad end,
 		[{"girlfriend", "gf"}] = function() target = state.gf end
 	})
-	target:playAnim(data.anim, data.force)
-	target.lastHit = PlayState.conductor.time
+	if target then
+		target:playAnim(data.anim, data.force)
+		target.lastHit = PlayState.conductor.time
+	end
 end

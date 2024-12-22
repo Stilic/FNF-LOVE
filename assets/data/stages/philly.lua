@@ -61,8 +61,10 @@ function update(dt)
 		if trainFrameTiming >= 1 / 24 then
 			if trainSound:tell() >= 4.7 then
 				startedMoving = true
-				state.gf:playAnim('hairBlow')
-				state.gf.lastHit = PlayState.conductor.time
+				if state.gf then
+					state.gf:playAnim('hairBlow')
+					state.gf.lastHit = PlayState.conductor.time
+				end
 				game.camera:shake(0.001, 1)
 				state.camHUD:shake(0.001, 1)
 			end
@@ -80,8 +82,10 @@ function update(dt)
 				end
 
 				if phillyTrain.x < -4000 and trainFinishing then
-					state.gf.danced = false -- Sets head to the correct position once the animation ends
-					state.gf:playAnim('hairFall')
+					if state.gf then
+						state.gf.danced = false -- Sets head to the correct position once the animation ends
+						state.gf:playAnim('hairFall')
+					end
 					phillyTrain.x = game.width + 200
 					trainMoving = false
 					trainCars = 8

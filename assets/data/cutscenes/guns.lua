@@ -1,17 +1,24 @@
 local bgMusic
 
 function create()
-	state.dad.alpha = 0
+	local dadX, dadY = state.stage.dadPos.x, state.stage.dadPos.y
+	if state.dad then
+		dadX, dadY, state.dad.alpha = state.dad.x, state.dad.y, 0
+	end
 	state.camHUD.visible, state.camNotes.visible = false, false
 
-	tankman = Sprite(state.dad.x + 100, state.dad.y)
+	tankman = Sprite(dadY + 100, dadY)
 	tankman:setFrames(paths.getSparrowAtlas('stages/tank/cutscenes/'
 		.. paths.formatToSongPath(PlayState.SONG.song)))
 	tankman:addAnimByPrefix('tightBars', 'TANK TALK 2', 24, false)
 	tankman:play('tightBars', true)
-	state:insert(table.find(state.members, state.dad) + 1, tankman)
+	if state.dad then
+		state:insert(state:indexOf(state.dad) + 1, tankman)
+	else
+		state:add(tankman)
+	end
 
-	state.camFollow:set(state.dad.x + 380, state.dad.y + 170)
+	state.camFollow:set(dadY + 380, dadY + 170)
 end
 
 function postCreate()
@@ -23,7 +30,9 @@ function postCreate()
 
 	Timer(timer):start(4, function()
 		tween:tween(game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 0.5, {ease = Ease.quadInOut})
-		state.gf:playAnim('sad', true)
+		if state.gf then
+			state.gf:playAnim('sad', true)
+		end
 	end)
 
 	Timer(timer):start(4.5, function()
@@ -32,7 +41,9 @@ function postCreate()
 
 	Timer(timer):start(11.5, function()
 		tankman:destroy()
-		state.dad.alpha = 1
+		if state.dad then
+			state.dad.alpha = 1
+		end
 		state.camHUD.visible, state.camNotes.visible = true, true
 
 		tween:tween(game.camera, {zoom = state.stage.camZoom},

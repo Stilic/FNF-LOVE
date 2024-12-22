@@ -5,18 +5,25 @@ local cutscene
 
 function create()
 	if isVideo then return end
-	state.dad.alpha = 0
+	local dadX, dadY = state.stage.dadPos.x, state.stage.dadPos.y
+	if state.dad then
+		dadX, dadY, state.dad.alpha = state.dad.x, state.dad.y, 0
+	end
 	state.camHUD.visible, state.camNotes.visible = false, false
 
-	tankman = Sprite(state.dad.x + 100, state.dad.y)
+	tankman = Sprite(dadX + 100, dadY)
 	tankman:setFrames(paths.getSparrowAtlas('stages/tank/cutscenes/'
 		.. paths.formatToSongPath(PlayState.SONG.song)))
 	tankman:addAnimByPrefix('wellWell', 'TANK TALK 1 P1', 24, false)
 	tankman:addAnimByPrefix('killYou', 'TANK TALK 1 P2', 24, false)
 	tankman:play('wellWell', true)
-	table.insert(state.members, table.find(state.members, state.dad) + 1, tankman)
+	if state.dad then
+		state:insert(state:indexOf(state.dad) + 1, tankman)
+	else
+		state:add(tankman)
+	end
 
-	state.camFollow:set(state.dad.x + 380, state.dad.y + 170)
+	state.camFollow:set(dadX + 380, dadY + 170)
 end
 
 function postCreate()
@@ -45,12 +52,16 @@ function postCreate()
 	end)
 
 	Timer(timer):start(4.5, function()
-		state.boyfriend:playAnim('singUP', true)
+		if state.boyfriend then
+			state.boyfriend:playAnim('singUP', true)
+		end
 		game.sound.play(paths.getSound('gameplay/bfBeep'), ClientPrefs.data.vocalVolume / 100)
 	end)
 
 	Timer(timer):start(5.2, function()
-		state.boyfriend:playAnim('idle', true)
+		if state.boyfriend then
+			state.boyfriend:playAnim('idle', true)
+		end
 	end)
 
 	Timer(timer):start(6, function()
@@ -65,7 +76,9 @@ function postCreate()
 
 	Timer(timer):start(12, function()
 		tankman:destroy()
-		state.dad.alpha = 1
+		if state.dad then
+			state.dad.alpha = 1
+		end
 		state.camHUD.visible, state.camNotes.visible = true, true
 
 		local times = PlayState.conductor.crotchet / 1000 * 4.5
@@ -75,7 +88,10 @@ function postCreate()
 end
 
 function songStart()
-	if not isVideo then bgMusic:stop(); close() end
+	if not isVideo then
+		bgMusic:stop()
+		close()
+	end
 end
 
 function pause() if isVideo then cutscene:pause() end end
