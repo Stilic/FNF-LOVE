@@ -59,9 +59,9 @@ end
 
 function HealthIcon:changeIcon(icon)
 	if icon then
-		self.visible = true
+		self.active, self.visible = true, true
 	else
-		self.visible = false
+		self.active, self.visible = false, false
 		return false
 	end
 
