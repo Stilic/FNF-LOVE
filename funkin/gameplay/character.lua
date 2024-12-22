@@ -37,21 +37,6 @@ function Character:new(x, y, char, isPlayer)
 		self:updateHitbox()
 	end
 
-	if data.sing_duration ~= nil then
-		self.holdTime = data.sing_duration
-	end
-
-	self.positionTable = {x = 0, y = 0}
-	if data.position then
-		self.positionTable.x = data.position[1]
-		self.positionTable.y = data.position[2]
-	end
-	self.cameraPosition = {x = 0, y = 0}
-	if data.camera_points then
-		self.cameraPosition.x = data.camera_points[1]
-		self.cameraPosition.y = data.camera_points[2]
-	end
-
 	self.icon = data.icon or char
 	self.iconColor = data.color
 
@@ -65,16 +50,33 @@ function Character:new(x, y, char, isPlayer)
 	self:resetAnimations()
 	if self.isPlayer then self.flipX = not self.flipX end
 
-	if self.__animations and self.__animations['danceLeft'] and self.__animations['danceRight'] then
-		self.danceSpeed = 1
+	local x, y
+	if data.position then
+		x, y = data.position[1], data.position[2]
+		if self.__reverseDraw then
+			x = x + self.width / (self.isPlayer and -4 or 4)
+		end
+		self.positionTable = {x = x, y = y}
+		self.x, self.y = self.x + x, self.y + y
+	else
+		self.positionTable = {x = 0, y = 0}
+	end
+	if data.camera_points then
+		x, y = data.camera_points[1], data.camera_points[2]
+		self.cameraPosition = {x = x, y = y}
+		self.cameraPosition.x, self.cameraPosition.y = x,  y
+	else
+		self.cameraPosition = {x = 0, y = 0}
 	end
 
 	if data.dance_beats ~= nil then
 		self.danceSpeed = data.dance_beats
+	elseif self.__animations and self.__animations['danceLeft'] and self.__animations['danceRight'] then
+		self.danceSpeed = 1
 	end
-
-	self.x = self.x + self.positionTable.x
-	self.y = self.y + self.positionTable.y
+	if data.sing_duration ~= nil then
+		self.holdTime = data.sing_duration
+	end
 
 	self:dance()
 	if self.curAnim and not self.curAnim.looped then
@@ -263,8 +265,7 @@ function Character:addOffset(anim, x, y)
 end
 
 function Character:addAtlas(anim, atlasName)
-	local atlas = paths.getAtlas(atlasName)
-	self.animAtlases[anim] = atlas
+	self.animAtlases[anim] = paths.getAtlas(atlasName)
 end
 
 return Character

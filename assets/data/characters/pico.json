@@ -10,7 +10,7 @@
 		["singRIGHTmiss", "Pico Note Right Miss", [], 24, false, [-45, 50]],
 		["singLEFTmiss", "Pico NOTE LEFT miss", [], 24, false, [83, 28]]
 	],
-	"position": [-250, 300],
+	"position": [-375, 300],
 	"camera_points": [250, 20],
 	"flip_x": true,
 	"icon": "pico",

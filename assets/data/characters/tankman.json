@@ -12,7 +12,7 @@
 		["singLEFT", "Tankman Note Left 1", [], 24, false, [91, -23]],
 		["singLEFTmiss", "Tankman Note Left MISS", [], 24, false, [91, -23]]
 	],
-	"position": [-40, 240],
+	"position": [-60, 240],
 	"camera_points": [40, 0],
 	"flip_x": true,
 	"icon": "tankman",
