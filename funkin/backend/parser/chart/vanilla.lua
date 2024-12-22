@@ -90,7 +90,9 @@ local function getStuff(data, eventData, bpm, psych)
 end
 
 function vanilla.parse(data, events, meta)
-	data = data.song or data
+	local baseData = data.song
+	data = type(baseData) == "table" and baseData or data
+
 	local chart = Parser.getDummyChart()
 
 	Parser.pset(chart, "song", data.song)

@@ -187,8 +187,10 @@ function paths.getMusic(key) return paths.getAudio("music/" .. key, true) end
 
 function paths.getSound(key) return paths.getAudio("sounds/" .. key, false) end
 
-function paths.getInst(song)
-	return paths.getAudio("songs/" .. paths.formatToSongPath(song) .. "/Inst", true)
+function paths.getInst(song, suffix, logError)
+	return paths.getAudio("songs/"
+		.. paths.formatToSongPath(song)
+		.. "/Inst" .. (suffix and "-" .. suffix or ""), true, logError)
 end
 
 function paths.getVoices(song, suffix, logError)

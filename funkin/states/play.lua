@@ -131,8 +131,10 @@ function PlayState:enter()
 
 	self.camHUD.bgColor[4] = ClientPrefs.data.backgroundDim / 100
 
+	local difficulty = PlayState.songDifficulty:lower()
 	if game.sound.music then game.sound.music:reset(true) end
-	game.sound.loadMusic(paths.getInst(songName))
+	game.sound.loadMusic(paths.getInst(songName, difficulty, true)
+		or paths.getInst(songName, nil, true))
 	game.sound.music:setLooping(false)
 	game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100)
 	game.sound.music.onComplete = function() self:endSong() end
@@ -164,7 +166,7 @@ function PlayState:enter()
 		self.scripts:add(self.boyfriend.script)
 	end
 
-	if self.gf and PlayState.SONG.player2:startsWith("gf") then
+	if self.gf and self.dad and self.dad.char:startsWith("gf") then
 		self.gf.visible = false
 		self.dad:setPosition(self.gf.x, self.gf.y)
 	end
@@ -194,10 +196,15 @@ function PlayState:enter()
 	end
 
 	local playerVocals, enemyVocals, volume =
-		paths.getVoices(songName, PlayState.SONG.player1, true)
+		paths.getVoices(songName, PlayState.SONG.player1 .. "-" .. difficulty, true)
+		or paths.getVoices(songName, "Player-" .. difficulty, true)
+		or paths.getVoices(songName, difficulty, true)
+		or paths.getVoices(songName, PlayState.SONG.player1, true)
 		or paths.getVoices(songName, "Player", true)
 		or paths.getVoices(songName, nil, true),
-		paths.getVoices(songName, PlayState.SONG.player2, true)
+		paths.getVoices(songName, PlayState.SONG.player2 .. "-" .. difficulty, true)
+		or paths.getVoices(songName, "Opponent-" .. difficulty, true)
+		or paths.getVoices(songName, PlayState.SONG.player2, true)
 		or paths.getVoices(songName, "Opponent", true),
 		ClientPrefs.data.vocalVolume / 100
 	if playerVocals then
@@ -278,7 +285,8 @@ function PlayState:enter()
 		self.countdown.antialiasing = event.antialiasing
 	end
 
-	self.healthBar = HealthBar(self.boyfriend, self.dad)
+	self.healthBar = HealthBar(self.boyfriend and self.boyfriend.icon or nil,
+		self.dad and self.dad.icon or nil)
 	self.healthBar:screenCenter("x").y = game.height * (self.downScroll and 0.1 or 0.9)
 	self:add(self.healthBar)
 

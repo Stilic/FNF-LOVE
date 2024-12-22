@@ -1,10 +1,7 @@
 local HealthIcon = Sprite:extend("HealthIcon")
 
-HealthIcon.defaultIcon = "face"
-
 function HealthIcon:new(icon, isPlayer, health)
 	HealthIcon.super.new(self)
-
 	self.isPlayer, self.isLegacyStyle = isPlayer or false, true
 	self.health = health or 50
 	self.flipX = self.isPlayer
@@ -60,13 +57,16 @@ function HealthIcon:updateAnimation()
 	end
 end
 
-function HealthIcon:changeIcon(icon, ignoreDefault)
-	if not icon or icon == "" or not paths.getImage("icons/" .. icon) then
-		if ignoreDefault then return false end
-		icon = HealthIcon.defaultIcon
+function HealthIcon:changeIcon(icon)
+	if icon then
+		self.visible = true
+	else
+		self.visible = false
+		return false
 	end
 
-	self.icon = icon
+	local path = "icons/" .. icon
+	icon = (icon ~= "" and paths.getImage(path)) and icon or HealthIcon.defaultIcon
 
 	local hasOldSuffix = icon:endsWith("-old")
 	self.isPixelIcon = icon:endsWith("-pixel") or
@@ -74,7 +74,6 @@ function HealthIcon:changeIcon(icon, ignoreDefault)
 	self.isOldIcon = hasOldSuffix or
 		(self.isPixelIcon and icon:sub(1, -7):endsWith("-old"))
 
-	local path = "icons/" .. icon
 	local isSparrow = paths.exists(paths.getPath("images/" .. path .. ".xml"), "file")
 	self.isLegacyStyle = not isSparrow and not paths.exists(paths.getPath("images/" .. path .. ".txt"), "file")
 	if self.isLegacyStyle then

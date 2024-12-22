@@ -1,6 +1,6 @@
 local HealthBar = SpriteGroup:extend("HealthBar")
 
-function HealthBar:new(bfData, dadData, skin)
+function HealthBar:new(p1, p2, skin)
 	HealthBar.super.new(self, 0, 0)
 
 	self.maxHealth = 2
@@ -17,8 +17,8 @@ function HealthBar:new(bfData, dadData, skin)
 
 	local healthPercent = self.bar.percent
 	self.iconP1, self.iconP2, self.iconScale =
-		HealthIcon(bfData.icon, true, healthPercent),
-		HealthIcon(dadData.icon, false, healthPercent),
+		HealthIcon(p1, true, healthPercent),
+		HealthIcon(p2, false, healthPercent),
 		1
 
 	local y = self.bar.y
