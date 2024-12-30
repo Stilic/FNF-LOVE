@@ -32,8 +32,7 @@ function util.getSkinPath(skin, key, type)
 end
 
 function util.coolLerp(x, y, i, delta)
-	local v = math.lerp(y, x, math.exp(-(delta or game.dt) * i))
-	return (y == 0 and v > y) and 0 or v
+	return math.lerp(y, x, math.exp(-(delta or game.dt) * i))
 end
 
 function util.newGradient(dir, ...)

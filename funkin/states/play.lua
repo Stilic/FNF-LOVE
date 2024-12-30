@@ -792,7 +792,7 @@ function PlayState:update(dt)
 	end
 
 	self.healthBar.value = util.coolLerp(self.healthBar.value, self.health, 15, dt)
-	if not self.isDead and self.healthBar.value <= 0 then self:tryGameOver() end
+	if not self.isDead and self.health <= 0 then self:tryGameOver() end
 
 	if self.startedCountdown then
 		if controls:pressed("debug_1") then
