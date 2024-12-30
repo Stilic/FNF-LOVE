@@ -1194,7 +1194,7 @@ function PlayState:closeSubstate()
 	self.camNotes:unfreeze()
 	self.camHUD:unfreeze()
 
-	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
+	game.camera.target = self.camFollow
 
 	if not self.startingSong then
 		self:playSong()
