@@ -113,12 +113,15 @@ function Camera:follow(target, type, lerp)
 	self.followLerp = lerp
 end
 
-function Camera:unfollow()
+function Camera:unfollow(resetType)
 	if self.target == nil then return end
+	if resetType == nil then resetType = true end
 
 	self.target = nil
-	self.followType = nil
-	self.followLerp = nil
+	if resetType then
+		self.followType = nil
+		self.followLerp = nil
+	end
 end
 
 function Camera:snapToTarget()

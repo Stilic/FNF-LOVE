@@ -1058,7 +1058,7 @@ end
 function PlayState:tryPause()
 	local event = self.scripts:call("pause")
 	if event ~= Script.Event_Cancel then
-		game.camera:unfollow()
+		game.camera:unfollow(false)
 		game.camera:freeze()
 		self.camNotes:freeze()
 		self.camHUD:freeze()
