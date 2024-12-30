@@ -1,4 +1,5 @@
 local HealthIcon = Sprite:extend("HealthIcon")
+HealthIcon.defaultIcon = "face"
 
 function HealthIcon:new(icon, isPlayer, health)
 	HealthIcon.super.new(self)
@@ -58,7 +59,7 @@ function HealthIcon:updateAnimation()
 end
 
 function HealthIcon:changeIcon(icon)
-	if icon then
+	if icon and icon ~= "" then
 		self.active, self.visible = true, true
 	else
 		self.active, self.visible = false, false
@@ -66,7 +67,12 @@ function HealthIcon:changeIcon(icon)
 	end
 
 	local path = "icons/" .. icon
-	icon = (icon ~= "" and paths.getImage(path)) and icon or HealthIcon.defaultIcon
+	if paths.getImage(path) then
+		self.char = icon
+	else
+		path = "icons/" .. HealthIcon.defaultIcon
+		self.char = HealthIcon.defaultIcon
+	end
 
 	local hasOldSuffix = icon:endsWith("-old")
 	self.isPixelIcon = icon:endsWith("-pixel") or

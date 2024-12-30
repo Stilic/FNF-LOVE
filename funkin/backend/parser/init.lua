@@ -60,7 +60,7 @@ function Parser.getMeta(songName)
 		charter = "unknown",
 		composer = "unknown",
 
-		icon = "face",
+		icon = HealthIcon.defaultIcon,
 		color = Color.WHITE,
 		difficulties = {"Easy", "Normal", "Hard"}
 	}
@@ -123,7 +123,7 @@ function Parser.getDummyChar()
 		dance_beats = nil,
 
 		flip_x = false,
-		icon = "face",
+		icon = HealthIcon.defaultIcon,
 		sprite = nil,
 		antialiasing = true,
 		scale = 1
