@@ -84,6 +84,7 @@ function Note:loadSkinData(skinData, name, direction, noRgb)
 	else
 		self:loadTexture(paths.getImage(tex))
 	end
+	self:updateHitbox()
 
 	self.blend = data.blend or self.blend
 
@@ -165,8 +166,10 @@ function Note:createSustain()
 	toPlay = "end-note" .. self.direction
 	sustainEnd:play(sustainEnd.__animations[toPlay] and toPlay or "end")
 
-	self.updateHitbox(sustain)
-	self.updateHitbox(sustainEnd)
+	sustain:centerOrigin()
+	sustain:centerOffsets()
+	sustainEnd:centerOrigin()
+	sustainEnd:centerOffsets()
 
 	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__render = 0, 0, 0, __NIL__
 	sustainEnd.z, sustainEnd.offset.z, sustainEnd.origin.z, sustainEnd.__render = 0, 0, 0, __NIL__
@@ -183,17 +186,6 @@ function Note:ghost()
 	self.isGhost = true
 end
 
-function Note:updateHitbox()
-	local width, height = self:getFrameDimensions()
-
-	self.width = math.abs(self.scale.x * self.zoom.x) * width
-	self.height = math.abs(self.scale.y * self.zoom.y) * height
-	self.__width, self.__height = self.width, self.height
-
-	self:centerOrigin(width, height)
-	self:centerOffsets(width, height)
-end
-
 function Note:destroy()
 	Note.super.destroy(self)
 	self:destroySustain()
@@ -202,7 +194,8 @@ end
 function Note:play(anim, force, frame, dontShader)
 	local toPlay = anim .. '-note' .. self.direction
 	Note.super.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
-	Note.updateHitbox(self)
+	self:centerOrigin()
+	self:centerOffsets()
 
 	if not dontShader and self.__shaderAnimations[anim] then
 		self.shader = self.__shaderAnimations[anim]

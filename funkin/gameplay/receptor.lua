@@ -250,10 +250,12 @@ function Receptor:play(anim, force, frame, dontShader, isSplashOrCover)
 		if anim == "confirm" and self.glow then
 			toPlay = "glow-note" .. self.direction
 			Sprite.play(self.glow, self.glow.__animations[toPlay] and toPlay or "glow", force, frame)
-			Note.updateHitbox(self.glow)
+			self.glow:centerOrigin()
+			self.glow:centerOffsets()
 		end
 
-		Note.updateHitbox(self)
+		self:centerOrigin()
+		self:centerOffsets()
 		self.holdTime = 0
 	end
 
