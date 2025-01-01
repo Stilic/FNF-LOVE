@@ -198,7 +198,6 @@ function Receptor:update(dt)
 	if self.glow then
 		ActorSprite.update(self.glow, dt)
 	end
-
 	ActorSprite.update(self, dt)
 
 	for _, splash in ipairs(self.splashes.members) do

@@ -20,8 +20,7 @@ function Character:new(x, y, char, isPlayer)
 
 	self.__reverseDraw = self.__reverseDraw or false
 
-	self.dirAnim, self.holdTime, self.lastHit, self.danceAfterRelease =
-		nil, 4, math.negative_infinity, false
+	self.dirAnim, self.holdTime, self.lastHit = nil, 4, math.negative_infinity
 	self.danceSpeed, self.danced = 2, false
 
 	local data = Parser.getCharacter(self.char)
@@ -64,7 +63,7 @@ function Character:new(x, y, char, isPlayer)
 	if data.camera_points then
 		x, y = data.camera_points[1], data.camera_points[2]
 		self.cameraPosition = {x = x, y = y}
-		self.cameraPosition.x, self.cameraPosition.y = x,  y
+		self.cameraPosition.x, self.cameraPosition.y = x, y
 	else
 		self.cameraPosition = {x = 0, y = 0}
 	end
@@ -153,23 +152,15 @@ function Character:update(dt)
 		end
 	end
 
-	if self.lastHit > 0 and self.lastHit
-		+ PlayState.conductor.stepCrotchet * self.holdTime
-		< math.abs(PlayState.conductor.time) then
-		local canDance = true
-
-		if self.danceAfterRelease then
-			if self.dirAnim and controls:down(Notefield.keysControls[self.dirAnim]) then
-				canDance = false
-			end
-		end
-
-		if canDance and self.__animations[self.curAnim.name .. "-end"] and
+	if self.lastHit > 0 and
+		self.lastHit + PlayState.conductor.stepCrotchet * self.holdTime < math.abs(PlayState.conductor.time) and
+		(not self.isPlayer or not self.dirAnim or not controls:down(PlayState.keysControls[self.dirAnim])) then
+		if self.__animations[self.curAnim.name .. "-end"] and
 			not self.curAnim.name:endsWith("-end") then
 			self:playAnim(self.curAnim.name .. '-end')
 			self.isPlayingEnd = true
 			canDance = false
-		elseif canDance and not self.isPlayingEnd then
+		elseif not self.isPlayingEnd then
 			self:dance()
 			self.lastHit = math.negative_infinity
 		end
