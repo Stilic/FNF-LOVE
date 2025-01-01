@@ -225,13 +225,8 @@ function PlayState:enter()
 	self.playerNotefield.cameras, self.enemyNotefield.cameras = {self.camNotes}, {self.camNotes}
 	self.notefields = {self.playerNotefield, self.enemyNotefield, {character = self.gf}}
 	self:positionNotefields()
-
-	for _, n in ipairs(PlayState.SONG.notes.enemy) do
-		self:generateNote(self.enemyNotefield, n)
-	end
-	for _, n in ipairs(PlayState.SONG.notes.player) do
-		self:generateNote(self.playerNotefield, n)
-	end
+	self.enemyNotefield:makeNotesFromChart(PlayState.SONG.notes.enemy)
+	self.playerNotefield:makeNotesFromChart(PlayState.SONG.notes.player)
 	self:add(self.enemyNotefield)
 	self:add(self.playerNotefield)
 
@@ -432,17 +427,6 @@ function PlayState:getRating(a, b)
 	local diff = math.abs(a - b)
 	for _, r in ipairs(self.ratings) do
 		if diff <= (r.time < 0 and Note.safeZoneOffset or r.time) then return r end
-	end
-end
-
-function PlayState:generateNote(notefield, n)
-	if n.t >= PlayState.startPos then
-		local sustainTime = n.l or 0
-		if sustainTime > 0 then
-			sustainTime = math.max(sustainTime / 1000, 0.125)
-		end
-		local note = notefield:makeNote(n.t / 1000, n.d % 4, sustainTime, n.k)
-		if n.gf then note.character = self.gf end
 	end
 end
 

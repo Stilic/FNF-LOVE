@@ -1,6 +1,16 @@
 local Notefield = ActorGroup:extend("Notefield")
 
 function Notefield:new(x, y, keys, skin, character, vocals, speed)
+	if keys == nil then
+		keys = 4
+	end
+	if skin == nil then
+		skin = "default"
+	end
+	if speed == nil then
+		speed = 1
+	end
+
 	Notefield.super.new(self, x, y)
 
 	self.noteWidth = 160 * 0.7
@@ -10,7 +20,7 @@ function Notefield:new(x, y, keys, skin, character, vocals, speed)
 
 	self.time, self.beat = 0, 0
 	self.offsetTime = 0
-	self.speed = speed or 1
+	self.speed = speed
 	self.drawSize = game.height * 2 + self.noteWidth
 	self.drawSizeOffset = 0
 	self.downscroll = false -- this just sets scale y backwards
@@ -57,16 +67,34 @@ function Notefield:makeLane(direction, y)
 	return lane
 end
 
+function Notefield:addNote(note)
+	note.parent = self
+	table.insert(self.notes, note)
+	return note
+end
+
 function Notefield:makeNote(time, column, sustain, type, skin)
 	local note = Note(time, column, sustain, type, skin or self.skin)
 	self:addNote(note)
 	return note
 end
 
-function Notefield:addNote(note)
-	note.parent = self
-	table.insert(self.notes, note)
-	return note
+function Notefield:makeNotesFromChart(notes)
+	local gf = game:getState().gf
+	if gf and not gf:is(Character) then
+		gf = nil
+	end
+	for _, n in ipairs(notes) do
+		if n.t >= PlayState.startPos then
+			local sustainTime = n.l or 0
+			if sustainTime ~= 0 then
+				sustainTime = math.max(sustainTime / 1000, 0.125)
+			end
+			local note = self:makeNote(n.t / 1000, n.d % 4, sustainTime, n.k)
+			-- do not ask why i didn't add a callback. -stilic
+			if gf and n.gf then note.character = gf end
+		end
+	end
 end
 
 function Notefield:copyNotesFromNotefield(notefield)
