@@ -2,6 +2,9 @@ local Video = Object:extend("Video")
 
 function Video:new(x, y, source, screenAdjust, autoDestroy, looped)
 	Video.super.new(self, x, y)
+	if type(source) == "string" then
+		source = paths.getPath("videos/" .. source .. ".ogv")
+	end
 	self.video = source.typeOf and source or
 		love.graphics.newVideo(source)
 	self.width, self.height = self.video:getDimensions()
