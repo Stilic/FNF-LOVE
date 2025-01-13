@@ -1200,7 +1200,6 @@ function PlayState:endSong(skip)
 		self.cutscene = Cutscene(true, function(event)
 			self:endSong(true)
 			self.cutscene:destroy()
-			self.cutscene = nil
 		end)
 		return
 	end
