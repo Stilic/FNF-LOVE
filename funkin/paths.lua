@@ -120,7 +120,15 @@ end
 function paths.getJSON(key)
 	local path = paths.getPath(key .. ".json")
 	local data = readFile(path)
-	if data then return decodeJson(data), path end
+	if data then
+		local s, r = pcall(decodeJson, data)
+		if not s then
+			local err = r:gsub("^.-:%d+: ERROR: ", "")
+			error(path .. ": " .. err)
+			return
+		end
+		return r, path
+	end
 	return nil, path
 end
 
