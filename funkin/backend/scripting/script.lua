@@ -135,12 +135,14 @@ end
 function Script:close()
 	if self.variables then table.clear(self.variables) end
 	if self.chunk then setfenv(self.chunk, closedEnv) end
-	self.closed = true
 	self.variables = nil
 	self.chunk = nil
 	self.__failedfunc = {}
 
-	self.closeCallback:dispatch()
+	if not self.closed then
+		self.closed = true
+		self.closeCallback:dispatch()
+	end
 end
 
 return Script

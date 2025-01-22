@@ -1,6 +1,5 @@
 local Events = require "funkin.backend.scripting.events"
 local PauseSubstate = require "funkin.substates.pause"
-local Cutscene = require "funkin.gameplay.cutscene"
 
 ---@class PlayState:State
 local PlayState = State:extend("PlayState")
@@ -41,6 +40,22 @@ function PlayState.loadSong(song, diff)
 	PlayState.SONG = Parser.getChart(song, diff)
 
 	return true
+end
+
+function PlayState.getCutscene(isEnd)
+	local name = paths.formatToSongPath(PlayState.SONG.song)
+	if isEnd then name = name .. "-end" end
+
+	for _, path in ipairs({
+		paths.getMods("data/cutscenes/" .. name .. ".lua"),
+		paths.getMods("data/cutscenes/" .. name .. ".json"),
+		paths.getPath("data/cutscenes/" .. name .. ".lua"),
+		paths.getPath("data/cutscenes/" .. name .. ".json")
+	}) do
+		if paths.exists(path, "file") then
+			return name, path:ext() == "lua" and 1 or 2
+		end
+	end
 end
 
 function PlayState:new(storyMode, song, diff)
@@ -351,27 +366,27 @@ function PlayState:enter()
 	end
 	self:positionText()
 
-	if self.storyMode and not PlayState.seenCutscene then
-		PlayState.seenCutscene = true
-
-		self.cutscene = Cutscene(false, function(event)
-			local skipCountdown = event and event.params[1] or false
-			if skipCountdown then
-				self:startSong(0)
-				if self.buttons then self:add(self.buttons) end
-				for _, notefield in ipairs(self.notefields) do
-					if notefield.is and PlayState.canFadeInReceptors then
-						notefield:fadeInReceptors()
+	if PlayState.storyMode and not PlayState.seenCutscene then
+		local name, type = PlayState.getCutscene()
+		if name then
+			self:executeCutscene(name, type, function(event)
+				local skipCountdown = event and event.params[1] or false
+				if skipCountdown then
+					self:startSong(0)
+					if self.buttons then self:add(self.buttons) end
+					for _, notefield in ipairs(self.notefields) do
+						if notefield.is and PlayState.canFadeInReceptors then
+							notefield:fadeInReceptors()
+						end
 					end
+					PlayState.canFadeInReceptors = false
+				else
+					self:startCountdown()
 				end
-				PlayState.canFadeInReceptors = false
-			else
-				self:startCountdown()
-			end
-			if not self.cutscene then return end
-			self.cutscene:destroy()
-			self.cutscene = nil
-		end)
+			end)
+		else
+			self:startCountdown()
+		end
 	else
 		self:startCountdown()
 	end
@@ -397,6 +412,92 @@ function PlayState:enter()
 
 	game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 	game.camera:snapToTarget()
+end
+
+function PlayState:executeCutscene(name, type, onComplete)
+	PlayState.seenCutscene = true
+	if type == 1 then
+		local cutsceneScript = Script("data/cutscenes/" .. name)
+		cutsceneScript.errorCallback:add(function()
+			print("Cutscene returned a error. Skipping")
+			cutsceneScript:close()
+		end)
+		cutsceneScript.closeCallback:add(function()
+			if onComplete then onComplete() end
+		end)
+
+		cutsceneScript:call("create")
+		if isEnd then cutsceneScript:call("postCreate") end
+
+		self.scripts:add(cutsceneScript)
+		cutsceneScript:set("timer", self.timer)
+		cutsceneScript:set("tween", self.tween)
+	else
+		local s, data = pcall(paths.getJSON, "data/cutscenes/" .. name)
+		if not s then
+			print("JSON cutscene returned a error. Skipping;", data)
+			if onComplete then onComplete() end
+			return
+		end
+
+		for _, e in ipairs(data.cutscene) do
+			Timer():start(e.time / 1000, function()
+				self:executeCutsceneEvent(e.event, onComplete)
+			end)
+		end
+	end
+end
+
+function PlayState:executeCutsceneEvent(event, onComplete)
+	switch(event.name, {
+		['Camera Position'] = function()
+			local xCam, yCam = event.params[1], event.params[2]
+			local isTweening = event.params[3]
+			local time = event.params[4]
+			local ease = event.params[5]
+			if isTweening then
+				game.camera:follow(self.camFollow, nil)
+				Tween.tween(self.camFollow, {x = xCam, y = yCam}, time, {ease = Ease[ease]})
+			else
+				self.state.camFollow:set(xCam, yCam)
+				game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
+			end
+		end,
+		['Camera Zoom'] = function()
+			local zoomCam = event.params[1]
+			local isTweening = event.params[2]
+			local time = event.params[3]
+			local ease = event.params[4]
+			if isTweening then
+				Tween.tween(game.camera, {zoom = zoomCam}, time, {ease = Ease[ease]})
+			else
+				game.camera.zoom = zoomCam
+			end
+		end,
+		["Play Sound"] = function()
+			local soundPath = event.params[1]
+			local volume = event.params[2]
+			local isFading = event.params[3]
+			local time = event.params[4]
+			local volStart, volEnd = event.params[5], event.params[6]
+
+			local sound = game.sound.play(paths.getSound(soundPath), volume)
+			if isFading then sound:fade(time, volStart, volEnd) end
+		end,
+		["Play Animation"] = function()
+			local character, nf, anim = nil, self.notefields, event.params[2]
+			switch(event.params[1], {
+				[{"bf", "boyfriend", "player"}] = function() character = nf[1].character end,
+				[{"gf", "girlfriend", "bystander"}] = function() character = nf[3].character end,
+				[{"dad", "enemy", "opponent"}] = function() character = nf[2].character end
+			})
+			if character then character:playAnim(anim, true) end
+		end,
+		["End Cutscene"] = function()
+			game.camera:follow(self.state.camFollow, nil, 2.4 * self.camSpeed)
+			if onComplete then onComplete(event) end
+		end
+	})
 end
 
 function PlayState:positionNotefields()
@@ -769,10 +870,8 @@ function PlayState:update(dt)
 	end
 	self.camNotes.zoom = self.camHUD.zoom
 
-	if self.startedCountdown or self.cutscene then
-		if (self.buttons and game.keys.justPressed.ESCAPE) or controls:pressed("pause") then
-			self:tryPause()
-		end
+	if self.startedCountdown and controls:pressed("pause") then
+		self:tryPause()
 	end
 
 	self.healthBar.value = util.coolLerp(self.healthBar.value, self.health, 15, dt)
@@ -1051,7 +1150,7 @@ function PlayState:tryPause()
 
 		if self.buttons then self:remove(self.buttons) end
 
-		local pause = PauseSubstate(self.cutscene)
+		local pause = PauseSubstate()
 		pause.cameras = {self.camOther}
 		self:openSubstate(pause)
 	end
@@ -1115,7 +1214,7 @@ function PlayState:onKeyPress(key, type, scancode, isrepeat, time)
 
 			if ClientPrefs.data.ghostTap and l > 0 then
 				for i = #notefield.recentPresses, 1, -1 do
-					if time - notefield.recentPresses[i] > 0.12 then
+					if time - notefield.recentPresses[i] > 0.12 * self.playback then
 						table.remove(notefield.recentPresses, i)
 					end
 				end
@@ -1191,21 +1290,21 @@ function PlayState:closeSubstate()
 end
 
 function PlayState:endSong(skip)
-	if skip == nil then skip = false end
 	PlayState.seenCutscene = false
-	self.startedCountdown = false
+	game.sound.music:reset(true)
 
-	if self.storyMode and not PlayState.seenCutscene and not skip then
-		PlayState.seenCutscene = true
-		self.cutscene = Cutscene(true, function(event)
-			self:endSong(true)
-		end)
-		return
+	if PlayState.storyMode and not skip then
+		local name, type = PlayState.getCutscene(true)
+		if name then
+			self:executeCutscene(name, type, function()
+				self:endSong(true)
+			end)
+			return
+		end
 	end
 
 	local event = self.scripts:call("endSong")
 	if event == Script.Event_Cancel then return end
-	game.sound.music.onComplete = nil
 
 	if not self.usedBotPlay then
 		Highscore.saveScore(PlayState.SONG.song, self.score, self.songDifficulty)
@@ -1215,8 +1314,7 @@ function PlayState:endSong(skip)
 		return
 	end
 
-	game.sound.music:reset(true)
-	if self.storyMode then
+	if PlayState.storyMode then
 		PlayState.canFadeInReceptors = false
 		if not self.usedBotPlay then
 			PlayState.storyScore = PlayState.storyScore + self.score
@@ -1228,7 +1326,7 @@ function PlayState:endSong(skip)
 
 			if Discord then
 				local detailsText = "Freeplay"
-				if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+				if PlayState.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
 				Discord.changePresence({
 					details = detailsText,
@@ -1262,6 +1360,7 @@ function PlayState:endSong(skip)
 	end
 	controls:unbindPress(self.bindedKeyPress)
 	controls:unbindRelease(self.bindedKeyRelease)
+	game.sound.music.onComplete = nil
 
 	self.scripts:call("postEndSong")
 end
@@ -1270,7 +1369,7 @@ function PlayState:updateDiscordRPC(paused)
 	if not Discord then return end
 
 	local detailsText = "Freeplay"
-	if self.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
+	if PlayState.storyMode then detailsText = "Story Mode: " .. PlayState.storyWeek end
 
 	local diff = PlayState.defaultDifficulty
 	if PlayState.songDifficulty ~= "" then
