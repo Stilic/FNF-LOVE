@@ -1,6 +1,23 @@
 local bgMusic
+local isVideo = ClientPrefs.data.lowQuality
+
+local function startVideo()
+	cutscene = Video(0, 0, "gunsCutscene", true, true)
+	cutscene:setScrollFactor()
+	cutscene.cameras = {state.camOther}
+	cutscene:play()
+	state:add(cutscene)
+	cutscene.onComplete = function()
+		close()
+	end
+end
 
 function create()
+	if isVideo then
+		startVideo()
+		return
+	end
+
 	local dadX, dadY = state.stage.dadPos.x, state.stage.dadPos.y
 	if state.dad then
 		dadX, dadY, state.dad.alpha = state.dad.x, state.dad.y, 0
@@ -22,24 +39,26 @@ function create()
 end
 
 function postCreate()
+	if isVideo then return end
+
 	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true)
 	bgMusic:play()
 
 	game.sound.play(paths.getSound('gameplay/tankSong2'), ClientPrefs.data.vocalVolume / 100)
 	tween:tween(game.camera, {zoom = state.stage.camZoom * 1.2}, 4, {ease = Ease.quadInOut})
 
-	Timer(timer):start(4, function()
+	Timer():start(4, function()
 		tween:tween(game.camera, {zoom = state.stage.camZoom * 1.2 * 1.2}, 0.5, {ease = Ease.quadInOut})
 		if state.gf then
 			state.gf:playAnim('sad', true)
 		end
 	end)
 
-	Timer(timer):start(4.5, function()
+	Timer():start(4.5, function()
 		tween:tween(game.camera, {zoom = state.stage.camZoom * 1.2}, 1, {ease = Ease.quadInOut})
 	end)
 
-	Timer(timer):start(11.5, function()
+	Timer():start(11.5, function()
 		tankman:destroy()
 		if state.dad then
 			state.dad.alpha = 1
@@ -53,6 +72,8 @@ function postCreate()
 end
 
 function songStart()
-	bgMusic:stop()
-	close()
+	if not isVideo then
+		bgMusic:stop()
+		close()
+	end
 end

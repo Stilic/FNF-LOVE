@@ -1,35 +1,9 @@
 local base, back, window, reflect
-local shader = [[
-extern vec3 modf; extern bool isGraphic;
-// modf: x = contrast, y = saturation, z = brightness
-// yeah im lazy lol don't judge me i hate shaders - kaoy
 
-vec3 scb(vec3 color, vec3 adj) {
-	const vec3 coeffi = vec3(0.2125, 0.7154, 0.0721);
-	const vec3 lumins = vec3(0.5, 0.5, 0.5);
-
-	vec3 brtcol = color * adj.z;
-	vec3 intens = vec3(dot(brtcol, coeffi));
-	vec3 satcol = mix(intens, brtcol, adj.y);
-	vec3 concol = mix(lumins, satcol, adj.x);
-
-	return concol;
-}
-
-vec4 effect(vec4 color, Image tex, vec2 coords, vec2 _) {
-	vec4 pixel = Texel(tex, coords);
-	vec3 modif; vec4 final;
-
-	if (isGraphic) {
-		modif = scb(color.rgb, modf);
-		final = vec4(modif, color.a);
-	} else {
-		modif = scb(pixel.rgb, modf);
-		final = vec4(modif, pixel.a) * color;
-	}
-	return final;
-}
-]]
+local function modify(obj, c, s, b)
+	obj.shaderObj.isGraphic = obj:is(Graphic)
+	obj.shaderObj.modifier = {c, s, b}
+end
 
 local function lightingAnimation()
 	if ClientPrefs.data.flashingLights then
@@ -38,9 +12,12 @@ local function lightingAnimation()
 		modify(window, 1, 1, 10)
 
 		reflect.alpha = 1
+		local color = Color.BLACK
+		state.boyfriend.color, state.dad.color, state.gf.color =
+			color, color, color
 	end
 
-	state.timer:wait(1 / 12, function()
+	Timer(state.timer):start(1 / 12, function()
 		local eh = {c = 3, s = 2, b = 0.9}
 		local eh2 = {b = 10}
 
@@ -50,31 +27,36 @@ local function lightingAnimation()
 			modify(window, 1.3, 1, 0.5)
 
 			reflect.alpha = 0
+			local color = Color.WHITE
+			state.boyfriend.color, state.dad.color, state.gf.color =
+				color, color, color
 		else
 			-- lower the intensity for next animation
 			eh2.b = 1.5
 			eh.c, eh.s = 1.5, 1
 		end
 
-		state.timer:wait(1 / 24, function()
+		Timer(state.timer):start(1 / 24, function()
 			game.camera:shake(0.001, 1.4)
 			state.camHUD:shake(0.001, 1.4)
 
 			util.playSfx(paths.getSound('gameplay/thunder_' ..
 				love.math.random(1, 2)))
 
-			reflect.alpha = 0.9
+			reflect.alpha = 0.5
 
-			state.timer:tween(0.8, eh, {c = 1, s = 1, b = 1}, "linear")
-			state.timer:tween(0.8, eh2, {b = 1}, "linear")
+			local ease = {ease = Ease.cubeOut}
+			state.tween:tween(eh, {c = 1, s = 1, b = 1}, 1, ease)
+			state.tween:tween(eh2, {b = 1}, 1, ease)
 
-			state.timer:tween(0.7, reflect, {alpha = 0.6}, "linear")
+			state.tween:tween(reflect, {alpha = 0.6}, 0.7, ease)
 
-			state.timer:during(1.5, function()
+			local tmp = {a = 0} -- whoops
+			state.tween:tween(tmp, {a = 0}, 1.5, {onUpdate = function(this)
 				modify(base, eh.c, eh.s, eh.b)
 				modify(back, eh.c, eh.s, eh.b)
 				modify(window, 1, 1, eh2.b)
-			end)
+			end})
 
 			if state.boyfriend then
 				state.boyfriend:playAnim('scared', true)
@@ -88,21 +70,18 @@ local function lightingAnimation()
 	end)
 end
 
-local function modify(obj, c, s, b)
-	obj.shader:send("isGraphic", obj:is(Graphic))
-	obj.shader:send("modf", {c, s, b})
-end
-
 function create()
 	self.dadCam.y = 34
 
 	base = Graphic(-350, -260, 2000, 2000, Color.fromString("#32325A"))
 	base:setScrollFactor()
-	base.shader = love.graphics.newShader(shader)
+	base.shaderObj = Shader("csb")
+	base.shader = base.shaderObj:get()
 	self:add(base)
 
 	window = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
-	window.shader = love.graphics.newShader(shader)
+	window.shaderObj = Shader("csb")
+	window.shader = window.shaderObj:get()
 	self:add(window)
 
 	local windowBlend = Sprite(243, 68, paths.getImage(SCRIPT_PATH .. "window"))
@@ -111,7 +90,8 @@ function create()
 	self:add(windowBlend)
 
 	back = Sprite(-200, -100, paths.getImage(SCRIPT_PATH .. "bg_shadows"))
-	back.shader = love.graphics.newShader(shader)
+	back.shaderObj = Shader("csb")
+	back.shader = back.shaderObj:get()
 	self:add(back)
 
 	reflect = Sprite(262, 609, paths.getImage(SCRIPT_PATH .. "windowReflect"))
@@ -138,7 +118,7 @@ function beat()
 end
 
 function close()
-	base.shader:release()
-	back.shader:release()
-	window.shader:release()
+	base.shaderObj:destroy()
+	back.shaderObj:destroy()
+	window.shaderObj:destroy()
 end

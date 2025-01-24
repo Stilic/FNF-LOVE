@@ -15,19 +15,19 @@ local startedMoving = false
 local phillyWindow, phillyTrain, trainSound
 
 function create()
-	local bg = Sprite(-100)
+	local bg = Sprite(-95)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'sky'))
 	bg:setScrollFactor(0.1, 0.1)
 	self:add(bg)
 
-	local city = Sprite(-10)
+	local city = Sprite(0, 16)
 	city:loadTexture(paths.getImage(SCRIPT_PATH .. 'city'))
 	city:setScrollFactor(0.3, 0.3)
 	city:setGraphicSize(math.floor(city.width * 0.85))
 	city:updateHitbox()
 	self:add(city)
 
-	phillyWindow = Sprite(city.x)
+	phillyWindow = Sprite(66, 127)
 	phillyWindow:loadTexture(paths.getImage(SCRIPT_PATH .. 'window'))
 	phillyWindow:setScrollFactor(0.3, 0.3)
 	phillyWindow.alpha = 0
@@ -35,7 +35,7 @@ function create()
 	phillyWindow:updateHitbox()
 	self:add(phillyWindow)
 
-	local streetBehind = Sprite(-40, 50)
+	local streetBehind = Sprite(178, 148)
 	streetBehind:loadTexture(paths.getImage(SCRIPT_PATH .. 'behindTrain'))
 	self:add(streetBehind)
 
@@ -46,9 +46,11 @@ function create()
 	trainSound = Sound():load(paths.getSound('gameplay/train_passes'))
 	game.sound.list:add(trainSound)
 
-	local street = Sprite(-40, streetBehind.y)
+	local street = Sprite(27, 143)
 	street:loadTexture(paths.getImage(SCRIPT_PATH .. 'street'))
 	self:add(street)
+
+	section()
 end
 
 function update(dt)
@@ -99,17 +101,19 @@ function update(dt)
 	end
 end
 
+function section()
+	local prevCurLight = curLight
+	repeat curLight = love.math.random(1, #lightColors) until prevCurLight ~= curLight
+
+	phillyWindow.color = {
+		lightColors[curLight][1] / 255, lightColors[curLight][2] / 255,
+		lightColors[curLight][3] / 255
+	}
+	phillyWindow.alpha = 1
+end
+
 function beat()
 	if not trainMoving then trainCooldown = trainCooldown + 1 end
-
-	if curBeat % 4 == 0 then
-		curLight = love.math.random(1, #lightColors)
-		phillyWindow.color = {
-			lightColors[curLight][1] / 255, lightColors[curLight][2] / 255,
-			lightColors[curLight][3] / 255
-		}
-		phillyWindow.alpha = 1
-	end
 
 	if curBeat % 8 == 4 and love.math.randomBool(30) and not trainMoving and
 		trainCooldown > 8 then

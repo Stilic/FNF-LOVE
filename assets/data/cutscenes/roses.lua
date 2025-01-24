@@ -7,7 +7,6 @@ function postCreate()
 	doof:setScrollFactor()
 	doof.cameras = {state.camNotes}
 	doof.finishThing = function()
-		state:startCountdown()
 		if state.buttons then state:add(state.buttons) end
 		doof:destroy()
 		close()
@@ -17,7 +16,7 @@ function postCreate()
 	game.camera:shake(0.001, 0.8)
 	state.camHUD:shake(0.001, 0.8)
 
-	Timer(timer):start(1.5, function()
+	Timer():start(1.5, function()
 		util.playSfx(paths.getSound('gameplay/ANGRY'))
 		game.camera:shake(0.001, 0.1)
 		state.camHUD:shake(0.001, 0.1)

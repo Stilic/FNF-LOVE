@@ -1,4 +1,4 @@
-local TankmenBG = require "tankmenbg"
+local TankmenGroup = require "tankmengroup"
 
 local tankWatchtower
 local tankGround
@@ -9,16 +9,25 @@ local tankmanRun
 local fgSprites
 
 function create()
-	self.camZoom = 0.9
+	self.camZoom = 0.6
 
 	self.boyfriendPos = {x = 810, y = 100}
 	self.gfPos = {x = 200, y = 65}
 	self.dadPos = {x = 20, y = 100}
 
-	local bg = Sprite(-400, -400)
+	local bg = Sprite(-380, -400 + 196)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankSky'))
 	bg:setScrollFactor()
 	self:add(bg)
+
+	local clouds = Sprite()
+	clouds:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankClouds'))
+	clouds:setScrollFactor(0.4, 0.4)
+	clouds.x = math.random(-700, -100)
+	clouds.y = math.random(-20, 20)
+	clouds.moves = true
+	clouds.velocity.x = math.random() + math.random(5, 15)
+	self:add(clouds)
 
 	local tankMountains = Sprite(-300, -20)
 	tankMountains:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankMountains'))
@@ -27,7 +36,7 @@ function create()
 	tankMountains:updateHitbox()
 	self:add(tankMountains)
 
-	local tankBuildings = Sprite(-200, 0)
+	local tankBuildings = Sprite(-200 + 136 * 1.1, 226 * 1.1)
 	tankBuildings:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankBuildings'))
 	tankBuildings:setScrollFactor(0.3, 0.3)
 	tankBuildings:setGraphicSize(math.floor(tankBuildings.width * 1.1))
@@ -72,75 +81,34 @@ function create()
 	tankGround:play('BG tank w lighting', true)
 	self:add(tankGround)
 
-	tankmanRun = Group()
-	self:add(tankmanRun)
-
 	fgSprites = Group()
 	self:add(fgSprites, true)
 
-	local tankGround = Sprite(-420, -150)
+	local tankGround = Sprite(-420, -150 + 595 * 1.15)
 	tankGround:loadTexture(paths.getImage(SCRIPT_PATH .. 'tankGround'))
 	tankGround:setGraphicSize(math.floor(tankGround.width * 1.15))
 	tankGround:updateHitbox()
 	self:add(tankGround)
 
-	local fgTank0 = Sprite(-500, 650)
-	fgTank0:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank0'))
-	fgTank0:setScrollFactor(1.7, 1.5)
-	fgTank0:addAnimByPrefix('fg', 'fg', 24, false)
-	fgTank0:play('fg', true)
-	fgSprites:add(fgTank0)
+	local data = {
+		{-500, 650, 1.7}, {-300, 750, 2, 0.2}, {450, 940},
+		{1300, 1200, 3.5, 2.5}, {1300, 900}, {1620, 700}
+	}
+	for i = 0, 5 do
+		local info = data[i + 1]
+		local fgTank = Sprite(info[1], info[2])
+		fgTank:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank' .. i))
+		fgTank:setScrollFactor(info[3] or 1.5, info[4] or 1.5)
+		fgTank:addAnimByPrefix('fg', 'fg', 24, false)
+		fgTank:play('fg', true)
+		fgSprites:add(fgTank)
+	end
+	local member = fgSprites.members[4]
+	fgSprites:remove(member); fgSprites:add(member)
 
-	local fgTank1 = Sprite(-300, 750)
-	fgTank1:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank1'))
-	fgTank1:setScrollFactor(2, 0.2)
-	fgTank1:addAnimByPrefix('fg', 'fg', 24, false)
-	fgTank1:play('fg', true)
-	fgSprites:add(fgTank1)
-
-	local fgTank2 = Sprite(450, 940)
-	fgTank2:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank2'))
-	fgTank2:setScrollFactor(1.5, 1.5)
-	fgTank2:addAnimByPrefix('fg', 'fg', 24, false)
-	fgTank2:play('fg', true)
-	fgSprites:add(fgTank2)
-
-	local fgTank4 = Sprite(1300, 900)
-	fgTank4:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank4'))
-	fgTank4:setScrollFactor(1.5, 1.5)
-	fgTank4:addAnimByPrefix('fg', 'fg', 24, false)
-	fgTank4:play('fg', true)
-	fgSprites:add(fgTank4)
-
-	local fgTank5 = Sprite(1620, 700)
-	fgTank5:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank5'))
-	fgTank5:setScrollFactor(1.5, 1.5)
-	fgTank5:addAnimByPrefix('fg', 'fg', 24, false)
-	fgTank5:play('fg', true)
-	fgSprites:add(fgTank5)
-
-	local fgTank3 = Sprite(1300, 1200)
-	fgTank3:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'tank3'))
-	fgTank3:setScrollFactor(3.5, 2.5)
-	fgTank3:addAnimByPrefix('fg', 'fg', 24, false)
-	fgTank3:play('fg', true)
-	fgSprites:add(fgTank3)
-end
-
-function postCreate()
-	if state.gf and state.gf.char == 'pico-speaker' then
-		local tempTankman = TankmenBG(20, 500, true)
-		tempTankman.time = 10
-		tempTankman:resetShit(20, 600, true)
-		tankmanRun:add(tempTankman)
-
-		for i = 1, #TankmenBG.animationNotes do
-			if love.math.randomBool(16) then
-				local tankman = tankmanRun:recycle(TankmenBG)
-				tankman.time = TankmenBG.animationNotes[i][1]
-				tankman:resetShit(500, 200 + love.math.random(50, 100), TankmenBG.animationNotes[i][2] < 2)
-			end
-		end
+	if PlayState.SONG.song:lower() == "stress" then
+		tankmanRun = TankmenGroup()
+		self:add(tankmanRun)
 	end
 end
 
@@ -156,17 +124,4 @@ function beat(b)
 	tankWatchtower:play('watchtower gradient color', true)
 
 	for _, fgTank in ipairs(fgSprites.members) do fgTank:play('fg', true) end
-end
-
-local gameOverSound
-function gameOverStart()
-	local tankmanLines = 'jeffGameover-' .. love.math.random(1, 25)
-	gameOverSound = paths.getSound('gameplay/jeffGameover/' .. tankmanLines)
-end
-
-function postGameOverStartLoop()
-	game.sound.music:setVolume(ClientPrefs.data.musicVolume / 100 * 0.2)
-	util.playSfx(gameOverSound, 1, false, true, function()
-		game.sound.music:fade(1, game.sound.music:getVolume(), ClientPrefs.data.musicVolume / 100)
-	end)
 end

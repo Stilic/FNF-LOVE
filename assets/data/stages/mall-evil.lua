@@ -1,7 +1,3 @@
-local upperBopper
-local bottomBopper
-local santa
-
 function create()
 	self.boyfriendPos = {x = 1090, y = 100}
 

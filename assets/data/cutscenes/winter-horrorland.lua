@@ -12,15 +12,15 @@ function create()
 	blackScreen:setScrollFactor()
 	state:add(blackScreen)
 
-	tween:tween(blackScreen, {alpha = 0}, 0.7, {
+	state.tween:tween(blackScreen, {alpha = 0}, 0.7, {
 		onComplete = function()
 			state:remove(blackScreen)
 		end
 	})
 
-	Timer(timer):start(1, function()
+	Timer():start(1, function()
 		state.camHUD.visible, state.camNotes.visible = true, true
 		tween:tween(game.camera, {zoom = state.stage.camZoom},
-			1.2, {ease = Ease.quadInOut, onComplete = function() state:startCountdown() end})
+			1.2, {ease = Ease.quadInOut, onComplete = function() close() end})
 	end)
 end

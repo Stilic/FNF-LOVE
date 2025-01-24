@@ -1,31 +1,24 @@
 local animationNotes = {}
 
-function create() loadMappedAnims() end
-
-function loadMappedAnims()
-	local swagShit = paths.getJSON("songs/"
-		.. paths.formatToSongPath(PlayState.SONG.song)
-		.. "/picospeaker").song
-
-	local notes = swagShit.notes
-
-	for _, section in ipairs(notes) do
-		for _, idk in ipairs(section.sectionNotes) do
-			table.insert(animationNotes, idk)
-		end
+function create()
+	local animChart = Parser.getChart("stress", "picospeaker")
+	if not animChart then
+		return
 	end
-	table.sort(animationNotes, sortAnims)
 
-	TankmenBG.animationNotes = animationNotes
+	for k, v in ipairs(animChart.notes.player) do table.insert(animChart.notes.enemy, v) end
+	table.sort(animChart.notes.enemy, function(a, b) return a.t < b.t end)
+
+	for _, n in ipairs(animChart.notes.enemy) do
+		table.insert(animationNotes, n)
+	end
 end
 
-function sortAnims(a, b) return a[1] < b[1] end
-
 function update(dt)
-	if #animationNotes > 0 and PlayState.conductor.time > animationNotes[1][1] then
+	if #animationNotes > 0 and PlayState.conductor.time > animationNotes[1].t then
 		local noteData = 1
 
-		if animationNotes[1][2] > 2 then noteData = 3 end
+		if animationNotes[1].d > 2 then noteData = 3 end
 
 		noteData = noteData + love.math.random(0, 1)
 

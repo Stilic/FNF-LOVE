@@ -8,7 +8,7 @@ function create()
 	self.boyfriendPos = {x = 970, y = 100}
 	self.boyfriendCam = {x = 0, y = -100}
 
-	local bg = Sprite(-1000, -500)
+	local bg = Sprite(-256, -396)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'bgWalls'))
 	bg:setGraphicSize(math.floor(bg.width * 0.8))
 	bg:updateHitbox()
@@ -21,10 +21,10 @@ function create()
 	upperBopper:play('bop')
 	upperBopper:setGraphicSize(math.floor(upperBopper.width * 0.85))
 	upperBopper:updateHitbox()
-	upperBopper:setScrollFactor(0.33, 0.33)
+	upperBopper:setScrollFactor(0.3, 0.3)
 	self:add(upperBopper)
 
-	local bgEscalator = Sprite(-1100, -600)
+	local bgEscalator = Sprite(-600, -128)
 	bgEscalator:loadTexture(paths.getImage(SCRIPT_PATH .. 'bgEscalator'))
 	bgEscalator:setGraphicSize(math.floor(bgEscalator.width * 0.9))
 	bgEscalator:updateHitbox()
@@ -45,9 +45,12 @@ function create()
 	bottomBopper:setScrollFactor(0.9, 0.9)
 	self:add(bottomBopper)
 
-	local fgSnow = Sprite(-600, 700)
+	local fgSnow = Sprite(-601, 700)
 	fgSnow:loadTexture(paths.getImage(SCRIPT_PATH .. 'fgSnow'))
+	local color = Color.fromHEX(0xF3F4F5)
+	local fgSnowFill = Graphic(fgSnow.x, fgSnow.y + fgSnow.height, fgSnow.width, 500, color)
 	self:add(fgSnow)
+	self:add(fgSnowFill)
 
 	santa = Sprite(-840, 150)
 	santa:setFrames(paths.getSparrowAtlas(SCRIPT_PATH .. 'santa'))
@@ -59,5 +62,5 @@ end
 function beat()
 	upperBopper:play('bop', true)
 	bottomBopper:play('bop', true)
-	santa:play('idle')
+	santa:play('idle', true)
 end
