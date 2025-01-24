@@ -9,7 +9,7 @@ local tankmanRun
 local fgSprites
 
 function create()
-	self.camZoom = 0.6
+	self.camZoom = 0.9
 
 	self.boyfriendPos = {x = 810, y = 100}
 	self.gfPos = {x = 200, y = 65}
