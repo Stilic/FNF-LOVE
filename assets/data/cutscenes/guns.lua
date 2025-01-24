@@ -24,7 +24,7 @@ function create()
 	end
 	state.camHUD.visible, state.camNotes.visible = false, false
 
-	tankman = Sprite(dadY + 100, dadY)
+	tankman = Sprite(dadX + 100, dadY)
 	tankman:setFrames(paths.getSparrowAtlas('stages/tank/cutscenes/'
 		.. paths.formatToSongPath(PlayState.SONG.song)))
 	tankman:addAnimByPrefix('tightBars', 'TANK TALK 2', 24, false)
@@ -41,7 +41,7 @@ end
 function postCreate()
 	if isVideo then return end
 
-	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5, true)
+	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5)
 	bgMusic:play()
 
 	game.sound.play(paths.getSound('gameplay/tankSong2'), ClientPrefs.data.vocalVolume / 100)
