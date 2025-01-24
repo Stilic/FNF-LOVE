@@ -42,7 +42,7 @@ end
 function postCreate()
 	if isVideo then return end
 
-	bgMusic = Sound():load(paths.getMusic('gameplay/DISTORTO'), 0.5, true, true)
+	bgMusic = game.sound.load(paths.getMusic('gameplay/DISTORTO'), 0.5)
 	bgMusic:play()
 	game.camera.zoom = game.camera.zoom * 1.2
 
@@ -87,13 +87,7 @@ function postCreate()
 
 		local times = PlayState.conductor.crotchet / 1000 * 4.5
 		state.tween:tween(game.camera, {zoom = state.stage.camZoom}, times, {ease = 'quadInOut'})
+		bgMusic:fade(0.5, 0.5, 0)
 		close()
 	end)
-end
-
-function songStart()
-	if not isVideo then
-		bgMusic:stop()
-		close()
-	end
 end

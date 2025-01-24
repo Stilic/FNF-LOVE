@@ -67,13 +67,7 @@ function postCreate()
 
 		tween:tween(game.camera, {zoom = state.stage.camZoom},
 			PlayState.conductor.crotchet / 1000 * 4.5, {ease = Ease.quadInOut})
-		state:startCountdown()
-	end)
-end
-
-function songStart()
-	if not isVideo then
-		bgMusic:stop()
+		bgMusic:fade(0.5, 0.5, 0)
 		close()
-	end
+	end)
 end

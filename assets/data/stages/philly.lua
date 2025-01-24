@@ -35,7 +35,7 @@ function create()
 	phillyWindow:updateHitbox()
 	self:add(phillyWindow)
 
-	local streetBehind = Sprite(178, 148)
+	local streetBehind = Sprite(218, 145)
 	streetBehind:loadTexture(paths.getImage(SCRIPT_PATH .. 'behindTrain'))
 	self:add(streetBehind)
 
