@@ -231,7 +231,7 @@ end
 
 function Character:dance(force)
 	if self.__animations then
-		local result = self.script:call("dance")
+		local result = self.script and self.script:call("dance") or true
 		if result == nil then result = true end
 		if result then
 			if self.__animations["danceLeft"] and self.__animations["danceRight"] then
