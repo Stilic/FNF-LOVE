@@ -2,38 +2,36 @@ local Signal = Classic:extend("Signal")
 
 function Signal:new()
 	self.listeners = {}
+	self.onceCalls = {}
 end
 
-function Signal:add(listener)
+function Signal:add(listener, once)
 	table.insert(self.listeners, listener)
 end
 
 function Signal:addOnce(listener)
-	local function wrapper(...)
-		listener(...)
-		self:remove(wrapper)
-	end
-	self:add(wrapper)
+	self:add(listener)
+	self.onceCalls[listener] = true
 end
 
-
 function Signal:remove(listener)
-	for i, l in ipairs(self.listeners) do
-		if l == listener then
-			table.remove(self.listeners, i)
-			return
-		end
-	end
+	table.delete(self.listeners, listener)
 end
 
 function Signal:dispatch(...)
 	for _, listener in ipairs(self.listeners) do
-		listener(...)
+		local s, err = pcall(listener, ...)
+		if not s then print(err) end
+		if self.onceCalls[listener] then
+			self:remove(listener)
+			self.onceCalls[listener] = nil
+		end
 	end
 end
 
 function Signal:destroy()
-	self.listeners = {}
+	table.clear(self.listeners)
+	table.clear(self.onceCalls)
 end
 
 return Signal
