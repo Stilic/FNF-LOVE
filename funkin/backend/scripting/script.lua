@@ -1,69 +1,103 @@
 ---@class Script:Classic
 local Script = Classic:extend("Script")
 
-local env = {Script = Script}
-
 local closedEnv = setmetatable({}, {
 	__index = function() error("closed") end,
 	__newindex = function() error("closed") end,
 })
 
--- Scripts are untrusted, it can have malicious code into it
--- This limits, but not fully prevent this problem
-local function errformat(s)
-	local info = debug.getinfo(3, "Sln")
-	local file = info.short_src or "unknown file"
-	local line = tostring(info.currentline) or "unknown line"
+-- script sandboxing
+-- avoid game crashing / executing malicious code
+-- http://lua-users.org/wiki/SandBoxes
 
-	print(string.format("%s on line %s: %s isn't allowed on scripts", file, line, s))
+local function errformat(s, thread)
+	local i = debug.getinfo(thread or 3, "Sln")
+	print(("%s: %i: %s not allowed"):format(i.short_src, i.currentline, s))
 end
 
-local redirect = {
-	loxreq = function() errformat("loxreq"); return {} end,
-	relreq = function() errformat("relreq"); return {} end,
-	dofile = function() errformat("dofile"); return {} end,
-	loadfile = function() errformat("loadfile"); return {} end,
-	loadstring = function() errformat("loadstring"); return {} end,
-	load = function() errformat("load"); return {} end,
+local n = function() end
+local nindex = setmetatable({}, {__call = n, __index = n, __newindex = n})
 
-	rawset = function() errformat("rawset"); return false end,
-	rawget = function() errformat("rawget"); return false end,
-	rawequal = function() errformat("rawequal"); return false end,
-	setfenv = function() errformat("setfenv"); return false end,
-	getfenv = function() errformat("getfenv"); return false end,
+local function deny(name, toReturn)
+	return function()
+		errformat(name); return toReturn or nindex
+	end
+end
+local function noindex(module)
+	return setmetatable({}, {
+		__index = function(_, k) return deny(module .. "." .. k) end,
+	})
+end
+local function limitindex(name, blocklist)
+	return setmetatable({}, {
+		__index = function(_, k)
+			if _G[name][k] then
+				if blocklist and blocklist[k] then
+					return blocklist[k]
+				end
+			end
+			return _G[name][k]
+		end,
+		__newindex = deny(name .. " new indexing")
+	})
+end
 
-	os = {
-		execute = function() errformat("os.execute"); return false end,
-		remove = function() errformat("os.remove"); return false end,
-		rename = function() errformat("os.rename"); return false end,
-		tmpname = function() errformat("os.tmpname"); return false end,
-		setenv = function() errformat("os.setenv"); return false end,
-		getenv = function() errformat("os.getenv"); return false end
-	},
-	string = {
-		dump = function() errformat("string.dump"); return "" end
-	}
+local blocklist, modules = {
+	"loxreq", "dofile", "loadfile", "loadstring", "load", "module",
+	"rawset", "rawget", "rawequal", "setfenv", "getfenv", "newproxy"
+}, {
+	debug = noindex("debug"),
+	package = noindex("package"),
+	io = noindex("io"),
+
+	math = limitindex("math"),
+	table = limitindex("table"),
+	coroutine = limitindex("coroutine"),
+
+	os = limitindex("os", {
+		execute = deny("os.execute", false),
+		remove = deny("os.remove", false),
+		rename = deny("os.rename", false),
+		tmpname = deny("os.tmpname", false),
+		setenv = deny("os.setenv", false),
+		getenv = deny("os.getenv", false),
+		setlocale = deny("os.setlocale", false)
+	}),
+	string = limitindex("string", {
+		dump = deny("string.dump", "")
+	}),
+
+	Script = limitindex("Script", {
+		addToEnv = deny("Script addToEnv"),
+		linkObject = deny("Script linkObject")
+	}),
+
+	require = function(path)
+		path = path:gsub("%.", "/")
+		if paths.exists(paths.getPath(path), "directory") and
+			paths.exists(paths.getPath(path .. "/init.lua"), "file") then
+			return Script("data/classes/" .. path .. "/init").chunk()
+		end
+		return Script("data/classes/" .. path).chunk()
+	end
 }
 
-redirect.require = setmetatable({}, {
-	__call = function(_, path)
-		return Script("data/classes/" .. path:gsub("%.", "/")).chunk()
+local mtenv = {
+	__index = function(_, k)
+		if table.find(blocklist, k) then
+			return deny(k)
+		end
+		return modules[k] or _G[k]
 	end
-})
+}
 
-function Script.addToEnv(k, v) env[k] = redirect[k] or v end
+function Script.addToEnv(k, v) modules[k] = modules[k] or v end
 
-for k, f in pairs(_G) do env[k] = redirect[k] or f end
-for k, f in pairs(os) do env.os[k] = redirect.os[k] or f end
-for k, f in pairs(string) do env.string[k] = redirect.string[k] or f end
-env._G = env
-
-local chunkMt = {__index = env}
-
+Script.messages = Signal()
 Script.Event_Continue = 1
 Script.Event_Cancel = 2
 
-function Script:new(path, notFoundMsg)
+function Script:new(path, notFoundMsg, noLink)
 	self.path = path
 	self.variables = {}
 	self.notFoundMsg = (notFoundMsg == nil and true or false)
@@ -79,7 +113,28 @@ function Script:new(path, notFoundMsg)
 
 		local chunk = paths.getLua(p)
 		if chunk then
-			setfenv(chunk, setmetatable(vars, chunkMt))
+			if not p:endsWith("/") then p = p .. "/" end
+			self:set("close", function() self:close() end)
+			self:set("Event_Continue", Script.Event_Continue)
+			self:set("Event_Cancel", Script.Event_Cancel)
+			self:set("SCRIPT_PATH", p)
+			self:set("state", game.getState())
+
+			self:set("send", function(...)
+				if self.closed then return end
+				Script.messages:dispatch(self.path, ...)
+			end)
+
+			self.receiveFunc = function(...)
+				self:call("receive", ...)
+				self.__failedfunc["receive"] = nil
+			end
+			Script.messages:add(self.receiveFunc)
+
+			setfenv(chunk, setmetatable(vars, mtenv))
+			if not noLink then
+				self:linkObject(game.getState())
+			end
 			chunk()
 		else
 			if not self.notFoundMsg then return end
@@ -88,18 +143,11 @@ function Script:new(path, notFoundMsg)
 			return
 		end
 
-		if not p:endsWith("/") then p = p .. "/" end
-		vars.close = function() self:close() end
-		vars.Event_Continue = Script.Event_Continue
-		vars.Event_Cancel = Script.Event_Cancel
-		vars.SCRIPT_PATH = Script.p
-		vars.state = game.getState()
-
 		self.chunk = chunk
 	end)
 
 	if not s then
-		print(string.format('Failed to load script: %s', err))
+		print(string.format('Failed to load %s: %s', path, err))
 		self.closed = true
 		self.errorCallback:dispatch("chunk")
 	end
@@ -107,7 +155,35 @@ end
 
 function Script:set(var, value)
 	if self.closed then return end
-	self.variables[var] = value
+	rawset(self.variables, var, value)
+end
+
+function Script:linkObject(link)
+	local cur = getmetatable(self.variables)
+	local new = {
+		__index = function(s, k)
+			if link[k] ~= nil then
+				if type(link[k]) == "function" then
+					return function(...)
+						return link[k](link, ...)
+					end
+				end
+				return link[k]
+			end
+			return type(cur.__index) == "table" and
+				cur.__index[k] or cur.__index(s, k)
+		end,
+		__newindex = function(s, k, v)
+			-- avoid overriding functions
+			-- was other method but it kinda fucked up callbacks
+			if link[k] ~= nil and type(link[k]) ~= "function" then
+				link[k] = v; return
+			end
+			return cur.__newindex and
+				cur.__newindex(s, k, v) or rawset(s, k, v)
+		end
+	}
+	setmetatable(self.variables, new)
 end
 
 function Script:call(func, ...)
@@ -115,7 +191,7 @@ function Script:call(func, ...)
 
 	if self.__failedfunc[func] then return end
 
-	local f = self.variables[func]
+	local f = rawget(self.variables, func)
 	if f and type(f) == "function" then
 		local s, err = pcall(f, ...)
 		if s then
@@ -124,7 +200,7 @@ function Script:call(func, ...)
 			end
 			return true
 		else
-			print(string.format('Script failed at %s: %s', func, err))
+			print(string.format('%s failed at %s: %s', self.path, func, err))
 			self.__failedfunc[func] = true
 			self.errorCallback:dispatch(func)
 		end
@@ -142,6 +218,7 @@ function Script:close()
 	if not self.closed then
 		self.closed = true
 		self.closeCallback:dispatch()
+		Script.messages:remove(self.receiveFunc)
 	end
 end
 
