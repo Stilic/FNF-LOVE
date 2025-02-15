@@ -19,7 +19,7 @@ function Character:new(x, y, char, isPlayer)
 
 	self.__reverseDraw = self.__reverseDraw or false
 
-	self.dirAnim, self.holdTime, self.lastHit = nil, 4, math.negative_infinity
+	self.dirAnim, self.holdTime, self.lastHit = nil, 8, math.negative_infinity
 	self.danceSpeed, self.danced = 2, false
 
 	local data = Parser.getCharacter(self.char)
@@ -73,7 +73,7 @@ function Character:new(x, y, char, isPlayer)
 		self.danceSpeed = 1
 	end
 	if data.sing_duration ~= nil then
-		self.holdTime = data.sing_duration
+		self.holdTime = data.sing_duration * 2
 	end
 
 	self:dance()

@@ -16,6 +16,6 @@
 	"icon": "dad",
 	"sprite": "characters/DADDY_DEAREST",
 	"antialiasing": true,
-	"sing_duration": 6.1,
+	"sing_duration": 4,
 	"scale": 1
 }
