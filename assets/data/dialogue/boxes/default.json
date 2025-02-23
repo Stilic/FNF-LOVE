@@ -1,0 +1,50 @@
+{
+	"default": {
+		"skipSound": "gameplay/pixelText",
+		"nextSound": "gameplay/clickText",
+		"textSound": "gameplay/pixelText",
+
+		"position": [40, 360],
+		"sprite": "speech_bubble_talking",
+
+		"animations": [
+			["enter", "Speech Bubble Normal Open", [], [-180, 0], 8, false],
+			["loop", "speech bubble normal", [], [0, 0], 24, true]
+		],
+
+		"text": {
+			"position": [240, 500],
+			"type": "atlas",
+			"limit": 768,
+			"font": ["default", 0.5]
+		},
+
+		"finishedDialogueSprite": {
+			"position": [1040, 590],
+			"sprite": "hand_textbox",
+			"antialiasing": false,
+			"scale": 5.4
+		}
+	},
+
+	"loud": {
+		"skipSound": "gameplay/pixelText",
+		"nextSound": "gameplay/clickText",
+		"textSound": "gameplay/pixelText",
+
+		"position": [40, 360],
+		"sprite": "speech_bubble_talking",
+
+		"animations": [
+			["enter", "speech bubble loud open", [], [0, 0], 24, false],
+			["loop", "AHH speech bubble", [], [0, 0], 24, false]
+		],
+
+		"text": {
+			"position": [240, 500],
+			"type": "atlas",
+			"limit": 768,
+			"font": ["default", 0.8]
+		}
+	}
+}

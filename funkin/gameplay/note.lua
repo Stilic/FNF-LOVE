@@ -34,7 +34,6 @@ function Note:new(time, direction, sustainTime, type, skin)
 	self.group = nil
 
 	self.sustainSegments = Note.defaultSustainSegments
-	self.__shaderAnimations = {}
 
 	self.direction, self.data = direction, direction -- data is for backward compatibilty
 	self:setSkin(skin)
@@ -57,8 +56,21 @@ function Note:_addAnim(...)
 	(type(select(2, ...)) == 'table' and Sprite.addAnim or Sprite.addAnimByPrefix)(self, ...)
 end
 
+local function makeRGB(color)
+	return RGBShader.actorCreate(
+		Color.fromString(color[1]),
+		Color.fromString(color[2]),
+		Color.fromString(color[3])
+	)
+end
+
 function Note:loadSkinData(skinData, name, direction, noRgb)
 	direction = direction + 1
+	if not self.__shaderAnimations then
+		self.__shaderAnimations = table.new(0, 4)
+	else
+		table.clear(self.__shaderAnimations)
+	end
 
 	local data = skinData[name]
 	local anims, tex = data.animations, "skins/" .. skinData.skin .. "/" .. data.sprite
@@ -69,16 +81,12 @@ function Note:loadSkinData(skinData, name, direction, noRgb)
 			self:setFrames(paths.getSparrowAtlas(tex))
 		end
 
-		local noteDatas = not noRgb and skinData.notes
+		local noteDatas = not noRgb and skinData.notes or nil
 		local noteColor = noteDatas and noteDatas.colors and noteDatas.colors[direction]
 		for _, anim in ipairs(anims) do
 			Note._addAnim(self, unpack(anim))
 			if anim[5] and noteColor then
-				self.__shaderAnimations[anim[1]] = RGBShader.actorCreate(
-					Color.fromString(noteColor[1]),
-					Color.fromString(noteColor[2]),
-					Color.fromString(noteColor[3])
-				)
+				self.__shaderAnimations[anim[1]] = makeRGB(noteColor)
 			end
 		end
 	else
@@ -98,16 +106,18 @@ function Note:loadSkinData(skinData, name, direction, noRgb)
 	props = props and props[math.min(direction, #props)] or props
 	if props then for i, v in pairs(props) do self[i] = v end end
 
-	if not noRgb and not data.disableRgb then
-		local color = data.colors
-		color = color and color[math.min(direction, #color)] or color
-		self.shader = color and #color >= 3 and RGBShader.actorCreate(
-			Color.fromString(color[1]),
-			Color.fromString(color[2]),
-			Color.fromString(color[3])
-		) or nil
-	else
-		self.shader = nil
+	local isArray, color = data.colors and data.colors[1]
+	if data.colors and not noRgb and not data.disableRgb then
+		if isArray then
+			color = data.colors
+			color = color and color[math.min(direction, #color)] or color
+			self.__shaderAnimations.default = color and #color >= 3 and makeRGB(color) or nil
+		else
+			for a, c in pairs(data.colors) do
+				color = c[math.min(direction, #c)]
+				self.__shaderAnimations[a] = makeRGB(color)
+			end
+		end
 	end
 end
 
@@ -134,13 +144,7 @@ function Note:setDirection(direction)
 	local data = self.skin.notes
 	if not data.disableRgb then
 		local color = data.colors[direction + 1]
-		self.shader = color and RGBShader.actorCreate(
-			Color.fromString(color[1]),
-			Color.fromString(color[2]),
-			Color.fromString(color[3])
-		) or nil
-	else
-		self.shader = nil
+		self.__shaderAnimations.default = color and makeRGB(color) or nil
 	end
 end
 
@@ -162,14 +166,9 @@ function Note:createSustain()
 	Note.loadSkinData(sustainEnd, skin, "sustainends", col)
 
 	local toPlay = "hold-note" .. self.direction
-	sustain:play(sustain.__animations[toPlay] and toPlay or "hold")
+	Note.play(sustain, sustain.__animations[toPlay] and toPlay or "hold", nil, nil, nil, true)
 	toPlay = "end-note" .. self.direction
-	sustainEnd:play(sustainEnd.__animations[toPlay] and toPlay or "end")
-
-	sustain:centerOrigin()
-	sustain:centerOffsets()
-	sustainEnd:centerOrigin()
-	sustainEnd:centerOffsets()
+	Note.play(sustainEnd, sustainEnd.__animations[toPlay] and toPlay or "end", nil, nil, nil, true)
 
 	sustain.z, sustain.offset.z, sustain.origin.z, sustain.__render = 0, 0, 0, __NIL__
 	sustainEnd.z, sustainEnd.offset.z, sustainEnd.origin.z, sustainEnd.__render = 0, 0, 0, __NIL__
@@ -186,19 +185,27 @@ function Note:ghost()
 	self.isGhost = true
 end
 
+function Note:update(dt)
+	Note.super.update(self, dt)
+	if self.sustain and self.sustain.update then self.sustain:update(dt) end
+	if self.sustainEnd and self.sustainEnd.update then self.sustainEnd:update(dt) end
+end
+
 function Note:destroy()
 	Note.super.destroy(self)
 	self:destroySustain()
 end
 
-function Note:play(anim, force, frame, dontShader)
-	local toPlay = anim .. '-note' .. self.direction
-	Note.super.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
+function Note:play(anim, force, frame, dontShader, skipName)
+	local toPlay = skipName and anim or anim .. '-note' .. self.direction
+	toPlay = self.__animations[toPlay] and toPlay or anim
+
+	Note.super.play(self, toPlay, force, frame)
 	self:centerOrigin()
 	self:centerOffsets()
 
-	if not dontShader and self.__shaderAnimations[anim] then
-		self.shader = self.__shaderAnimations[anim]
+	if not dontShader then
+		self.shader = self.__shaderAnimations[anim] or self.__shaderAnimations.default
 	end
 end
 

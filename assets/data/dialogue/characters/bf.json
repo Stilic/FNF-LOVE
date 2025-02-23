@@ -1,0 +1,13 @@
+{
+	"default": {
+		"sprite": "bfPortrait",
+		"sound": "gameplay/pixelText",
+		"position": [0, 40],
+
+		"animations": [
+			["enter", "Boyfriend portrait enter instance 1", [], [0, 0], 24, false]
+		],
+		"antialiasing": false,
+		"scale": 5.4
+	}
+}

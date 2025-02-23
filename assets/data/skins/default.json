@@ -28,14 +28,7 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["hold", "hold piece", 24, true]
-		],
-
-		"colors": [
-			["#C24B99", "#FFFFFF", "#3C1F56"],
-			["#00FFFF", "#FFFFFF", "#1542B7"],
-			["#12FA05", "#FFFFFF", "#0A4447"],
-			["#F9393F", "#FFFFFF", "#651038"]
+			["hold", "hold piece", 24, true, true]
 		],
 
 		"properties": [
@@ -53,14 +46,7 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["end", "hold end", 24, true]
-		],
-
-		"colors": [
-			["#C24B99", "#FFFFFF", "#3C1F56"],
-			["#00FFFF", "#FFFFFF", "#1542B7"],
-			["#12FA05", "#FFFFFF", "#0A4447"],
-			["#F9393F", "#FFFFFF", "#651038"]
+			["end", "hold end", 24, true, true]
 		],
 
 		"properties": [
@@ -79,13 +65,21 @@
 
 		"animations": [
 			["static", "note", 24, true],
-			["pressed", "press", 24, false, true],
+			["pressed", "press", 24, false],
 			["confirm", "confirm0", 24, false]
 		],
 
-		"colors": [
-			["#87A3AD", "#FFFFFF", "#000000"]
-		],
+		"colors": {
+			"static": [
+				["#87A3AD", "#FFFFFF", "#000000"]
+			],
+			"pressed": [
+				["#8B78BC", "#FFFFFF", "#201E31"],
+				["#6DC0C7", "#FFFFFF", "#201E31"],
+				["#6DC782", "#FFFFFF", "#201E31"],
+				["#BE7683", "#FFFFFF", "#201E31"]
+			]
+		},
 
 		"properties": [
 			{"angle": -90},
@@ -102,14 +96,7 @@
 		"sprite": "NOTE_assets",
 
 		"animations": [
-			["glow", "confirm glow", 24, false]
-		],
-
-		"colors": [
-			["#C24B99", "#FFFFFF", "#3C1F56"],
-			["#00FFFF", "#FFFFFF", "#1542B7"],
-			["#12FA05", "#FFFFFF", "#0A4447"],
-			["#F9393F", "#FFFFFF", "#651038"]
+			["glow", "confirm glow", 24, false, true]
 		],
 
 		"properties": [

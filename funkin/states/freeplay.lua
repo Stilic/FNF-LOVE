@@ -1,4 +1,4 @@
-local json = require "lib.json".encode
+local decodeJson = (require "lib.json").decode
 local FreeplayState = State:extend("FreeplayState")
 FreeplayState.curDifficulty = 2
 
@@ -29,7 +29,7 @@ function FreeplayState:enter()
 	self:add(util.responsiveBG(self.bg))
 
 	self.songs = MenuList(paths.getSound('scrollMenu'), true)
-	self.songs.changeCallback = bind(self, self.changeSelection)
+	self.songs.changeCallback = function() self:changeDiff(0) end
 	self.songs.selectCallback = bind(self, self.openSong)
 	self:loadSongs()
 	self:add(self.songs)
@@ -85,8 +85,8 @@ function FreeplayState:enter()
 
 	if #self.songs.members > 0 then
 		self.songs.curSelected = math.min(#self.songs.members, self.songs.curSelected)
+		self:changeDiff(0)
 		self.songs:changeSelection()
-
 		self.bg.color = self.songs:getSelected().bgColor
 	end
 
@@ -168,10 +168,6 @@ function FreeplayState:changeDiff(change)
 	self:positionHighscore()
 end
 
-function FreeplayState:changeSelection()
-	self:changeDiff(0)
-end
-
 function FreeplayState:positionHighscore()
 	self.scoreText.x = game.width - self.scoreText:getWidth() - 6
 	self.scoreBG.width = self.scoreText:getWidth() + 12
@@ -184,14 +180,14 @@ function FreeplayState:loadSongs()
 		return paths.getPath(..., false)
 	end
 	local data, dont = {}
+
 	if paths.exists(func('data/freeplayList.txt'), 'file') then
 		listData = paths.getText('freeplayList')
 	elseif paths.exists(func('data/freeplaySonglist.txt'), 'file') then
 		listData = paths.getText('freeplaySonglist')
 	else
 		if paths.exists(func('data/weekList.txt'), 'file') then
-			listData = paths.getText('weekList'):gsub('\r', ''):split(
-				'\n')
+			listData = paths.getText('weekList'):gsub('\r', ''):split('\n')
 			for _, week in pairs(listData) do
 				local weekData = paths.getJSON('data/weeks/weeks/' .. week)
 				if not weekData.hide_fm then
@@ -201,15 +197,11 @@ function FreeplayState:loadSongs()
 				end
 			end
 		else
-			for _, str in pairs(love.filesystem.getDirectoryItems(func('data/weeks/weeks'))) do
-				local weekName = str:withoutExt()
-				if str:endsWith('.json') then
-					local weekData = paths.getJSON(
-						'data/weeks/weeks/' .. weekName)
-					if not weekData.hide_fm then
-						for _, song in ipairs(weekData.songs) do
-							table.insert(data, Parser.getMeta(song))
-						end
+			for _, name in pairs(paths.getItems('data/weeks/weeks', 'file', 'json', not Mods.currentMod, true)) do
+				local weekData = paths.getJSON('data/weeks/weeks/' .. name)
+				if not weekData.hide_fm then
+					for _, song in ipairs(weekData.songs) do
+						table.insert(data, Parser.getMeta(song))
 					end
 				end
 			end
@@ -217,9 +209,9 @@ function FreeplayState:loadSongs()
 		dont = true
 	end
 
-	if not dont then
+	if listData and not dont then
 		listData = listData:gsub('\r', ''):split('\n')
-		for _, song in pairs(listData) do
+		for _, song in ipairs(listData) do
 			table.insert(data, Parser.getMeta(song))
 		end
 	end

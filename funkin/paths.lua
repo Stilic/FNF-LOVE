@@ -21,6 +21,9 @@ local function excludeAssets(path)
 	elseif path:find(Mods.root .. "/") == 1 then
 		i = path:find("/", 6)
 		if i then return path:sub(i + 1) end
+	elseif path:find(Addons.root .. "/") == 1 then
+		i = path:find("/", 8)
+		if i then return path:sub(i + 1) end
 	end
 	return path
 end
@@ -75,41 +78,69 @@ function paths.getMods(key)
 	if Mods.currentMod then
 		return root .. Mods.currentMod .. "/" .. key
 	end
-	return root .. key
+	return "_"
 end
 
-function paths.getPath(key, allowMods)
+function paths.getPath(key, allowMods, allowAddons)
 	if allowMods == nil then allowMods = true end
-	local path = paths.getMods(key)
-	return (allowMods and paths.exists(path)) and path or "assets/" .. key
+	if allowAddons == nil then allowAddons = true end
+
+	if allowAddons then
+		for _, addon in ipairs(Addons.all) do
+			if addon.active then
+				local addonPath = Addons.root .. "/" .. addon.path .. "/" .. key
+				if paths.exists(addonPath) then return addonPath end
+			end
+		end
+	end
+	if allowMods then
+		local modPath = paths.getMods(key)
+		if paths.exists(modPath) then return modPath end
+	end
+	return "assets/" .. key
 end
 
-function paths.exists(path, type)
-	local info = love.filesystem.getInfo(path)
-	return info ~= nil and (not type or info.type == type:lower())
-end
-
-function paths.getItems(key, type, extension, excludeMods)
+function paths.getItems(key, type, extension, excludeMods, excludeAddons, excludeAssets)
 	type = type or "any"
-	local mods, base = paths.getMods(key) .. "/", paths.getPath(key, false) .. "/"
 	local files, getItems = {}, love.filesystem.getDirectoryItems
 
+	if not excludeAddons then
+		for _, addon in ipairs(Addons.all) do
+			local addonPath = Addons.root .. "/" .. addon.path .. "/" .. key .. "/"
+			if addon.active and paths.exists(addonPath, "directory") then
+				for _, v in ipairs(getItems(addonPath)) do
+					if not table.find(files, v) and (not extension or v:ext() == extension) then
+						insertFile(addonPath .. v, v, type, files)
+					end
+				end
+			end
+		end
+	end
+
+	local mods, base = paths.getMods(key) .. "/", paths.getPath(key, false, false) .. "/"
 	if paths.exists(mods, "directory") or paths.exists(base, "directory") then
-		if not excludeMods then
+		if not excludeMods and paths.exists(mods, "directory") then
 			for _, v in ipairs(getItems(mods)) do
-				if not extension or v:ext() == extension then
+				if not table.find(files, v) and (not extension or v:ext() == extension) then
 					insertFile(mods .. v, v, type, files)
 				end
 			end
 		end
-		for _, v in ipairs(getItems(base)) do
-			if not table.find(files, v) and (not extension or v:ext() == extension) then
-				insertFile(base .. v, v, type, files)
+		if not excludeAssets then
+			for _, v in ipairs(getItems(base)) do
+				if not table.find(files, v) and (not extension or v:ext() == extension) then
+					insertFile(base .. v, v, type, files)
+				end
 			end
 		end
 	end
 
 	return files
+end
+
+function paths.exists(path, type)
+	local info = love.filesystem.getInfo(path)
+	return info ~= nil and (not type or info.type == type:lower())
 end
 
 function paths.getText(key)

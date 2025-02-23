@@ -118,20 +118,10 @@ function Text:__render(camera)
 	local mode = self.antialiasing and "linear" or "nearest"
 	self.font:setFilter(mode, mode, anisotropy)
 
-	local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
-		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
-		self.origin.x, self.origin.y
-
-	if self.flipX then sx = -sx end
-	if self.flipY then sy = -sy end
-
-	x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
-		y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
-
+	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
 	local content, align, outline = self.content, self.alignment, self.outline
 	local width, color = self.limit or self:getWidth()
 
-	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 	love.graphics.setFont(self.font)
 
 	if not self.antialiasing then x, y = math.round(x), math.round(y) end
@@ -143,7 +133,7 @@ function Text:__render(camera)
 		if outline.style == "simple" then
 			love.graphics.printf(content,
 				x + outline.offset.x, y + outline.offset.y,
-				width, align, rad, sx, sy, ox, oy)
+				width, align, rad, sx, sy, ox, oy, kx, ky)
 		elseif outline.width > 0 and outline.style == "normal" then
 			local step = (2 * math.pi) / outline.precision
 			for i = 1, outline.precision do
@@ -155,7 +145,7 @@ function Text:__render(camera)
 				end
 				local fdx, fdy = math.round(x + dx), math.round(y + dy)
 				love.graphics.printf(content, fdx, fdy,
-					width, align, rad, sx, sy, ox, oy)
+					width, align, rad, sx, sy, ox, oy, kx, ky)
 			end
 		end
 	end
@@ -168,7 +158,7 @@ function Text:__render(camera)
 
 	color = self.color
 	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
-	love.graphics.printf(content, x, y, width, align, rad, sx, sy, ox, oy)
+	love.graphics.printf(content, x, y, width, align, rad, sx, sy, ox, oy, kx, ky)
 
 	self.font:setFilter(min, mag, anisotropy)
 	love.graphics.pop()

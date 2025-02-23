@@ -125,7 +125,6 @@ function Receptor:setSkin(skin)
 	local col = self.direction
 	self.skin, self.direction = skin, nil
 	Note.loadSkinData(self, skin, "receptors", col)
-	self.__shaderAnimations.static = self.shader
 
 	if col then self:setDirection(col) end
 	self:play("static")
@@ -243,12 +242,14 @@ end
 
 function Receptor:play(anim, force, frame, dontShader, isSplashOrCover)
 	local toPlay = anim .. "-note" .. self.direction
-	Sprite.play(self, self.__animations[toPlay] and toPlay or anim, force, frame)
+	toPlay = self.__animations[toPlay] and toPlay or anim
+	Sprite.play(self, toPlay, force, frame)
 
 	if not isSplashOrCover then
 		if anim == "confirm" and self.glow then
 			toPlay = "glow-note" .. self.direction
-			Sprite.play(self.glow, self.glow.__animations[toPlay] and toPlay or "glow", force, frame)
+			toPlay = self.glow.__animations[toPlay] and toPlay or "glow"
+			Note.play(self.glow, toPlay, force, frame, false, true)
 			self.glow:centerOrigin()
 			self.glow:centerOffsets()
 		end
@@ -258,8 +259,8 @@ function Receptor:play(anim, force, frame, dontShader, isSplashOrCover)
 		self.holdTime = 0
 	end
 
-	if not dontShader and self.__shaderAnimations then
-		self.shader = self.__shaderAnimations[anim]
+	if not dontShader then
+		self.shader = self.__shaderAnimations[anim] or self.__shaderAnimations.default
 	end
 end
 

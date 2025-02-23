@@ -20,6 +20,7 @@ function Stage:new(name)
 	if name ~= "" then
 		local path = "stages/" .. name
 		self.script = Script("data/" .. path)
+		self.script:linkObject(self)
 		self.script:set("SCRIPT_PATH", path .. "/")
 		self.script:set("self", self)
 

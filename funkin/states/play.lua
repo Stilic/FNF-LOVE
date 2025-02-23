@@ -210,16 +210,17 @@ function PlayState:enter()
 		}
 	end
 
+	local p1, p2 = PlayState.SONG.player1, PlayState.SONG.player2
 	local playerVocals, enemyVocals, volume =
-		paths.getVoices(songName, PlayState.SONG.player1 .. "-" .. difficulty, true)
+		(p1 and paths.getVoices(songName, p1 .. "-" .. difficulty, true))
 		or paths.getVoices(songName, "Player-" .. difficulty, true)
 		or paths.getVoices(songName, difficulty, true)
-		or paths.getVoices(songName, PlayState.SONG.player1, true)
+		or (p1 and paths.getVoices(songName, p1, true))
 		or paths.getVoices(songName, "Player", true)
 		or paths.getVoices(songName, nil, true),
-		paths.getVoices(songName, PlayState.SONG.player2 .. "-" .. difficulty, true)
+		(p2 and paths.getVoices(songName, p2 .. "-" .. difficulty, true))
 		or paths.getVoices(songName, "Opponent-" .. difficulty, true)
-		or paths.getVoices(songName, PlayState.SONG.player2, true)
+		or (p2 and paths.getVoices(songName, PlayState.SONG.player2, true))
 		or paths.getVoices(songName, "Opponent", true),
 		ClientPrefs.data.vocalVolume / 100
 	if playerVocals then
@@ -424,14 +425,13 @@ function PlayState:executeCutscene(name, type, onComplete)
 		end)
 		cutsceneScript.closeCallback:add(function()
 			if onComplete then onComplete() end
+			onComplete = nil
 		end)
 
 		cutsceneScript:call("create")
 		if isEnd then cutsceneScript:call("postCreate") end
 
 		self.scripts:add(cutsceneScript)
-		cutsceneScript:set("timer", self.timer)
-		cutsceneScript:set("tween", self.tween)
 	else
 		local s, data = pcall(paths.getJSON, "data/cutscenes/" .. name)
 		if not s then
@@ -481,7 +481,7 @@ function PlayState:executeCutsceneEvent(event, onComplete)
 			local time = event.params[4]
 			local volStart, volEnd = event.params[5], event.params[6]
 
-			local sound = game.sound.play(paths.getSound(soundPath), volume)
+			local sound = util.playSfx(paths.getSound(soundPath), volume)
 			if isFading then sound:fade(time, volStart, volEnd) end
 		end,
 		["Play Animation"] = function()
@@ -692,8 +692,12 @@ function PlayState:beat(b)
 
 	local val, healthBar = 1.2, self.healthBar
 	healthBar.iconScale = val
-	healthBar.iconP1:setScale(val)
-	healthBar.iconP2:setScale(val)
+	if healthBar.iconP1 then
+		healthBar.iconP1:setScale(val)
+	end
+	if healthBar.iconP2 then
+		healthBar.iconP2:setScale(val)
+	end
 
 	self.scripts:call("postBeat", b)
 end
@@ -974,6 +978,8 @@ function PlayState:onSettingChange(category, setting)
 end
 
 function PlayState:goodNoteHit(note, time)
+	local rating = self:getRating(note.time, time)
+
 	self.scripts:call("goodNoteHit", note, rating)
 
 	local notefield, dir, isSustain =
@@ -1003,8 +1009,6 @@ function PlayState:goodNoteHit(note, time)
 				char:sing(dir, type)
 			end
 		end
-
-		local rating = self:getRating(note.time, time)
 
 		notefield.lastSustain = isSustain and note or nil
 		if not isSustain then
@@ -1290,9 +1294,6 @@ function PlayState:closeSubstate()
 end
 
 function PlayState:endSong(skip)
-	PlayState.seenCutscene = false
-	game.sound.music:reset(true)
-
 	if PlayState.storyMode and not skip then
 		local name, type = PlayState.getCutscene(true)
 		if name then
@@ -1302,6 +1303,8 @@ function PlayState:endSong(skip)
 			return
 		end
 	end
+	PlayState.seenCutscene = false
+	game.sound.music:reset(true)
 
 	local event = self.scripts:call("endSong")
 	if event == Script.Event_Cancel then return end

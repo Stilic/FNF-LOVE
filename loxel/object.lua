@@ -1,4 +1,5 @@
-local abs, rad, deg, atan, cos, sin = math.abs, math.rad, math.deg, math.atan, math.fastcos, math.fastsin
+local abs, rad, deg, atan, cos, sin, floor =
+	math.abs, math.rad, math.deg, math.atan, math.fastcos, math.fastsin, math.floor
 local function checkCollisionFast(
 	x1, y1, w1, h1, sx1, sy1, ox1, oy1, a1,
 	x2, y2, w2, h2, sx2, sy2, ox2, oy2, a2
@@ -30,41 +31,37 @@ function Object.getAngleTowards(x, y, x2, y2)
 	return deg(atan((x2 - x) / (y2 - y))) + (y > y2 and 180 or 0)
 end
 
-function Object.saveDrawState(obj)
-	local lg = love.graphics
+function Object:setupDrawLogic(camera, initDraw)
+	if initDraw == nil then initDraw = true end
+	local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
+		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
+		self.origin.x, self.origin.y
 
-	local blend, alpha = lg.getBlendMode()
-	local lstyle, lwidth, ljoin =
-		lg.getLineStyle(), lg.getLineWidth(), lg.getLineJoin()
+	if self.flipX then sx = -sx end
+	if self.flipY then sy = -sy end
 
-	local min, mag, anisotropy
-	if obj and obj.getFilter then
-		min, mag, anisotropy = obj:getFilter()
+	x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
+		y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
+
+	if initDraw then
+		love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
+		love.graphics.setColor(Color.vec4(self.color, self.alpha))
 	end
 
-	return {
-		object = obj,
-		shader = lg.getShader(),
-		filter = {min, mag, anisotropy},
-		color = {lg.getColor()},
-		blend = {blend, alpha},
-		font = lg.getFont(),
-		line = {lstyle, lwidth, ljoin},
-	}
+	if camera.pixelPerfect then
+		x, y, ox, oy = floor(x), floor(y), floor(ox), floor(oy)
+	end
+
+	return x, y, rad, sx, sy, ox, oy, self.skew.x, self.skew.y
 end
 
-function Object.loadDrawState(state)
-	love.graphics.setShader(state.shader)
-	love.graphics.setColor(unpack(state.color))
-	love.graphics.setBlendMode(unpack(state.blend))
-	love.graphics.setFont(state.font)
-	love.graphics.setLineStyle(state.line[1])
-	love.graphics.setLineWidth(state.line[2])
-	love.graphics.setLineJoin(state.line[3])
+local setfunc = function(self, x, y)
+	self.x = x or self.x
+	self.y = y or self.y
+end
 
-	if state.object and state.object.setFilter then
-		state.object:setFilter(unpack(state.filter))
-	end
+local function point(x, y)
+	return {x = x, y = y, set = setfunc}
 end
 
 function Object:new(x, y)
@@ -73,26 +70,12 @@ function Object:new(x, y)
 	self:setPosition(x, y)
 	self.width, self.height = 0, 0
 
-	self.offset = {x = 0, y = 0, set = function(this, x, y)
-		this.x = x or this.x
-		this.y = y or this.y
-	end}
-	self.origin = {x = 0, y = 0, set = function(this, x, y)
-		this.x = x or this.x
-		this.y = y or this.y
-	end}
-	self.scale = {x = 1, y = 1, set = function(this, x, y)
-		this.x = x or this.x
-		this.y = y or this.y
-	end}
-	self.zoom = {x = 1, y = 1, set = function(this, x, y)
-		this.x = x or this.x
-		this.y = y or this.y
-	end} -- same as scale
-	self.scrollFactor = {x = 1, y = 1, set = function(this, x, y)
-		this.x = x or this.x
-		this.y = y or this.y
-	end}
+	self.offset = point(0, 0)
+	self.origin = point(0, 0)
+	self.scale = point(1, 1)
+	self.zoom = point(1, 1) -- same as scale
+	self.scrollFactor = point(1, 1)
+	self.skew = point(0, 0)
 	self.flipX = false
 	self.flipY = false
 
@@ -105,15 +88,16 @@ function Object:new(x, y)
 	self.angle = 0
 
 	self.moves = false
-	self.velocity = {x = 0, y = 0}
-	self.acceleration = {x = 0, y = 0}
+	self.velocity = point(0, 0)
+	self.acceleration = point(0, 0)
 end
 
 function Object:destroy()
 	Object.super.destroy(self)
 
-	self.offset.x, self.offset.y = 0, 0
-	self.scale.x, self.scale.y = 1, 1
+	-- self.offset:set(0, 0)
+	-- self.scale:set(1, 1)
+	-- self.skew:set(0, 0)
 
 	self.shader = nil
 end
@@ -134,6 +118,22 @@ function Object:screenCenter(axes)
 	local centerAll = axes == nil or axes == "xy"
 	if centerAll or axes == "x" then self.x = (game.width - self.width) / 2 end
 	if centerAll or axes == "y" then self.y = (game.height - self.height) / 2 end
+	return self
+end
+
+function Object:center(obj, axes)
+	local centerAll = axes == nil or axes == "xy"
+	local sw, sh = self.getWidth and self:getWidth() or self.width,
+		self.getHeight and self:getHeight() or self.height
+
+	if centerAll or axes == "x" then
+		local w = obj.getWidth and obj:getWidth() or obj.width
+		self.x = obj.x + (w - sw) / 2
+	end
+	if centerAll or axes == "y" then
+		local h = obj.getHeight and obj:getHeight() or obj.height
+		self.y = obj.y + (h - sh) / 2
+	end
 	return self
 end
 

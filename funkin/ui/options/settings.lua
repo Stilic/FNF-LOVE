@@ -7,8 +7,8 @@ function Settings:base(name, settings)
 	cls.settings = settings
 	cls.curBind = 1
 	cls.binds = 1
-	cls.size = 30
-	cls.margin = 15
+	cls.size = 28
+	cls.margin = 24
 	cls.titleWidth = 0.5
 	cls.selected = false
 
@@ -31,6 +31,7 @@ function Settings:makeLine(x, starti, endi)
 	local start = self:getY(starti)
 	local line = Graphic(x - 1, start, 2, self:getSize() + self:getY(endi) - start, Color.WHITE)
 	line.alpha = 0.5
+	line.config.round = {1, 1}
 	self.tab.linesGroup:add(line)
 end
 
@@ -238,6 +239,7 @@ function Settings:make(optionsUI)
 		group.isTitle = length < 2 or type(option[2]) == "number"
 		if group.isTitle then -- Category
 			local bg = Graphic(0, 0, tabWidth, self:getSize(), Color.BLACK)
+			bg.config.round = {18, 18}
 			bg.alpha = 1 / 3
 
 			group:add(bg)
@@ -270,6 +272,7 @@ function Settings:make(optionsUI)
 	end
 
 	local i = #self.settings
+	if i < 1 then return end
 	titlewidth = tabWidth * (self.settings[i][6] or self.titleWidth)
 	if lastbinds ~= 0 then self:makeLine(titlewidth, lastcategoryi + 1, i) end
 	self:makeLines(tabWidth - titlewidth, titlewidth, lastbinds - 1, lastlinesi + 1, i)

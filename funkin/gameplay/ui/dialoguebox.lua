@@ -1,213 +1,306 @@
 local DialogueBox = SpriteGroup:extend("DialogueBox")
 
-function DialogueBox:new(dialogueList, delayFirst)
+local function dispatchAnims(spr, data)
+	for _, anim in ipairs(data) do
+		local name, prefix, indices, _, fps, loop =
+			anim[1], anim[2], anim[3], anim[4], anim[5], anim[6]
+
+		if #indices > 0 then
+			spr:addAnimByIndices(name, prefix, indices, nil, fps, loop)
+		else
+			spr:addAnimByPrefix(name, prefix, fps, loop)
+		end
+	end
+end
+
+local function handleAnimations(...)
+	for _, spr in pairs({...}) do
+		if spr.__animations then
+			if spr.curAnim.name == "enter"
+				and spr.__animations["loop"] and spr.animFinished then
+				spr:play("loop")
+			end
+		end
+	end
+end
+
+function DialogueBox:new(box, anim, song, ...)
 	DialogueBox.super.new(self)
 
-	self.bgFade = Graphic(-200, -200,
-		math.floor(game.width * 1.3), math.floor(game.height * 1.3), Color.convert({179, 223, 216}))
-	self.bgFade:setScrollFactor()
-	self.bgFade.alpha = 0
-	self:add(self.bgFade)
+	local path = "data/dialogue/boxes/" .. box
+	self.jsonData = paths.getJSON(path)
 
-	for loop = 1, 5 do
-		Timer.wait(0.83 * loop, function()
-			self.bgFade.alpha = self.bgFade.alpha + (1 / 5) * 0.7
-			if self.bgFade.alpha > 0.7 then
-				self.bgFade.alpha = 0.7
-			end
-		end)
-	end
+	song = paths.formatToSongPath(song)
 
-	self.portraitLeft = Sprite(-20, 40)
-	self.portraitLeft:setFrames(paths.getSparrowAtlas('stages/school/senpaiPortrait'))
-	self.portraitLeft:addAnimByPrefix('enter', 'Senpai Portrait Enter', 24, false)
-	self.portraitLeft:setGraphicSize(math.floor(self.portraitLeft.width * 6 * 0.9))
-	self.portraitLeft:updateHitbox()
-	self.portraitLeft:setScrollFactor()
-	self:add(self.portraitLeft)
-	self.portraitLeft.visible = false
-	self.portraitLeft.antialiasing = false
+	self.script = Script(path, false)
+	self.script:linkObject(self)
+	self.script:call("create", box, anim, song, ...)
 
-	self.portraitRight = Sprite(0, 40)
-	self.portraitRight:setFrames(paths.getSparrowAtlas('stages/school/bfPortrait'))
-	self.portraitRight:addAnimByPrefix('enter', 'Boyfriend portrait enter', 24, false)
-	self.portraitRight:setGraphicSize(math.floor(self.portraitRight.width * 6 * 0.9))
-	self.portraitRight:updateHitbox()
-	self.portraitRight:setScrollFactor()
-	self:add(self.portraitRight)
-	self.portraitRight.visible = false
-	self.portraitRight.antialiasing = false
+	self.characters, self.box = SpriteGroup(), SpriteGroup()
+	self.characters.visible, self.box.visible = false, false
+	self:add(self.characters); self:add(self.box)
 
-	self.box = Sprite(-20, 45)
-	self.box.antialiasing = false
+	self:loadBox(anim)
 
-	local hasDialog = true
-	switch(PlayState.SONG.song:lower(), {
-		["senpai"] = function()
-			self.box:setFrames(paths.getSparrowAtlas('stages/school/pixelUI/dialogueBox-pixel'))
-			self.box:addAnimByPrefix('normalOpen', 'Text Box Appear', 24, false)
-			self.box:addAnimByIndices('normal', 'Text Box Appear', {4}, "", 24)
-		end,
-		["roses"] = function()
-			self.box:setFrames(paths.getSparrowAtlas('stages/school/pixelUI/dialogueBox-senpaiMad'))
-			self.box:addAnimByPrefix('normalOpen', 'SENPAI ANGRY IMPACT SPEECH', 24, false)
-			self.box:addAnimByIndices('normal', 'SENPAI ANGRY IMPACT SPEECH', {4}, nil, 24)
-		end,
-		["thorns"] = function()
-			self.box:setFrames(paths.getSparrowAtlas('stages/school-evil/pixelUI/dialogueBox-evil'))
-			self.box:addAnimByPrefix('normalOpen', 'Spirit Textbox spawn', 24, false)
-			self.box:addAnimByIndices('normal', 'Spirit Textbox spawn', {11}, nil, 24)
-
-			local face = Sprite(250, -90)
-			face.antialiasing = false
-			face:loadTexture(paths.getImage('stages/school-evil/spiritFaceForward'))
-			face:setGraphicSize(math.floor(face.width * 6))
-			self:add(face)
-		end,
-		default = function()
-			hasDialog = false
-		end
-	})
-
-	self.dialogueList = dialogueList
-
-	if not hasDialog then
-		return
-	end
-
-	self.box:play('normalOpen')
-	self.box:setGraphicSize(math.floor(self.box.width * 6 * 0.9))
-	self.box:updateHitbox()
-	self:add(self.box)
-
-	self.box:screenCenter('x')
-	self.portraitLeft:screenCenter('x')
-
-	self.handSelect = Sprite(1042, 590)
-	self.handSelect:loadTexture(paths.getImage('stages/school/pixelUI/hand_textbox'))
-	self.handSelect:setGraphicSize(math.floor(self.handSelect.width * 6 * 0.9))
-	self.handSelect:updateHitbox()
-	self.handSelect.visible = false
-	self.handSelect.antialiasing = false
-	self:add(self.handSelect)
-
-	self.swagDialogue = TypeText(240, 500, "", paths.getFont('pixel.otf', 32),
-		Color.convert({63, 32, 33}), 'left', math.floor(game.width * 0.6))
-	self.swagDialogue.sound = paths.getSound("gameplay/pixelText")
-	self.swagDialogue.antialiasing = false
-	self.swagDialogue:setOutline("simple", 2, {x = 4, y = 4}, Color.convert({216, 148, 148}))
-	self:add(self.swagDialogue)
-
-	if PlayState.SONG.song:lower() == 'thorns' then
-		self.swagDialogue.color = Color.WHITE
-		self.swagDialogue.outline.color = Color.BLACK
-	end
-
-	self.curCharacter = 'dad'
-	self.finishThing = nil
-	self.isEnding = false
-
-	self.delayFirst = delayFirst or 0
-
-	self.dialogueOpened = false
-	self.dialogueStarted = false
-	self.dialogueEnded = false
+	self.dialogues = {}
+	self.jsonCache = {}
 
 	if love.system.getDevice() == "Mobile" then
 		self.button = VirtualPad("return", 0, 0, game.width, game.height, false)
 		self:add(self.button)
 	end
+
+	self.started, self.finished, self.allFinished = false, false, false
+
+	local read = love.filesystem.read
+	local file = read(paths.getPath("songs/" .. song .."/dialogue.txt"))
+	if not file then return self:closeDialogue() end
+	self.curDialogue = 1
+	self.dialogueDelay = 0.3
+	self:splitDialogues(file)
+
+	local event = self.script:call("postCreate")
+	if event ~= Script.Event_Cancel then
+		self:startDialogue()
+	end
+end
+
+function DialogueBox:loadBox(anim)
+	local event = self.script:call("onLoadBox", anim)
+	if event == Script.Event_Cancel then return end
+
+	local data = self.jsonData[anim] or self.jsonData.default
+
+	self.boxSpr = self.boxSpr or Sprite()
+	if data.animations then
+		self.boxSpr:setFrames(paths.getAtlas("dialogue/boxes/" .. data.sprite))
+		dispatchAnims(self.boxSpr, data.animations)
+		self.boxSpr:play("enter")
+	else
+		self.boxSpr:loadTexture(paths.getImage("dialogue/boxes/" .. data.sprite))
+		self.boxSpr.__animations, self.boxSpr.__frames = nil, nil
+	end
+
+	if data.scale and data.scale ~= 1 then
+		self.boxSpr:setGraphicSize(self.boxSpr.width * data.scale)
+	end
+	self.boxSpr.antialiasing = data.antialiasing == nil and true or data.antialiasing
+	self.boxSpr:updateHitbox()
+
+	self.boxSpr:screenCenter('x')
+	self.boxSpr.x, self.boxSpr.y = self.boxSpr.x + data.position[1], self.boxSpr.y + data.position[2]
+	self.box:add(self.boxSpr)
+
+	if data.finishedDialogueSprite then
+		local ndata = data.finishedDialogueSprite
+		local spr = self.finishSpr or Sprite()
+		spr:setPosition(ndata.position[1], ndata.position[2])
+		if ndata.animations then
+			spr:setFrames(paths.getAtlas("dialogue/boxes/" .. ndata.sprite))
+			dispatchAnims(spr, ndata.animations)
+			spr:play("enter")
+		else
+			spr:loadTexture(paths.getImage("dialogue/boxes/" .. ndata.sprite))
+			spr.__animations, spr.__frames = nil, nil
+		end
+		if ndata.scale and ndata.scale ~= 1 then
+			spr:setGraphicSize(spr.width * ndata.scale)
+		end
+		spr:updateHitbox()
+		spr.visible = false
+		spr.antialiasing = ndata.antialiasing == nil and true or ndata.antialiasing
+		self.box:add(spr)
+		self.finishSpr = spr
+	end
+
+	self.skipSound = paths.getSound(data.skipSound)
+	self.nextSound = paths.getSound(data.nextSound)
+	self.textSound = paths.getSound(data.textSound)
+
+	local function getTextObject(data)
+		local kind = data.type or "font"
+
+		local pos = data.position or {100, 100}
+		local color = data.color and Color.fromString(data.color) or Color.WHITE
+		local align = data.align or "left"
+		local limit = data.limit or game.width * 0.6
+		local font = data.font or (kind == "font" and {"vcr.ttf", 16} or {"default", 0.9})
+		local fnt, text
+
+		if kind == "font" then
+			fnt = paths.getFont(font[1], font[2])
+			text = TypeText(pos[1], pos[2], "", fnt, color, align, limit)
+			if data.outline then
+				local kind, size, color, offset = data.outline[1], data.outline[2], data.outline[3]
+				if type(size) == "table" then size, offset = 0, {x = size[1], y = size[2]} end
+				text:setOutline(kind, size, offset, Color.fromString(color))
+			end
+			text.sound = self.textSound
+		else
+			fnt = AtlasText.getFont(font[1], font[2])
+			text = AtlasText(pos[1], pos[2], "", fnt, limit, align)
+			text.color = color
+		end
+		text.antialiasing = data.antialiasing == nil and true or data.antialiasing
+		return text
+	end
+
+	if self.text then self.text:destroy(); self.text = nil end
+	self.text = getTextObject(data.text)
+	self.box:add(self.text)
+end
+
+function DialogueBox:startDialogue()
+	local prev = self.dialogues[self.curDialogue - 1]
+	local dialogue = self.dialogues[self.curDialogue]
+	if not dialogue then return end
+
+	local event = self.script:call("onStartDialogue")
+	if event == Script.Event_Cancel then return end
+
+	self.finished = false
+
+	self.characters.visible = true
+	if not self.box.visible then
+		self.box.visible = true
+		if self.boxSpr.__animations then self.boxSpr:play("enter") end
+	end
+
+	if self.finishSpr then self.finishSpr.visible = false end
+
+	if not prev or prev[3] ~= dialogue[3] then
+		self:resetCharacters(dialogue[1])
+	end
+
+	local function func()
+		if self.text:is(TypeText) then
+			self.text:resetText(dialogue[2])
+		else
+			self.text:setTyping(dialogue[2], 0.04, self.textSound)
+		end
+		self.text.completeCallback = function()
+			if self.finishSpr then
+				self.finishSpr.visible = true
+				if self.finishSpr.__animations then
+					self.finishSpr:play("enter")
+				end
+			end
+			self.finished = true
+		end
+		self.started = true
+		self.dialogueDelay = 0
+	end
+
+	if self.dialogueDelay > 0 then
+		Timer.wait(self.dialogueDelay, func)
+	else
+		func()
+	end
+end
+
+function DialogueBox:resetCharacters(chars)
+	local event = self.script:call("onResetCharacters", chars)
+	if event == Script.Event_Cancel then return end
+
+	for _, member in pairs(self.characters.members) do
+		member:kill()
+	end
+
+	for _, char in ipairs(chars) do
+		local spr = self.characters:recycle()
+
+		spr.x, spr.y = char.position[1], char.position[2]
+		spr:setGraphicSize(spr.width)
+		if char.animations then
+			spr:setFrames(paths.getAtlas("dialogue/characters/" .. char.sprite))
+			dispatchAnims(spr, char.animations)
+			spr:play("enter")
+		else
+			spr:loadTexture(paths.getImage("dialogue/characters/" .. char.sprite))
+			spr.__animations, spr.__frames = nil, nil
+		end
+		if char.scale and char.scale ~= 1 then
+			spr:setGraphicSize(spr.width * char.scale)
+		end
+		spr:updateHitbox()
+		spr.antialiasing = not char.antialiasing == false
+	end
 end
 
 function DialogueBox:update(dt)
-	if self.box.curAnim then
-		if self.box.curAnim.name == 'normalOpen' and self.box.animFinished then
-			self.box:play('normal')
-			if self.delayFirst > 0 then
-				Timer.wait(self.delayFirst, function() self.dialogueOpened = true end)
-			else
-				self.dialogueOpened = true
+	self.script:call("update", dt)
+
+	handleAnimations(self.boxSpr, self.finishSpr)
+	for _, member in pairs(self.characters.members) do
+		if member.__animations and member.animFinished then
+			if member.curAnim.name == "enter" then
+				if member.__animations["loop"] and not self.finished then
+					member:play("loop", false)
+				end
+			elseif member.curAnim.name == "loop" and self.finished
+				and member.__animations["static"] then
+				member:play("static", false)
 			end
 		end
 	end
 
-	if self.dialogueOpened and not self.dialogueStarted then
-		self:startDialogue()
-		self.dialogueStarted = true
-	end
-
-	if self.buttons and game.keys.justPressed.ENTER or controls:pressed("accept") then
-		if self.dialogueEnded then
-			if self.dialogueList[2] == nil and self.dialogueList[1] ~= nil then
-				if not self.isEnding then
-					self.isEnding = true
-					util.playSfx(paths.getSound('gameplay/clickText'))
-
-					for loop = 1, 5 do
-						Timer.wait(0.2 * loop, function()
-							self.box.alpha = self.box.alpha - 1 / 5
-							self.bgFade.alpha = self.bgFade.alpha - 1 / 5 * 0.7
-							self.portraitLeft.visible = false
-							self.portraitRight.visible = false
-							self.swagDialogue.alpha = self.swagDialogue.alpha - 1 / 5
-							self.handSelect.alpha = self.handSelect.alpha - 1 / 5
-						end)
-					end
-
-					Timer.wait(1, function()
-						self.finishThing()
-						self:kill()
-					end)
+	if controls:pressed("accept") and self.started then
+		if self.finished and self.curDialogue == #self.dialogues then
+			if not self.allFinished then
+				local event = self.script:call("finishDialogue")
+				if event ~= Script.Event_Cancel then
+					self:closeDialogue()
 				end
-			else
-				table.remove(self.dialogueList, 1)
-				self:startDialogue()
-				util.playSfx(paths.getSound('gameplay/clickText'))
 			end
-		elseif self.dialogueStarted then
-			self.swagDialogue:forceEnd()
-			util.playSfx(paths.getSound('gameplay/clickText'))
+			self.allFinished = true
+		elseif self.finished then
+			self.curDialogue = self.curDialogue + 1
+			self:startDialogue()
+			if self.nextSound then util.playSfx(self.nextSound) end
+		else
+			self.text:forceEnd()
+			if self.skipSound then util.playSfx(self.skipSound) end
 		end
 	end
 
 	DialogueBox.super.update(self, dt)
+	self.script:call("postUpdate", dt)
 end
 
-function DialogueBox:startDialogue()
-	self:clearDialog()
-
-	self.swagDialogue:resetText(self.dialogueList[1])
-
-	self.handSelect.visible = false
-	self.dialogueEnded = false
-
-	self.swagDialogue.completeCallback = function()
-		self.handSelect.visible = true
-		self.dialogueEnded = true
+function DialogueBox:getCachedChar(char, expression)
+	if not self.jsonCache[char] then
+		self.jsonCache[char] = paths.getJSON("data/dialogue/characters/" .. char)
+		self.jsonCache[char].name = char .. expression
 	end
-
-	switch(self.curCharacter, {
-		["dad"] = function()
-			self.portraitRight.visible = false
-			if not self.portraitLeft.visible then
-				self.portraitLeft.visible = (PlayState.SONG.song:lower() == 'senpai')
-				self.portraitLeft:play('enter')
-			end
-		end,
-		["bf"] = function()
-			self.portraitLeft.visible = false
-			if not self.portraitRight.visible then
-				self.portraitRight.visible = true
-				self.portraitRight:play('enter')
-			end
-		end
-	})
+	return self.jsonCache[char][expression]
 end
 
-function DialogueBox:clearDialog()
-	local splitName = self.dialogueList[1]:split(':')
-	self.curCharacter = splitName[1]
-	self.dialogueList[1] = splitName[2]
+function DialogueBox:splitDialogues(data)
+	local lines = data:split('\n')
+	for i, line in ipairs(lines) do
+		local stuff = line:split(':')
+
+		local dialogue = stuff[#stuff]
+		stuff[#stuff] = nil
+
+		local chars = {}
+		for i = 1, #stuff do
+			local line = stuff[i]
+			local name, expr = line:match("([^.]+)%.?(.*)")
+			if not expr or expr == "" then expr = "default" end
+			table.insert(chars, self:getCachedChar(name, expr))
+		end
+
+		table.insert(self.dialogues, {chars, dialogue, table.concat(stuff)})
+		local prev = self.dialogues[#self.dialogues - 1]
+	end
+end
+
+function DialogueBox:closeDialogue()
+	if self.button then self:remove(self.button); self.button:destroy() end
+	if self.onFinish then self.onFinish() end
+	self.script:close()
+	self:destroy()
 end
 
 return DialogueBox
