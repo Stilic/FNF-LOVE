@@ -5,12 +5,13 @@ AtlasText:exclude(
 )
 
 local Glyph = require "funkin.ui.atlastext.glyph"
-local Boundary = loxreq "util.boundary"
 
-function AtlasText.getFont(font, size)
-	font = paths.getJSON("data/fonts/" .. font)
+function AtlasText.getFont(name, size)
+	local font = paths.getJSON("data/fonts/" .. name)
 	if font == nil and AtlasText.defaultFont ~= nil then
 		return AtlasText.defaultFont
+	elseif not font then
+		return
 	end
 
 	font.scale = font.scale or 1
@@ -21,14 +22,14 @@ function AtlasText.getFont(font, size)
 	return font
 end
 
-AtlasText.defaultFont = AtlasText.getFont("default")
-
 function AtlasText:new(x, y, text, font, limit, align)
 	Object.new(self, x or 0, y or 0)
 
-	self.text = text or ""
-	self.limit = limit or 0
-	self.align = align or "left"
+	self.props = {
+		text = text or "",
+		limit = limit or 0,
+		align = align or "left"
+	}
 	self.italic = false
 
 	self.batchPool = {} -- see glyph.lua
@@ -36,18 +37,21 @@ function AtlasText:new(x, y, text, font, limit, align)
 	self.group = Group()
 	self.members = self.group.members
 
-	self:setTyping(0)
+	self:setTyping(nil, 0)
 	self:setFont(font)
 
 	self.batch = love.graphics.newSpriteBatch(
 		self.frames.texture, 1, "stream")
+end
 
-	self.oldProps = {
-		text = self.text,
-		align = self.align,
-		limit = self.limit,
-		font = self.font
-	}
+function AtlasText:__newindex(k, v)
+	if k == "text" or k == "limit" or k == "align" then
+		self.props[k] = v
+		self:setFont()
+		return
+	else
+		return rawset(self, k, v)
+	end
 end
 
 function AtlasText:add(o)
@@ -59,12 +63,14 @@ function AtlasText:add(o)
 	AtlasText.super.add(self, o)
 end
 
-function AtlasText:setTyping(speed, sound)
+function AtlasText:setTyping(text, speed, sound)
 	self.typed = speed > 0
-	self.__target, self.timer, self.index = self.text, 0, 0
+	if self.typed then
+		self.text = ""
+		self.finished = false
+	end
+	self.__target, self.timer, self.index = text or self.props.text, 0, 0
 	self.sound, self.speed, self.completeCallback = sound, speed, nil
-	self.finished = not self.typed
-	if self.typed then self.text = "" end
 end
 
 function AtlasText:setFont(font, size)
@@ -83,25 +89,25 @@ end
 function AtlasText:setText(text)
 	self:cleanup()
 
-	if text ~= nil then self.text = text end
+	if text ~= nil then self.props.text = text end
 	local font = self.font
 	if font == nil then return end
 
 	local line, lines, width, cache, idx = "", {}, 0, {}, 1
 
-	for _, char in utf8.codes(self.text) do
+	for _, char in utf8.codes(self.props.text) do
 		local c = Glyph(0, 0, char, self)
 		cache[idx] = c
 		idx = idx + 1
 
 		local realChar = utf8.char(char)
-		if realChar == "\n" or (self.limit > 0 and width + c.width >= self.limit) then
+		if realChar == "\n" or (self.props.limit > 0 and width + c.width * font.scale >= self.props.limit) then
 			table.insert(lines, {t = line, w = width})
 			line = realChar
-			width = c.width
+			width = c.width * font.scale
 		else
 			line = line .. realChar
-			width = width + c.width
+			width = width + c.width * font.scale
 		end
 	end
 
@@ -110,8 +116,8 @@ function AtlasText:setText(text)
 	idx = 1
 	for i, curLine in ipairs(lines) do
 		local x, xOff, y = 0, 0, (i - 1) * (font.lineSize * font.scale)
-		if self.align ~= "left" then
-			xOff = (self.limit - curLine.w) / (self.align == "center" and 2 or 1)
+		if self.props.align ~= "left" then
+			xOff = (self.props.limit - curLine.w) / (self.props.align == "center" and 2 or 1)
 		end
 
 		for _ = 1, utf8.len(curLine.t) do
@@ -128,20 +134,7 @@ function AtlasText:setText(text)
 	self:updateHitbox()
 end
 
-function AtlasText:hasChanged(props)
-	for _, k in pairs(props) do
-		if self.oldProps[k] ~= self[k] then
-			self.oldProps[k] = self[k]
-			return true
-		end
-	end
-	return false
-end
-
 function AtlasText:update(dt)
-	if self:hasChanged({"text", "align", "limit", "font"}) then
-		self:setFont()
-	end
 	if not self.typed then
 		return AtlasText.super.update(self, dt)
 	end
@@ -181,38 +174,20 @@ end
 function AtlasText:__render(camera)
 	if not self.batch then return end
 
-	local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
-		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
-		self.origin.x, self.origin.y
-
-	if self.flipX then sx = -sx end
-	if self.flipY then sy = -sy end
+	local x, y, rad, sx, sy, ox, oy = self:setupDrawLogic(camera)
 
 	if self.font and self.font.scale then
 		sx, sy = sx * self.font.scale, sy * self.font.scale
 	end
 
-	x, y = (x + ox - self.offset.x),
-		(y + oy - self.offset.y)
-	x, y = x - (camera.scroll.x * self.scrollFactor.x), y - (camera.scroll.y * self.scrollFactor.y)
+	for i = 1, #self.members do self.members[i]:__render(camera) end
 
-	for i, member in ipairs(self.members) do
-		member:__render(camera)
-
-		love.graphics.push()
-		love.graphics.translate(x, y)
-		love.graphics.scale(sx, sy)
-		Boundary.render(camera, member, i, #self.members, function(c)
-			return {1, c, 0}
-		end)
-		love.graphics.pop()
-	end
+	love.graphics.push("all")
 
 	local texture = self.batch:getTexture()
-
-	local oldState = Object.saveDrawState(texture)
+	local min, mag, anisotropy = texture:getFilter()
 	local mode = self.antialiasing and "linear" or "nearest"
-	texture:setFilter(mode, mode, oldState.filter[3])
+	texture:setFilter(mode, mode, anisotropy)
 
 	love.graphics.setColor(Color.vec4(self.color, self.alpha))
 	love.graphics.setBlendMode(self.blend)
@@ -220,7 +195,8 @@ function AtlasText:__render(camera)
 
 	love.graphics.draw(self.batch, x, y, rad, sx, sy, ox, oy)
 
-	Object.loadDrawState(oldState)
+	texture:setFilter(min, mag, anisotropy)
+	love.graphics.pop()
 end
 
 function AtlasText:__getNestDimension(members)
@@ -260,7 +236,7 @@ function AtlasText:_isOnScreen(...) return Object._isOnScreen(self, ...) end
 
 function AtlasText:_canDraw() return #self.members > 0 and Object._canDraw(self) end
 
-function AtlasText:__tostring() return self.text end
+function AtlasText:__tostring() return self.props.text end
 
 -- moved getWidth/Height stuff to updateHitbox, because it's called
 -- less times, what should have a minimal performance hit for huge texts

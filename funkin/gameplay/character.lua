@@ -8,6 +8,7 @@ function Character:new(x, y, char, isPlayer)
 
 	if not Character.editorMode then
 		self.script = Script("data/characters/" .. char, false)
+		self.script:linkObject(self)
 		self.script:set("self", self)
 		self.script:call("create")
 	end
@@ -20,7 +21,7 @@ function Character:new(x, y, char, isPlayer)
 	self.__reverseDraw = self.__reverseDraw or false
 
 	self.dirAnim, self.holdTime, self.lastHit = nil, 8, math.negative_infinity
-	self.danceSpeed, self.danced = 2, false
+	self.danceSpeed, self.danced, self.forceIdleBeats = 1, false, false
 
 	local data = Parser.getCharacter(self.char)
 
@@ -70,7 +71,7 @@ function Character:new(x, y, char, isPlayer)
 	if data.dance_beats ~= nil then
 		self.danceSpeed = data.dance_beats
 	elseif self.__animations and self.__animations['danceLeft'] and self.__animations['danceRight'] then
-		self.danceSpeed = 1
+		self.forceIdleBeats = true
 	end
 	if data.sing_duration ~= nil then
 		self.holdTime = data.sing_duration * 2
@@ -175,7 +176,7 @@ end
 
 function Character:beat(b)
 	if self.lastHit <= 0 and b % self.danceSpeed == 0 then
-		self:dance(self.danceSpeed < 2)
+		self:dance(self.forceIdleBeats)
 	end
 end
 

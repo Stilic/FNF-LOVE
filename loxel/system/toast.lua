@@ -26,7 +26,7 @@ function Toast.new(text, font)
 		timer = math.min(n * 0.11, 4),
 		width = width,
 		height = font:getHeight() * #lines,
-		y = Toast.height + 8,
+		y = -font:getHeight() * #lines - 8,
 		lastclock = clock
 	}
 
@@ -35,7 +35,6 @@ function Toast.new(text, font)
 	return t
 end
 
--- Though it isn't possible to resize in mobile but it's here for convenience
 function Toast:resize(width, height)
 	self.width = width
 	self.height = height
@@ -56,9 +55,9 @@ function Toast:__render()
 	local r, g, b, a = love.graphics.getColor()
 	local font = love.graphics.getFont()
 
-	local instances, width, height, scale = self.instances, self.width, self.height, self.scale
+	local instances, width, scale = self.instances, self.width, self.scale
 	local bs1, bs2, offset = 8 * scale, 16 * scale, 24 * scale
-	local y = height + bs1
+	local y = bs1
 
 	local visibleToasts, n, t = Toast.visibleToasts, #instances
 	for i = n, n - visibleToasts + 1, -1 do
@@ -70,9 +69,9 @@ function Toast:__render()
 			visibleToasts = visibleToasts - 1
 			table.remove(instances, i)
 		else
-			y = y - t.height - offset
-			local ty, th = math.lerp(y, t.y, math.exp(-dt * 6)), t.height
-			if ty < -th then
+			local ty = math.lerp(t.y, y, 1 - math.exp(-dt * 6))
+			local th = t.height
+			if ty > self.height then
 				visibleToasts = n - i
 				break
 			end
@@ -93,6 +92,7 @@ function Toast:__render()
 			love.graphics.printf(t.text, tx, ty, tw)
 
 			t.timer, t.y = timer, ty
+			y = y + th + offset
 		end
 	end
 

@@ -1,23 +1,16 @@
 local doof, music
 
 function postCreate()
-	local dialogue = love.filesystem.read(paths.getPath('songs/senpai/dialogue.txt')):split('\n')
 	local black = Graphic(-100, -100, game.width * 2, game.height * 2, Color.BLACK)
 
-	music = game.sound.play(paths.getMusic('gameplay/Lunchbox'), 0.8, true, true)
-
-	doof = DialogueBox(dialogue)
-	doof:setScrollFactor()
-	doof.cameras = {state.camNotes}
-	doof.finishThing = function()
-		if state.buttons then state:add(state.buttons) end
-		doof:destroy()
-		close()
-	end
+	doof = DialogueBox("pixel", "default", paths.formatToSongPath(PlayState.SONG.song))
+	doof.cameras = {camNotes}
+	doof.onFinish = close
+	add(doof)
 
 	black:setScrollFactor()
-	black.cameras = {state.camNotes}
-	state:add(black)
+	black.cameras = {camNotes}
+	add(black)
 
 	game.discardTransition()
 
@@ -25,19 +18,12 @@ function postCreate()
 		Timer():start(0.3 * delay, function()
 			black.alpha = black.alpha - 0.15
 			if black.alpha < 0 then
-				state:remove(black)
-				state:add(doof)
+				remove(black)
 			end
 		end)
 	end
 
-	if state.buttons then state:remove(state.buttons) end
-end
-
-function postUpdate(dt)
-	if controls:pressed('accept') and doof.isEnding then
-		music:stop()
-	end
+	if buttons then remove(buttons) end
 end
 
 function pause() return Event_Cancel end

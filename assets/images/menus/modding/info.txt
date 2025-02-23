@@ -1,0 +1,4 @@
+In-game, mod icon images are resized to 44x44 (without antialiasing)
+So images must be a square and preferably with a size of 44x44 (but can be any)
+
+Banners can have any size but its recommended to keep a ratio of 3.32:1 to not cause strange behavior on the menu description

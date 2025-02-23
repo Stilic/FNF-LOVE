@@ -1,7 +1,8 @@
 local vslice = {name = "V-Slice"}
 
 local function getFromMeta(meta, tbl)
-	local info = meta.playData or {}
+	assert(meta.playData ~= nil, "Not a valid V-Slice metadata")
+	local info = meta.playData
 
 	Parser.pset(tbl, "song", meta.songName or meta.song)
 	Parser.pset(tbl, "stage", info.stage)
@@ -25,11 +26,12 @@ local function getStuff(data)
 
 	for _, n in ipairs(data) do
 		local column = tonumber(n.d)
+		local kind = n.k == "mom" and "alt" or n.k
 		local newNote = {
 			t = tonumber(n.t),
 			d = column % 4,
 			l = tonumber(n.l) or 0,
-			k = n.k
+			k = kind
 		}
 		table.insert(column > 3 and dad or bf, newNote)
 	end

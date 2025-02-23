@@ -1,0 +1,103 @@
+{
+	"default": {
+		"skipSound": "gameplay/pixelText",
+		"nextSound": "gameplay/clickText",
+		"textSound": "gameplay/pixelText",
+
+		"position": [0, 45],
+		"sprite": "senpaiBox",
+
+		"animations": [
+			["enter", "Text Box Appear instance 1", [], [0, 0], 24, false],
+			["loop", "Text Box Appear instance 1", [4], [0, 0], 12, false]
+		],
+
+		"antialiasing": false,
+		"scale": 5.4,
+
+		"finishedDialogueSprite": {
+			"position": [1040, 590],
+			"sprite": "hand_textbox",
+			"antialiasing": false,
+			"scale": 5.4
+		},
+
+		"text": {
+			"position": [240, 500],
+			"type": "font",
+			"color": "#3F2021",
+			"limit": 768,
+			"font": ["pixel.otf", 32],
+			"outline": [
+				"simple", [4, 4], "#D89494"
+			]
+		}
+	},
+
+	"angry": {
+		"skipSound": "gameplay/pixelText",
+		"nextSound": "gameplay/clickText",
+		"textSound": "gameplay/pixelText",
+
+		"position": [0, 45],
+		"sprite": "rosesBox",
+
+		"animations": [
+			["enter", "SENPAI ANGRY IMPACT SPEECH instance 1", [], [0, 0], 24, false],
+			["loop", "SENPAI ANGRY IMPACT SPEECH instance 1", [4], [0, 0], 12, false]
+		],
+
+		"antialiasing": false,
+		"scale": 5.4,
+
+		"finishedDialogueSprite": {
+			"position": [1040, 590],
+			"sprite": "hand_textbox",
+			"antialiasing": false,
+			"scale": 5.4
+		},
+
+		"text": {
+			"position": [240, 500],
+			"type": "font",
+			"color": "#3F2021",
+			"limit": 768,
+			"font": ["pixel.otf", 32],
+			"outline": [
+				"simple", [4, 4], "#D89494"
+			]
+		}
+	},
+
+	"thorns": {
+		"skipSound": "gameplay/pixelText",
+		"nextSound": "gameplay/clickText",
+		"textSound": "gameplay/pixelText",
+
+		"position": [0, 45],
+		"sprite": "thornsBox",
+
+		"animations": [
+			["enter", "Spirit Textbox spawn instance 1", [], [0, 0], 24, false],
+			["loop", "Spirit Textbox spawn instance 1", [11], [0, 0], 12, false]
+		],
+
+		"antialiasing": false,
+		"scale": 5.4,
+
+		"finishedDialogueSprite": {
+			"position": [1040, 590],
+			"sprite": "hand_textbox",
+			"antialiasing": false,
+			"scale": 5.4
+		},
+
+		"text": {
+			"position": [240, 500],
+			"type": "font",
+			"color": "#FFFFFF",
+			"limit": 768,
+			"font": ["pixel.otf", 32]
+		}
+	}
+}

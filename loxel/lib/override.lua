@@ -90,6 +90,10 @@ function table.shuffle(t)
 	return t
 end
 
+function table.shift(t, i, j)
+	t[i], t[j] = t[j], t[i]
+end
+
 function math.clamp(x, min, max) return math_min(math_max(x, min or 0), max or 1) end
 
 function math.type(v)

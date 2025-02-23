@@ -98,17 +98,18 @@ function Color.saturate(rgb, amount)
 	return {Color.HSLtoRGB(h, s, l)}
 end
 
+local lerp = function(...) return math.truncate(math.lerp(...), 3) end
 function Color.lerp(x, y, i)
-	return {math.lerp(x[1], y[1], i),
-		math.lerp(x[2], y[2], i),
-		math.lerp(x[3], y[3], i)}
+	return {lerp(x[1], y[1], i),
+		lerp(x[2], y[2], i),
+		lerp(x[3], y[3], i)}
 end
 
 function Color.lerpDelta(x, y, i, delta)
 	i = math.exp(-(delta or game.dt) * i)
-	return {math.lerp(y[1], x[1], i),
-		math.lerp(y[2], x[2], i),
-		math.lerp(y[3], x[3], i)}
+	return {lerp(y[1], x[1], i),
+		lerp(y[2], x[2], i),
+		lerp(y[3], x[3], i)}
 end
 
 function Color.vec4(tbl, ...)

@@ -9,7 +9,7 @@ local closedEnv = setmetatable({}, {
 -- script sandboxing
 -- avoid game crashing / executing malicious code
 -- http://lua-users.org/wiki/SandBoxes
-
+-- this looks unclean i know -kaoy
 local function errformat(s, thread)
 	local i = debug.getinfo(thread or 3, "Sln")
 	print(("%s: %i: %s not allowed"):format(i.short_src, i.currentline, s))
@@ -29,7 +29,7 @@ local function noindex(module)
 	})
 end
 local function limitindex(name, blocklist)
-	return setmetatable({}, {
+	local mt = {
 		__index = function(_, k)
 			if _G[name][k] then
 				if blocklist and blocklist[k] then
@@ -39,7 +39,13 @@ local function limitindex(name, blocklist)
 			return _G[name][k]
 		end,
 		__newindex = deny(name .. " new indexing")
-	})
+	}
+
+	-- uhh workaround
+	if name == "Script" then
+		mt.__call = function(_, ...) return Script(...) end
+	end
+	return setmetatable({}, mt)
 end
 
 local blocklist, modules = {
@@ -49,10 +55,13 @@ local blocklist, modules = {
 	debug = noindex("debug"),
 	package = noindex("package"),
 	io = noindex("io"),
+	jit = noindex("jit"),
+	ffi = noindex("ffi"),
 
 	math = limitindex("math"),
 	table = limitindex("table"),
 	coroutine = limitindex("coroutine"),
+	love = limitindex("love"),
 
 	os = limitindex("os", {
 		execute = deny("os.execute", false),
@@ -68,19 +77,18 @@ local blocklist, modules = {
 	}),
 
 	Script = limitindex("Script", {
-		addToEnv = deny("Script addToEnv"),
-		linkObject = deny("Script linkObject")
-	}),
-
-	require = function(path)
-		path = path:gsub("%.", "/")
-		if paths.exists(paths.getPath(path), "directory") and
-			paths.exists(paths.getPath(path .. "/init.lua"), "file") then
-			return Script("data/classes/" .. path .. "/init").chunk()
-		end
-		return Script("data/classes/" .. path).chunk()
-	end
+		addToEnv = deny("Script addToEnv")
+	})
 }
+
+modules.require = function(path)
+	path = path:gsub("%.", "/")
+	if paths.exists(paths.getPath(path), "directory") and
+		paths.exists(paths.getPath(path .. "/init.lua"), "file") then
+		return Script("data/classes/" .. path .. "/init").chunk()
+	end
+	return Script("data/classes/" .. path).chunk()
+end
 
 local mtenv = {
 	__index = function(_, k)
@@ -97,7 +105,7 @@ Script.messages = Signal()
 Script.Event_Continue = 1
 Script.Event_Cancel = 2
 
-function Script:new(path, notFoundMsg, noLink)
+function Script:new(path, notFoundMsg, noLink, fullPath)
 	self.path = path
 	self.variables = {}
 	self.notFoundMsg = (notFoundMsg == nil and true or false)
@@ -111,7 +119,7 @@ function Script:new(path, notFoundMsg, noLink)
 	local s, err = pcall(function()
 		local p, vars = path, self.variables
 
-		local chunk = paths.getLua(p)
+		local chunk = fullPath and love.filesystem.load(p) or paths.getLua(p)
 		if chunk then
 			if not p:endsWith("/") then p = p .. "/" end
 			self:set("close", function() self:close() end)
@@ -139,7 +147,7 @@ function Script:new(path, notFoundMsg, noLink)
 		else
 			if not self.notFoundMsg then return end
 			print("Script not found for " .. paths.getPath(p))
-			self.closed = true
+			self:close()
 			return
 		end
 
@@ -148,7 +156,7 @@ function Script:new(path, notFoundMsg, noLink)
 
 	if not s then
 		print(string.format('Failed to load %s: %s', path, err))
-		self.closed = true
+		self:close()
 		self.errorCallback:dispatch("chunk")
 	end
 end
@@ -160,8 +168,10 @@ end
 
 function Script:linkObject(link)
 	local cur = getmetatable(self.variables)
+	local s = self.variables
+	if not s then return end
 	local new = {
-		__index = function(s, k)
+		__index = function(_, k)
 			if link[k] ~= nil then
 				if type(link[k]) == "function" then
 					return function(...)
@@ -173,10 +183,10 @@ function Script:linkObject(link)
 			return type(cur.__index) == "table" and
 				cur.__index[k] or cur.__index(s, k)
 		end,
-		__newindex = function(s, k, v)
+		__newindex = function(_, k, v)
 			-- avoid overriding functions
 			-- was other method but it kinda fucked up callbacks
-			if link[k] ~= nil and type(link[k]) ~= "function" then
+			if k ~= nil and link[k] ~= nil and type(link[k]) ~= "function" then
 				link[k] = v; return
 			end
 			return cur.__newindex and

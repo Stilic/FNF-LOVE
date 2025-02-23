@@ -77,15 +77,8 @@ function Graphic:__render(camera)
 	love.graphics.setLineWidth(linesize)
 	love.graphics.setLineJoin(line.join)
 
-	local x, y, w, h, sx, sy, ox, oy = self.x, self.y, self.width or 0, self.height or 0,
-		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
-		self.origin.x, self.origin.y
-
-	if self.flipX then sx = -sx end
-	if self.flipY then sy = -sy end
-
-	x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
-		y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
+	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
+	local w, h = self.width, self.height
 
 	local config = self.config
 	local rnd, ang1, ang2 = config.round, 0, 0
@@ -108,6 +101,7 @@ function Graphic:__render(camera)
 	love.graphics.translate(x, y)
 	love.graphics.rotate(math.rad(self.angle))
 	love.graphics.scale(sx, sy)
+	love.graphics.shear(kx, ky)
 
 	local function drawShape(type, fill)
 		if type == "rectangle" then

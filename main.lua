@@ -23,6 +23,8 @@ function love.keyreleased(...)
 	game.keyreleased(...)
 end
 
+function love.textinput(t) game.textinput(t) end
+
 function love.wheelmoved(...) game.wheelmoved(...) end
 
 function love.mousemoved(...) game.mousemoved(...) end

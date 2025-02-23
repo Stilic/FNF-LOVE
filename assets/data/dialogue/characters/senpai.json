@@ -1,0 +1,34 @@
+{
+	"default": {
+		"sprite": "senpaiPortrait",
+		"sound": "gameplay/pixelText",
+		"position": [0, 40],
+
+		"animations": [
+			["enter", "Senpai Portrait Enter instance 1", [], [0, 0], 24, false]
+		],
+		"antialiasing": false,
+		"scale": 5.4
+	},
+
+	"angry": {
+		"sprite": "senpaiANGRY",
+		"sound": "gameplay/pixelText",
+		"position": [-50, 50],
+
+		"animations": [
+			["enter", "SENPAI ANGRY IMPACT SPEECH instance 1", [], [0, 0], 24, false]
+		],
+		"antialiasing": false,
+		"scale": 5.4
+	},
+
+	"spirit": {
+		"sprite": "spiritFaceForward",
+		"sound": "gameplay/pixelText",
+		"position": [220, -40],
+
+		"antialiasing": false,
+		"scale": 5.4
+	}
+}

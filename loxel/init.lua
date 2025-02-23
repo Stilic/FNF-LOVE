@@ -253,6 +253,8 @@ game = {
 Classic.implement(game, Group)
 Classic.implement(game.bound, Group)
 
+TextInput = Signal()
+
 local function triggerCallback(callback, ...) if callback then callback(...) end end
 
 function game.getState(front) return front and Gamestate.current() or Gamestate.stack[1] end
@@ -326,9 +328,14 @@ function game.mousepressed(x, y, button) game.mouse.onPressed(button) end
 
 function game.mousereleased(x, y, button) game.mouse.onReleased(button) end
 
+function game.textinput(t) TextInput:dispatch(t) end
+
 local function switch(state)
 	game.cameras.reset()
 	game.sound.destroy()
+
+	game.keys.onPress:destroy()
+	game.keys.onRelease:destroy()
 
 	VirtualPad.reset()
 

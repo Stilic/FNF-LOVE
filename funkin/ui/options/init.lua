@@ -24,12 +24,15 @@ function Options:new(showBG, completionCallback)
 
 	self.focus = 0
 
-	self.bg = Graphic(0, 0, game.width, game.height, Color.BLACK)
+	self.bg = BackDrop({96, {Color.fromHEX(0x0F0F15), Color.BLACK}})
 	self.bg:setScrollFactor()
+	self.bg.moves = true
+	self.bg.velocity:set(24, 24)
 	self:add(self.bg)
 
 	self.tabBGHeight = game.height - 125
-	self.tabBG = Graphic(0, 105, game.height * 1.45, self.tabBGHeight, Color.BLACK)
+	self.tabBG = Graphic(0, 105, game.height * 1.47, self.tabBGHeight, Color.BLACK)
+	self.tabBG.config.round = {18, 18}
 	self.tabBG:screenCenter("x")
 	self.tabBG.alpha = 0.7
 	self:add(self.tabBG)
@@ -40,11 +43,13 @@ function Options:new(showBG, completionCallback)
 	self:add(self.tabGroup)
 
 	self.optionsCursor = Graphic(0, 0, 0, 0, Color.WHITE)
+	self.optionsCursor.config.round = {18, 18}
 	self.optionsCursor.alpha = 0.1
 	self.optionsCursor.visible = false
 	self:add(self.optionsCursor)
 
-	self.titleTabBG = Graphic(0, 20, game.height * 1.45, 65, Color.BLACK)
+	self.titleTabBG = Graphic(0, 20, game.height * 1.47, 65, Color.BLACK)
+	self.titleTabBG.config.round = {18, 18}
 	self.titleTabBG:screenCenter("x")
 	self.titleTabBG.alpha = 0.7
 	self:add(self.titleTabBG)
@@ -106,7 +111,10 @@ function Options:enter(parent)
 	self:changeTab()
 	self.visible = true
 
-	self.bg.alpha = self.showBG and 0.5 or 0
+	self.bg.alpha = 0
+	if self.showBG then
+		Tween.tween(self.bg, {alpha = 0.7}, 1, {ease = Ease.quadOut})
+	end
 end
 
 function Options:resetTabs()

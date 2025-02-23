@@ -195,6 +195,13 @@ for key, value in pairs(Keyboard.keys) do
 	Keyboard.released[key] = true
 end
 
+
+-- since key presses are asynchronous, those signals
+-- can track them immediately, different from table checking,
+-- that doesnt works at all on faster keypresses.
+Keyboard.onPress = Signal()
+Keyboard.onRelease = Signal()
+
 function Keyboard.reset()
 	table.clear(Keyboard.justPressed)
 	table.clear(Keyboard.justReleased)
@@ -247,6 +254,8 @@ function Keyboard.onPressed(key)
 	Keyboard.justReleased[value] = nil
 	Keyboard.released[value] = nil
 
+	Keyboard.onPress:dispatch(value)
+
 	Keyboard.justPressed.ANY = true
 	Keyboard.pressed.ANY = true
 	Keyboard.justReleased.ANY = nil
@@ -289,6 +298,8 @@ function Keyboard.onReleased(key)
 	Keyboard.pressed[value] = nil
 	Keyboard.justReleased[value] = true
 	Keyboard.released[value] = true
+
+	Keyboard.onRelease:dispatch(value)
 
 	Keyboard.justPressed.ANY = nil
 	Keyboard.pressed.ANY = nil

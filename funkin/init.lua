@@ -21,7 +21,11 @@ if love.system.getOS() == "Windows" then
 	end
 end
 
-Https = require "lib.https"
+local s, module = pcall(require, "https")
+if not s then
+	module = require "lib.https"
+end
+Https = module
 
 paths = require "funkin.paths"
 util = require "funkin.util"
@@ -30,12 +34,15 @@ Parser = require "funkin.backend.parser"
 ClientPrefs = require "funkin.backend.clientprefs"
 Conductor = require "funkin.backend.conductor"
 Highscore = require "funkin.backend.highscore"
-Mods = require "funkin.backend.mods"
 Throttle = require "funkin.backend.throttle"
+
+Mods = require "funkin.backend.modding.mods"
+Addons = require "funkin.backend.modding.addons"
 
 if love.system.getDevice() == "Desktop" then
 	Discord = require "funkin.backend.discord"
 end
+
 Receptor = require "funkin.gameplay.receptor"
 Note = require "funkin.gameplay.note"
 Notefield = require "funkin.gameplay.notefield"
@@ -60,6 +67,7 @@ Stickers = require "funkin.ui.stickers"
 StatsCounter = require "funkin.ui.statscounter"
 
 CalibrationState = require 'funkin.states.calibration'
+UpdateState = require 'funkin.states.update'
 CreditsState = require "funkin.states.credits"
 TitleState = require "funkin.states.title"
 MainMenuState = require "funkin.states.mainmenu"
@@ -82,6 +90,7 @@ Video = require "funkin.gameplay.video"
 
 Script = require "funkin.backend.scripting.script"
 ScriptsHandler = require "funkin.backend.scripting.scriptshandler"
+-- GlobalScripts = require "funkin.backend.scripting.globals"
 
 local TransitionFade = loxreq "transition.transitionfade"
 
@@ -124,7 +133,8 @@ function funkin.load()
 		love.graphics.setBackgroundColor(Project.bgColor)
 	end
 
-	Mods.loadMods()
+	Mods.reload()
+	Addons.reload()
 	Highscore.load()
 
 	local color = Color.BLACK
@@ -132,6 +142,7 @@ function funkin.load()
 	State.defaultTransOut = TransitionFade(0.7, color, "vertical")
 
 	game.onPreStateEnter = function(state)
+		-- GlobalScripts.call("preStateEnter", state)
 		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
 		end
@@ -161,10 +172,13 @@ function funkin.load()
 	game.statsCounter.showDraws = ClientPrefs.data.showDraws
 	game:add(game.statsCounter)
 
+	AtlasText.defaultFont = AtlasText.getFont("default", 1)
+
 	if Discord then Discord.init() end
 
 	Script.addToEnv("controls", controls)
 	Script.addToEnv("print", print)
+	-- GlobalScripts.reload()
 end
 
 function funkin.update(dt)
@@ -176,6 +190,8 @@ function funkin.update(dt)
 	if controls:pressed("fullscreen") then
 		love.window.setFullscreen(not love.window.getFullscreen())
 	end
+
+	-- GlobalScripts.call("update", dt)
 end
 
 function funkin.fullscreen(f)

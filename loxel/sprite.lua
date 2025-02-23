@@ -491,17 +491,13 @@ function Sprite:__render(camera)
 	love.graphics.push("all")
 	local f = self:getCurrentFrame()
 
-	local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
-		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
-		self.origin.x, self.origin.y
-
-	if self.flipX then sx = -sx end
-	if self.flipY then sy = -sy end
-
-	x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
-		y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
+	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
 
 	if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
+
+	if camera.pixelPerfect then
+		ox, oy = math.floor(ox), math.floor(oy)
+	end
 
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
@@ -513,9 +509,9 @@ function Sprite:__render(camera)
 	end
 
 	if f then
-		love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy)
+		love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy, kx, ky)
 	else
-		love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy)
+		love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy, kx, ky)
 	end
 	love.graphics.pop()
 

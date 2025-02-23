@@ -29,8 +29,9 @@ function Camera:new(x, y, width, height)
 	self.isSimple = true -- indicates if its in simple render
 
 	-- these will turn complex rendering mode in some cases
-	self.clipCam = Project.flags.loxelDefaultClipCamera == nil and true or Project.flags.loxelDefaultClipCamera
+	self.clipCam = not Project.flags.loxelDefaultClipCamera == false
 	self.antialiasing = true
+	self.pixelPerfect = false
 
 	self:resize(
 		width and (width > 0 and width) or game.width,
@@ -144,7 +145,10 @@ end
 function Camera:resize(width, height, resX, resY, force)
 	resX = resX or Camera.defaultResolution
 	resY = resY or resX
-	if self.width == width and self.height == height and self.__resolutionX == resX and self.__resolutionY == resY then return end
+	if self.pixelPerfect then resX, resY = 1, 1 end
+
+	if self.width == width and self.height == height
+		and self.__resolutionX == resX and self.__resolutionY == resY then return end
 
 	self.width, self.height, self.resolutionX, self.resolutionY = width, height, resX, resY
 	self.__requestCanvas = not force and self.freezed
@@ -156,6 +160,8 @@ function Camera:resize(width, height, resX, resY, force)
 		})
 	end
 end
+
+local trunc = function(i) return math.truncate(i, 1) end
 
 function Camera:update(dt)
 	local isnum = type(self.zoom) == "number"
@@ -240,12 +246,12 @@ end
 function Camera:canDraw()
 	self:getZoomXY()
 
-	return self.visible and self.exists and (
+	return self.visible and self.exists and (self.bgColor[4] and self.bgColor[4] > 0) or ((
 			self.freezed or next(self.__renderQueue)
 			or self.__flashAlpha > 0 or self.__fadeDuration > 0
 		) and
 		self.alpha > 0 and (self.scale.x * self.__zoom.x) ~= 0 and
-		(self.scale.y * self.__zoom.y) ~= 0
+		(self.scale.y * self.__zoom.y) ~= 0)
 end
 
 function Camera:draw()
@@ -254,10 +260,10 @@ function Camera:draw()
 
 	local winWidth, winHeight = love.graphics.getDimensions()
 	local scale = math.min(winWidth / game.width, winHeight / game.height)
-	if not self.simple or self.shader or (self.antialiasing and
+	if self.pixelPerfect or not self.simple or self.shader or (self.antialiasing and
 			(self.x ~= math.floor(self.x) or self.y ~= math.floor(self.y) or
 				self.scale.x ~= 1 or self.scale.y ~= 1 or
-				self.__resolutionX ~= scale or self.__resolutionX ~= scale) or
+				self.__resolutionX ~= scale or self.__resolutionY ~= scale) or
 			scale > 1) or
 		self.alpha < 1 or self.rotation ~= 0 then
 		self:drawComplex(true)
@@ -306,6 +312,7 @@ function Camera:drawSimple(_skipCheck)
 	local x, y, w, h = self.x, self.y, self.width, self.height
 	local sx, sy = self.scale.x, self.scale.y
 	local w2, h2 = w / 2, h / 2
+	local shx, shy = self.__shakeX, self.__shakeY
 
 	_simpleCamera = self
 	_ogSetColor, grap.setColor = grap.setColor, setSimpleColor
@@ -328,7 +335,7 @@ function Camera:drawSimple(_skipCheck)
 		setSimpleColor(r, g, b, a)
 	end
 
-	grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+	grap.translate(w2 + x + shx, h2 + y + shy)
 	grap.scale(self.__zoom.x * sx, self.__zoom.y * sy)
 	grap.rotate(math.rad(self.angle + self.rotation))
 	grap.translate(-w2, -h2)
@@ -359,7 +366,9 @@ end
 
 function Camera:drawComplex(_skipCheck)
 	if not _skipCheck and not self:canDraw() then return end
-	if self.__requestCanvas and not self.freezed then self:resize(self.width, self.height, self.resolutionX, self.resolutionY, true) end
+	if self.__requestCanvas and not self.freezed then
+		self:resize(self.width, self.height, self.resolutionX, self.resolutionY, true)
+	end
 	self.isSimple = false
 
 	local canvas = self.canvas
@@ -370,8 +379,12 @@ function Camera:drawComplex(_skipCheck)
 	local cv = grap.getCanvas()
 
 	local x, y, w, h, resX, resY = self.x, self.y, self.width, self.height, self.__resolutionX, self.__resolutionY
+
+	if self.pixelPerfect then resX, resY = 1, 1 end
+
 	local sx, sy = self.scale.x / resX, self.scale.y / resY
 	local w2, h2 = w / 2, h / 2
+	local shx, shy = self.__shakeX, self.__shakeY
 
 	if not self.freezed then
 		if self.__freeze then
@@ -391,11 +404,15 @@ function Camera:drawComplex(_skipCheck)
 		grap.push(); grap.origin(); game.__literalBoundScissor(w, h, 1, 1)
 
 		grap.scale(resX, resY)
+
+		local px, py
 		if self.clipCam then
-			grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+			px, py = w2 + shx, h2 + shy
 		else
-			grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+			px, py = w2 + x + shx, h2 + y + shy
 		end
+		grap.translate(px, py)
+
 		grap.rotate(math.rad(self.angle))
 		grap.scale(self.__zoom.x, self.__zoom.y)
 		grap.translate(-w2, -h2)
@@ -406,9 +423,9 @@ function Camera:drawComplex(_skipCheck)
 		color = self.__flashColor
 		if self.__flashAlpha > 0 then
 			if self.clipCam then
-				grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+				grap.translate(w2 + shx, h2 + shy)
 			else
-				grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
+				grap.translate(w2 + x + shx, h2 + y + shy)
 			end
 			grap.scale(1 / self.__zoom.x, 1 / self.__zoom.y)
 			grap.translate(-w2, -h2)
@@ -419,7 +436,7 @@ function Camera:drawComplex(_skipCheck)
 		color = self.__fadeColor
 		if self.__fadeDuration > 0 then
 			if self.clipCam then
-				grap.translate(w2 + self.__shakeX, h2 + self.__shakeY)
+				grap.translate(w2 + shx, h2 + shy)
 			else
 				grap.translate(w2 + x + self.__shakeX, h2 + y + self.__shakeY)
 			end
@@ -435,17 +452,26 @@ function Camera:drawComplex(_skipCheck)
 		grap.setCanvas(cv)
 	end
 
-	local alpha = self.alpha; color = self.color
+	local alpha = self.alpha
+	local color = self.color
 	grap.setShader(self.shader)
 	grap.setBlendMode("alpha", "premultiplied")
 	grap.setColor(color[1] * alpha, color[2] * alpha, color[3] * alpha, alpha)
 
 	local filter = self.antialiasing and "linear" or "nearest"
 	canvas:setFilter(filter, filter)
+
+	local scx, scy = 1, 1
+	if self.pixelPerfect then
+		scx, scy = game.width / self.width, game.height / self.height
+		local scale = math.min(scx, scy)
+		sx, sy = sx * scale, sy * scale
+	end
+
 	if self.clipCam then
-		grap.draw(canvas, w2 + x, h2 + y, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
+		grap.draw(canvas, (w2 + x) * scx, (h2 + y) * scy, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
 	else
-		grap.draw(canvas, w2, h2, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
+		grap.draw(canvas, w2 * scx, h2 * scy, math.rad(self.rotation), sx, sy, w2 * resX, h2 * resY)
 	end
 
 	grap.setColor(r, g, b, a)

@@ -135,7 +135,9 @@ function CreditsState:enter()
 	self.bg = Sprite(0, 0, paths.getImage("menus/menuDesat"))
 	self:add(util.responsiveBG(self.bg))
 
-	self.bd = BackDrop(0, 0, game.width, game.height, 72, nil, {0, 0, 0, 0}, 26)
+	self.bd = BackDrop(128)
+	self.bd.moves = true
+	self.bd.velocity:set(26, 26)
 	self.bd:setScrollFactor()
 	self.bd.alpha = 0.5
 	self:add(self.bd)
