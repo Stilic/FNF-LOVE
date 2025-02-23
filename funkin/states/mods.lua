@@ -216,6 +216,7 @@ function ModsState:update(dt)
 end
 
 function ModsState:enterSelection()
+	if #self.curTab.list.members < 1 then return end
 	local cur = self.curTab:getSelected(true)
 	if self.onAddons and not self.moveIndex then
 		Addons.setState(cur, not cur.active)
@@ -253,13 +254,30 @@ function ModsState:reloadInfo(addons, tab)
 	tab = tab or self.curTab
 
 	if #tab.list.members < 1 then
-		self.cardGroup.visible = false
 		self.noContent.visible = true
 		self.curColor = Color.WHITE
+
+		Tween.cancelTweensOf(self.cardGroup)
+		Tween.cancelTweensOf(self.noContent)
+		self.cardGroup.alpha = 1
+		self.noContent.alpha = 0
+		Tween.tween(self.cardGroup, {alpha = 0}, 0.1, {onComplete = function()
+			self.cardGroup.visible = false
+		end})
+		Tween.tween(self.noContent, {alpha = 1}, 0.1)
 		return
 	else
-		self.cardGroup.visible = true
-		self.noContent.visible = false
+		if self.noContent.visible then
+			Tween.cancelTweensOf(self.cardGroup)
+			Tween.cancelTweensOf(self.noContent)
+			self.cardGroup.visible = true
+			self.cardGroup.alpha = 0
+			self.noContent.alpha = 1
+			Tween.tween(self.cardGroup, {alpha = 1}, 0.1)
+			Tween.tween(self.noContent, {alpha = 0}, 0.1, {onComplete = function()
+				self.noContent.visible = false
+			end})
+		end
 	end
 
 	local meta = tab:getSelected().meta
