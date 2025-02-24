@@ -1,3 +1,4 @@
+#pragma language glsl3
 extern vec3 modifier; extern bool isGraphic;
 // modifier: x = contrast, y = saturation, z = brightness
 // yeah im lazy lol don't judge me i hate shaders - kaoy
