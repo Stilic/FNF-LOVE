@@ -197,9 +197,10 @@ function FreeplayState:loadSongs()
 				end
 			end
 		else
-			for _, name in pairs(paths.getItems('data/weeks/weeks', 'file', 'json', not Mods.currentMod, true)) do
-				local weekData = paths.getJSON('data/weeks/weeks/' .. name)
-				if not weekData.hide_fm then
+			for _, name in pairs(paths.getItems('data/weeks/weeks', 'file', 'json',
+					not Mods.currentMod, true, Mods.currentMod)) do
+				local weekData = paths.getJSON('data/weeks/weeks/' .. name:withoutExt())
+				if weekData and not weekData.hide_fm then
 					for _, song in ipairs(weekData.songs) do
 						table.insert(data, Parser.getMeta(song))
 					end
