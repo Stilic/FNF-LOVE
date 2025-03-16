@@ -1,0 +1,25 @@
+{
+  "workspace.library": ["${3rd}/love2d/library"],
+  "runtime.version": "LuaJIT",
+  "runtime.special": {
+    "love.filesystem.load": "loadfile"
+  },
+  "workspace.checkThirdParty": false,
+  "diagnostics.disable": [
+    "lowercase-global",
+    "undefined-global",
+    "redundant-parameter",
+    "deprecated",
+    "undefined-field",
+    "need-check-nil",
+    "param-type-mismatch",
+    "inject-field",
+    "duplicate-set-field",
+    "unused-local",
+    "cast-local-type",
+    "assign-type-mismatch",
+    "unbalanced-assignments",
+    "redefined-local"
+  ],
+  "completion.autoRequire": false
+}

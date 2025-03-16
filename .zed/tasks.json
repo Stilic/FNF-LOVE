@@ -1,0 +1,6 @@
+[
+  {
+    "label": "Run game",
+    "command": "love ."
+  }
+]
