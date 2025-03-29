@@ -30,7 +30,7 @@ uti = "org.stilic.fnflove"
 # An arbitrary version for the current iteration of the game. Can use
 # any desired version format. This will be used to differentiate the
 # resulting build files.
-version = "v0.7.0"
+version = "1.0.0"
 
 #
 # Build settings
@@ -65,7 +65,7 @@ ignore_list = [
     "^mods/*",
     "^.editorconfig$",
     "^LICENSE*",
-    "^README*"
+    "^README*",
 ]
 
 # If this is set to true, then the default ignore list will not be
