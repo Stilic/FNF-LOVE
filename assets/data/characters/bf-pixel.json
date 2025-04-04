@@ -16,6 +16,6 @@
 	"icon": "bf-pixel",
 	"sprite": "characters/bfPixel",
 	"antialiasing": false,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 6
 }

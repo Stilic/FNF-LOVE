@@ -11,6 +11,6 @@
 	"icon": "gf",
 	"sprite": "characters/gfChristmas",
 	"antialiasing": true,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 1
 }

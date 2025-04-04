@@ -13,8 +13,10 @@
 		["hurt", "BF hit", [], 24, false, [14, 18]],
 		["scared", "BF idle shaking", [], 24, true, [-4, 0]],
 		["dodge", "boyfriend dodge", [], 24, false, [-10, -16]],
+		["dodge-loop", "boyfriend dodge", [3, 4, 5], 24, false, [-10, -16]],
 		["attack", "boyfriend attack", [], 24, false, [294, 267]],
-		["pre-attack", "bf pre attack", [], 24, false, [-40, -40]]
+		["pre-attack", "bf pre attack", [], 24, false, [-40, -40]],
+		["cheer", "Cheer", [], 24, false, [5, 0], "characters/BFCheer"]
 	],
 	"position": [0, 350],
 	"camera_points": [0, 0],
@@ -22,6 +24,6 @@
 	"icon": "bf",
 	"sprite": "characters/BOYFRIEND",
 	"antialiasing": true,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 1
 }

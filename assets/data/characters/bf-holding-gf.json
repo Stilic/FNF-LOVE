@@ -17,6 +17,6 @@
 	"icon": "bf",
 	"sprite": "characters/bfAndGF",
 	"antialiasing": true,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 1
 }

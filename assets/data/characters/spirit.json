@@ -12,6 +12,6 @@
 	"icon": "spirit-pixel",
 	"sprite": "characters/spirit",
 	"antialiasing": false,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 6
 }

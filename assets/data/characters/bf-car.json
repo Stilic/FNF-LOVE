@@ -21,6 +21,6 @@
 	"icon": "bf",
 	"sprite": "characters/bfCar",
 	"antialiasing": true,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 1
 }

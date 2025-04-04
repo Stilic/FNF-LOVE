@@ -10,6 +10,6 @@
 	"icon": "bf",
 	"sprite": "characters/bfHoldingGF-DEAD",
 	"antialiasing": true,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 1.05
 }
