@@ -9,9 +9,9 @@
 	"position": [150, 360],
 	"camera_points": [-240, -330],
 	"flip_x": false,
-	"icon": "senpai-pixel",
+	"icon": "senpai-angry-pixel",
 	"sprite": "characters/senpai",
 	"antialiasing": false,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 6
 }

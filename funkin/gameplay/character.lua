@@ -74,7 +74,7 @@ function Character:new(x, y, char, isPlayer)
 		self.forceIdleBeats = true
 	end
 	if data.sing_duration ~= nil then
-		self.holdTime = data.sing_duration * 2
+		self.holdTime = data.sing_duration
 	end
 
 	self:dance()

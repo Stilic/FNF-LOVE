@@ -25,6 +25,6 @@
 	"icon": "parents",
 	"sprite": "characters/mom_dad_christmas_assets",
 	"antialiasing": true,
-	"sing_duration": 4,
+	"sing_duration": 8,
 	"scale": 1
 }
