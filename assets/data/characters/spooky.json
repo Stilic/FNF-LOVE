@@ -1,6 +1,6 @@
 {
 	"animations": [
-		["hey", "spooky kids YEAH!!", [], 24, false, [59, -20]],
+		["cheer", "spooky kids YEAH!!", [], 24, false, [59, -20]],
 		["singLEFT", "note sing left", [], 24, false, [130, -10]],
 		["singRIGHT", "spooky sing right", [], 24, false, [-130, -14]],
 		["singDOWN", "spooky DOWN note", [], 24, false, [-50, -130]],
