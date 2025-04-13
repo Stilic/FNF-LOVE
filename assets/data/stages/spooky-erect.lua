@@ -1,4 +1,7 @@
-
+-- TODO: 
+-- 1. Add rain shader
+-- 2. Fix character positions
+-- 3. FIX LIGHTNINGDAD IDLE BECAUSE IT'S REALLY REALLY BROKEN
 local lightningStrikeBeat = 0
 local lightningStrikeOffset = 8
 
@@ -59,6 +62,8 @@ local function hexToRGB(hex)
 end
 
 function create()
+    self.camZoom = 1.0
+
     local solid = Graphic(-300, -500, 2400, 2000)
     solid.color = {hexToRGB("#242336")}
     self:add(solid)
