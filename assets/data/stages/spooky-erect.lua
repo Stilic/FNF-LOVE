@@ -89,13 +89,22 @@ function create()
     self:add(stairsLight, true)
 end
 
+local function setCharPos(char, x, y)
+    char.x = x - char.width / 2
+    char.y = y - char.height
+end
+
 function postCreate()
-    lightningBf = Character(self.boyfriendPos.x, self.boyfriendPos.y, 'bf', true)
+    setCharPos(state.boyfriend, 1250, 835)
+    setCharPos(state.dad, 382, 831)
+    setCharPos(state.gf, 821.5, 800)
+
+    lightningBf = Character(state.boyfriend.x, state.boyfriend.y, 'bf', true)
     lightningBf:setScrollFactor(state.boyfriend.scrollFactor.x, state.boyfriend.scrollFactor.y)
-    lightningDad = Character(self.dadPos.x, self.dadPos.y, 'spooky')
+    lightningDad = Character(state.dad.x, state.dad.y, 'spooky')
     lightningDad:setScrollFactor(state.dad.scrollFactor.x, state.dad.scrollFactor.y)
     if state.gf then
-        lightningGf = Character(self.gfPos.x, self.gfPos.y, 'gf')
+        lightningGf = Character(state.gf.x, state.gf.y, 'gf')
         lightningGf:setScrollFactor(state.gf.scrollFactor.x, state.gf.scrollFactor.y)
     end
     bgLight.alpha = 0
@@ -112,18 +121,18 @@ end
 
 function postUpdate(dt)
     if lightningBf.curAnim.name ~= state.boyfriend.curAnim.name then
-        lightningBf:playAnim(state.boyfriend.curAnim.name, true)
+        lightningBf:play(state.boyfriend.curAnim.name, true)
     else
         lightningBf.curFrame = state.boyfriend.curFrame
     end
     if lightningDad.curAnim.name ~= state.dad.curAnim.name then
-        lightningDad:playAnim(state.dad.curAnim.name, true)
+        lightningDad:play(state.dad.curAnim.name, true)
     else
         lightningDad.curFrame = state.dad.curFrame
     end
     if state.gf then
         if lightningGf.curAnim.name ~= state.gf.curAnim.name then
-            lightningGf:playAnim(state.gf.curAnim.name, true)
+            lightningGf:play(state.gf.curAnim.name, true)
         else
             lightningGf.curFrame = state.gf.curFrame
         end
