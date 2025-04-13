@@ -11,6 +11,7 @@ local function doLightningStrike(playSound, beat)
     stairsLight.alpha = 1
     state.boyfriend.alpha = 0
     state.dad.alpha = 0
+    if state.gf then state.gf.alpha = 0 end
     Timer(state.timer):start(0.06, function()
         bgLight.alpha = 0
         stairsLight.alpha = 0

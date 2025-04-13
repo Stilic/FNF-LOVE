@@ -7,7 +7,11 @@ function vslice.parse(data, name)
 	Parser.pset(char, "flip_x", data.flipX)
 	Parser.pset(char, "sprite", data.assetPath)
 
-	char.icon = name
+	if data.healthIcon then
+		Parser.pset(char, "icon", data.healthIcon.id)
+	else
+		Parser.pset(char, "icon", name)
+	end
 	char.animations = {}
 
 	for _, anim in pairs(data.animations) do
