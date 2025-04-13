@@ -121,18 +121,18 @@ end
 
 function postUpdate(dt)
     if lightningBf.curAnim.name ~= state.boyfriend.curAnim.name then
-        lightningBf:play(state.boyfriend.curAnim.name, true)
+        lightningBf:playAnim(state.boyfriend.curAnim.name, true)
     else
         lightningBf.curFrame = state.boyfriend.curFrame
     end
     if lightningDad.curAnim.name ~= state.dad.curAnim.name then
-        lightningDad:play(state.dad.curAnim.name, true)
+        lightningDad:playAnim(state.dad.curAnim.name, true)
     else
         lightningDad.curFrame = state.dad.curFrame
     end
     if state.gf then
         if lightningGf.curAnim.name ~= state.gf.curAnim.name then
-            lightningGf:play(state.gf.curAnim.name, true)
+            lightningGf:playAnim(state.gf.curAnim.name, true)
         else
             lightningGf.curFrame = state.gf.curFrame
         end
