@@ -31,6 +31,17 @@ local function fastCarDrive()
 	Timer.wait(2, function() resetFastCar() end)
 end
 
+function preload()
+	return {
+	    {"image", SCRIPT_PATH .. "limoDancer"},
+	    {"image", SCRIPT_PATH .. "limoSunset"},
+	    {"image", SCRIPT_PATH .. "fastCarLol"},
+	    {"image", SCRIPT_PATH .. "limoOverlay"},
+	    {"image", SCRIPT_PATH .. "bgLimo"},
+	    {"image", SCRIPT_PATH .. "limoDrive"}
+	}
+end
+
 function create()
 	self.dadCam.y = 86
 	self.camZoom = 0.9

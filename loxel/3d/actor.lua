@@ -10,27 +10,11 @@ function Actor:new(x, y, z)
 	Actor.super.new(self, x, y)
 
 	self.z = z or 0
-	self.rotation = {x = 0, y = 0, z = 0}
+	self.rotation = Point()
 	self.depth = 0 -- i guess you can call this the size for z axis??
 	self.fov = 60
 
-	self.offset.z = 0
-	self.origin.z = 0
-	self.scale.z = 1
-	self.zoom.z = 1
-
 	self.moves = false
-	self.velocity.z = 0
-	self.acceleration.z = 0
-end
-
-function Actor:destroy()
-	Actor.super.destroy(self)
-
-	self.offset.x, self.offset.y, self.offset.z = 0, 0, 0
-	self.scale.x, self.scale.y, self.offset.z = 1, 1, 1
-
-	self.shader = nil
 end
 
 function Actor:setPosition(x, y, z)

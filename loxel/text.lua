@@ -16,7 +16,7 @@ function Text:new(x, y, content, font, color, align, limit)
 		style = "normal",
 		color = {0, 0, 0, 1},
 		width = 0,
-		offset = {x = 0, y = 0},
+		offset = Point(),
 
 		-- these affects the outline quality
 		precision = 8,

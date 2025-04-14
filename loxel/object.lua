@@ -55,27 +55,18 @@ function Object:setupDrawLogic(camera, initDraw)
 	return x, y, rad, sx, sy, ox, oy, self.skew.x, self.skew.y
 end
 
-local setfunc = function(self, x, y)
-	self.x = x or self.x
-	self.y = y or self.y
-end
-
-local function point(x, y)
-	return {x = x, y = y, set = setfunc}
-end
-
 function Object:new(x, y)
 	Object.super.new(self)
 
 	self:setPosition(x, y)
 	self.width, self.height = 0, 0
 
-	self.offset = point(0, 0)
-	self.origin = point(0, 0)
-	self.scale = point(1, 1)
-	self.zoom = point(1, 1) -- same as scale
-	self.scrollFactor = point(1, 1)
-	self.skew = point(0, 0)
+	self.offset = Point()
+	self.origin = Point()
+	self.scale = Point(1, 1)
+	self.zoom = Point(1, 1)
+	self.scrollFactor = Point(1, 1)
+	self.skew = Point()
 	self.flipX = false
 	self.flipY = false
 
@@ -88,16 +79,21 @@ function Object:new(x, y)
 	self.angle = 0
 
 	self.moves = false
-	self.velocity = point(0, 0)
-	self.acceleration = point(0, 0)
+	self.velocity = Point()
+	self.acceleration = Point()
 end
 
 function Object:destroy()
 	Object.super.destroy(self)
 
-	-- self.offset:set(0, 0)
-	-- self.scale:set(1, 1)
-	-- self.skew:set(0, 0)
+	self.offset:zero()
+	self.origin:zero()
+	self.scale.x, self.scale.y = 1, 1
+	if type(zoom) == "table" then self.zoom:set(1, 1) end
+
+	self.skew:zero()
+	self.velocity:zero()
+	self.acceleration:zero()
 
 	self.shader = nil
 end

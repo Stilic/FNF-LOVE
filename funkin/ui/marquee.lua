@@ -1,45 +1,48 @@
 local Marquee = Text:extend("Marquee")
 
--- todo reweite this a bit I think -vk
-
 function Marquee:new(x, y, limit, velocity, content, font, color)
 	self.speed = velocity
-	self.maxWidth = limit or 1000
+	self.maxWidth = limit or 200
 	self.pauseTime = 1.5
-	self.time = self.pauseTime
+	self.pauseTimer = self.pauseTime
 	self.scrollOffset = 0
+	self.isScrolling = false
 
 	Marquee.super.new(self, x, y, content, font, color)
-	self.spacing = 100
-	self:__updateDimension()
+	self.spacing = 50
 end
 
 function Marquee:update(dt)
 	Marquee.super.update(self, dt)
-	if self:getWidth() <= self.maxWidth then return end
+	if self.width <= self.maxWidth then return end
 
-	if self.time > 0 then
-		self.time = self.time - dt
+	if not self.isScrolling then
+		self.pauseTimer = self.pauseTimer - dt
+		if self.pauseTimer <= 0 then
+			self.isScrolling = true
+		end
 	else
 		self.scrollOffset = self.scrollOffset + self.speed * dt
-		if self.scrollOffset >= self.width + self.spacing then
-			self.time = self.pauseTime
+		if self.scrollOffset >= self.textWidth + self.spacing then
 			self.scrollOffset = 0
+			self.pauseTimer = self.pauseTime
+			self.isScrolling = false
 		end
+	end
+	if self.canRender and self.isScrolling then -- insane shit but its fucked up on render due to transformations
+	-- no love.graphics.origin() won't do it
+		self.canvas:renderTo(function()
+			love.graphics.clear(0, 0, 0, 0)
+			self:__renderText(-self.scrollOffset)
+			self:__renderText(-self.scrollOffset + self.textWidth + self.spacing)
+		end)
+		self.canRender = nil
 	end
 end
 
 function Marquee:__updateDimension()
 	if self.__content == self.content and self.__font == self.font and
-		self.__limit == self.limit
-	then
-		return
-	end
-	if self.canvas then
-		self.canvas:release()
-		self.quad0:release()
-		self.quad1:release()
-	end
+		self.__limit == self.limit then return end
 	self.__content = self.content
 	self.__limit = self.limit
 	self.__font = self.font
@@ -51,41 +54,46 @@ function Marquee:__updateDimension()
 		self.height = self.height * #lines
 	end
 
-	if self.width <= (self.maxWidth or -1) then return end
-	local _, _, w, h = self:_getBoundary()
-	self.canvas = love.graphics.newCanvas(w + 1, h + 1)
-	self.quad0 = love.graphics.newQuad(0, 0, w, h, w + 1, h + 1)
-	self.quad1 = love.graphics.newQuad(0, 0, w, h, w + 1, h + 1)
-
-	self.canvas:renderTo(bind(self, self.render))
+	if self.width > (self.maxWidth or -1) then
+		self:updateCanvas()
+	end
 end
 
-function Marquee:render()
+function Marquee:updateCanvas()
+	if self.canvas then self.canvas:release() end
+	self.textWidth = self.font:getWidth(self.content)
+	self.textHeight = self.font:getHeight()
+	if self.limit ~= nil then
+		local _, lines = self.font:getWrap(self.content, self.limit)
+		self.textHeight = self.textHeight * #lines
+	end
+	self.canvas = love.graphics.newCanvas(self.maxWidth, self.textHeight)
+	self.canvas:renderTo(function()
+		love.graphics.clear(0, 0, 0, 0)
+		self:__renderText(-self.scrollOffset)
+		self:__renderText(-self.scrollOffset + self.textWidth + self.spacing)
+	end)
+end
+
+function Marquee:__renderText(x)
 	love.graphics.push("all")
 
-	local x, y, rad, sx, sy, ox, oy = 0, 0, math.rad(self.angle),
-		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
-		self.origin.x, self.origin.y
-
-	if self.flipX then sx = -sx end
-	if self.flipY then sy = -sy end
-	local content, align, outline = self.content, self.alignment, self.outline
-	local width, font, color = self.limit or self:getWidth(), self.font
+	local rad, sx, sy, ox, oy = 0, 1, 1
+	if not self.antialiasing then x = math.floor(x) end
 
 	local content, align, outline = self.content, self.alignment, self.outline
+	local width, font = self.limit or self.textWidth, self.font
 
 	love.graphics.setFont(self.font)
-	love.graphics.setBlendMode(self.blend, "alphamultiply")
 	local min, mag, anisotropy = self.font:getFilter()
 	local mode = self.antialiasing and "linear" or "nearest"
 
 	if outline then
-		color = outline.color
-		love.graphics.setColor(Color.vec4(color, (color[4] or 1) * self.alpha))
-
+		local outlineColor = outline.color
+		love.graphics.setColor(Color.vec4(outlineColor, (outlineColor[4] or 1)))
 		if outline.style == "simple" then
 			love.graphics.printf(content,
-				x + outline.offset.x, y + outline.offset.y,
+				x + outline.offset.x, outline.offset.y,
 				width, align, rad, sx, sy, ox, oy)
 		elseif outline.width > 0 and outline.style == "normal" then
 			local step = (2 * math.pi) / outline.precision
@@ -96,66 +104,44 @@ function Marquee:render()
 					local omode = outline.antialiasing and "linear" or "nearest"
 					self.font:setFilter(omode, omode, anisotropy)
 				end
-				love.graphics.printf(content, x + dx, y + dy,
+				love.graphics.printf(content, x + dx, dy,
 					width, align, rad, sx, sy, ox, oy)
 			end
 		end
 	end
 	self.font:setFilter(mode, mode, anisotropy)
 
-	color = self.bgColor
-	local bgAlpha = #color > 3 and color[4] * self.alpha or self.alpha
-	love.graphics.setColor(color[1], color[2], color[3], bgAlpha)
-	love.graphics.rectangle("fill", x, y, self.width, self.height)
+	local color = self.color
+	love.graphics.setColor(color[1], color[2], color[3], 1)
+	love.graphics.printf(content, x, 0, width, align, rad, sx, sy, ox, oy)
 
-	color = self.color
-	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
-	love.graphics.printf(content, x, y, width, align, rad, sx, sy, ox, oy)
-	love.graphics.pop()
 	self.font:setFilter(min, mag, anisotropy)
-end
-
-function Marquee:destroy()
-	if self:getWidth() <= self.maxWidth then
-		return Marquee.super.destroy(self)
-	end
-	self.canvas:release()
-	self.quad0:release()
-	self.quad1:release()
-	Marquee.super.destroy(self)
+	love.graphics.pop()
 end
 
 function Marquee:__render(camera)
-	if self:getWidth() <= self.maxWidth then
+	if self.width <= self.maxWidth then
 		return Marquee.super.__render(self, camera)
 	end
-	if not self.canvas then return end
 
-	local min, mag, anisotropy, mode
-
-	mode = self.antialiasing and "linear" or "nearest"
-	min, mag, anisotropy = self.canvas:getFilter()
-	self.canvas:setFilter(mode, mode, anisotropy)
+	self.canRender = true
 
 	love.graphics.push("all")
-	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
-
-	local w, h = self.canvas:getDimensions()
-	w, h = w - 1, h - 1
+	local r, g, b = love.graphics.getColor()
+	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera, false)
 	if not self.antialiasing then x, y = math.floor(x), math.floor(y) end
-
-	local visibleWidth = math.min(self.maxWidth, w - self.scrollOffset)
-	self.quad0:setViewport(self.scrollOffset, 0, visibleWidth, h)
-
-	love.graphics.draw(self.canvas, self.quad0, x, y, rad, sx, sy, ox, oy, kx, ky)
-
-	visibleWidth = math.min(self.maxWidth, w - self.scrollOffset + (self.spacing + w))
-	self.quad1:setViewport(self.scrollOffset - (self.spacing + w), 0, visibleWidth, h)
-	love.graphics.draw(self.canvas, self.quad1, x, y, rad, sx, sy, ox, oy, kx, ky)
-
-	self.canvas:setFilter(min, mag, anisotropy)
+	love.graphics.setShader(self.shader)
+	local mode = self.antialiasing and "linear" or "nearest"
+	self.canvas:setFilter(mode, mode)
+	-- love.graphics.setBlendMode(self.blend, "premultiplied")
+	love.graphics.setColor(r, g, b, self.alpha)
+	love.graphics.draw(self.canvas, x, y, rad, sx, sy, ox, oy, kx, ky)
 	love.graphics.pop()
 end
 
+function Marquee:destroy()
+	if self.canvas then self.canvas:release() end
+	Marquee.super.destroy(self)
+end
 
 return Marquee

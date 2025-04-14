@@ -1,3 +1,11 @@
+function preload()
+	return {
+		{"image", SCRIPT_PATH .. "stageback"},
+		{"image", SCRIPT_PATH .. "stagefront"},
+		{"image", SCRIPT_PATH .. "stagecurtains"}
+	}
+end
+
 function create()
 	local bg = Sprite(-600, -200):loadTexture(
 		paths.getImage(SCRIPT_PATH .. "stageback"))

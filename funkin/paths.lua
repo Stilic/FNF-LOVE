@@ -5,9 +5,11 @@ local paths = {
 	audio = {},
 	atlases = {},
 	fonts = {},
-	noteskins = {},
+	skins = {},
 	persistantAssets = {"music/freakyMenu.ogg"}
 }
+
+paths.threadLoad = require "funkin.threadload"
 
 local function readFile(key)
 	if paths.exists(key, "file") then return love.filesystem.read(key) end
@@ -69,7 +71,7 @@ function paths.clearCache()
 	clear(paths.images)
 	clear(paths.audio)
 	clear(paths.fonts)
-	clear(paths.noteskins)
+	clear(paths.skins)
 	collectgarbage()
 end
 
@@ -164,16 +166,13 @@ function paths.getJSON(key)
 end
 
 function paths.getSkin(key)
-	local obj = paths.noteskins[key]
-	if obj then return obj end
-	obj = paths.getJSON("data/skins/" .. key)
-	if obj then
-		obj.skin = obj.skin or key
-		paths.noteskins[key] = obj
+	local obj = paths.skins[key]
+	if obj then return obj else
+		obj = Skin(key)
 		return obj
 	end
 
-	print('oh no its returning "noteskin" null NOOOO: ' .. key)
+	print('oh no its returning "skin" null NOOOO: ' .. key)
 	return nil
 end
 

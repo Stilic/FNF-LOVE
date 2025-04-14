@@ -1,3 +1,4 @@
+
 local parseXml = loxreq "lib.xml"
 
 local function sortFramesByIndices(prefix, postfix)
@@ -37,7 +38,7 @@ end
 ---@class Sprite:Object
 local Sprite = Object:extend("Sprite")
 
-function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
+function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh, r)
 	local aw, ah = x + w, y + h
 	return {
 		name = name,
@@ -45,7 +46,8 @@ function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh)
 			ah > sh and h - (ah - sh) or h, sw, sh),
 		width = ow or w,
 		height = oh or h,
-		offset = {x = ox or 0, y = oy or 0}
+		offset = {x = ox or 0, y = oy or 0},
+		rotated = r
 	}
 end
 
@@ -66,7 +68,8 @@ function Sprite.getFramesFromSparrow(texture, description)
 					tonumber(c.attrs.frameX),
 					tonumber(c.attrs.frameY),
 					tonumber(c.attrs.frameWidth),
-					tonumber(c.attrs.frameHeight)))
+					tonumber(c.attrs.frameHeight),
+					c.attrs.rotated == "true"))
 		end
 	end
 
@@ -493,7 +496,13 @@ function Sprite:__render(camera)
 
 	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
 
-	if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
+	if f then
+		if f.rotated then
+			f.offset.x, f.offset.y = f.offset.y, -f.offset.x
+			rad = rad - math.pi / 2
+		end
+		ox, oy = ox + f.offset.x, oy + f.offset.y
+	end
 
 	if camera.pixelPerfect then
 		ox, oy = math.floor(ox), math.floor(oy)
@@ -514,6 +523,11 @@ function Sprite:__render(camera)
 		love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy, kx, ky)
 	end
 	love.graphics.pop()
+	if f then
+		if f.rotated then
+			f.offset.x, f.offset.y = -f.offset.y, f.offset.x
+		end
+	end
 
 	self.texture:setFilter(min, mag, anisotropy)
 end

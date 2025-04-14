@@ -44,6 +44,13 @@ function AtlasText:new(x, y, text, font, limit, align)
 		self.frames.texture, 1, "stream")
 end
 
+function AtlasText:__index(k)
+	if k == "text" or k == "limit" or k == "align" then
+		return self.props[k]
+	end
+	return rawget(self, k) or AtlasText[k]
+end
+
 function AtlasText:__newindex(k, v)
 	if k == "text" or k == "limit" or k == "align" then
 		self.props[k] = v
@@ -93,44 +100,122 @@ function AtlasText:setText(text)
 	local font = self.font
 	if font == nil then return end
 
-	local line, lines, width, cache, idx = "", {}, 0, {}, 1
-
+	local cache = {}
+	local idx = 1
 	for _, char in utf8.codes(self.props.text) do
 		local c = Glyph(0, 0, char, self)
 		cache[idx] = c
 		idx = idx + 1
-
-		local realChar = utf8.char(char)
-		if realChar == "\n" or (self.props.limit > 0 and width + c.width * font.scale >= self.props.limit) then
-			table.insert(lines, {t = line, w = width})
-			line = realChar
-			width = c.width * font.scale
-		else
-			line = line .. realChar
-			width = width + c.width * font.scale
-		end
 	end
 
-	if #line > 0 then table.insert(lines, {t = line, w = width}) end
+	local words = {}
+	local word = {text = "", width = 0, start = 1, stop = 0}
+	local idx = 1
 
-	idx = 1
-	for i, curLine in ipairs(lines) do
-		local x, xOff, y = 0, 0, (i - 1) * (font.lineSize * font.scale)
-		if self.props.align ~= "left" then
-			xOff = (self.props.limit - curLine.w) / (self.props.align == "center" and 2 or 1)
-		end
+	for _, char in utf8.codes(self.props.text) do
+		local c = utf8.char(char)
+		local g = cache[idx]
+		if c == " " or c == "\n" then
+			if #word.text > 0 then
+				word.stop = idx - 1
+				table.insert(words, word)
+				word = {text = "", width = 0, start = idx + 1, stop = 0}
+			else word.start = idx + 1 end
 
-		for _ = 1, utf8.len(curLine.t) do
-			local char = cache[idx]
-			idx = idx + 1
-			if char and char.is then
-				char:setPosition(x + xOff, y)
-				self:add(char)
+			local sp = {start = idx, stop = idx}
+			if c == " " then
+				sp.text = " "
+				sp.width = font.spaceWidth
+				sp.space = true
+			else
+				sp.text = "\n"
+				sp.width = 0
+				sp.nl = true
 			end
-			x = x + (char and char.width or 0)
+			table.insert(words, sp)
+		else
+			word.text = word.text .. c
+			word.width = word.width + g.width
+		end
+		idx = idx + 1
+	end
+
+	if #word.text > 0 then
+		word.stop = idx - 1
+		table.insert(words, word)
+	end
+
+	local lines = {}
+	local line, last = {text = "", width = 0, words = {}}, 0
+
+	local limit = self.props.limit
+	if self.props.limit > 0 and font.scale ~= 1 then
+		limit = self.props.limit / font.scale
+	end
+
+	for i, w in ipairs(words) do
+		if w.nl then
+			if last > 0 and words[last].space then
+				line.text = line.text:sub(1, -2)
+				line.width = line.width - words[last].width
+				table.remove(line.words)
+				last = last - 1
+			end
+
+			table.insert(lines, line)
+			line = {text = "", width = 0, words = {}}
+			last = 0
+		elseif limit > 0 and not w.space and
+			   line.width + w.width > limit and
+			   line.width > 0 then
+			if last > 0 and words[last].space then
+				line.text = line.text:sub(1, -2)
+				line.width = line.width - words[last].width
+				table.remove(line.words)
+			end
+
+			table.insert(lines, line)
+			line = {text = w.text, width = w.width, words = {w}}
+			last = i
+		else
+			line.text = line.text .. w.text
+			line.width = line.width + w.width
+			table.insert(line.words, w)
+			last = i
 		end
 	end
 
+	if #line.text > 0 then table.insert(lines, line) end
+
+	for i, ln in ipairs(lines) do
+		local y = (i - 1) * font.lineSize
+		local xOff = 0
+		if self.props.align ~= "left" then
+			if self.props.limit > 0 then
+				xOff = (self.props.limit - ln.width * font.scale) / (self.props.align == "center" and 2 or 1)
+			else
+				xOff = (ln.width * font.scale) / (self.props.align == "center" and 2 or 1)
+			end
+		end
+
+		local x = 0
+		for _, w in ipairs(ln.words) do
+			if w.space then
+				x = x + w.width
+			else
+				local wx = x
+				for i = w.start, w.stop do
+					local c = cache[i]
+					if c and c.is then
+						c:setPosition(wx + xOff, y)
+						self:add(c)
+						wx = wx + c.width
+					end
+				end
+				x = wx
+			end
+		end
+	end
 	self:updateHitbox()
 end
 
@@ -193,6 +278,7 @@ function AtlasText:__render(camera)
 	love.graphics.setBlendMode(self.blend)
 	love.graphics.setShader(self.shader)
 
+	love.graphics.rectangle("line", x, y, self.limit > 0 and self.limit or self.width, self.height)
 	love.graphics.draw(self.batch, x, y, rad, sx, sy, ox, oy)
 
 	texture:setFilter(min, mag, anisotropy)

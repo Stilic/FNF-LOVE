@@ -2,13 +2,25 @@ local upperBopper
 local bottomBopper
 local santa
 
+function preload()
+	return {
+	    {"image", SCRIPT_PATH .. "bgWalls"},
+	    {"image", SCRIPT_PATH .. "upperBop"},
+	    {"image", SCRIPT_PATH .. "bgEscalator"},
+	    {"image", SCRIPT_PATH .. "christmasTree"},
+	    {"image", SCRIPT_PATH .. "bottomBop"},
+	    {"image", SCRIPT_PATH .. "fgSnow"},
+	    {"image", SCRIPT_PATH .. "santa"}
+	}
+end
+
 function create()
 	self.camZoom = 0.8
 
 	self.boyfriendPos = {x = 970, y = 100}
 	self.boyfriendCam = {x = 0, y = -100}
 
-	local bg = Sprite(-256, -396)
+	local bg = Sprite(-350, -396)
 	bg:loadTexture(paths.getImage(SCRIPT_PATH .. 'bgWalls'))
 	bg:setGraphicSize(math.floor(bg.width * 0.8))
 	bg:updateHitbox()

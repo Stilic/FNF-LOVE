@@ -54,7 +54,7 @@ function Glyph:new(x, y, glyph, parent)
 	Glyph.super.new(self, x or 0, y or 0)
 
 	self.glyph = glyph or "#"
-	self.letterOffset = {x = 0, y = 0}
+	self.letterOffset = Point()
 	self.parent = parent
 
 	self.__forceUpdate = false
@@ -128,7 +128,7 @@ function Glyph:__resetOffsets()
 	local ox = self.letterOffset.x
 	local oy = self.letterOffset.y - (110 - self.height)
 
-	self.offset = {x = ox - fx, y = oy - fy}
+	self.offset:set(ox - fx, oy - fy)
 end
 
 function Glyph:__render(camera)

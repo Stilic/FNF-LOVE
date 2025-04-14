@@ -15,7 +15,7 @@ function VirtualPad:new(key, x, y, width, height, color)
 	end
 	self.color = color or Color.fromRGB(28, 26, 40)
 
-	self.scrollFactor = {x = 0, y = 0}
+	self.scrollFactor:zero()
 
 	self.pressed = false
 	self.pressedAlpha = 1
@@ -167,13 +167,13 @@ local keys, sc = {}, {}
 function VirtualPad._press(key, time)
 	local code = love.keyboard.getScancodeFromKey(key)
 	keys[key], sc[code] = true, true
-	love.keypressed(key, code, false, time)
+	love.event.push("keypressed", key, code, false, time)
 end
 
 function VirtualPad._release(key, time)
 	local code = love.keyboard.getScancodeFromKey(key)
 	keys[key], sc[code] = false, false
-	love.keyreleased(key, code, time)
+	love.event.push("keyreleased", key, code, time)
 end
 
 local _ogIsDown = love.keyboard.isDown

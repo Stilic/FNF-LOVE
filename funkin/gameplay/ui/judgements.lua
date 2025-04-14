@@ -7,23 +7,15 @@ function Judgements:new(x, y, skin)
 	self.ratingVisible = true
 	self.comboNumVisible = true
 
-	self.skin = skin or "default"
-	self.antialiasing = not skin:endsWith("-pixel")
+	self.skin = skin
+	self.antialiasing = not skin.isPixel
 
 	self.noStack = false
 end
 
-function Judgements:precache(ratings)
-	local path = "skins/" .. self.skin .. "/"
-	for _, r in ipairs(ratings) do paths.getImage(path .. r.name) end
-	for _, num in ipairs({"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "negative"}) do
-		paths.getImage(path .. "num" .. num)
-	end
-end
-
 function Judgements:createSprite(name, scale, duration)
 	local sprite = self:recycle()
-	sprite:loadTexture(paths.getImage("skins/" .. self.skin .. "/" .. name))
+	sprite:loadTexture(PlayState.SONG.skin:get(name, "image"))
 	sprite:setGraphicSize(math.floor(sprite.width * scale))
 	sprite.x, sprite.y = 0, 0
 	sprite:updateHitbox()

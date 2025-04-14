@@ -39,6 +39,8 @@ Throttle = require "funkin.backend.throttle"
 Mods = require "funkin.backend.modding.mods"
 Addons = require "funkin.backend.modding.addons"
 
+Skin = require "funkin.backend.skin"
+
 if love.system.getDevice() == "Desktop" then
 	Discord = require "funkin.backend.discord"
 end
@@ -66,6 +68,7 @@ Stickers = require "funkin.ui.stickers"
 
 StatsCounter = require "funkin.ui.statscounter"
 
+LoadState = require 'funkin.states.load'
 CalibrationState = require 'funkin.states.calibration'
 UpdateState = require 'funkin.states.update'
 CreditsState = require "funkin.states.credits"
@@ -143,7 +146,9 @@ function funkin.load()
 
 	game.onPreStateEnter = function(state)
 		-- GlobalScripts.call("preStateEnter", state)
-		if paths and getmetatable(state) ~= getmetatable(game.getState()) then
+		if paths and tostring(game.getState()) ~= "LoadState" and getmetatable(state) ~= getmetatable(game.getState())
+			then
+			print "cache clear"
 			paths.clearCache()
 		end
 		Shader.clear()
@@ -182,6 +187,7 @@ function funkin.load()
 end
 
 function funkin.update(dt)
+	paths.threadLoad.update(dt)
 	controls:update()
 	Throttle:update(dt)
 	Shader.updateTime(dt)

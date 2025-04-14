@@ -3,6 +3,18 @@ local BackgroundGirls = require "backgroundgirls"
 local bgGirls
 local floor = math.floor
 
+function preload()
+	return {
+	    {"image", SCRIPT_PATH .. "weebSky"},
+	    {"image", SCRIPT_PATH .. "bgFreaks"},
+	    {"image", SCRIPT_PATH .. "weebSchool"},
+	    {"image", SCRIPT_PATH .. "weebStreet"},
+	    {"image", SCRIPT_PATH .. "weebTreesBack"},
+	    {"image", SCRIPT_PATH .. "weebTrees"},
+	    {"image", SCRIPT_PATH .. "petals"}
+	}
+end
+
 function create()
 	camZoom = 1
 
@@ -16,6 +28,8 @@ function create()
 
 	boyfriendCam = {x = 85, y = 100}
 	dadCam = {x = -75, y = 150}
+	gfCam.x = gfCam.x + 40
+	gfCam.y = gfCam.y - 4
 
 	local bgSky = Sprite()
 	bgSky:loadTexture(paths.getImage(SCRIPT_PATH .. 'weebSky'))

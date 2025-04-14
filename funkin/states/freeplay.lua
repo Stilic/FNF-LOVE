@@ -105,7 +105,7 @@ function FreeplayState:openSong(song)
 		PlayState.storyDifficulty = diff
 		game.switchState(ChartingState())
 	else
-		game.switchState(PlayState(false, song.songName, diff))
+		game.switchState(LoadState(PlayState(nil, song.songName, diff)))
 	end
 end
 
@@ -113,7 +113,7 @@ function FreeplayState:update(dt)
 	self.script:call("update", dt)
 	if self.notCreated then
 		FreeplayState.super.update(self, dt)
-		self.script:call("postUpdate")
+		self.script:call("postUpdate", dt)
 		return
 	end
 

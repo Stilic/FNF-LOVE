@@ -2,7 +2,16 @@
   "name": "contributors",
   "artist": "Victor Kaoy",
   "stickers": {
-    "all": ["stilicSticker", "raltySticker", "kaoySticker", "fowluhhSticker", "fellynSticker", "blueSticker"]
+    "all": [
+      "stilicSticker",
+      "raltySticker",
+      "kaoySticker",
+      "fowluhhSticker",
+      "fellynSticker",
+      "blueSticker",
+      "tprsSticker",
+      "meepSticker"
+    ]
   },
   "stickerPacks": {
     "all": ["all"]

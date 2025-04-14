@@ -14,8 +14,8 @@ function Graphic:new(x, y, width, height, color, type, fill, lined)
 
 	self.config = {
 		type = "open",
-		angle = {0, 360},
-		round = {0, 0},
+		angle = Point(0, 360),
+		round = Point(),
 		segments = 36,
 		vertices = {}
 	}

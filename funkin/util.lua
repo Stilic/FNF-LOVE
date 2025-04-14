@@ -1,9 +1,7 @@
 local util = {}
 
 function util.getSongSkin(song)
-	if song.meta and song.meta.skin then
-		return paths.getSkin(song.meta.skin).skin
-	elseif song.skin then
+	if song.skin then
 		return paths.getSkin(song.skin).skin
 	end
 	return "default"

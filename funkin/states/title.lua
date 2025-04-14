@@ -75,15 +75,16 @@ function TitleState:enter()
 		TitleState.initialized = true
 	end
 
-	self.conductor = Conductor(102)
-	self.conductor.onBeat = bind(self, self.beat)
-	util.playMenuMusic(true)
+	self.conductor = Conductor()
+	self.conductor.onBeat:add(bind(self, self.beat))
+	self.conductor:forceBPM(102)
 
 	if love.system.getDevice() == "Mobile" then
 		self:add(VirtualPad("return", 0, 0, game.width, game.height, false))
 	end
 
 	TitleState.super.enter(self)
+	util.playMenuMusic(true)
 
 	self.script:call("postCreate")
 end
@@ -104,8 +105,7 @@ function TitleState:update(dt)
 		return
 	end
 
-	self.conductor.time = game.sound.music:tell() * 1000
-	self.conductor:update(dt)
+	self.conductor:update()
 
 	if love.system.getDevice() == "Mobile" and game.keys.justPressed.ESCAPE then
 		local name = love.window.getTitle()

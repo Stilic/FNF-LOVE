@@ -8,6 +8,26 @@ local tankSpeed = love.math.random(5, 7)
 local tankmanRun
 local fgSprites
 
+function preload()
+	local assets = {
+	    {"image", SCRIPT_PATH .. "tankSky"},
+	    {"image", SCRIPT_PATH .. "tankClouds"},
+	    {"image", SCRIPT_PATH .. "tankMountains"},
+	    {"image", SCRIPT_PATH .. "tankBuildings"},
+	    {"image", SCRIPT_PATH .. "tankRuins"},
+	    {"image", SCRIPT_PATH .. "tankGround"},
+	    {"image", SCRIPT_PATH .. "smokeLeft"},
+	    {"image", SCRIPT_PATH .. "smokeRight"},
+	    {"image", SCRIPT_PATH .. "tankWatchtower"},
+	    {"image", SCRIPT_PATH .. "tankRolling"},
+	}
+	for i = 0, 5 do
+	    table.insert(assets, {"image", SCRIPT_PATH .. "tank" .. i})
+	end
+
+	return assets
+end
+
 function create()
 	self.camZoom = 0.9
 

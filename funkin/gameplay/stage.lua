@@ -1,5 +1,18 @@
 local Stage = Group:extend("Stage")
 
+function Stage.preload(name)
+	if name ~= "" then
+		local path = "stages/" .. name
+		local script = Script("data/" .. path)
+		script:set("SCRIPT_PATH", path .. "/")
+		local list = script:call("preload")
+		if list and type(list) == "table" then
+			paths.threadLoad.add(list)
+		end
+		script:close()
+	end
+end
+
 function Stage:new(name)
 	Stage.super.new(self)
 
@@ -20,8 +33,8 @@ function Stage:new(name)
 	if name ~= "" then
 		local path = "stages/" .. name
 		self.script = Script("data/" .. path)
-		self.script:linkObject(self)
 		self.script:set("SCRIPT_PATH", path .. "/")
+		self.script:linkObject(self)
 		self.script:set("self", self)
 
 		self.script:call("create")

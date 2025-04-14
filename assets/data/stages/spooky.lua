@@ -70,6 +70,14 @@ local function lightingAnimation()
 	end)
 end
 
+function preload()
+	return {
+	    {"image", SCRIPT_PATH .. "window"},
+	    {"image", SCRIPT_PATH .. "bg_shadows"},
+	    {"image", SCRIPT_PATH .. "windowReflect"},
+	}
+end
+
 function create()
 	self.dadCam.y = 34
 
@@ -88,6 +96,9 @@ function create()
 	windowBlend.blend = "add"
 	windowBlend.alpha = 0.22
 	self:add(windowBlend)
+	windowBlend.shaderObj = Shader("rain")
+	windowBlend.shader = windowBlend.shaderObj:get()
+	windowBlend.shaderObj.resolution = {windowBlend.texture:getDimensions()}
 
 	back = Sprite(-200, -100, paths.getImage(SCRIPT_PATH .. "bg_shadows"))
 	back.shaderObj = Shader("csb")

@@ -197,6 +197,8 @@ end
 local Gamestate = loxreq "lib.gamestate"
 Classic = loxreq "lib.classic"
 
+Point = loxreq "util.point"
+
 Basic = loxreq "basic"
 Object = loxreq "object"
 Sound = loxreq "sound"
@@ -478,9 +480,9 @@ function game.__popBoundScissor()
 end
 
 function game.draw()
+	local grap, w, h = love.graphics, game.width, game.height
 	Gamestate.draw()
 
-	local grap, w, h = love.graphics, game.width, game.height
 	local winW, winH = grap.getDimensions()
 	local scale, xc, yc, wc, hc = math.min(winW / w, winH / h), grap.getScissor()
 

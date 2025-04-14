@@ -75,9 +75,7 @@ function ModsState:enter()
 	self.descBG.config.round = {18, 18}
 	self.cardGroup:add(self.descBG)
 
-	self.desc = Text(20, 0, "", paths.getFont("vcr.ttf", 24),
-		Color.WHITE, "left", 806)
-	self.desc.antialiasing = false
+	self.desc = AtlasText(20, 0, "", AtlasText.getFont("default-white", 0.38), 806)
 	self.cardGroup:add(self.desc)
 
 	self.versionBox = Graphic(0, 0, 836, 50)
@@ -296,7 +294,7 @@ function ModsState:reloadInfo(addons, tab)
 	self.banner:setGraphicSize(836)
 	self.banner:updateHitbox()
 
-	self.desc.content = meta.description
+	self.desc.text = meta.description
 
 	local y = self.banner.y + self.banner.height + 10
 	local h = game.height - self.banner.height - 100

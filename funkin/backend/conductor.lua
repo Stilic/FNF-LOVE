@@ -1,350 +1,191 @@
----@class Conductor:Classic
 local Conductor = Classic:extend("Conductor")
 
--- ITS NOT CROCHET
--- ITS CROTCHET!!!!
--- DONT LET FNF BRAINROTS YOU
--- TODO: make conductor on normal second instead of ms
+local setter = {
+	__index = function(s, k)
+		return k == "i" and math.floor(s[1]) or s[1]
+	end,
+	__newindex = function(s, _, v) s[1] = v; return end
+}
+local function make() return setmetatable({0}, setter) end
 
-function Conductor.calculateCrotchet(bpm) return (60 / bpm) * 1000 end
-
-function Conductor.sortByTime(a, b) return a.time < b.time end
-
-function Conductor.sortBySection(a, b) return a.section < b.section end
-
-function Conductor.getDummyBPMChange(bpm)
-	if type(bpm) == "table" then bpm = bpm.bpm end
-	return {
-		time = 0,
-		step = 0,
-		bpm = bpm,
-		stepCrotchet = Conductor.calculateCrotchet(bpm) / 4,
-		id = 0 -- is calculated in mapBPMChangeFromSong(), sortBPMChanges()
-	}
+function Conductor:new(timeChanges)
+	self.onMeasure, self.onBeat, self.onStep, self.onTimeChange = Signal(), Signal(), Signal(), Signal()
+	self.measure, self.beat, self.step = make(), make(), make()
+	self.time, self.prevTime, self.bpmOverride = 0, 0
+	self:mapTimeChanges(timeChanges or {})
 end
 
-function Conductor.getDummySectionChange(beats)
-	if type(beats) == "table" then beats = beats.beats end
-	return {
-		section = 0,
-		beats = beats,
-		id = 0 -- is calculated in getSectionChangesFromSong()
-	}
+function Conductor:getBPM(initial)
+	if self.bpmOverride then return self.bpmOverride end
+	if initial then return self.timeChanges[1] and self.timeChanges[1].bpm or 100 end
+	return self.curTimeChange and self.curTimeChange.bpm or self.startBPM
 end
 
-function Conductor.newBPMChanges(bpm, list)
-	list = list or {}; table.clear(list)
-	list[0] = Conductor.getDummyBPMChange(bpm)
-	return list
+function Conductor:getSemiquaver() return (self.crotchet or 1000) / (self.timeSignNum or 4) end
+
+function Conductor:getCrotchet() return (60 / self.bpm) * 1000 end
+
+function Conductor:getSemibreve() return self.crotchet * self.timeSignNum end
+
+function Conductor:getTimeSign(num)
+	return num and (self.curTimeChange and self.curTimeChange.n or 4) or
+		self.curTimeChange and self.curTimeChange.d or 4
 end
 
-function Conductor.newSectionChanges(beats, list)
-	list = list or {}; table.clear(list)
-	list[0] = Conductor.getDummySectionChange(beats)
-	return list
+function Conductor:getBeatsPerMeasure() return self.stepsPerMeasure / 4 end
+
+function Conductor:getStepsPerMeasure()
+	return math.floor((self.timeSignNum or 4) / (self.timeSignDen or 4) * 4 * 4)
 end
 
--- function Conductor.getSectionChangesFromSong(song, sectionChanges)
--- 	local beats, total = song.beats or 4, 0
--- 	local prev = beats
--- 	sectionChanges = Conductor.newSectionChanges(beats, sectionChanges)
+function Conductor:forceBPM(bpm) self.bpmOverride = bpm end
 
--- 	for i, v in ipairs(song.notes) do
--- 		if v.sectionBeats ~= nil then
--- 			beats = v.sectionBeats
--- 		else
--- 			beats = 4
--- 		end
--- 		if prev ~= beats then
--- 			prev, total = beats, total + 1
--- 			table.insert(sectionChanges, {
--- 				section = i,
--- 				beats = beats,
--- 				id = total
--- 			})
--- 		end
--- 	end
+function Conductor:update(songPos)
+	self.prevTime = self.time
 
--- 	return sectionChanges
--- end
-
-function Conductor.sortBPMChanges(bpmChanges)
-	table.sort(bpmChanges, Conductor.sortByTime)
-	for i = 1, #bpmChanges do bpmChanges[i].id = i end
-end
-
-function Conductor.getBPMChangeFromIndex(bpmChanges, index)
-	index = math.min(index or 0, #bpmChanges)
-
-	local lastChange = bpmChanges[index]
-	if lastChange == nil then
-		return bpmChanges[0]
-	elseif lastChange.id == index then
-		return lastChange
+	self.time = songPos or self.time
+	if self.time >= 0 then
+		songPos = game.sound.music and game.sound.music:tell() * 1000 or 0
 	end
 
-	Conductor.sortBPMChanges(bpmChanges); lastChange = bpmChanges[index]
-	return lastChange or bpmChanges[0]
-end
+	local oldm, oldb, olds = self.measure.i, self.beat.i, self.step.i
 
-function Conductor.sortSectionChanges(sectionChanges)
-	table.sort(sectionChanges, Conductor.sortBySection)
-	for i = 1, #sectionChanges do sectionChanges[i].id = i end
-end
-
-function Conductor.getSectionChangeFromIndex(sectionChanges, index)
-	index = math.min(index or 0, #sectionChanges)
-
-	local lastChange = sectionChanges[index]
-	if lastChange == nil then
-		return sectionChanges[0]
-	elseif lastChange.id == index then
-		return lastChange
-	end
-
-	Conductor.sortSectionChanges(sectionChanges); lastChange = sectionChanges[index]
-	return lastChange or sectionChanges[0]
-end
-
-function Conductor.getBPMChangeFromTime(bpmChanges, time, from)
-	local size = #bpmChanges
-	if size == 0 or time < bpmChanges[1].time then
-		return bpmChanges[0]
-	elseif time >= bpmChanges[size].time then
-		return bpmChanges[size]
-	end
-
-	local lastChange = Conductor.getBPMChangeFromIndex(bpmChanges, from)
-	local reverse = lastChange.time > time
-	from = lastChange.id
-
-	local i, v = from < 1 and (reverse and size or 1) or from + (reverse and -1 or 1)
-	while reverse and i > 0 or i <= size do
-		v = bpmChanges[i]
-		if v.id ~= i then
-			Conductor.sortBPMChanges(bpmChanges)
-			return Conductor.getBPMChangeFromTime(bpmChanges, time, i)
+	self.curTimeChange = self.timeChanges[1]
+	if songPos > 0 then
+		for i = 1, #self.timeChanges do
+			if songPos >= self.timeChanges[i].t then
+				self.curTimeChange = self.timeChanges[i]
+				
+			end
+			if songPos < self.timeChanges[i].t then
+				break
+			end
 		end
-		if reverse then if v.time <= time then break end elseif v.time > time then break end
-		lastChange, i = v, reverse and i - 1 or i + 1
-	end
-	return lastChange
-end
-
-function Conductor.getBPMChangeFromStep(bpmChanges, step, from)
-	local size = #bpmChanges
-	if size == 0 or step < bpmChanges[1].step then
-		return bpmChanges[0]
-	elseif step >= bpmChanges[size].step then
-		return bpmChanges[size]
 	end
 
-	local lastChange = Conductor.getBPMChangeFromIndex(bpmChanges, from)
-	local reverse = lastChange.step > step
-	from = lastChange.id
-
-	local i, v = from < 1 and (reverse and size or 1) or from + (reverse and -1 or 1)
-	while reverse and i > 0 or i <= size do
-		v = bpmChanges[i]
-		if v.id ~= i then
-			Conductor.sortBPMChanges(bpmChanges)
-			return Conductor.getBPMChangeFromStep(bpmChanges, step, i)
-		end
-		if reverse then if v.step <= step then break end elseif v.step > step then break end
-		lastChange, i = v, reverse and i - 1 or i + 1
+	if self.curTimeChange and songPos > 0 then
+		self.step.f = ((self.curTimeChange.b or 0) * 4) +
+			(songPos - (self.curTimeChange.t or 4)) / self.stepCrotchet
+	else
+		self.step.f = songPos / self.stepCrotchet
 	end
-	return lastChange
+	self.beat.f = self.step.f / 4
+	self.measure.f = self.step.f / self.stepsPerMeasure
+
+	if self.step.i ~= olds then self.onStep:dispatch(self.step.i) end
+	if self.beat.i ~= oldb then self.onBeat:dispatch(self.beat.i) end
+	if self.measure.i ~= oldm then self.onMeasure:dispatch(self.measure.i) end
 end
 
-function Conductor.getSectionChange(sectionChanges, section, from)
-	local size = #sectionChanges
-	if size == 0 or section < sectionChanges[1].section then
-		return sectionChanges[0]
-	elseif section >= sectionChanges[size].section then
-		return sectionChanges[size]
-	end
+function Conductor:mapTimeChanges(timeChanges)
+	self.timeChanges = {}
 
-	local lastChange = Conductor.getSectionChangeFromIndex(sectionChanges, from)
-	local reverse = lastChange.section > section
-	from = lastChange.id
+	for _, time in ipairs(timeChanges) do
+		if time.t < 0 then time.t = 0 end
 
-	local i, v = from < 1 and (reverse and size or 1) or from + (reverse and -1 or 1)
-	while reverse and i > 0 or i <= size do
-		v = sectionChanges[i]
-		if v.id ~= i then
-			Conductor.sortSectionChanges(sectionChanges)
-			return Conductor.getSectionChange(sectionChanges, section, i)
-		end
-		if reverse then if v.section <= section then break end elseif v.section > section then break end
-		lastChange, i = v, reverse and i - 1 or i + 1
-	end
-	return lastChange
-end
-
-function Conductor.stepToTimeFromBPMChange(bpmChange, step, offset)
-	return bpmChange.time + (step - bpmChange.step - offset) * bpmChange.stepCrotchet
-end
-
-function Conductor.stepToTime(bpmChanges, step, offset, from)
-	return Conductor.stepToTimeFromBPMChange(Conductor.getBPMChangeFromStep(bpmChanges, step, from), step, offset)
-end
-
-function Conductor.beatToTimeFromBPMChange(bpmChange, beat, offset)
-	return Conductor.stepToTimeFromBPMChange(bpmChange, beat * 4, offset * 4)
-end
-
-function Conductor.beatToTime(bpmChanges, beat, offset, from)
-	return Conductor.stepToTime(bpmChanges, beat * 4, offset * 4, from)
-end
-
-function Conductor.getStepFromBPMChange(bpmChange, time, offset)
-	return bpmChange.step + (time - bpmChange.time - offset) / bpmChange.stepCrotchet
-end
-
-function Conductor.getStep(bpmChanges, time, offset, from)
-	return Conductor.getStepFromBPMChange(Conductor.getBPMChangeFromTime(bpmChanges, time, from), time, offset)
-end
-
-function Conductor.getBeatFromBPMChange(bpmChange, time, offset)
-	return Conductor.getStepFromBPMChange(bpmChange, time, offset, from) / 4
-end
-
-function Conductor.getBeat(bpmChanges, time, offset, from)
-	return Conductor.getStep(bpmChanges, time, offset, from) / 4
-end
-
-function Conductor:new(bpm)
-	self:setBPM(bpm or 120)
-
-	self.time = 0
-	self.offset = 0
-
-	self.currentStepFloat, self.currentStep = 0, 0
-	self.currentBeatFloat, self.currentBeat = 0, 0
-	self.currentSectionFloat, self.currentSection = 0, 0
-
-	self.lastStepFloat, self.lastStep = 0, 0
-	self.lastBeatFloat, self.lastBeat = 0, 0
-	self.lastSectionFloat, self.lastSection = 0, 0
-
-	self.stepsToDo, self.stepsOnSection = 0, 0
-	self.passedSections, self.currentSectionChange = {}, nil
-	self.currentBPMChange = nil
-end
-
-function Conductor:setBPM(bpm, bpmChanges, sectionChanges)
-	self.bpm = bpm
-	self.bpmChanges = bpmChanges or Conductor.newBPMChanges(bpm, self.bpmChanges)
-	self.sectionChanges = sectionChanges or Conductor.newSectionChanges(4, self.sectionChanges)
-
-	self.beats = self.sectionChanges[0] and self.sectionChanges[0].beats or 4
-	self.dummyBPMChange = self:getDummyBPMChange()
-	self.dummySectionChange = self:getDummySectionChange()
-
-	self.crotchet = Conductor.calculateCrotchet(bpm)
-	self.stepCrotchet = self.crotchet / 4
-
-	return self
-end
-
-function Conductor:setSong(song)
-	self:setBPM(song.bpm,
-		song.bpmChanges
-	-- Conductor.getSectionChangesFromSong(song, self.sectionChanges)
-	)
-
-	return self
-end
-
-function Conductor:update()
-	self.lastStepFloat, self.lastStep = self.currentStepFloat, self.currentStep
-	self.lastBeatFloat, self.lastBeat = self.currentBeatFloat, self.currentBeat
-	self.lastSectionFloat, self.lastSection = self.currentSectionFloat, self.currentSection
-
-	local time, bpmChange = self.time - self.offset, self.currentBPMChange
-	bpmChange = Conductor.getBPMChangeFromTime(self.bpmChanges, time,
-		bpmChange == nil and 0 or bpmChange.id) or self.dummyBPMChange
-
-	self.currentBPMChange = bpmChange
-	self.currentStepFloat = Conductor.getStepFromBPMChange(bpmChange, time, 0)
-	self.currentStep = math.floor(self.currentStepFloat)
-
-	self.currentBeatFloat = self.currentStepFloat / 4
-	self.currentBeat = math.floor(self.currentBeatFloat)
-
-	if self.lastStep ~= self.currentStep then
-		self:__step()
-		if self.currentStep > self.lastStep then
-			self:updateSection()
+		if time.t <= 0 then
+			time.b = 0
 		else
-			self:rollbackSection()
+			time.b = 0
+			if time.t > 0 and #self.timeChanges > 0 then
+				local prevTime = self.timeChanges[#self.timeChanges]
+				time.b = math.truncate(prevTime.b
+					+ ((time.t - prevTime.t) * prevTime.bpm
+					/ 60 / 1000), 4)
+			end
 		end
+		table.insert(self.timeChanges, time)
 	end
 end
 
--- need a fucking rewrite lmao
-function Conductor:updateSection(dontHit)
-	local sectionChange, passedSections = self.currentSectionChange, self.passedSections
-	if self.stepsToDo <= 0 then
-		sectionChange, self.currentSection = self.dummySectionChange, 0
-		self.stepsOnSection = sectionChange.beats * 4
-		self.stepsToDo = self.stepsOnSection
-	end
+function Conductor:getTimeInSteps(ms)
+	if #self.timeChanges == 0 then
+		return math.floor(ms / self.stepCrotchet)
+	else
+		local resultStep = 0
 
-	while self.currentStep >= self.stepsToDo do
-		table.insert(passedSections, self.stepsToDo)
-
-		self.currentSection = #passedSections
-		self.currentSectionFloat = self.currentSection
-		sectionChange = Conductor.getSectionChange(self.sectionChanges, self.currentSection + 1,
-			sectionChange == nil and 0 or sectionChange.id) or self.dummySectionChange
-
-		self.stepsOnSection = sectionChange.beats * 4
-		self.stepsToDo = self.stepsToDo + self.stepsOnSection
-		if not dontHit then
-			self.currentSectionChange = sectionChange
-			if self.onSection then self.onSection(self.currentSection) end
+		local lastTimeChange = self.timeChanges[1]
+		for _, timeChange in ipairs(self.timeChanges) do
+			if ms >= timeChange.t then
+				lastTimeChange = timeChange
+				resultStep = lastTimeChange.b * 4
+			else
+				break
+			end
 		end
-	end
+		local lastStepCrotchet = ((60 / lastTimeChange.bpm) * 1000) / self.timeSignNum
+		local resultFracStep = (ms - lastTimeChange.t) / lastStepCrotchet
+		resultStep = resultStep + resultFracStep
 
-	self.currentSectionChange = sectionChange
-	self.currentSectionFloat = self.currentSection +
-		(self.currentStepFloat - (passedSections[self.currentSection - 1] or -self.stepsOnSection))
-		/ self.stepsOnSection
-end
-
-function Conductor:rollbackSection()
-	if self.currentStep <= 0 then
-		self.stepsToDo = 0
-		self:updateSection()
-		if self.onSection and self.currentBeat < 1 and self.currentSection ~= self.lastSection then
-			self.onSection(self.currentSection)
-		end
-		return
-	end
-
-	local newSection = #self.passedSections
-	while newSection > 1 and (self.passedSections[self.currentSection - 1] and
-			self.currentStep < self.passedSections[self.currentSection - 1]) do
-		stepsToDo = table.remove(self.passedSections)
-		newSection = newSection - 1
-	end
-
-	if self.onSection and self.currentSection > self.lastSection then
-		self.onSection(self.currentSection)
+		return resultStep
 	end
 end
 
-function Conductor:__step()
-	--[[print(
-		self.currentStep, self.currentBPMChange.id, #self.bpmChanges,
-		(self.bpmChanges[self.currentBPMChange.id + 1] or self.currentBPMChange).step
-	)]]
+function Conductor:getStepTimeInMs(stepTime)
+	if #self.timeChanges == 0 then
+		return stepTime * self.stepCrotchet
+	else
+		local resultMs = 0
 
-	if self.onStep then self.onStep(self.currentStep) end
-	if self.onBeat and self.lastBeat ~= self.currentBeat then
-		self.onBeat(self.currentBeat)
+		local lastTimeChange = self.timeChanges[1]
+		for _, timeChange in ipairs(self.timeChanges) do
+			if stepTime >= timeChange.b * 4 then
+				lastTimeChange = timeChange
+				resultMs = lastTimeChange.t
+			else
+				break
+			end
+		end
+		local lastStepCrotchet = ((60 / lastTimeChange.bpm) * 1000) / self.timeSignNum
+		resultMs = resultMs + (stepTime - lastTimeChange.b * 4) * lastStepCrotchet
+
+		return resultMs
 	end
+end
+
+function Conductor:getBeatTimeInMs(beatTime)
+	if #self.timeChanges == 0 then
+		return beatTime * self.stepCrotchet * 4
+	else
+		local resultMs = 0
+
+		local lastTimeChange = self.timeChanges[1]
+		for _, timeChange in ipairs(self.timeChanges) do
+			if beatTime >= timeChange.b then
+				lastTimeChange = timeChange
+				resultMs = lastTimeChange.t
+			else
+				break
+			end
+		end
+
+		local lastStepCrotchet = ((60 / lastTimeChange.bpm) * 1000) / self.timeSignNum
+		resultMs = resultMs + (beatTime - lastTimeChange.b) * lastStepCrotchet * 4
+
+		return resultMs
+	end
+end
+
+local redirect = {
+	bpm = "getBPM",
+	startBPM = function(s) return s:getBPM(true) end,
+	crotchet = "getCrotchet",
+	stepCrotchet = "getSemiquaver",
+	measureCrotchet = "getSemibreve",
+	timeSignNum = function(s) return s:getTimeSign(true) end,
+	timeSignDen = "getTimeSign",
+	beatsPerMeasure = "getBeatsPerMeasure",
+	stepsPerMeasure = "getStepsPerMeasure"
+}
+for _, n in pairs({"measure", "beat", "step"}) do
+	redirect["current" .. n:capitalize()] = function(s) return s[n].i end
+	redirect["current" .. n:capitalize() .. "Float"] = function(s) return s[n].f end
+end
+
+function Conductor:__index(k)
+	local g = redirect[k]
+	return g and (type(g) == "function" and g(self) or self[g](self)) or
+		rawget(self, k) or Conductor[k]
 end
 
 return Conductor
