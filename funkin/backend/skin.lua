@@ -13,14 +13,15 @@ local Skin = Classic:extend("Skin")
 function Skin:new(name)
 	local s, d = pcall(paths.getJSON, "data/skins/" .. name)
 
-	if s and d then
+	if s and d ~= nil then
 		self.data = d
 		self.data.skin = self.data.skin or name
-		self.skin = self.data.skin
 	else
 		self.data = paths.getJSON("data/skins/default" ..
-			name:endsWith("-pixel") and "-pixel" or "")
+			(name:endsWith("-pixel") and "-pixel" or ""))
+		self.data.skin = name:endsWith("-pixel") and "default-pixel" or "default"
 	end
+	self.skin = self.data.skin
 	self.isPixel = self.skin:endsWith("-pixel")
 end
 

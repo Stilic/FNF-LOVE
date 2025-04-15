@@ -77,11 +77,9 @@ function PlayState:new(storyMode, song, diff)
 end
 
 function PlayState:preload()
-	print(type(PlayState.SONG.skin))
-	if type( PlayState.SONG.skin ) == "table" then PlayState.SONG.skin = PlayState.SONG.skin.skin end
 	local skin = paths.getSkin(PlayState.SONG.skin or "default")
-
 	PlayState.SONG.skin = skin
+
 	local function skinPath(type, name) return {type, skin:getPath(name, type)} end
 	local song = paths.formatToSongPath(PlayState.SONG.song)
 	local diff = "-" .. PlayState.songDifficulty:lower()
@@ -158,6 +156,11 @@ function PlayState:enter()
 	if PlayState.SONG == nil then PlayState.loadSong("test") end
 
 	local songName = paths.formatToSongPath(PlayState.SONG.song)
+
+	if type(PlayState.SONG.skin) == "string" then
+		PlayState.SONG.skin = paths.getSkin(PlayState.SONG.skin)
+	end
+	local skin = PlayState.SONG.skin
 
 	local difficulty = PlayState.songDifficulty:lower()
 	if game.sound.music then game.sound.music:reset(true) end
@@ -357,7 +360,6 @@ function PlayState:enter()
 	self.countdown:screenCenter()
 	self:add(self.countdown)
 
-	local skin = PlayState.SONG.skin
 	local isPixel = skin.isPixel
 	local event = self.scripts:event("onCountdownCreation",
 		Events.CountdownCreation({}, isPixel and {x = 7, y = 7} or {x = 1, y = 1}, not isPixel))

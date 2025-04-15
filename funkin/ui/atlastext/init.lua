@@ -278,7 +278,6 @@ function AtlasText:__render(camera)
 	love.graphics.setBlendMode(self.blend)
 	love.graphics.setShader(self.shader)
 
-	love.graphics.rectangle("line", x, y, self.limit > 0 and self.limit or self.width, self.height)
 	love.graphics.draw(self.batch, x, y, rad, sx, sy, ox, oy)
 
 	texture:setFilter(min, mag, anisotropy)
