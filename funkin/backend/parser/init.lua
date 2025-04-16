@@ -1,5 +1,6 @@
 local chart = require "funkin.backend.parser.chart"
 local character = require "funkin.backend.parser.character"
+local stage = require "funkin.backend.parser.stage"
 
 local Parser = {}
 
@@ -128,6 +129,39 @@ function Parser.getDummyChar()
 		antialiasing = true,
 		scale = 1
 	}
+end
+
+function Parser.getDummyStage()
+	return {
+		name = "Stage",
+		cameraZoom = 1.0,
+		props = {},
+		characters = {
+			bf = {
+				zIndex = 0,
+				position = {0, 0},
+				cameraOffsets = {0, 0}
+			},
+			dad = {
+				zIndex = 0,
+				position = {0, 0},
+				cameraOffsets = {0, 0}
+			},
+			gf = {
+				zIndex = 0,
+				position = {0, 0},
+				cameraOffsets = {0, 0}
+			}
+		},
+		version = "1.0.0"
+	}
+end
+
+function Parser.getStage(stageName)
+	local data = stage.get(stageName)
+	if not data then data = stage.get("stage") end
+
+	return stage.getParser(data).parse(data)
 end
 
 return Parser
