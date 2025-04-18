@@ -8,7 +8,7 @@
       "animType": "sparrow",
       "name": "backDark",
       "isPixel": false,
-      "assetPath": "erect/backDark",
+      "assetPath": "backDark",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []
@@ -21,14 +21,14 @@
       "animType": "sparrow",
       "name": "brightLightSmall",
       "isPixel": false,
-      "assetPath": "erect/brightLightSmall",
+      "assetPath": "brightLightSmall",
       "scroll": [1.2, 1.2],
       "alpha": 1,
       "animations": []
     },
     {
       "name": "crowd",
-      "assetPath": "erect/crowd",
+      "assetPath": "crowd",
       "position": [560, 290],
       "scale": [1, 1],
       "scroll": [0.8, 0.8],
@@ -54,7 +54,7 @@
       "animType": "sparrow",
       "name": "bg",
       "isPixel": false,
-      "assetPath": "erect/bg",
+      "assetPath": "bg",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []
@@ -67,7 +67,7 @@
       "animType": "sparrow",
       "name": "server",
       "isPixel": false,
-      "assetPath": "erect/server",
+      "assetPath": "server",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []
@@ -80,7 +80,7 @@
       "animType": "sparrow",
       "name": "lights",
       "isPixel": false,
-      "assetPath": "erect/lights",
+      "assetPath": "lights",
       "scroll": [1.2, 1.2],
       "alpha": 1,
       "animations": []
@@ -93,7 +93,7 @@
       "animType": "sparrow",
       "name": "orangeLight",
       "isPixel": false,
-      "assetPath": "erect/orangeLight",
+      "assetPath": "orangeLight",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []
@@ -106,7 +106,7 @@
       "animType": "sparrow",
       "name": "lightgreen",
       "isPixel": false,
-      "assetPath": "erect/lightgreen",
+      "assetPath": "lightgreen",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []
@@ -119,7 +119,7 @@
       "animType": "sparrow",
       "name": "lightred",
       "isPixel": false,
-      "assetPath": "erect/lightred",
+      "assetPath": "lightred",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []
@@ -132,7 +132,7 @@
       "animType": "sparrow",
       "name": "lightAbove",
       "isPixel": false,
-      "assetPath": "erect/lightAbove",
+      "assetPath": "lightAbove",
       "scroll": [1, 1],
       "alpha": 1,
       "animations": []

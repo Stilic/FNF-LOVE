@@ -1,6 +1,6 @@
 local f = "funkin.backend.parser.stage."
 
-local vslice = f..'vslice'
+local vslice = require(f..'vslice')
 
 local StageParse = {}
 
@@ -12,7 +12,7 @@ function StageParse.getParser(data)
 	if data.version ~= nil then
 		return vslice
 	end
-	return love
+	return false
 end
 
 return StageParse

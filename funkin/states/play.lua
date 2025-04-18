@@ -155,31 +155,47 @@ function PlayState:enter()
 	game.sound.music.onComplete = function() self:endSong() end
 
 	self.stage = Stage(PlayState.SONG.stage)
+	self.camZoom = self.stage.cameraZoom
 	self:add(self.stage)
 	self.scripts:add(self.stage.script)
 
+	local function VSlicePosition(char, pos)
+		local tbl = {}
+		tbl.x = pos.x - (char.width / 2)
+		tbl.y = pos.y - char.height
+		return tbl
+	end
+
 	local char = PlayState.SONG.gfVersion
 	if char and char ~= "" then
-		self.gf = Character(self.stage.gfPos.x, self.stage.gfPos.y,
+		self.gf = Character(0, 0,
 			char, false)
 		self.gf:setScrollFactor(0.95, 0.95)
-		self:add(self.gf)
+		--self:add(self.gf)
 		self.scripts:add(self.gf.script)
 	end
 	char = PlayState.SONG.player2
 	if char and char ~= "" then
-		self.dad = Character(self.stage.dadPos.x, self.stage.dadPos.y,
+		self.dad = Character(0, 0,
 			char, false)
-		self:add(self.dad)
+		--self:add(self.dad)
 		self.scripts:add(self.dad.script)
 	end
 	char = PlayState.SONG.player1
 	if char and char ~= "" then
-		self.boyfriend = Character(self.stage.boyfriendPos.x, self.stage.boyfriendPos.y,
+		self.boyfriend = Character(0, 0,
 			char, true)
-		self:add(self.boyfriend)
+		--self:add(self.boyfriend)
 		self.scripts:add(self.boyfriend.script)
 	end
+
+	local gfPos = VSlicePosition(self.gf, self.stage.gfPos)
+	local bfPos = VSlicePosition(self.boyfriend, self.stage.boyfriendPos)
+	local dadPos = VSlicePosition(self.dad, self.stage.dadPos)
+
+	self.gf.x = gfPos.x; self.gf.y = gfPos.y
+	self.boyfriend.x = bfPos.x; self.boyfriend.y = bfPos.y
+	self.dad.x = dadPos.x; self.dad.y = dadPos.y
 
 	if self.gf and self.dad and self.dad.char:startsWith("gf") then
 		self.gf.visible = false
@@ -187,6 +203,22 @@ function PlayState:enter()
 	end
 
 	self:add(self.stage.foreground)
+	local elements = {}
+
+	for i,prop in pairs(self.stage.props.members) do
+		table.insert(elements, {zIndex = prop.zIndex, element = prop})
+	end
+	table.insert(elements, {zIndex = self.stage.characters.bf.zIndex, element = self.boyfriend})
+	table.insert(elements, {zIndex = self.stage.characters.dad.zIndex, element = self.dad})
+	table.insert(elements, {zIndex = self.stage.characters.gf.zIndex, element = self.gf})
+
+	table.sort(elements, function(a, b) return a.zIndex < b.zIndex end)
+
+	for _, element in ipairs(elements) do
+		if element.element then
+			self:add(element.element)
+		end
+	end
 
 	self.judgeSprites = Judgements(game.width / 3, 264, PlayState.SONG.skin)
 	self:add(self.judgeSprites)

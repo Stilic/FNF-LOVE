@@ -8,6 +8,7 @@ function vslice.parse(data)
     Parser.pset(stage, "cameraZoom", data.cameraZoom)
     Parser.pset(stage, "props", data.props)
     Parser.pset(stage, "characters", data.characters)
+    Parser.pset(stage, "version", data.version)
 
     return stage
 end

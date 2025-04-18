@@ -131,6 +131,13 @@ function Parser.getDummyChar()
 	}
 end
 
+function Parser.getStage(stageName)
+	local data = stage.get(stageName)
+	if not data then data = stage.get("stage") end
+
+	return stage.getParser(data).parse(data)
+end
+
 function Parser.getDummyStage()
 	return {
 		name = "Stage",
@@ -152,16 +159,8 @@ function Parser.getDummyStage()
 				position = {0, 0},
 				cameraOffsets = {0, 0}
 			}
-		},
-		version = "1.0.0"
+		}
 	}
-end
-
-function Parser.getStage(stageName)
-	local data = stage.get(stageName)
-	if not data then data = stage.get("stage") end
-
-	return stage.getParser(data).parse(data)
 end
 
 return Parser
