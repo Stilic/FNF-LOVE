@@ -1,4 +1,5 @@
 local decodeJson = (require "lib.json").decode
+local parseXml = require "lib.xml"
 
 local paths = {
 	images = {},
@@ -153,6 +154,21 @@ function paths.getJSON(key)
 	local data = readFile(path)
 	if data then
 		local s, r = pcall(decodeJson, data)
+		if not s then
+			local err = r:gsub("^.-:%d+: ERROR: ", "")
+			error(path .. ": " .. err)
+			return
+		end
+		return r, path
+	end
+	return nil, path
+end
+
+function paths.getXML(key) -- placeholder? straight copied this from getJSON, might delete this comment
+	local path = paths.getPath(key .. ".xml")
+	local data = readFile(path)
+	if data then
+		local s, r = pcall(parseXml, data)
 		if not s then
 			local err = r:gsub("^.-:%d+: ERROR: ", "")
 			error(path .. ": " .. err)

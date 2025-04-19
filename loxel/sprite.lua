@@ -1,4 +1,4 @@
-local parseXml = loxreq "lib.xml"
+local parseXml = require "lib.xml"
 
 local function sortFramesByIndices(prefix, postfix)
 	local s, e = #prefix + 1, - #postfix - 1

@@ -8,7 +8,7 @@ local psych = require(f .. "psych")
 local codename = require(f .. "codename")
 
 function CharacterParser.get(charName)
-	return paths.getJSON("data/characters/" .. charName)
+	return paths.getJSON("data/characters/" .. charName) or paths.exists("data/characters/" .. charName .. ".xml") and paths.getXML("data/characters/" .. charName)
 end
 
 function CharacterParser.getParser(data)
@@ -16,7 +16,7 @@ function CharacterParser.getParser(data)
 		return vslice
 	elseif data.image ~= nil and data.sprite == nil then
 		return psych
-	elseif --[[todo: detect if the data is an xml]] then
+	elseif paths.exists("data/characters/" .. charName .. ".xml") then
 		return codename
 	end
 	return love
