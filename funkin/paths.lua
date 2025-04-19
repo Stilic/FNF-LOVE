@@ -1,5 +1,5 @@
 local decodeJson = (require "lib.json").decode
-local parseXml = require "lib.xml"
+local parseXml = loxreq "lib.xml"
 
 local paths = {
 	images = {},

@@ -14,6 +14,11 @@ function codename.parse(data)
                     for i = tonumber(temp[1]), tonumber(temp[2]) do
                         table.insert(indices, i)
                     end
+                else
+                    local temp2 = anim.attrs.indices:split(",")
+                    for _, i in ipairs(temp2) do
+                        table.insert(indices, tonumber(i))
+                    end
                 end
             end
 
@@ -30,16 +35,16 @@ function codename.parse(data)
         end
     end
 
-    char.position = {tonumber(data.character.attrs.x) or 0, tonumber(data.character.attrs.y) or 0}
-    char.camera_points = {tonumber(data.character.attrs.camx) or 0, tonumber(data.character.attrs.camy) or 0}
-    char.sing_duration = tonumber(data.character.attrs.holdTime) or 4
-    char.dance_beats = tonumber(data.character.attrs.interval)
+    Parser.pset(char, "position", {tonumber(data.character.attrs.x) or 0, tonumber(data.character.attrs.y) or 0})
+    Parser.pset(char, "camera_points", {tonumber(data.character.attrs.camx) or 0, tonumber(data.character.attrs.camy) or 0})
+    Parser.pset(char, "sing_duration", tonumber(data.character.attrs.holdTime) or 4)
+    Parser.pset(char, "dance_beats", tonumber(data.character.attrs.interval))
 
-    char.flip_x = data.character.attrs.flipX == "true" or false
-    char.icon = data.character.attrs.icon
-    char.sprite = data.character.attrs.sprite
-    char.antialiasing = data.character.attrs.antialiasing == "true" or true
-    char.scale = tonumber(data.character.attrs.scale)
+    Parser.pset(char, "flip_x", data.character.attrs.flipX == "true" or false)
+    Parser.pset(char, "icon", data.character.attrs.icon)
+    Parser.pset(char, "sprite", data.character.attrs.sprite)
+    Parser.pset(char, "antialiasing", data.character.attrs.antialiasing == "true" or true)
+    Parser.pset(char, "scale", tonumber(data.character.attrs.scale))
 
     char.color = data.character.attrs.color
 
