@@ -44,9 +44,11 @@ function codename.parse(data)
     Parser.pset(char, "icon", data.character.attrs.icon)
     Parser.pset(char, "sprite", data.character.attrs.sprite)
     Parser.pset(char, "antialiasing", data.character.attrs.antialiasing == "true" or true)
-    Parser.pset(char, "scale", tonumber(data.character.attrs.scale))
+    Parser.pset(char, "scale", tonumber(data.character.attrs.scale) or 1)
 
-    char.color = data.character.attrs.color
+	if data.character.attrs.color ~= nil then
+    	char.color = data.character.attrs.color
+	end
 
     return char
 end
