@@ -26,7 +26,7 @@ function psych.parse(data)
         char.color = string.format("#%02x%02x%02x",
             data.healthbar_colors[1],
             data.healthbar_colors[2],
-            data.healthbar_colors[3],
+            data.healthbar_colors[3]
         )
     end
 
