@@ -30,18 +30,18 @@ function codename.parse(data)
         end
     end
 
-    char.position = {tonumber(data.attrs.x) or 0, tonumber(data.attrs.y) or 0}
-    char.camera_points = {tonumber(data.attrs.camx) or 0, tonumber(data.attrs.camy) or 0}
-    char.sing_duration = tonumber(data.attrs.holdTime) or 4
-    char.dance_beats = tonumber(data.attrs.interval)
+    char.position = {tonumber(data.character.attrs.x) or 0, tonumber(data.character.attrs.y) or 0}
+    char.camera_points = {tonumber(data.character.attrs.camx) or 0, tonumber(data.character.attrs.camy) or 0}
+    char.sing_duration = tonumber(data.character.attrs.holdTime) or 4
+    char.dance_beats = tonumber(data.character.attrs.interval)
 
-    char.flip_x = data.attrs.flipX == "true" or false
-    char.icon = data.attrs.icon
-    char.sprite = data.attrs.sprite
-    char.antialiasing = data.attrs.antialiasing == "true" or true
-    char.scale = tonumber(data.attrs.scale)
+    char.flip_x = data.character.attrs.flipX == "true" or false
+    char.icon = data.character.attrs.icon
+    char.sprite = data.character.attrs.sprite
+    char.antialiasing = data.character.attrs.antialiasing == "true" or true
+    char.scale = tonumber(dat.charactera.attrs.scale)
 
-    char.color = data.attrs.color
+    char.color = data.character.attrs.color
 
     return char
 end
