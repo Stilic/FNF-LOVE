@@ -2,7 +2,7 @@
 
 local codename = {name = "Codename"}
 
-function codename.parse(data)
+function codename.parse(data, name)
     local char = Parser.getDummyChar()
 
     for _, anim in ipairs(data.character.children) do
@@ -41,8 +41,8 @@ function codename.parse(data)
     Parser.pset(char, "dance_beats", tonumber(data.character.attrs.interval))
 
     Parser.pset(char, "flip_x", data.character.attrs.flipX == "true" or false)
-    Parser.pset(char, "icon", data.character.attrs.icon)
-    Parser.pset(char, "sprite", data.character.attrs.sprite)
+    Parser.pset(char, "icon", data.character.attrs.icon or name)
+    Parser.pset(char, "sprite", data.character.attrs.sprite or name)
     Parser.pset(char, "antialiasing", data.character.attrs.antialiasing == "true" or true)
     Parser.pset(char, "scale", tonumber(data.character.attrs.scale) or 1)
 
