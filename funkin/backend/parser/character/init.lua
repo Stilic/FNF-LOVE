@@ -16,7 +16,7 @@ function CharacterParser.getParser(data)
 		return vslice
 	elseif data.image ~= nil and data.sprite == nil then
 		return psych
-	elseif paths.exists("data/characters/" .. charName .. ".xml") then
+	elseif data.character.attrs then
 		return codename
 	end
 	return love
