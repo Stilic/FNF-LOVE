@@ -15,8 +15,8 @@ function codename.parse(data)
                         table.insert(indices, i)
                     end
                 else
-                    local temp2 = anim.attrs.indices:split(",")
-                    for _, i in ipairs(temp2) do
+                    temp = anim.attrs.indices:split(",")
+                    for _, i in ipairs(temp) do
                         table.insert(indices, tonumber(i))
                     end
                 end
