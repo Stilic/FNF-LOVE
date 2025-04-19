@@ -39,7 +39,7 @@ function codename.parse(data)
     char.icon = data.character.attrs.icon
     char.sprite = data.character.attrs.sprite
     char.antialiasing = data.character.attrs.antialiasing == "true" or true
-    char.scale = tonumber(dat.charactera.attrs.scale)
+    char.scale = tonumber(data.character.attrs.scale)
 
     char.color = data.character.attrs.color
 
