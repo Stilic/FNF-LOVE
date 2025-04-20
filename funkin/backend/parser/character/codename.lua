@@ -34,7 +34,7 @@ function codename.parse(data, name)
     end
 
     Parser.pset(char, "position", {tonumber(data.attrs.x) or 0, tonumber(data.attrs.y) or 0})
-    Parser.pset(char, "camera_points", {tonumber(data.attrs.camx) - 150 or 0, tonumber(data.attrs.camy) - 100 or 0})
+    Parser.pset(char, "camera_points", {tonumber(data.attrs.camx) or 0, tonumber(data.attrs.camy) or 0})
     Parser.pset(char, "sing_duration", tonumber(data.attrs.holdTime) or 4)
     Parser.pset(char, "dance_beats", tonumber(data.attrs.interval))
 

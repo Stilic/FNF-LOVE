@@ -8,8 +8,8 @@ local psych = require(f .. "psych")
 local codename = require(f .. "codename")
 
 function CharacterParser.get(charName)
-	local xml = paths.exists(paths.getPath("data/characters/" .. charName .. ".xml"), "file") and paths.getXML("data/characters/" .. charName).character
-	return xml or paths.getJSON("data/characters/" .. charName)
+	return paths.exists(paths.getPath("data/characters/" .. charName .. ".xml"), "file") and paths.getXML("data/characters/" .. charName).character
+		or paths.getJSON("data/characters/" .. charName)
 end
 
 function CharacterParser.getParser(data)
