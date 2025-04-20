@@ -28,7 +28,7 @@ function psych.parse(data)
             data.healthbar_colors[1],
             data.healthbar_colors[2],
             data.healthbar_colors[3]
-        )
+        ):upper()
     end
 
     return char
