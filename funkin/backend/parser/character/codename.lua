@@ -1,3 +1,5 @@
+-- i am NOT sure if this will work
+
 local codename = {name = "Codename"}
 
 function codename.parse(data, name)
@@ -38,10 +40,14 @@ function codename.parse(data, name)
     Parser.pset(char, "sing_duration", tonumber(data.attrs.holdTime) or 4)
     Parser.pset(char, "dance_beats", tonumber(data.attrs.interval))
 
-    Parser.pset(char, "flip_x", tobool(data.attrs.flipX) or false)
+    if data.attrs.flipX ~= nil then
+        Parser.pset(char, "flip_x", tobool(data.attrs.flipX))
+    end
     Parser.pset(char, "icon", data.attrs.icon or name)
     Parser.pset(char, "sprite", "characters/" .. (data.attrs.sprite or name))
-    Parser.pset(char, "antialiasing", tobool(data.attrs.antialiasing) or true)
+    if data.attrs.antialiasing ~= nil then
+        Parser.pset(char, "antialiasing", tobool(data.attrs.antialiasing))
+    end
     Parser.pset(char, "scale", tonumber(data.attrs.scale) or 1)
 
 	if data.attrs.color ~= nil then
