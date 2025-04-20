@@ -164,19 +164,13 @@ function paths.getJSON(key)
 	return nil, path
 end
 
-function paths.getXML(key) -- placeholder? straight copied this from getJSON, might delete this comment
+function paths.getXML(key)
 	local path = paths.getPath(key .. ".xml")
 	local data = readFile(path)
 	if data then
-		local s, r = pcall(parseXml, data)
-		if not s then
-			local err = r:gsub("^.-:%d+: ERROR: ", "")
-			error(path .. ": " .. err)
-			return
-		end
-		return r, path
+		return parseXml(data)
 	end
-	return nil, path
+	return nil
 end
 
 function paths.getSkin(key)

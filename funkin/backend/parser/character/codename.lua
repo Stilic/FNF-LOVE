@@ -1,11 +1,9 @@
--- i am NOT sure if this will work
-
 local codename = {name = "Codename"}
 
 function codename.parse(data, name)
     local char = Parser.getDummyChar()
 
-    for _, anim in ipairs(data.character.children) do
+    for _, anim in ipairs(data.children) do
         if anim.name == "anim" then
             local indices = {}
             if anim.attrs.indices ~= nil then
@@ -35,19 +33,19 @@ function codename.parse(data, name)
         end
     end
 
-    Parser.pset(char, "position", {tonumber(data.character.attrs.x) or 0, tonumber(data.character.attrs.y) or 0})
-    Parser.pset(char, "camera_points", {tonumber(data.character.attrs.camx) or 0, tonumber(data.character.attrs.camy) or 0})
-    Parser.pset(char, "sing_duration", tonumber(data.character.attrs.holdTime) or 4)
-    Parser.pset(char, "dance_beats", tonumber(data.character.attrs.interval))
+    Parser.pset(char, "position", {tonumber(data.attrs.x) or 0, tonumber(data.attrs.y) or 0})
+    Parser.pset(char, "camera_points", {tonumber(data.attrs.camx) - 150 or 0, tonumber(data.attrs.camy) - 100 or 0})
+    Parser.pset(char, "sing_duration", tonumber(data.attrs.holdTime) or 4)
+    Parser.pset(char, "dance_beats", tonumber(data.attrs.interval))
 
-    Parser.pset(char, "flip_x", data.character.attrs.flipX == "true" or false)
-    Parser.pset(char, "icon", data.character.attrs.icon or name)
-    Parser.pset(char, "sprite", data.character.attrs.sprite or name)
-    Parser.pset(char, "antialiasing", data.character.attrs.antialiasing == "true" or true)
-    Parser.pset(char, "scale", tonumber(data.character.attrs.scale) or 1)
+    Parser.pset(char, "flip_x", tobool(data.attrs.flipX) or false)
+    Parser.pset(char, "icon", data.attrs.icon or name)
+    Parser.pset(char, "sprite", "characters/" .. (data.attrs.sprite or name))
+    Parser.pset(char, "antialiasing", tobool(data.attrs.antialiasing) or true)
+    Parser.pset(char, "scale", tonumber(data.attrs.scale) or 1)
 
-	if data.character.attrs.color ~= nil then
-    	char.color = data.character.attrs.color
+	if data.attrs.color ~= nil then
+    	char.color = data.attrs.color
 	end
 
     return char
