@@ -1,5 +1,3 @@
--- i am NOT sure if this will work
-
 local codename = {name = "Codename"}
 
 function codename.parse(data, name)
