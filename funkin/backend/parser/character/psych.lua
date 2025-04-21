@@ -6,8 +6,11 @@ function psych.parse(data)
 	Parser.pset(char, "sprite", data.image)
     Parser.pset(char, "icon", data.healthicon)
     Parser.pset(char, "antialiasing", not data.no_antialiasing)
+
+	Parser.pset(char, "position", data.position)
     Parser.pset(char, "camera_points", data.camera_position)
 	Parser.pset(char, "flip_x", data.flip_x)
+	Parser.pset(char, "scale", data.scale)
 
     char.animations = {}
     for _, anim in pairs(data.animations) do
