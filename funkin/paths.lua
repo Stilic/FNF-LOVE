@@ -1,4 +1,5 @@
 local decodeJson = (require "lib.json").decode
+local parseXml = loxreq "lib.xml"
 
 local paths = {
 	images = {},
@@ -161,6 +162,15 @@ function paths.getJSON(key)
 		return r, path
 	end
 	return nil, path
+end
+
+function paths.getXML(key)
+	local path = paths.getPath(key .. ".xml")
+	local data = readFile(path)
+	if data then
+		return parseXml(data)
+	end
+	return nil
 end
 
 function paths.getSkin(key)
