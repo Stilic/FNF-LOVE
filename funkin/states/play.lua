@@ -459,7 +459,7 @@ function PlayState:executeCutsceneEvent(event, onComplete)
 				game.camera:follow(self.camFollow, nil)
 				Tween.tween(self.camFollow, {x = xCam, y = yCam}, time, {ease = Ease[ease]})
 			else
-				self.state.camFollow:set(xCam, yCam)
+				self.camFollow:set(xCam, yCam)
 				game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 			end
 		end,
@@ -494,7 +494,7 @@ function PlayState:executeCutsceneEvent(event, onComplete)
 			if character then character:playAnim(anim, true) end
 		end,
 		["End Cutscene"] = function()
-			game.camera:follow(self.state.camFollow, nil, 2.4 * self.camSpeed)
+			game.camera:follow(self.camFollow, nil, 2.4 * self.camSpeed)
 			if onComplete then onComplete(event) end
 		end
 	})
