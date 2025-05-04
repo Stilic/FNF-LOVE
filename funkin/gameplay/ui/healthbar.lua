@@ -25,7 +25,7 @@ function HealthBar:new(p1, p2, skin)
 	self.iconP1.y, self.iconP2.y = y, y
 
 	self.bar.color = Color.fromHEX(0x66FF33)
-	self.bar.color.bg = Color.fromHEX(0xFF0000)
+	self.bar.colorBG = Color.fromHEX(0xFF0000)
 
 	self:add(self.iconP1)
 	self:add(self.iconP2)

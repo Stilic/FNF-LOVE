@@ -22,7 +22,8 @@ end
 local combine, content, bigcontent = " | "
 local fpsFormat, tpsFormat, inputsFormat = "%d FPS", "%d TPS", "Inputs: %dms"
 local ramFormat, renderFormat, drawsFormat = "%s RAM | %s VRAM", "%s | %s", "%d DRAWS"
-function StatsCounter:___render(x, y, r, g, b, a, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
+function StatsCounter:___render(x, y, color, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
+	local r, g, b, a = Color.get(color or 0xFFFFFF)
 	if self.showFps then
 		love.graphics.setFont(bigfont)
 		love.graphics.setColor(r, g, b, a)
@@ -71,8 +72,8 @@ function StatsCounter:__render(camera)
 
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 
-	self:___render(x + 2, y + 2, 0, 0, 0, self.alpha * 0.8, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
-	self:___render(x, y, color[1], color[2], color[3], self.alpha, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
+	self:___render(x + 2, y + 2, {0, 0, 0, self.alpha * 0.8}, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
+	self:___render(x, y, color, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
 
 	love.graphics.setFont(_font)
 	love.graphics.setColor(r, g, b, a)

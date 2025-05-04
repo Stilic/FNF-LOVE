@@ -2,6 +2,7 @@ local Shader = Classic:extend("Shader")
 Shader.instances = {}
 
 local function fileExists(path)
+	if type(path) == "userdata" then return path, false end
 	path = paths.getPath("shaders/" .. path)
 	return path, paths.exists(path, "file")
 end
@@ -13,14 +14,14 @@ function Shader:new(source)
 	local vertPath, vertExists = fileExists(source .. ".vert")
 
 	if fragExists or vertExists then
-		rawset(self, "_shader", love.graphics.newShader(
+		rawset(self, "__shader", love.graphics.newShader(
 			fragExists and fragPath or nil,
 			vertExists and vertPath or nil))
 	else
-		rawset(self, "_shader", love.graphics.newShader(source))
+		rawset(self, "__shader", love.graphics.newShader(source))
 	end
 
-	local haveTime = self._shader:hasUniform("time")
+	local haveTime = self.__shader:hasUniform("time")
 	if haveTime then
 		rawset(self, "__time", 0)
 	end
@@ -39,11 +40,8 @@ function Shader:__newindex(key, value)
 	if type(value) == "function" then
 		rawset(self, key, value)
 	else
-		if not rawget(self, "_shader") or not self._shader:hasUniform(key) then
+		if not rawget(self, "__shader") or not self.__shader:hasUniform(key) then
 			print("Shader uniform " .. key .. " is not defined")
-			if not rawget(self, "_shader") then
-				print("Shader doesn't exists (?)")
-			end
 			return false
 		end
 		self:set(key, value)
@@ -53,14 +51,14 @@ end
 function Shader:set(name, value)
 	if self.uniforms[name] == value then return end
 	rawset(self.uniforms, name, value)
-	self._shader:send(name, value)
+	self.__shader:send(name, value)
 end
 
-function Shader:get() return rawget(self, "_shader") end
+function Shader:get() return rawget(self, "__shader") end
 
 function Shader:destroy()
-	self._shader:release()
-	rawset(self, "_shader", nil)
+	self.__shader:release()
+	rawset(self, "__shader", nil)
 
 	Shader.instances[self] = nil
 end

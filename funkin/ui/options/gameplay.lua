@@ -24,7 +24,7 @@ local data = {
 		ClientPrefs.data.playback = value
 	end, function(value) return "x" .. value end},
 	-- {"timeType",      "Song time type",      "string", {"left", "elapsed"}},
-	{"gameOverInfos", "Show game over info", "boolean"},
+	-- {"gameOverInfos", "Show game over info", "boolean"},
 
 	{"AUDIO"},
 	{"pauseMusic",    "Pause music",         "string", {"railways", "breakfast"}},
@@ -52,12 +52,12 @@ local data = {
 		ClientPrefs.data.vocalVolume = value
 	end, percentvalue},
 	{"songOffset", "Song offset", "number"},
-	{"calibration", "Calibrate", function(optionsUI)
-		if optionsUI.aboutToGoToCalibration then return end
-		util.playSfx(paths.getSound('scrollMenu'))
-		optionsUI.aboutToGoToCalibration = true
-		optionsUI.changingOption = false
-	end}
+	-- {"calibration", "Calibrate", function(optionsUI)
+		-- if optionsUI.aboutToGoToCalibration then return end
+		-- util.playSfx(paths.getSound('scrollMenu'))
+		-- optionsUI.aboutToGoToCalibration = true
+		-- optionsUI.changingOption = false
+	-- end}
 }
 
 local Gameplay = Settings:base("Gameplay", data)

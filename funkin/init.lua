@@ -4,8 +4,8 @@ local prn = print
 function print(...)
 	local v = {...}
 	for i = 1, #v do v[i] = tostring(v[i]) end
-	if ClientPrefs and ClientPrefs.data.toastPrints then
-		Toast.new(table.concat(v, "    "))
+	if love.window then
+		Toast.print(table.concat(v, "    "))
 	end
 	prn(...)
 end
@@ -21,11 +21,10 @@ if love.system.getOS() == "Windows" then
 	end
 end
 
-local s, module = pcall(require, "https")
+local s, Https = pcall(require, "https")
 if not s then
-	module = require "lib.https"
+	Https = require "lib.https"
 end
-Https = module
 
 paths = require "funkin.paths"
 util = require "funkin.util"
@@ -65,6 +64,7 @@ Marquee = require "funkin.ui.marquee"
 MenuList = require "funkin.ui.menulist"
 Options = require "funkin.ui.options"
 Stickers = require "funkin.ui.stickers"
+LoadScreen = require "funkin.ui.loadscreen"
 
 StatsCounter = require "funkin.ui.statscounter"
 
@@ -79,6 +79,7 @@ StoryMenuState = require "funkin.states.storymenu"
 FreeplayState = require "funkin.states.freeplay"
 PlayState = require "funkin.states.play"
 
+PauseSubstate = require "funkin.substates.pause"
 GameOverSubstate = require "funkin.substates.gameover"
 
 EditorMenu = require "funkin.ui.editor.editormenu"
@@ -125,6 +126,10 @@ function funkin.load()
 
 	Object.defaultAntialiasing = ClientPrefs.data.antialiasing
 
+	Toast.showPrints = ClientPrefs.data.showToastPrints
+	Toast.showErrors = ClientPrefs.data.showToastErrros
+	Toast.showDeprecations = ClientPrefs.data.showToastDeprecations
+
 	local config = {controls = table.clone(ClientPrefs.controls)}
 	if controls == nil then
 		controls = (require "lib.baton").new(config)
@@ -146,12 +151,11 @@ function funkin.load()
 
 	game.onPreStateEnter = function(state)
 		-- GlobalScripts.call("preStateEnter", state)
-		if paths and tostring(game.getState()) ~= "LoadState" and getmetatable(state) ~= getmetatable(game.getState())
-			then
-			print "cache clear"
+		if paths and tostring(game.getState()) ~= "LoadState" and
+			getmetatable(state) ~= getmetatable(game.getState()) then
 			paths.clearCache()
+			Shader.clear()
 		end
-		Shader.clear()
 	end
 
 	local dimen = love.graphics.getDimensions()
@@ -187,8 +191,8 @@ function funkin.load()
 end
 
 function funkin.update(dt)
-	paths.threadLoad.update(dt)
-	controls:update()
+	paths.update(dt)
+
 	Throttle:update(dt)
 	Shader.updateTime(dt)
 
@@ -275,7 +279,7 @@ function funkin.throwError(msg)
 	if love.handlers then love.handlers = nil end
 
 	collectgarbage()
-	collectgarbage()
+	collec	-- async.shutdown()
 
 	local interactTxt = ""
 	if love.system then

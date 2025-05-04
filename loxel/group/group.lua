@@ -126,4 +126,8 @@ function Group:destroy()
 	end
 end
 
+function Group:__len()
+	return #self.members
+end
+
 return Group

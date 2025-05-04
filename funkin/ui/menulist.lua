@@ -25,12 +25,12 @@ local defaultHovers = {
 	end,
 	anim = function(self, obj)
 		for _, item in ipairs(self.members) do
-			if item and item.__animations["idle"] and item.curAnim.name ~= "idle" then
-				item:play("idle")
+			if item and item.animation:has("idle") and item.animation.name ~= "idle" then
+				item.animation:play("idle")
 			end
 		end
-		if obj and obj.__animations["selected"] and obj.curAnim.name ~= "selected" then
-			obj:play("selected")
+		if obj and obj.animation:has("selected") and obj.animation.name ~= "selected" then
+			obj.animation:play("selected")
 		end
 	end
 }

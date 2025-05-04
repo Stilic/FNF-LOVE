@@ -85,7 +85,7 @@ function Backdrop:__render(camera)
 
 	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
 
-	local spx, spy, fw, fh = self.spacing.x * self.scale.x, self.spacing.y * self.scale.y
+	local spx, spy = self.spacing.x * self.scale.x, self.spacing.y * self.scale.y
 
 	if self.flipX then sx = -sx end
 	if self.flipY then sy = -sy end
@@ -93,19 +93,22 @@ function Backdrop:__render(camera)
 	if f then ox, oy = ox + f.offset.x, oy + f.offset.y end
 	if camera.pixelPerfect then ox, oy = round(ox), round(oy) end
 
-	fw, fh = self:getFrameDimensions()
-	fw, fh = fw * sx, fh * sy
+	local fw, fh = self:getFrameDimensions()
+	fw, fh = fw * math.abs(sx), fh * math.abs(sy)
 
 	local tsx, tsy = spx + fw, spy + fh
 	local tx, ty, hasX, hasY = 1, 1, self.axes:find("x"), self.axes:find("y")
 
+	local zoom = camera.zoom or 1
+	
 	if hasX then
-		local l, r = mod(x + fw, tsx, 0) - fw, mod(x, tsx, camera.width, true) + tsx
-		tx, x = round((r - l) / tsx), mod(x + fw, fw + spx, 0) - fw
+		local l, r = mod(x + fw, tsx, 0) - fw, mod(x, tsx, camera.width / zoom, true) + tsx
+		tx, x = math.ceil((r - l) / tsx), mod(x + fw, fw + spx, 0) - fw
 	end
+	
 	if hasY then
-		local t, b = mod(y + fh, tsy, 0) - fh, mod(y, tsy, camera.height, true) + tsy
-		ty, y = round((b - t) / tsy), mod(y + fh, fh + spy, 0) - fh
+		local t, b = mod(y + fh, tsy, 0) - fh, mod(y, tsy, camera.height / zoom, true) + tsy
+		ty, y = math.ceil((b - t) / tsy), mod(y + fh, fh + spy, 0) - fh
 	end
 
 	love.graphics.shear(kx, ky)

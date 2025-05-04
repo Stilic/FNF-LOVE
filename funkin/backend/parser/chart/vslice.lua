@@ -44,17 +44,6 @@ function vslice.parse(data, _, meta, diff)
 
 	if meta then getFromMeta(meta, chart) end
 
-	if chart.timeChanges then
-		-- todo rework this and rework conductor too maybe??
-		for i, c in ipairs(chart.timeChanges) do
-			if c.t <= 0 then
-				chart.bpm = c.bpm
-				table.remove(chart.timeChanges, i)
-				break
-			end
-		end
-	end
-
 	if data.notes[diff:lower()] then
 		local speed = data.scrollSpeed and (data.scrollSpeed[diff:lower()] or
 			data.scrollSpeed.default) or 1

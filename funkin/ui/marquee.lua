@@ -7,9 +7,9 @@ function Marquee:new(x, y, limit, velocity, content, font, color)
 	self.pauseTimer = self.pauseTime
 	self.scrollOffset = 0
 	self.isScrolling = false
+	self.spacing = 50
 
 	Marquee.super.new(self, x, y, content, font, color)
-	self.spacing = 50
 end
 
 function Marquee:update(dt)
@@ -23,18 +23,18 @@ function Marquee:update(dt)
 		end
 	else
 		self.scrollOffset = self.scrollOffset + self.speed * dt
-		if self.scrollOffset >= self.textWidth + self.spacing then
+		if self.scrollOffset >= self.width + self.spacing then
 			self.scrollOffset = 0
 			self.pauseTimer = self.pauseTime
 			self.isScrolling = false
 		end
 	end
-	if self.canRender and self.isScrolling then -- insane shit but its fucked up on render due to transformations
+	if self.canRender then -- insane shit but its fucked up on render due to transformations
 	-- no love.graphics.origin() won't do it
 		self.canvas:renderTo(function()
 			love.graphics.clear(0, 0, 0, 0)
 			self:__renderText(-self.scrollOffset)
-			self:__renderText(-self.scrollOffset + self.textWidth + self.spacing)
+			self:__renderText(-self.scrollOffset + self.width + self.spacing)
 		end)
 		self.canRender = nil
 	end
@@ -46,6 +46,8 @@ function Marquee:__updateDimension()
 	self.__content = self.content
 	self.__limit = self.limit
 	self.__font = self.font
+
+	if not self.font then return end
 
 	self.width = self.font:getWidth(self.content)
 	self.height = self.font:getHeight()
@@ -61,17 +63,12 @@ end
 
 function Marquee:updateCanvas()
 	if self.canvas then self.canvas:release() end
-	self.textWidth = self.font:getWidth(self.content)
-	self.textHeight = self.font:getHeight()
-	if self.limit ~= nil then
-		local _, lines = self.font:getWrap(self.content, self.limit)
-		self.textHeight = self.textHeight * #lines
-	end
-	self.canvas = love.graphics.newCanvas(self.maxWidth, self.textHeight)
+
+	self.canvas = love.graphics.newCanvas(self.maxWidth, self.height)
 	self.canvas:renderTo(function()
 		love.graphics.clear(0, 0, 0, 0)
 		self:__renderText(-self.scrollOffset)
-		self:__renderText(-self.scrollOffset + self.textWidth + self.spacing)
+		self:__renderText(-self.scrollOffset + self.width + self.spacing)
 	end)
 end
 
@@ -82,15 +79,14 @@ function Marquee:__renderText(x)
 	if not self.antialiasing then x = math.floor(x) end
 
 	local content, align, outline = self.content, self.alignment, self.outline
-	local width, font = self.limit or self.textWidth, self.font
+	local width, font = self.limit or self.width, self.font
 
 	love.graphics.setFont(self.font)
 	local min, mag, anisotropy = self.font:getFilter()
 	local mode = self.antialiasing and "linear" or "nearest"
 
 	if outline then
-		local outlineColor = outline.color
-		love.graphics.setColor(Color.vec4(outlineColor, (outlineColor[4] or 1)))
+		love.graphics.setColor(self:getDrawColor(outline.color))
 		if outline.style == "simple" then
 			love.graphics.printf(content,
 				x + outline.offset.x, outline.offset.y,
@@ -111,8 +107,7 @@ function Marquee:__renderText(x)
 	end
 	self.font:setFilter(mode, mode, anisotropy)
 
-	local color = self.color
-	love.graphics.setColor(color[1], color[2], color[3], 1)
+	love.graphics.setColor(self:getDrawColor())
 	love.graphics.printf(content, x, 0, width, align, rad, sx, sy, ox, oy)
 
 	self.font:setFilter(min, mag, anisotropy)

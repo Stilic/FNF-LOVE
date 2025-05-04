@@ -39,7 +39,9 @@ function Camera:new(x, y, width, height)
 		nil, nil, true
 	)
 
-	self.scroll = {x = 0, y = 0}
+	self.scroll = Point()
+	self.scroll.offset = Point()
+
 	self.rotation = 0
 	self.angle = 0
 	self.zoom = 1
@@ -104,6 +106,7 @@ function Camera:fade(color, duration, fadeIn, onComplete, force)
 	self.__fadeDuration = duration
 	self.__fadeComplete = onComplete or nil
 	self.__fadeAlpha = fadeIn and 0.999999 or 0.000001
+	self.__fadeIn = fadeIn
 end
 
 function Camera:follow(target, type, lerp)
@@ -170,6 +173,8 @@ function Camera:update(dt)
 
 	if self.target then
 		local targetX, targetY = self.target.x - self.width / 2, self.target.y - self.height / 2
+		-- targetX, targetY = targetX + self.scroll.offset.x,
+			-- targetY + self.scroll.offset.y
 
 		if self.followLerp then
 			local lerp = 1 - math.exp(-dt * self.followLerp)

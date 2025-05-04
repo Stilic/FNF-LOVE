@@ -3,116 +3,75 @@ local CreditsState = State:extend("CreditsState")
 local UserList = require "funkin.ui.credits.userlist"
 local UserCard = require "funkin.ui.credits.usercard"
 
--- would it be funny if the x renamed to twitter instead to mock elon musk
+local function category(header, people)
+	return { header = header, credits = people }
+end
+
+local function user(name, icon, color, description, ...)
+	local socials = {}
+	for i = 1, select("#", ...), 2 do
+		local platform = select(i, ...)
+		local handle   = select(i + 1, ...)
+		socials[#socials + 1] = {name = platform, text = handle}
+	end
+	return {name = name, icon = icon, color = color, description = description, social = socials}
+end
+
 CreditsState.defaultData = {
-	{
-		header = "Port contributors",
-		credits = {
-			{
-				name = "Stilic",
-				icon = "stilic",
-				color = "#FFCA45",
-				description = "Main director and programmer",
-				social = {
-					{name = "X",      text = "@stilic_dev"},
-					{name = "Github", text = "/Stilic"}
-				}
-			},
-			{
-				name = "Raltyro",
-				icon = "ralty",
-				color = "#FF4545",
-				description = "Artist and programmer",
-				social = {
-					{name = "X",       text = "@raltyro"},
-					{name = "Youtube", text = "@Raltyro"},
-					{name = "Github",  text = "/Raltyro"}
-				}
-			},
-			{
-				name = "Fellyn",
-				icon = "fellyn",
-				color = "#E49CFA",
-				description = 'Composer of "Railways", programmer and logo creator',
-				social = {
-					{name = "X",       text = "@FellynnLol_"},
-					{name = "Youtube", text = "@FellynnMusic_"},
-					{name = "Github",  text = "/FellynYukira"}
-				}
-			},
-			{
-				name = "Victor Kaoy",
-				icon = "vickaoy",
-				color = "#D1794D",
-				description = "Artist and programmer",
-				social = {
-					{name = "X", text = "@vk15_"}
-				}
-			},
-			{
-				name = "Blue Colorsin",
-				icon = "bluecolorsin",
-				color = "#2B56FF",
-				description = "Programmer",
-				social = {
-					{name = "X",       text = "@BlueColorsin"},
-					{name = "Youtube", text = "@BlueColorsin"},
-					{name = "Github",  text = "/BlueColorsin"}
-				}
-			},
-			{
-				name = "FowluhhDev",
-				icon = "fowluhh",
-				color = "#383838",
-				description = "Programmer"
-			}
-		}
-	},
-	{
-		header = "Funkin' Crew",
-		credits = {
-			{
-				name = "Ninjamuffin99",
-				icon = "ninjamuffin",
-				color = "#FF392B",
-				description = "Programmer of Friday Night Funkin'",
-				social = {
-					{name = "X",       text = "@ninja_muffin99"},
-					{name = "Youtube", text = "@camerontaylor5970"},
-					{name = "Github",  text = "/ninjamuffin99"}
-				}
-			},
-			{
-				name = "Phantom Arcade",
-				icon = "phantomarcade",
-				color = "#EBC73B",
-				description = "Animator of Friday Night Funkin'",
-				social = {
-					{name = "X",       text = "@PhantomArcade3K"},
-					{name = "Youtube", text = "@PhantomArcade"}
-				}
-			},
-			{
-				name = "EvilSk8r",
-				icon = "evilsk8r",
-				color = "#5EED3E",
-				description = "Artist of Friday Night Funkin'",
-				social = {
-					{name = "X", text = "@evilsk8r"}
-				}
-			},
-			{
-				name = "Kawai Sprite",
-				icon = "kawaisprite",
-				color = "#4185FA",
-				description = "Musician of Friday Night Funkin'",
-				social = {
-					{name = "X",       text = "@kawaisprite"},
-					{name = "Youtube", text = "@KawaiSprite"}
-				}
-			}
-		}
-	}
+	category("Contributors", {
+
+		user("Stilic", "https://github.com/stilic.png", "#FFCA45", "Main director and programmer",
+			"X", "@stilic_dev",
+			"Github", "/Stilic"
+		),
+
+		user("Raltyro", "https://github.com/raltyro.png", "#FF4545", "Artist and programmer",
+			"X", "@raltyro",
+			"Youtube", "@Raltyro",
+			"Github", "/Raltyro"
+		),
+
+		user("Fellyn", "https://github.com/yuk1r4luvyu.png", "#E49CFA", "Composer of \"Railways\", programmer and logo creator",
+			"X", "@FellynnLol_",
+			"Youtube", "@FellynnMusic_",
+			"Github", "/FellynYukira"
+		),
+
+		user("MrMeep64", "https://github.com/Arm4GeDon.png", "#D1794D", "V-Slice content porting and programmer"),
+
+		user("TehPuertoRicanSpartan", "https://github.com/TehPuertoRicanSpartan.png", "#D1794D", "V-Slice content porting and programmer"),
+
+		user("Victor Kaoy", "https://github.com/vikaoy.png", "#D1794D", "Artist and programmer",
+			"X", "@vk15_"
+		),
+
+		user("Blue Colorsin",           "https://github.com/bluecolorsin.png",           "#2B56FF", "Programmer",
+			"X", "@BlueColorsin",
+			"Youtube", "@BlueColorsin",
+			"Github", "/BlueColorsin"
+		),
+
+		user("FowluhhDev", "https://github.com/fowluhhdevbcfunny.png", "#383838", "Programmer"),
+	}),
+
+	category("Funkin' Crew", {
+		user("Ninjamuffin99", "https://github.com/ninjamuffin99.png", "#FF392B", "Programmer of Friday Night Funkin'",
+			"X", "@ninja_muffin99",
+			"Youtube", "@camerontaylor5970",
+			"Github", "/ninjamuffin99"
+		),
+		user("Phantom Arcade", "https://github.com/phantomarcade.png", "#EBC73B", "Animator of Friday Night Funkin'",
+			"X", "@PhantomArcade3K",
+			"Youtube", "@PhantomArcade"
+		),
+		user("EvilSk8r", "https://github.com/evilsk8r.png", "#5EED3E", "Artist of Friday Night Funkin'",
+			"X", "@evilsk8r"
+		),
+		user("Kawai Sprite", "https://github.com/kawaisprite.png", "#4185FA", "Musician of Friday Night Funkin'",
+			"X", "@kawaisprite",
+			"Youtube", "@KawaiSprite"
+		),
+	}),
 }
 
 function CreditsState:enter()
@@ -138,7 +97,7 @@ function CreditsState:enter()
 	self.bd = BackDrop(128)
 	self.bd.moves = true
 	self.bd.velocity:set(26, 26)
-	self.bd:setScrollFactor()
+	self.bd.scrollFactor:set()
 	self.bd.alpha = 0.5
 	self:add(self.bd)
 
@@ -150,13 +109,13 @@ function CreditsState:enter()
 		table.insert(self.data, self.defaultData[i])
 	end
 
-	self.userList = UserList(self.data, game.width * 0.35)
+	self.userList = UserList(self.data, game.width * 0.3)
 	self.userList.parent = self
 	self:add(self.userList)
 
 	self.userCard = UserCard(10 + self.userList:getWidth() + 10, 10,
 		game.width - self.userList:getWidth() - 30, game.height - 130)
-	self.userCard:setScrollFactor()
+	self.userCard.scrollFactor:set()
 	self:add(self.userCard)
 
 	self:changeSelection()

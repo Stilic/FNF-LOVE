@@ -94,9 +94,6 @@ function Graphic:__render(camera)
 	local rad = math.min(w, h) / 2
 
 	local color = self.color
-	love.graphics.setShader(self.shader)
-	love.graphics.setBlendMode(self.blend)
-	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
 
 	love.graphics.translate(x, y)
 	love.graphics.rotate(math.rad(self.angle))
@@ -125,7 +122,7 @@ function Graphic:__render(camera)
 	drawShape(self.type, self.fill)
 	if self.lined then
 		color = line.color
-		love.graphics.setColor(color[1], color[2], color[3], (color[4] or 1) * self.alpha)
+		love.graphics.setColor(self:getDrawColor(color))
 		drawShape(self.type, "line")
 	end
 

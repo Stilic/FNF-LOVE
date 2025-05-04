@@ -85,10 +85,6 @@ local data = {
 		love.parallelUpdate = value
 	end},
 	{"STATS"},
-	{"toastPrints", "Toast prints", "boolean", function()
-		local value = not ClientPrefs.data.toastPrints
-		ClientPrefs.data.toastPrints = value
-	end},
 	{"showFps", "Show FPS", "boolean", function()
 		local value = not ClientPrefs.data.showFps
 		ClientPrefs.data.showFps = value
@@ -109,14 +105,27 @@ local data = {
 		ClientPrefs.data.showDraws = value
 		game.statsCounter.showDraws = value
 	end},
+	{"TOASTS"},
+	{"showToastPrints", "Show prints", "boolean", function()
+		local value = not ClientPrefs.data.showToastPrints
+		ClientPrefs.data.showToastPrints = value
+		Toast.showPrints = value
+	end},
+	{"showToastErrors", "Show errors", "boolean", function()
+		local value = not ClientPrefs.data.showToastErrors
+		ClientPrefs.data.showToastErrors = value
+		Toast.showErrors = value
+	end},
+	{"showToastDeprecations", "Show deprecations", "boolean", function()
+		local value = not ClientPrefs.data.showToastDeprecations
+		ClientPrefs.data.showToastDeprecations = value
+		Toast.showDeprecations = value
+	end},
 }
 
 if love.system.getDevice() == "Mobile" then
-	for _, v in pairs(data) do
-		if #v > 1 and v[1] == "fullscreen" or v[1] == "resolution" then
-			table.delete(data, v)
-		end
-	end
+	table.remove(data, 6)
+	table.remove(data, 6)
 end
 
 local Display = Settings:base("Display", data)

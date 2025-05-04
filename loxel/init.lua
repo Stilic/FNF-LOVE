@@ -494,7 +494,7 @@ function game.draw()
 	_ogGetScissor, grap.getScissor = grap.getScissor, getScissor
 	_ogSetScissor, grap.setScissor = grap.setScissor, setScissor
 
-	grap.push()
+	grap.push("all")
 	grap.translate(_scX, _scY)
 	grap.scale(scale)
 

@@ -44,22 +44,41 @@ function AtlasText:new(x, y, text, font, limit, align)
 		self.frames.texture, 1, "stream")
 end
 
-function AtlasText:__index(k)
-	if k == "text" or k == "limit" or k == "align" then
-		return self.props[k]
-	end
-	return rawget(self, k) or AtlasText[k]
+-- function AtlasText:__index(k)
+	-- if k == "text" or k == "limit" or k == "align" then
+		-- return self.props[k]
+	-- end
+	-- return rawget(self, k) or AtlasText[k]
+-- end
+
+-- function AtlasText:__newindex(k, v)
+	-- if k == "text" or k == "limit" or k == "align" then
+		-- self.props[k] = v
+		-- self:setFont()
+		-- return
+	-- else
+		-- return rawset(self, k, v)
+	-- end
+-- end
+
+function AtlasText:set_text(v)
+	self.props.text = v
+	self:setText()
 end
 
-function AtlasText:__newindex(k, v)
-	if k == "text" or k == "limit" or k == "align" then
-		self.props[k] = v
-		self:setFont()
-		return
-	else
-		return rawset(self, k, v)
-	end
+function AtlasText:set_limit(v)
+	self.props.limit = v
+	self:setText()
 end
+
+function AtlasText:set_align(v)
+	self.props.align = v
+	self:setText()
+end
+
+function AtlasText:get_text() return self.props.text end
+function AtlasText:get_limit() return self.props.limit end
+function AtlasText:get_align() return self.props.align end
 
 function AtlasText:add(o)
 	if not o.is or not o:is(Glyph) then
@@ -274,9 +293,9 @@ function AtlasText:__render(camera)
 	local mode = self.antialiasing and "linear" or "nearest"
 	texture:setFilter(mode, mode, anisotropy)
 
-	love.graphics.setColor(Color.vec4(self.color, self.alpha))
-	love.graphics.setBlendMode(self.blend)
-	love.graphics.setShader(self.shader)
+	-- love.graphics.setColor(self:getDrawColor())
+	-- love.graphics.setBlendMode(self.blend)
+	-- love.graphics.setShader(self.shader)
 
 	love.graphics.draw(self.batch, x, y, rad, sx, sy, ox, oy)
 

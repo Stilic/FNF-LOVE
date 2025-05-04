@@ -7,10 +7,7 @@ function vslice.parse(data, name)
 	Parser.pset(char, "flip_x", data.flipX)
 	Parser.pset(char, "sprite", data.assetPath)
 
-	local healthIconId = data.healthIcon and data.healthIcon.id or name
-	local isPixel = data.healthIcon and data.healthIcon.isPixel or false
-	data.healthIcon = {id = healthIconId, isPixel = isPixel}
-	Parser.pset(char, "icon", healthIconId .. (isPixel and "-pixel" or ""))
+	char.icon = name
 	char.animations = {}
 
 	for _, anim in pairs(data.animations) do

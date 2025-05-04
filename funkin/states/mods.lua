@@ -17,7 +17,7 @@ function ModsState:enter()
 	self.bd = BackDrop(128)
 	self.bd.moves = true
 	self.bd.velocity:set(26, 26)
-	self.bd:setScrollFactor()
+	self.bd.scrollFactor:set()
 	self.bd.alpha = 0.5
 	self:add(self.bd)
 
@@ -75,7 +75,11 @@ function ModsState:enter()
 	self.descBG.config.round = {18, 18}
 	self.cardGroup:add(self.descBG)
 
-	self.desc = AtlasText(20, 0, "", AtlasText.getFont("default-white", 0.38), 806)
+	local font = paths.getFont("vcr.ttf", 24)
+	font:setFallbacks(paths.getFont("openmoji.ttf", 24))
+	self.desc = Text(20, 0, "", font,
+		Color.WHITE, "left", 806)
+	self.desc.antialiasing = false
 	self.cardGroup:add(self.desc)
 
 	self.versionBox = Graphic(0, 0, 836, 50)
@@ -104,27 +108,7 @@ function ModsState:enter()
 	}
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = VirtualPadGroup()
-		local w = 134
-
-		local left = VirtualPad("left", 0, game.height - w)
-		local up = VirtualPad("up", game.width - w, 0)
-		local down = VirtualPad("down", up.x, w)
-		local right = VirtualPad("right", left.x + w, left.y)
-
-		local enter = VirtualPad("return", game.width - w, left.y)
-		enter.color = Color.LIME
-		local back = VirtualPad("escape", enter.x - w, left.y)
-		back.color = Color.RED
-
-		self.buttons:add(left)
-		self.buttons:add(up)
-		self.buttons:add(down)
-		self.buttons:add(right)
-
-		self.buttons:add(enter)
-		self.buttons:add(back)
-
+		self.buttons = util.createButtons("lrudab")
 		self:add(self.buttons)
 	end
 
@@ -294,7 +278,7 @@ function ModsState:reloadInfo(addons, tab)
 	self.banner:setGraphicSize(836)
 	self.banner:updateHitbox()
 
-	self.desc.text = meta.description
+	self.desc.content = meta.description
 
 	local y = self.banner.y + self.banner.height + 10
 	local h = game.height - self.banner.height - 100

@@ -14,7 +14,7 @@ function Bar:new(x, y, width, height, min, max, isFilled)
 	self.percent = 0
 
 	self.color = Color.LIME
-	self.color.bg = Color.RED
+	self.colorBG = Color.RED
 
 	self:updateValues()
 end
@@ -45,12 +45,12 @@ function Bar:__render(camera)
 	love.graphics.push()
 	love.graphics.rotate(math.rad(self.angle))
 	if self.filled then
-		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+		love.graphics.setColor(self:getDrawColor())
 		love.graphics.rectangle("fill", x + (self.flipX and 0 or self.fillWidth), y,
 			self.width - self.fillWidth, self.height)
 	end
 
-	love.graphics.setColor(self.color.bg[1], self.color.bg[2], self.color.bg[3], self.alpha)
+	love.graphics.setColor(self:getDrawColor(self.colorBG))
 	love.graphics.rectangle("fill", x + (self.flipX and self.width - self.fillWidth or 0), y, self.fillWidth, self.height)
 	love.graphics.pop()
 

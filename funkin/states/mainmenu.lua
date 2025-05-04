@@ -8,7 +8,7 @@ function MainMenuState:enter()
 	self.versionText = Text(0, game.height - 18, "v" .. Project.version, paths.getFont("vcr.ttf", 16))
 	self.versionText.antialiasing = false
 	self.versionText.outline.width = 1
-	self.versionText:setScrollFactor()
+	self.versionText.scrollFactor:set()
 
 	self.script = Script("data/states/mainmenu", false)
 	local event = self.script:call("create")
@@ -37,7 +37,7 @@ function MainMenuState:enter()
 	local yScroll = math.max(0.25 - (0.05 * (#self.menuItems - 4)), 0.1)
 	self.menuBg = Sprite()
 	self.menuBg:loadTexture(paths.getImage('menus/menuBG'))
-	self.menuBg:setScrollFactor(0, yScroll)
+	self.menuBg.scrollFactor:set(0, yScroll)
 	self.menuBg:setGraphicSize(math.floor(self.menuBg.width * 1.175))
 	self.menuBg:updateHitbox()
 	self.menuBg:screenCenter()
@@ -55,14 +55,14 @@ function MainMenuState:enter()
 		self:enterSelection(self.menuItems[menuItem.ID])
 	end
 	self.menuList.speed = 8
-	self.menuList:setScrollFactor()
+	self.menuList.scrollFactor:set()
 
 	for i = 0, #self.menuItems - 1 do
 		local item = Sprite(0, 0)
 		item:setFrames(paths.getSparrowAtlas('menus/mainmenu/' .. self.menuItems[i + 1]))
-		item:addAnimByPrefix('idle', self.menuItems[i + 1] .. ' idle', 24)
-		item:addAnimByPrefix('selected', self.menuItems[i + 1] .. ' selected', 24)
-		item:play('idle')
+		item.animation:addByPrefix('idle', self.menuItems[i + 1] .. ' idle', 24)
+		item.animation:addByPrefix('selected', self.menuItems[i + 1] .. ' selected', 24)
+		item.animation:play('idle')
 		item.yAdd = 50 + (self.menuList.curSelected) * (80 - game.height * 0.005)
 
 		self.menuList:add(item)
@@ -76,36 +76,18 @@ function MainMenuState:enter()
 	self.throttles.down = Throttle:make({controls.down, controls, "ui_down"})
 
 	if love.system.getDevice() == "Mobile" then
-		self.buttons = VirtualPadGroup()
-		local w = 134
-
-		local down = VirtualPad("down", 0, game.height - w)
-		local up = VirtualPad("up", 0, down.y - w)
-		local mods = VirtualPad("tab", game.width - w, 0)
-		mods:screenCenter("y")
-
-		local enter = VirtualPad("return", game.width - w, down.y)
-		enter.color = Color.LIME
-		local back = VirtualPad("escape", enter.x - w, down.y)
-		back.color = Color.RED
-
-		self.buttons:add(down)
-		self.buttons:add(up)
-		self.buttons:add(mods)
-
-		self.buttons:add(enter)
-		self.buttons:add(back)
-
+		self.buttons = util.createButtons("udab")
+		self.buttons:add(VirtualPad("tab", game.width - 126, (game.height - 126) / 2, 126, 126))
 		self:add(self.buttons)
 	end
 
 	self.menuList.changeCallback = function(curSelected, item)
 		for _, spr in ipairs(self.menuList.members) do
-			spr:play('idle')
+			spr.animation:play('idle')
 			spr:updateHitbox()
 		end
 
-		item:play('selected')
+		item.animation:play('selected')
 		local y = 120 * curSelected
 		self.camFollow.x, self.camFollow.y = 0, y
 		item:fixOffsets()
@@ -161,7 +143,7 @@ local triggerChoices = {
 			if self.buttons then self:add(self.buttons) end
 		end)
 		self.optionsUI.applySettings = bind(self, self.onSettingChange)
-		self.optionsUI:setScrollFactor()
+		self.optionsUI.scrollFactor:set()
 		self.optionsUI:screenCenter()
 		self:add(self.optionsUI)
 		return false
@@ -175,7 +157,7 @@ local triggerChoices = {
 
 function MainMenuState:onSettingChange(setting, option)
 	if setting == "gameplay" and option == "menuMusicVolume" then
-		game.sound.music:fade(1, game.sound.music:getVolume(), ClientPrefs.data.menuMusicVolume / 100)
+		game.sound.music:fade(1, game.sound.music.volume, ClientPrefs.data.menuMusicVolume / 100)
 	end
 end
 
@@ -184,7 +166,7 @@ function MainMenuState:openEditorMenu()
 	self.editorUI = self.editorUI or EditorMenu(function()
 		self.selectedSomethin = false
 	end)
-	self.editorUI:setScrollFactor()
+	self.editorUI.scrollFactor:set()
 	self.editorUI:screenCenter()
 	self:add(self.editorUI)
 end

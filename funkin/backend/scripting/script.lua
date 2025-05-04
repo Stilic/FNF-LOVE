@@ -12,7 +12,7 @@ local closedEnv = setmetatable({}, {
 -- this looks unclean i know -kaoy
 local function errformat(s, thread)
 	local i = debug.getinfo(thread or 3, "Sln")
-	print(("%s: %i: %s not allowed"):format(i.short_src, i.currentline, s))
+	Toast.error(("%s: %i: %s not allowed"):format(i.short_src, i.currentline, s))
 end
 
 local n = function() end
@@ -146,7 +146,7 @@ function Script:new(path, notFoundMsg, noLink, fullPath)
 			chunk()
 		else
 			if not self.notFoundMsg then return end
-			print("Script not found for " .. paths.getPath(p))
+			Toast.error("Script not found for " .. paths.getPath(p))
 			self:close()
 			return
 		end
@@ -155,7 +155,7 @@ function Script:new(path, notFoundMsg, noLink, fullPath)
 	end)
 
 	if not s then
-		print(string.format('Failed to load %s: %s', path, err))
+		Toast.error(string.format('Failed to load %s: %s', path, err))
 		self:close()
 		self.errorCallback:dispatch("chunk")
 	end
@@ -210,7 +210,7 @@ function Script:call(func, ...)
 			end
 			return true
 		else
-			print(string.format('%s failed at %s: %s', self.path, func, err))
+			Toast.error(string.format('%s failed at %s: %s', self.path, func, err))
 			self.__failedfunc[func] = true
 			self.errorCallback:dispatch(func)
 		end

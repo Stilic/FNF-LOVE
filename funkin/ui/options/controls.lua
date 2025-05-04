@@ -25,10 +25,10 @@ local data = {
 	{"MISCELLANEOUS"},
 	{"fullscreen",   "Fullscreen"},
 	{"pick_mods",    "Mods"},
-	{"asyncInput", "Asynchronous input", "boolean", function()
-		love.asyncInput = not ClientPrefs.data.asyncInput
-		ClientPrefs.data.asyncInput = love.asyncInput
-	end, nil, 0.5},
+	-- {"asyncInput", "Asynchronous input", "boolean", function()
+		-- love.asyncInput = not ClientPrefs.data.asyncInput
+		-- ClientPrefs.data.asyncInput = love.asyncInput
+	-- end, nil, 0.5},
 
 	{"DEBUG"},
 	{"debug_1", "Charting"},

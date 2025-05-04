@@ -1,5 +1,5 @@
 ---@class VirtualPadGroup:Group
-local VirtualPadGroup = Group:extend("VirtualPadGroup")
+local VirtualPadGroup = SpriteGroup:extend("VirtualPadGroup")
 
 function VirtualPadGroup:new()
 	VirtualPadGroup.super.new(self)

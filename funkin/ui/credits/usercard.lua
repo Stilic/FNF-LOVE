@@ -7,7 +7,7 @@ function UserCard:new(x, y, width, height)
 	self.icon = Sprite(0, 0)
 	self.icon:setGraphicSize(100)
 	self.icon:updateHitbox()
-	self.icon:setScrollFactor()
+	self.icon.scrollFactor:set()
 	self:add(self.icon)
 
 	self.name = Text(self.icon.x + self.icon.width + 10, 0, "Name",
@@ -15,34 +15,72 @@ function UserCard:new(x, y, width, height)
 	self.name:setOutline("normal", 4)
 	self.name.y = 10 + (self.icon.height - self.name:getHeight()) / 2
 	self.name.antialiasing = false
-	self.name:setScrollFactor()
+	self.name.scrollFactor:set()
 	self:add(self.name)
 
 	self.box = Graphic(
 		self.icon.x, self.icon.y + self.icon.height + 10, width, height, Color.fromRGB(10, 12, 26))
 	self.box.alpha = 0.4
 	self.box.config.round = {24, 24}
-	self.box:setScrollFactor()
+	self.box.scrollFactor:set()
 	self:add(self.box)
 
 	self.desc = Text(
 		self.box.x + 10, self.box.y + 10, "Description",
 		paths.getFont("vcr.ttf", 32), nil, nil, self.box.width - 20)
 	self.desc.antialiasing = false
-	self.desc:setScrollFactor()
+	self.desc.scrollFactor:set()
 	self:add(self.desc)
 
 	self.media = SpriteGroup(0, self.box.y)
-	self.media:setScrollFactor()
+	self.media.scrollFactor:set()
 	self:add(self.media)
+end
+
+function UserCard:update(dt)
+	UserCard.super.update(self, dt)
+	if self.icon.loading then
+		self.icon.angle = self.icon.angle + 380 * dt
+	end
+end
+
+function UserCard:__reloadIcon(image, url, error)
+	if error then
+		return Toast.error(error)
+	end
+	if self.icon.loading ~= url then return end
+	self.icon.loading = nil
+	self.icon.angle = 0
+	self.icon:loadTexture(image)
+	self.icon:setGraphicSize(100, 100)
+	self.icon:updateHitbox()
 end
 
 function UserCard:reload(d)
 	self.name.content = d.name
 	self.desc.content = d.description
+	self.name:centerOrigin()
+	self.name.scale.x = 1
 
-	self.icon:loadTexture(paths.getImage("menus/credits/icons/" .. d.icon))
-	self.icon:setGraphicSize(100)
+	if self.name:getWidth() > game.width - self.x - 250 then
+		local factor = game.width / (self.name:getWidth() + self.x + 250)
+		self.name.origin.x = 0
+		self.name.scale.x = factor
+	end
+
+	self.icon.loading = nil
+
+	if d.icon:startsWith("https://") then
+		self.icon:loadTexture(paths.getImage("menus/credits/icons/loading"))
+
+		local icon = d.icon .. "?size=100"
+		self.icon.loading = icon
+		paths.async.getImage(icon, bind(self, self.__reloadIcon))
+	else
+		self.icon:loadTexture(paths.getImage("menus/credits/icons/" .. d.icon))
+	end
+	self.icon.angle = 0
+	self.icon:setGraphicSize(100, 100)
 	self.icon:updateHitbox()
 
 	self:reloadSocials(d)
@@ -68,7 +106,7 @@ function UserCard:reloadSocials(person)
 		local card = MediaCard(0, 72 * i, img, txt, Color.fromRGB(10, 12, 26))
 		card.alpha = 0.4
 		card:setSize(self.box.width, 62)
-		card:setScrollFactor()
+		card.scrollFactor:set()
 		self.media:add(card)
 	end
 

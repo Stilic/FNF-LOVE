@@ -53,7 +53,7 @@ function Note:clone()
 end
 
 function Note:_addAnim(...)
-	(type(select(2, ...)) == 'table' and Sprite.addAnim or Sprite.addAnimByPrefix)(self, ...)
+	(type(select(2, ...)) == 'table' and self.animation.add or self.animation.addByPrefix)(self.animation, ...)
 end
 
 local function makeRGB(color)
@@ -198,9 +198,9 @@ end
 
 function Note:play(anim, force, frame, dontShader, skipName)
 	local toPlay = skipName and anim or anim .. '-note' .. self.direction
-	toPlay = self.__animations[toPlay] and toPlay or anim
+	toPlay = self.animation:has(toPlay) and toPlay or anim
 
-	Note.super.play(self, toPlay, force, frame)
+	self.animation:play(toPlay, force, frame)
 	self:centerOrigin()
 	self:centerOffsets()
 

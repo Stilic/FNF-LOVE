@@ -45,7 +45,7 @@ function Conductor:update(songPos)
 
 	self.time = songPos or self.time
 	if self.time >= 0 then
-		songPos = game.sound.music and game.sound.music:tell() * 1000 or 0
+		songPos = game.sound.music and game.sound.music.time * 1000 or 0
 	end
 
 	local oldm, oldb, olds = self.measure.i, self.beat.i, self.step.i
@@ -55,7 +55,7 @@ function Conductor:update(songPos)
 		for i = 1, #self.timeChanges do
 			if songPos >= self.timeChanges[i].t then
 				self.curTimeChange = self.timeChanges[i]
-				
+				self.onTimeChange:dispatch()
 			end
 			if songPos < self.timeChanges[i].t then
 				break
@@ -164,6 +164,13 @@ function Conductor:getBeatTimeInMs(beatTime)
 
 		return resultMs
 	end
+end
+
+function Conductor:destroy()
+	self.onMeasure:destroy()
+	self.onBeat:destroy()
+	self.onStep:destroy()
+	self.onTimeChange:destroy()
 end
 
 local redirect = {

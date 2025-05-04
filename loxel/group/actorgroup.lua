@@ -169,4 +169,6 @@ ActorGroup.kill = SpriteGroup.kill
 ActorGroup.revive = SpriteGroup.revive
 ActorGroup.destroy = SpriteGroup.destroy
 
+ActorGroup.__len = SpriteGroup.__len
+
 return ActorGroup

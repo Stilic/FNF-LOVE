@@ -5,7 +5,7 @@ local function getFromMeta(data, tbl)
 	Parser.pset(tbl, "skin", data.skin)
 
 	Parser.pset(tbl, "difficulties", data.difficulties)
-	Parser.pset(tbl, "bpm", data.bpm)
+	-- Parser.pset(tbl, "bpm", data.bpm)
 end
 
 local function getStuff(data, eventData, chart)
@@ -13,7 +13,7 @@ local function getStuff(data, eventData, chart)
 		{}, {}, {}
 
 	if eventData then
-		for i, e in ipairs(eventData) do
+		for i, e in ipairs(eventData.events) do
 			local eevent, eparams
 			if e.name == "Camera Movement" then
 				e.name = "FocusCamera"
@@ -62,14 +62,19 @@ local function getStuff(data, eventData, chart)
 end
 
 function codename.parse(data, events, meta)
-	local chart = Parser.getDummyChart()
+	local chart = Parser.getDummyChart(nil, true)
 
 	if meta then getFromMeta(meta, chart) end
 
 	Parser.pset(chart, "stage", data.stage)
 	Parser.pset(chart, "speed", data.scrollSpeed)
 
-	chart.notes, chart.events = getStuff(data, events or data.events, chart)
+	if data.bpm then
+		chart.timeChanges = {Parser.newTimeChange(0, bpm)}
+		-- no idea how is time changes on codename format !!
+	end
+
+	chart.notes, chart.events = getStuff(data, events, chart)
 
 	return chart
 end

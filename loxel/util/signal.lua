@@ -1,4 +1,4 @@
-local Signal = Classic:extend("Signal")
+local Signal = Basic:extend("Signal")
 
 function Signal:new()
 	self.listeners = {}
@@ -32,6 +32,7 @@ end
 function Signal:destroy()
 	table.clear(self.listeners)
 	table.clear(self.onceCalls)
+	Signal.super.destroy(self)
 end
 
 return Signal

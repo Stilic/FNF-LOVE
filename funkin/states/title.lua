@@ -29,32 +29,32 @@ function TitleState:enter()
 
 	self.gfDance = Sprite(game.width - 762, 40)
 	self.gfDance:setFrames(paths.getSparrowAtlas("menus/title/gfDanceTitle"))
-	self.gfDance:addAnimByIndices("danceLeft", "gfDance", {
+	self.gfDance.animation:addByIndices("danceLeft", "gfDance", {
 		30, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 	}, nil, 24, false)
-	self.gfDance:addAnimByIndices("danceRight", "gfDance", {
+	self.gfDance.animation:addByIndices("danceRight", "gfDance", {
 		15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29
 	}, nil, 24, false)
-	self.gfDance:play("danceRight")
+	self.gfDance.animation:play("danceRight")
 
 	self.logoBl = Sprite(-150, -100)
 	self.logoBl:setFrames(paths.getSparrowAtlas("menus/title/logoBumpin"))
-	self.logoBl:addAnimByPrefix("bump", "logo bumpin", 24, false)
-	self.logoBl:play("bump")
+	self.logoBl.animation:addByPrefix("bump", "logo bumpin", 24, false)
+	self.logoBl.animation:play("bump")
 	self.logoBl:updateHitbox()
 
 	self.titleText = Sprite(0, 590)
 	self.titleText:setFrames(paths.getSparrowAtlas("menus/title/titleEnter"))
-	self.titleText:addAnimByPrefix("idle", "Press Enter to Begin", 24)
-	self.titleText:addAnimByPrefix("press", "ENTER PRESSED", 24)
-	self.titleText:play("idle")
+	self.titleText.animation:addByPrefix("idle", "Press Enter to Begin", 24)
+	self.titleText.animation:addByPrefix("press", "ENTER PRESSED", 24)
+	self.titleText.animation:play("idle")
 	self.titleText:screenCenter("x")
 	self.titleText:updateHitbox()
 
 	self.titleText.color = Color.fromHEX(0x50FFFF)
-	local daColor = Color.fromHEX(0x5060DF)
-	Tween.tween(self.titleText.color, daColor,
-		2, {ease = "smoothStepInOut", type = "pingpong"})
+	-- local daColor = Color.fromHEX(0x5060DF)
+	-- Tween.tween(self.titleText.color, daColor,
+		-- 2, {ease = "smoothStepInOut", type = "pingpong"})
 	Tween.tween(self.titleText, {alpha = 0.5},
 		2, {ease = "smoothStepInOut", type = "pingpong"})
 
@@ -105,6 +105,9 @@ function TitleState:update(dt)
 		return
 	end
 
+	-- local music = game.sound.music
+	-- print(music.get_time, music.time)
+
 	self.conductor:update()
 
 	if love.system.getDevice() == "Mobile" and game.keys.justPressed.ESCAPE then
@@ -124,7 +127,7 @@ function TitleState:update(dt)
 		if flash then game.camera:flash(Color.WHITE, 0.5) end
 
 		Tween.cancelTweensOf(self.titleText)
-		self.titleText:play("press")
+		self.titleText.animation:play("press")
 		self.titleText.color = Color.WHITE
 		self.titleText.alpha = 1
 
@@ -171,13 +174,13 @@ function TitleState:setText(text)
 end
 
 function TitleState:beat(b)
-	self.logoBl:play("bump", true)
+	self.logoBl.animation:play("bump", true)
 
 	self.danceLeft = not self.danceLeft
 	if self.danceLeft then
-		self.gfDance:play("danceLeft")
+		self.gfDance.animation:play("danceLeft")
 	else
-		self.gfDance:play("danceRight")
+		self.gfDance.animation:play("danceRight")
 	end
 
 	if not self.skippedIntro then

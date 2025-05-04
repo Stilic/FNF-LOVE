@@ -26,6 +26,8 @@ end
 function Basic:destroy()
 	self.exists = false
 	self.cameras = nil
+
+	self.__mode = "kv"
 end
 
 function Basic:_getBoundary()
@@ -65,6 +67,14 @@ function Basic:cancelDraw()
 		end
 		self.__cameraQueue[i] = nil
 	end
+end
+
+function Basic.indexSetter(self, k, v)
+	
+end
+
+function Basic.indexGetter(self, k)
+	
 end
 
 --function Basic:enter(group) end

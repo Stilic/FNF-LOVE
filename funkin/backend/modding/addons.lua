@@ -1,4 +1,3 @@
--- mods the sequel
 local ModdingUtil = require "funkin.backend.modding.util"
 local lfs = love.filesystem
 

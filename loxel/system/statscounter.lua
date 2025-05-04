@@ -19,7 +19,7 @@ function StatsCounter:___render(x, y, r, g, b, a, font, bigfont, bigheight, widt
 	love.graphics.printf(bigcontent, x, y, width, align, rad, sx, sy, ox, oy)
 
 	love.graphics.setFont(font)
-	love.graphics.setColor(r, g, b, a * 0.75)
+	love.graphics.setColor(self:getDrawColor())
 	love.graphics.printf(content, x, y + bigheight, width, align, rad, sx, sy, ox, oy)
 end
 
@@ -51,7 +51,8 @@ function StatsCounter:__render(camera)
 	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
 
 	self:___render(x + 2, y + 2, 0, 0, 0, self.alpha * 0.8, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
-	self:___render(x, y, color[1], color[2], color[3], self.alpha, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
+	local r, g, b, a = Color.get(self.color)
+	self:___render(x, y, r, g, b, a, font, bigfont, bigheight, width, align, rad, sx, sy, ox, oy)
 
 	love.graphics.setFont(_font)
 	love.graphics.setColor(r, g, b, a)

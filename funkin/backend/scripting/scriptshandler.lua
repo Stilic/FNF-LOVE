@@ -1,23 +1,25 @@
----@class ScriptsHandler:Classic
 local ScriptsHandler = Classic:extend("ScriptsHandler")
 
----Creates a new script handler
-function ScriptsHandler:new() self.scripts = {} end
+function ScriptsHandler:new(link)
+	self.scripts = {}
+	self.variables = {}
+end
 
----loads a script then adds it to the handler
----@param file string
-function ScriptsHandler:loadScript(file) self:add(Script(file)) end
+function ScriptsHandler:loadScript(file)
+	self:add(Script(file))
+end
 
----add script to list
----@param script Script
-function ScriptsHandler:add(script) table.insert(self.scripts, script) end
+function ScriptsHandler:add(script)
+	for k, v in pairs(self.variables) do
+		script:set(k, v)
+	end
+	table.insert(self.scripts, script)
+end
 
----remove script from list
----@param script Script
-function ScriptsHandler:remove(script) table.delete(self.scripts, script) end
+function ScriptsHandler:remove(script)
+	table.delete(self.scripts, script)
+end
 
----loads all scripts in a directory to the handler
----@param ... string
 function ScriptsHandler:loadDirectory(...)
 	for _, dir in ipairs({...}) do
 		for _, file in ipairs(paths.getItems(dir, "file", "lua")) do
@@ -26,14 +28,13 @@ function ScriptsHandler:loadDirectory(...)
 	end
 end
 
----calls a function across all scripts
----@param func string
----@param ... any
 function ScriptsHandler:call(func, ...)
 	local retValue = Script.Event_Continue
 	for _, script in ipairs(self.scripts) do
 		local retScript = script:call(func, ...)
-		if retScript == Script.Event_Cancel then retValue = Script.Event_Cancel end
+		if retScript == Script.Event_Cancel then
+			retValue = Script.Event_Cancel
+		end
 	end
 	return retValue
 end
@@ -46,11 +47,11 @@ function ScriptsHandler:event(func, event)
 	return event
 end
 
----sets a variable across all scripts
----@param variable string
----@param value any
 function ScriptsHandler:set(variable, value)
-	for _, script in ipairs(self.scripts) do script:set(variable, value) end
+	self.variables[variable] = value
+	for _, script in ipairs(self.scripts) do
+		script:set(variable, value)
+	end
 end
 
 function ScriptsHandler:close()
@@ -58,6 +59,7 @@ function ScriptsHandler:close()
 		script:close()
 	end
 	self.scripts = nil
+	self.variables = nil
 end
 
 return ScriptsHandler

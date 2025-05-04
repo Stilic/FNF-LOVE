@@ -105,9 +105,9 @@ function Glyph:set(glyph)
 			local framerate = font.framerate or 24
 			local looped = font.looped ~= nil and font.looped or true
 
-			self:addAnimByPrefix(self.glyph, self.glyph, framerate, looped)
+			self.animation:addByPrefix(self.glyph, self.glyph, framerate, looped)
 			if self.__animations and self.__animations[self.glyph] then
-				self:play(self.glyph)
+				self.animation:play(self.glyph)
 			end
 			self:updateHitbox()
 		end
@@ -136,9 +136,9 @@ function Glyph:__render(camera)
 	if not batch or not self.visible then return end
 
 	local r, g, b, a = batch:getColor()
-	batch:setColor(Color.vec4(self.color, self.alpha))
+	batch:setColor(self:getDrawColor())
 
-	local f = self:getCurrentFrame()
+	local f = self.animation:getCurrentFrame()
 	local x, y, rad, sx, sy, ox, oy = self.x, self.y, math.rad(self.angle),
 		self.scale.x * self.zoom.x, self.scale.y * self.zoom.y,
 		self.origin.x, self.origin.y
@@ -152,7 +152,7 @@ function Glyph:__render(camera)
 
 	ox, oy = ox + f.offset.x, oy + f.offset.y
 
-	if self.__lastFrame ~= math.floor(self.curFrame or 0) or self.__forceUpdate then
+	if self.__lastFrame ~= math.floor(self.animation.curAnim.frame or 0) or self.__forceUpdate then
 		-- use old slots if any
 		-- made this so the batch doesn't grows. indv sprites can't be removed from it at all
 		if not self.batchIdx then
@@ -166,7 +166,7 @@ function Glyph:__render(camera)
 			batch:set(self.batchIdx, f.quad, x, y, rad, sx, sy, ox, oy, s)
 		end
 
-		self.__lastFrame = math.floor(self.curFrame or 0)
+		self.__lastFrame = math.floor(self.animation.curAnim.frame or 0)
 		if self.__forceUpdate then self.__forceUpdate = false end
 	end
 

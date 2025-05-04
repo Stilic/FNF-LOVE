@@ -2,25 +2,32 @@ local DialogueBox = SpriteGroup:extend("DialogueBox")
 
 local function dispatchAnims(spr, data)
 	for _, anim in ipairs(data) do
-		local name, prefix, indices, _, fps, loop =
-			anim[1], anim[2], anim[3], anim[4], anim[5], anim[6]
+		local name, prefix, indices, offset, fps, loop =
+			unpack(anim)
 
 		if #indices > 0 then
 			spr:addAnimByIndices(name, prefix, indices, nil, fps, loop)
 		else
 			spr:addAnimByPrefix(name, prefix, fps, loop)
 		end
+		if offsets then
+			local anim = spr.animation:get(name)
+			if anim then anim.offset:set(unpack(offset)) end
+		end
 	end
 end
 
-local function handleAnimations(...)
-	for _, spr in pairs({...}) do
-		if spr.__animations then
-			if spr.curAnim.name == "enter"
-				and spr.__animations["loop"] and spr.animFinished then
-				spr:play("loop")
-			end
-		end
+function DialogueBox:onFinishAnim(name)
+	if self.animation:has(name .. "-loop") then
+		self.animation:play(name .. "-loop")
+	end
+end
+
+function DialogueBox:onCharFinishAnim(name)
+	if self.finished and self.animation:has(name .. "-loop") then
+		self.animation:play(name .. "-loop")
+	elseif not self.finished then
+		self.animation:play(name, true)
 	end
 end
 
@@ -72,13 +79,15 @@ function DialogueBox:loadBox(anim)
 	local data = self.jsonData[anim] or self.jsonData.default
 
 	self.boxSpr = self.boxSpr or Sprite()
+	self.boxSpr.animation:reset()
 	if data.animations then
 		self.boxSpr:setFrames(paths.getAtlas("dialogue/boxes/" .. data.sprite))
 		dispatchAnims(self.boxSpr, data.animations)
-		self.boxSpr:play("enter")
+		self.boxSpr.animation:play("enter")
+		self.boxSpr.animation.onFinish = bind(self.boxSpr, self.onFinishAnim)
 	else
 		self.boxSpr:loadTexture(paths.getImage("dialogue/boxes/" .. data.sprite))
-		self.boxSpr.__animations, self.boxSpr.__frames = nil, nil
+		self.boxSpr.frames = nil
 	end
 
 	if data.scale and data.scale ~= 1 then
@@ -94,14 +103,16 @@ function DialogueBox:loadBox(anim)
 	if data.finishedDialogueSprite then
 		local ndata = data.finishedDialogueSprite
 		local spr = self.finishSpr or Sprite()
+		spr.animation:reset()
 		spr:setPosition(ndata.position[1], ndata.position[2])
 		if ndata.animations then
 			spr:setFrames(paths.getAtlas("dialogue/boxes/" .. ndata.sprite))
 			dispatchAnims(spr, ndata.animations)
 			spr:play("enter")
+			spr.animation.onFinish = bind(spr, self.onFinishAnim)
 		else
 			spr:loadTexture(paths.getImage("dialogue/boxes/" .. ndata.sprite))
-			spr.__animations, spr.__frames = nil, nil
+			spr.frames = nil
 		end
 		if ndata.scale and ndata.scale ~= 1 then
 			spr:setGraphicSize(spr.width * ndata.scale)
@@ -163,7 +174,7 @@ function DialogueBox:startDialogue()
 	self.characters.visible = true
 	if not self.box.visible then
 		self.box.visible = true
-		if self.boxSpr.__animations then self.boxSpr:play("enter") end
+		if self.boxSpr.animations then self.boxSpr:play("enter") end
 	end
 
 	if self.finishSpr then self.finishSpr.visible = false end
@@ -211,13 +222,15 @@ function DialogueBox:resetCharacters(chars)
 
 		spr.x, spr.y = char.position[1], char.position[2]
 		spr:setGraphicSize(spr.width)
+		spr.animation:reset()
 		if char.animations then
 			spr:setFrames(paths.getAtlas("dialogue/characters/" .. char.sprite))
 			dispatchAnims(spr, char.animations)
 			spr:play("enter")
+			spr.animation.finished = bind(spr, self.onCharFinishAnim)
 		else
 			spr:loadTexture(paths.getImage("dialogue/characters/" .. char.sprite))
-			spr.__animations, spr.__frames = nil, nil
+			spr.frames = nil
 		end
 		if char.scale and char.scale ~= 1 then
 			spr:setGraphicSize(spr.width * char.scale)
@@ -229,20 +242,6 @@ end
 
 function DialogueBox:update(dt)
 	self.script:call("update", dt)
-
-	handleAnimations(self.boxSpr, self.finishSpr)
-	for _, member in pairs(self.characters.members) do
-		if member.__animations and member.animFinished then
-			if member.curAnim.name == "enter" then
-				if member.__animations["loop"] and not self.finished then
-					member:play("loop", false)
-				end
-			elseif member.curAnim.name == "loop" and self.finished
-				and member.__animations["static"] then
-				member:play("static", false)
-			end
-		end
-	end
 
 	if controls:pressed("accept") and self.started then
 		if self.finished and self.curDialogue == #self.dialogues then

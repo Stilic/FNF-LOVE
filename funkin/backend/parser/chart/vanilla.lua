@@ -14,10 +14,14 @@ local function getFromMeta(data, tbl)
 end
 
 local function getStuff(data, eventData, bpm, psych)
-	local dad, bf, events, bpmChanges =
-		{}, {}, {}, Conductor.newBPMChanges(bpm)
+	local dad, bf, events, timeChanges, sectionChanges =
+		{}, {}, {}, {}, {}
 
 	local time, steps, total, add, focus, lastFocus = 0, 0, 0
+	table.insert(timeChanges, Parser.newTimeChange(0, bpm))
+	timeChanges[1].stepCrotchet, timeChanges[1].id =
+		((60 / bpm) * 1000) / 4, 0
+	local lastSectionBeats = 0
 
 	if eventData then
 		for _, e in ipairs(eventData) do
@@ -36,8 +40,8 @@ local function getStuff(data, eventData, bpm, psych)
 		end
 	end
 
-	for _, s in ipairs(data) do
-		if s and s.sectionNotes then
+	for i, s in ipairs(data) do
+		if s.sectionNotes then
 			for _, n in ipairs(s.sectionNotes) do
 				local kind = n[4]
 				local column, gf = n[2], kind == "gf" or kind == "GF Sing"
@@ -68,25 +72,32 @@ local function getStuff(data, eventData, bpm, psych)
 				})
 				lastFocus = focus
 			end
-
 			if s.changeBPM and s.bpm ~= nil and s.bpm ~= bpm then
 				bpm, total = s.bpm, total + 1
-				table.insert(bpmChanges, {
-					step = steps,
-					time = time,
-					bpm = bpm,
-					stepCrotchet = Conductor.calculateCrotchet(bpm) / 4,
-					id = total
-				})
+
+				local timeChange = Parser.newTimeChange(time or 0, bpm)
+				timeChange.step = steps
+				timeChange.stepCrotchet = ((60 / bpm) * 1000) / 4
+				timeChange.id = total
+
+				if #sectionChanges > 0 then
+					timeChange.n, timeChange.d =
+						sectionChanges[#sectionChanges].n, sectionChanges[#sectionChanges].d
+				end
+
+				table.insert(timeChanges, timeChange)
 			end
 
 			add = s.sectionBeats and s.sectionBeats * 4 or 16
 			steps = steps + add
-			time = time + bpmChanges[total].stepCrotchet * add
+			local stepCrotchet = timeChanges[#timeChanges].stepCrotchet
+			time = time + stepCrotchet * add
 		end
 	end
 
-	return {enemy = dad, player = bf}, events, bpmChanges
+	if #timeChanges > 1 then Parser.sortByTime(timeChanges) end
+
+	return {enemy = dad, player = bf}, events, timeChanges
 end
 
 function vanilla.parse(data, events, meta)
@@ -143,7 +154,7 @@ function vanilla.parse(data, events, meta)
 	end
 
 	if data.notes then
-		chart.notes, chart.events, chart.bpmChanges =
+		chart.notes, chart.events, chart.timeChanges =
 			getStuff(data.notes, events or data.events, chart.bpm,
 				data.format and data.format:startsWith("psych"))
 	end

@@ -4,6 +4,8 @@
 	also probably change it to ffi datas
 ]]
 
+local Animation = loxreq "animation"
+
 local ActorSprite = Actor:extend("ActorSprite")
 ActorSprite:implement(Sprite)
 
@@ -49,13 +51,11 @@ function ActorSprite:new(x, y, z, texture)
 
 	self.clipRect = nil
 
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
-	self.animPaused = false
+	self.frames = nil
+	self.animation = Animation(self)
 
 	self.__frames = nil
-	self.__animations = nil
+	self.__animations = {}
 
 	self.__width, self.__height = self.width, self.height
 	self.__rectangleMode = false
@@ -70,11 +70,6 @@ function ActorSprite:destroy()
 
 	self.__frames = nil
 	self.__animations = nil
-
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
-	self.animPaused = false
 end
 
 function ActorSprite:makeUniqueMesh()
@@ -102,11 +97,6 @@ function ActorSprite:destroy()
 
 	self.__frames = nil
 	self.__animations = nil
-
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
-	self.animPaused = false
 end
 
 function ActorSprite:update(dt)
@@ -115,17 +105,7 @@ function ActorSprite:update(dt)
 		self.__width, self.__height = self.width, self.height
 	end
 
-	if self.curAnim and not self.animFinished and not self.animPaused then
-		self.curFrame = self.curFrame + dt * self.curAnim.framerate
-		if self.curFrame >= #self.curAnim.frames + 1 then
-			if self.curAnim.looped then
-				self.curFrame = 1
-			else
-				self.curFrame = #self.curAnim.frames
-				self.animFinished = true
-			end
-		end
-	end
+	self.animation:update(dt)
 
 	if self.moves then
 		self.velocity.x = self.velocity.x + self.acceleration.x * dt
@@ -191,7 +171,7 @@ function ActorSprite:__render(camera)
 
 	if mesh:getTexture() ~= self.texture then mesh:setTexture(self.texture) end
 	love.graphics.setShader(self.shader or defaultShader); love.graphics.setBlendMode(self.blend)
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
+	love.graphics.setColor(self:getDrawColor())
 	love.graphics.draw(mesh)
 
 	love.graphics.setColor(r, g, b, a)

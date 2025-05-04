@@ -158,9 +158,9 @@ function Point:rotate(angle)
 end
 
 function Point:set(x, y, z)
-	self.x = x or self.x
-	self.y = y or self.y
-	self.z = z or self.z
+	self.x = x or 0
+	self.y = y or 0
+	self.z = z or 0
 	return self
 end
 

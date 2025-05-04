@@ -200,14 +200,14 @@ function Receptor:update(dt)
 	ActorSprite.update(self, dt)
 
 	for _, splash in ipairs(self.splashes.members) do
-		if splash.exists and splash.animFinished then
+		if splash.exists and splash.animation.finished then
 			splash:kill()
 		end
 	end
 	local hasInput, anim, note = self.parent.bot or controls:down(PlayState.keysControls[self.direction])
 	for _, cover in ipairs(self.covers.members) do
 		if cover.exists then
-			anim, note = cover.curAnim.name, cover.parent
+			anim, note = cover.animation.curAnim.name, cover.parent
 			if note.tooLate then
 				cover:kill()
 			else
@@ -227,10 +227,11 @@ function Receptor:update(dt)
 						cover.x, cover.y, cover.visible = cover.x - cover.width / 6.3, cover.y - cover.height / 8, true
 					end
 				end
-				if cover.animFinished then
+				if cover.animation.finished then
 					if anim == "start" then
 						cover:play("loop")
 						cover:updateHitbox()
+						cover.x, cover.y, cover.z = self._x - cover.width / 2, self._y - cover.height / 2 - 4, self._z
 					elseif anim == "end" then
 						cover:kill()
 					end
@@ -242,8 +243,8 @@ end
 
 function Receptor:play(anim, force, frame, dontShader, isSplashOrCover)
 	local toPlay = anim .. "-note" .. self.direction
-	toPlay = self.__animations[toPlay] and toPlay or anim
-	Sprite.play(self, toPlay, force, frame)
+	toPlay = self.animation:has(toPlay) and toPlay or anim
+	self.animation:play(toPlay, force, frame)
 
 	if not isSplashOrCover then
 		if anim == "confirm" and self.glow then
@@ -279,7 +280,7 @@ function Receptor:__render(camera)
 	end
 
 	local glow = self.glow
-	if glow and glow.visible and self.curAnim and self.curAnim.name:sub(1, 7) == "confirm" then
+	if glow and glow.visible and self.animation.curAnim and self.animation.curAnim.name:sub(1, 7) == "confirm" then
 		glow.x, glow.y, glow.z, glow.scale, glow.zoom, glow.rotation, glow.vertices, glow.__vertices, glow.fov, glow.mesh =
 			self.x, self.y, self.z, self.scale, self.zoom, self.rotation, self.vertices, self.__vertices, self.fov, self.mesh
 

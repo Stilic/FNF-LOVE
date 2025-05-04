@@ -42,14 +42,12 @@ function Object:setupDrawLogic(camera, initDraw)
 
 	x, y = x + ox - self.offset.x - (camera.scroll.x * self.scrollFactor.x),
 		y + oy - self.offset.y - (camera.scroll.y * self.scrollFactor.y)
-
-	if initDraw then
-		love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
-		love.graphics.setColor(Color.vec4(self.color, self.alpha))
-	end
-
 	if camera.pixelPerfect then
 		x, y, ox, oy = floor(x), floor(y), floor(ox), floor(oy)
+	end
+	if initDraw then
+		love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
+		love.graphics.setColor(self:getDrawColor())
 	end
 
 	return x, y, rad, sx, sy, ox, oy, self.skew.x, self.skew.y
@@ -84,8 +82,6 @@ function Object:new(x, y)
 end
 
 function Object:destroy()
-	Object.super.destroy(self)
-
 	self.offset:zero()
 	self.origin:zero()
 	self.scale.x, self.scale.y = 1, 1
@@ -96,6 +92,7 @@ function Object:destroy()
 	self.acceleration:zero()
 
 	self.shader = nil
+	Object.super.destroy(self)
 end
 
 function Object:setPosition(x, y)
@@ -103,7 +100,9 @@ function Object:setPosition(x, y)
 end
 
 function Object:setScrollFactor(x, y)
-	self.scrollFactor.x, self.scrollFactor.y = x or 0, y or x or 0
+	Toast.deprecated("[" .. tostring(self):upper() ..
+		"] setScrollFactor method is deprecated! Use scrollFactor:set")
+	self.scrollFactor:set(x or 0, y or 0)
 end
 
 function Object:getMidpoint()
@@ -155,12 +154,6 @@ function Object:centerOrigin(__width, __height)
 	self.origin.y = (__height or self.height) / 2
 end
 
-function Object:getMultColor(r, g, b, a)
-	local c = self.color
-	return c[1] * math.min(r, 1), c[2] * math.min(g, 1), c[3] * math.min(b, 1),
-		self.alpha * (math.min(a or 1, 1))
-end
-
 function Object:update(dt)
 	if self.moves then
 		self.velocity.x = self.velocity.x + self.acceleration.x * dt
@@ -201,12 +194,16 @@ end
 function Object:_getBoundary()
 	local x, y = self.x or 0, self.y or 0
 	if self.offset ~= nil then x, y = x - self.offset.x, y - self.offset.y end
-	if self.getCurrentFrame then
-		local f = self:getCurrentFrame()
+	if self.animation and self.animation.getCurrentFrame then
+		local f = self.animation:getCurrentFrame()
 		if f then
 			x = x - f.offset.x * (self.flipX and -1 or 1)
 			y = y - f.offset.y * (self.flipY and -1 or 1)
 		end
+	end
+	if self.animation and self.animation.curAnim then
+		local ax, ay = self.animation.curAnim:rotateOffset(self.angle or 0)
+		x, y = x - ax, y - ay
 	end
 
 	local w, h
@@ -222,6 +219,27 @@ function Object:_getBoundary()
 
 	return x, y, w, h, abs(self.scale.x * self.zoom.x), abs(self.scale.y * self.zoom.y),
 		self.origin.x, self.origin.y
+end
+
+function Object:getMultColor(r, g, b, a)
+	local r2, g2, b2, a2 = Color.get(self.color)
+	return r2 * math.min(r, 1), g2 * math.min(g, 1), b2 * math.min(b, 1),
+		self.alpha * (math.min(a or 1, 1))
+end
+
+function Object:getDrawColor(input)
+	local r, g, b, a = 1, 1, 1, self.alpha
+	local color = input or self.color
+	if type(color) == "table" then
+		r, g, b, a = color[1], color[2], color[3], (color[4] or 1) * self.alpha
+	-- elseif type(color) == "number" then
+		-- r, g, b, a =
+			-- bit.band(bit.rshift(color, 16), 0xFF) / 255,
+			-- bit.band(bit.rshift(color, 8), 0xFF) / 255,
+			-- bit.band(color, 0xFF) / 255,
+			-- self.alpha
+	end
+	return r, g, b, a
 end
 
 return Object

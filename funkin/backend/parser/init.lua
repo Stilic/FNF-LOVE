@@ -1,15 +1,24 @@
 local chart = require "funkin.backend.parser.chart"
 local character = require "funkin.backend.parser.character"
+local stage = require "funkin.backend.parser.stage"
 
 local Parser = {}
 
-function Parser.sortByTime(a, b) return a.t < b.t end
+local weak = {__mode = "k"}
+local weakValue = {__mode = "kv"}
+
+function Parser.sortByTime(a, b)
+	if a and b then
+		return a.t < b.t
+	end
+	return false
+end
 
 function Parser.pset(tbl, key, v) if v ~= nil then tbl[key] = v end end
 
-function Parser.getChart(songName, diff)
-	songName = paths.formatToSongPath(songName)
-	local data, path = chart.get(songName, diff and diff:lower() or "normal")
+function Parser.getChart(name, diff)
+	name = paths.formatToSongPath(name)
+	local data, path = chart.get(name, diff and diff:lower() or "normal")
 
 	if data then
 		local parser = chart.getParser(data)
@@ -21,20 +30,20 @@ function Parser.getChart(songName, diff)
 		table.sort(parsed.notes.player, Parser.sortByTime)
 		table.sort(parsed.events, Parser.sortByTime)
 
-		if parsed.song == nil then parsed.song = songName end
+		if parsed.song == nil then parsed.song = name end
 
 		print("[CHART PARSER] Parsed \"" .. (parsed.song or "unknown") ..
 			"\" as " .. (parser.name or "unknown"))
 		return parsed
 	else
-		print("[CHART PARSER] Chart not found.")
-		return Parser.getDummyChart(songName, true)
+		Toast.error("[CHART PARSER] Chart not found.")
+		return Parser.getDummyChart(name, true)
 	end
 end
 
-function Parser.getDummyChart(songName, dummyData)
+function Parser.getDummyChart(name, dummyData)
 	return {
-		song = songName and paths.formatToSongPath(songName) or nil,
+		song = name and paths.formatToSongPath(name) or nil,
 		bpm = 100,
 		speed = 1,
 
@@ -52,11 +61,21 @@ function Parser.getDummyChart(songName, dummyData)
 	}
 end
 
-function Parser.getMeta(songName)
+function Parser.newTimeChange(time, bpm, beats, n, d)
+	return {
+		t = time,
+		b = beats,
+		bpm = bpm,
+		n = n or 4,
+		d = d or 4
+	}
+end
+
+function Parser.getMeta(name)
 	local format = paths.formatToSongPath
 	local meta = {
-		song = format(songName),
-		displayName = songName,
+		song = format(name),
+		displayName = name,
 		charter = "unknown",
 		composer = "unknown",
 
@@ -65,8 +84,9 @@ function Parser.getMeta(songName)
 		difficulties = {"Easy", "Normal", "Hard"}
 	}
 
-	local data = paths.getJSON("songs/" .. format(songName) .. "/meta")
+	local data = paths.getJSON("songs/" .. format(name) .. "/meta")
 	if not data then return meta end
+	setmetatable(data, weakValue)
 
 	local function get(key, def)
 		local playData, info = data.playData or {}
@@ -97,7 +117,14 @@ function Parser.getMeta(songName)
 	local rawColor = get("color", nil)
 	if rawColor then
 		switch(type(rawColor), {
-			["string"] = function() meta.color = Color.fromString(rawColor) end,
+			["string"] = function()
+				if not rawColor:startsWith("#") then
+					rawColor = "0x" .. rawColor
+				else
+					rawColor = rawColor:gsub("#", "0x")
+				end
+				meta.color = Color.fromHEX(tonumber(rawColor))
+			end,
 			["number"] = function() meta.color = Color.fromHEX(rawColor) end,
 			["table"]  = function() meta.color = Color.convert(rawColor) end
 		})
@@ -106,11 +133,11 @@ function Parser.getMeta(songName)
 	return meta
 end
 
-function Parser.getCharacter(charName)
-	local data = character.get(charName)
+function Parser.getCharacter(name)
+	local data = character.get(name)
 	if not data then data = character.get("bf") end
 
-	return character.getParser(data).parse(data, charName)
+	return character.getParser(data).parse(data, name)
 end
 
 function Parser.getDummyChar()
@@ -127,6 +154,22 @@ function Parser.getDummyChar()
 		sprite = nil,
 		antialiasing = true,
 		scale = 1
+	}
+end
+
+function Parser.getStage(name)
+	local data = stage.get(name)
+	if not data then return false end
+
+	return stage.getParser(data).parse(data)
+end
+
+function Parser.getDummyStage()
+	return {
+		name = "Stage",
+		cameraZoom = 1.0,
+		props = {},
+		characters = {}
 	}
 end
 

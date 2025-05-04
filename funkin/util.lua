@@ -1,34 +1,5 @@
 local util = {}
 
-function util.getSongSkin(song)
-	if song.skin then
-		return paths.getSkin(song.skin).skin
-	end
-	return "default"
-end
-
--- also handles caching of the asset located in said path
-function util.getSkinPath(skin, key, type)
-	local data = paths.getSkin(skin)
-	local path, obj = "skins/" .. data.skin .. "/" .. key
-	switch(type, {
-		["image"] = function()
-			obj = paths.getImage(path)
-		end,
-		["atlas"] = function()
-			obj = paths.getAtlas(path)
-		end,
-		["music"] = function()
-			obj = paths.getMusic(path)
-		end,
-		["sound"] = function()
-			obj = paths.getSound(path)
-		end
-	})
-	if obj then return path end
-	return "skins/" .. (skin:endsWith("-pixel") and "default-pixel" or "default") .. "/" .. key
-end
-
 function util.coolLerp(x, y, i, delta)
 	return math.lerp(y, x, math.exp(-(delta or game.dt) * i))
 end
@@ -39,7 +10,8 @@ function util.newGradient(dir, ...)
 
 	for i = 0, colorSize do
 		local idx, color, x = i * 2 + 1, select(i + 1, ...), i / colorSize
-		local r, g, b, a = color[1], color[2], color[3], color[4] or 1
+		local r, g, b, a = unpack(color)
+		a = a or 1
 
 		meshData[idx] = {x, x, x, x, r, g, b, a}
 		meshData[idx + 1] = {x, x, x, x, r, g, b, a}
@@ -69,9 +41,9 @@ end
 
 function util.playMenuMusic(fade)
 	local menu = paths.getMusic("freakyMenu")
-	if not game.sound.music or not game.sound.music:isPlaying() or game.sound.music.__source ~= menu then
+	if not game.sound.music or not game.sound.music:isPlaying() or game.sound.music._source ~= menu then
 		if game.sound.music then game.sound.music:reset(true) end
-		game.sound.playMusic(menu, fade and 0 or ClientPrefs.data.menuMusicVolume / 100)
+		game.sound.playMusic(menu, fade and 0 or ClientPrefs.data.menuMusicVolume / 100, true)
 		if fade then game.sound.music:fade(4, 0, ClientPrefs.data.menuMusicVolume / 100) end
 	end
 end
@@ -86,9 +58,44 @@ function util.responsiveBG(bg)
 	bg:setGraphicSize(math.floor(bg.width * scale))
 	bg:updateHitbox()
 	bg:screenCenter()
-	bg:setScrollFactor()
+	bg.scrollFactor:set()
 
 	return bg
+end
+
+function util.createButtons(scheme, width)
+	local buttons = VirtualPadGroup()
+
+	local w = width or 126
+	local y = game.height - w
+
+	local l, r, u, d, a, b =
+		scheme:find("l"), scheme:find("r"),
+		scheme:find("u"), scheme:find("d"),
+		scheme:find("a"), scheme:find("b")
+
+	local lx = 0
+	local mx = l and lx + w or 0
+	local rx = l and ((u or d) and mx + w or w) or 0
+
+	-- {char, name, x, y, color}
+	local conf = {
+		{"l", "left", lx, y},
+		{"r", "right", rx, y},
+		{"u", "up", mx, d and y - w or y},
+		{"d", "down", mx, y},
+		{"a", "return", game.width - w, y, Color.LIME},
+		{"b", "escape", a and (game.width - w * 2) or (game.width - w), y, Color.RED}
+	}
+
+	for _, config in ipairs(conf) do
+		local key, name, x, y, color = unpack(config)
+		if scheme:find(key) then
+			buttons:add(VirtualPad(name, x, y, w, w, color))
+		end
+	end
+
+	return buttons
 end
 
 return util

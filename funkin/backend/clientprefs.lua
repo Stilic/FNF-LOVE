@@ -32,13 +32,17 @@ ClientPrefs.data = {
 	shader = true,
 	fullscreen = false,
 	resolution = 1,
-	toastPrints = false,
 
 	-- stats
 	showFps = false,
 	showRender = false,
 	showMemory = false,
 	showDraws = false,
+
+	-- toast messages
+	showToastErrors = true,
+	showToastDeprecations = true,
+	showToastPrints = false,
 }
 
 ClientPrefs.controls = {

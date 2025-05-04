@@ -15,7 +15,12 @@ function Save.init(name)
 		local dataFile = love.filesystem.read(name .. '.lox')
 		if dataFile then
 			local decodeData = love.data.decode("string", "hex", dataFile)
-			Save.data = json.decode(decodeData)
+			local s, c = pcall(json.decode, decodeData)
+			if not s then
+				Timer.wait(0.1, function() Toast.error("Save file is corrupt!") end)
+				return
+			end
+			Save.data = c
 		end
 	else
 		Save.path = love.filesystem.getAppdataDirectory() .. '/' .. Project.company .. '/' .. Project.file
@@ -23,7 +28,12 @@ function Save.init(name)
 		local dataFile = io.open(filePath, "rb")
 		if dataFile then
 			local decodeData = love.data.decode("string", "hex", dataFile:read("a"))
-			Save.data = json.decode(decodeData)
+			local s, c = pcall(json.decode, decodeData)
+			if not s then
+				Timer.wait(0.1, function() Toast.error("Save file is corrupt!") end)
+				return
+			end
+			Save.data = c
 			dataFile:close()
 		end
 	end

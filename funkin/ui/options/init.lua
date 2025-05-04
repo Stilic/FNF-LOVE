@@ -25,7 +25,7 @@ function Options:new(showBG, completionCallback)
 	self.focus = 0
 
 	self.bg = BackDrop({96, {Color.fromHEX(0x0F0F15), Color.BLACK}})
-	self.bg:setScrollFactor()
+	self.bg.scrollFactor:set()
 	self.bg.moves = true
 	self.bg.velocity:set(24, 24)
 	self:add(self.bg)
@@ -58,30 +58,8 @@ function Options:new(showBG, completionCallback)
 	self:add(self.titleTxt)
 
 	if love.system.getDevice() == "Mobile" then
-		local camButtons = Camera()
-		game.cameras.add(camButtons, false)
-
-		self.buttons = VirtualPadGroup()
-		local w = 134
-
-		local left = VirtualPad("left", 0, game.height - w)
-		local up = VirtualPad("up", left.x + w, left.y - w)
-		local down = VirtualPad("down", up.x, left.y)
-		local right = VirtualPad("right", down.x + w, left.y)
-
-		local enter = VirtualPad("return", game.width - w, left.y)
-		enter.color = Color.LIME
-		local back = VirtualPad("escape", enter.x - w, left.y)
-		back.color = Color.RED
-
-		self.buttons:add(left)
-		self.buttons:add(up)
-		self.buttons:add(down)
-		self.buttons:add(right)
-
-		self.buttons:add(enter)
-		self.buttons:add(back)
-		self.buttons:set({cameras = {camButtons}})
+		self.buttons = util.createButtons("lrudab")
+		self.buttons.scrollFactor:set()
 
 		self:add(self.buttons)
 	end

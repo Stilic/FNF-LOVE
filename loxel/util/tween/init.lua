@@ -8,6 +8,7 @@ Tween.__index = Tween
 function Tween:tween(object, props, duration, options)
 	local tween = Instance()
 	tween.manager = self
+	tween.persist = options and (options.persist == true) or false
 	tween:tween(object, props, duration, options)
 
 	table.insert(self.instances, tween)
@@ -48,7 +49,7 @@ end
 function Tween:clear()
 	for i = #self.instances, 1, -1 do
 		local tween = self.instances[i]
-		if tween and tween.destroy then tween:destroy() end
+		if tween and tween.destroy and not tween.persist then tween:destroy() end
 	end
 end
 

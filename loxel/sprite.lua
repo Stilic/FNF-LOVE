@@ -1,21 +1,3 @@
-
-local parseXml = loxreq "lib.xml"
-
-local function sortFramesByIndices(prefix, postfix)
-	local s, e = #prefix + 1, - #postfix - 1
-
-	return function(a, b)
-		local numA = tonumber(string.sub(a.name, s, e))
-		local numB = tonumber(string.sub(b.name, s, e))
-
-		if numA == nil or numB == nil then
-			return a.name < b.name
-		end
-
-		return numA < numB
-	end
-end
-
 local stencilSprite, stencilX, stencilY = nil, 0, 0
 local function stencil()
 	if stencilSprite then
@@ -35,142 +17,26 @@ local function stencil()
 	end
 end
 
+local FrameCollection = loxreq "animation.frame.collection"
+local Animation = loxreq "animation"
+local Frame = loxreq "animation.frame"
+
 ---@class Sprite:Object
 local Sprite = Object:extend("Sprite")
-
-function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh, r)
-	local aw, ah = x + w, y + h
-	return {
-		name = name,
-		quad = love.graphics.newQuad(x, y, aw > sw and w - (aw - sw) or w,
-			ah > sh and h - (ah - sh) or h, sw, sh),
-		width = ow or w,
-		height = oh or h,
-		offset = {x = ox or 0, y = oy or 0},
-		rotated = r
-	}
-end
-
-function Sprite.getFramesFromSparrow(texture, description)
-	if type(texture) == "string" then
-		texture = love.graphics.newImage(texture)
-	end
-
-	local frames = {texture = texture, frames = {}}
-	local sw, sh = texture:getDimensions()
-	for _, c in ipairs(parseXml(description).TextureAtlas.children) do
-		if c.name == "SubTexture" then
-			table.insert(frames.frames,
-				Sprite.newFrame(c.attrs.name, tonumber(c.attrs.x),
-					tonumber(c.attrs.y),
-					tonumber(c.attrs.width),
-					tonumber(c.attrs.height), sw, sh,
-					tonumber(c.attrs.frameX),
-					tonumber(c.attrs.frameY),
-					tonumber(c.attrs.frameWidth),
-					tonumber(c.attrs.frameHeight),
-					c.attrs.rotated == "true"))
-		end
-	end
-
-	return frames
-end
-
-function Sprite.getFramesFromPacker(texture, description)
-	if type(texture) == "string" then
-		texture = love.graphics.newImage(texture)
-	end
-
-	local frames = {texture = texture, frames = {}}
-	local sw, sh = texture:getDimensions()
-
-	local pack = description:trim()
-	local lines = pack:split("\n")
-	for i = 1, #lines do
-		local currImageData = lines[i]:split("=")
-		local name = currImageData[1]:trim()
-		local currImageRegion = currImageData[2]:split(" ")
-
-		table.insert(frames.frames,
-			Sprite.newFrame(name, tonumber(currImageRegion[1]),
-				tonumber(currImageRegion[2]),
-				tonumber(currImageRegion[3]),
-				tonumber(currImageRegion[4]), sw, sh))
-	end
-
-	return frames
-end
-
-function Sprite.getTiles(texture, tileSize, region, tileSpacing)
-	if region == nil then
-		region = {
-			x = 0,
-			y = 0,
-			width = texture:getWidth(),
-			height = texture:getHeight()
-		}
-	else
-		if region.width == 0 then
-			region.width = texture:getWidth() - region.x
-		end
-		if region.height == 0 then
-			region.height = texture:getHeight() - region.y
-		end
-	end
-
-	tileSpacing = (tileSpacing ~= nil) and tileSpacing or {x = 0, y = 0}
-
-	local tileFrames = {}
-
-	region.x = math.floor(region.x)
-	region.y = math.floor(region.y)
-	region.width = math.floor(region.width)
-	region.height = math.floor(region.height)
-	tileSpacing = {x = math.floor(tileSpacing.x), y = math.floor(tileSpacing.y)}
-	tileSize = {x = math.floor(tileSize.x), y = math.floor(tileSize.y)}
-
-	local spacedWidth = tileSize.x + tileSpacing.x
-	local spacedHeight = tileSize.y + tileSpacing.y
-
-	local numRows = (tileSize.y == 0) and 1 or
-		math.floor(
-			(region.height + tileSpacing.y) / spacedHeight)
-	local numCols = (tileSize.x == 0) and 1 or
-		math.floor((region.width + tileSpacing.x) / spacedWidth)
-
-	local sw, sh = texture:getDimensions()
-	local totalFrame = 0
-	for j = 0, numRows - 1 do
-		for i = 0, numCols - 1 do
-			table.insert(tileFrames,
-				Sprite.newFrame(tostring(totalFrame),
-					region.x + i * spacedWidth,
-					region.y + j * spacedHeight,
-					tileSize.x, tileSize.y, sw, sh))
-			totalFrame = totalFrame + 1
-		end
-	end
-
-	return tileFrames
-end
 
 function Sprite:new(x, y, texture)
 	Sprite.super.new(self, x, y)
 
 	self.texture = Sprite.defaultTexture
-
 	self.clipRect = nil
+	self.frames = nil
+	self.animation = Animation(self)
 
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
-	self.animPaused = false
-
-	self.__frames = nil
-	self.__animations = nil
+	-- DEPRECATED!!
+	self.__frames = self.frames
+	self.__animations = self.animation.animations
 
 	self.__width, self.__height = self.width, self.height
-
 	if texture then self:loadTexture(texture) end
 end
 
@@ -178,27 +44,16 @@ function Sprite:destroy()
 	Sprite.super.destroy(self)
 
 	self.texture = nil
-
-	self.__frames = nil
-	self.__animations = nil
-
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
-	self.animPaused = false
+	self.frames = nil
+	if self.animation then self.animation:destroy() end
+	self.animation = nil
 end
 
 function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
-	if animated == nil then animated = false end
-
 	if type(texture) == "string" then
 		texture = love.graphics.newImage(texture)
 	end
 	self.texture = texture or Sprite.defaultTexture
-
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
 
 	if frameWidth == nil then frameWidth = 0 end
 	if frameWidth == 0 then
@@ -228,8 +83,8 @@ function Sprite:loadTexture(texture, animated, frameWidth, frameHeight)
 	self.__width, self.__height = self.width, self.height
 
 	if animated then
-		self.__frames = Sprite.getTiles(texture,
-			{x = frameWidth, y = frameHeight})
+		self.frames = FrameCollection.fromTiles(texture, {x = frameWidth, y = frameHeight})
+		self.__frames = self.frames.frames
 	end
 
 	return self
@@ -237,175 +92,29 @@ end
 
 function Sprite:loadTextureFromSprite(sprite)
 	self.texture = sprite.texture
-
 	self.antialiasing = sprite.antialiasing
-
-	self.curAnim = nil
-	self.curFrame = nil
-	self.animFinished = nil
 
 	self.width, self.height = sprite.width, sprite.height
 	self.__width, self.__height = self.width, self.height
 
-	if sprite.__frames ~= nil then
-		self.__frames = table.clone(sprite.__frames)
+	if sprite.frames then
+		self.frames = sprite.frames
 	end
 
 	return self
 end
 
-function Sprite:addAnim(name, frames, framerate, looped)
-	if not frames or #frames == 0 then return end
-
-	if framerate == nil then framerate = 30 end
-	if looped == nil then looped = true end
-
-	local anim = {
-		name = name,
-		framerate = framerate,
-		looped = looped,
-		frames = {}
-	}
-	for _, i in ipairs(frames) do
-		table.insert(anim.frames, self.__frames[i + 1])
-	end
-
-	if not self.__animations then self.__animations = {} end
-	self.__animations[name] = anim
-end
-
-function Sprite:addAnimByPrefix(name, prefix, framerate, looped)
-	if framerate == nil then framerate = 30 end
-	if looped == nil then looped = true end
-
-	local anim, foundFrame = {
-		name = name,
-		framerate = framerate,
-		looped = looped,
-		frames = {}
-	}, false
-	for _, f in ipairs(self.__frames) do
-		if f.name:startsWith(prefix) then
-			foundFrame = true
-			table.insert(anim.frames, f)
-		end
-	end
-	if not foundFrame then return end
-
-	table.sort(anim.frames, sortFramesByIndices(prefix, ""))
-
-	if not self.__animations then self.__animations = {} end
-	self.__animations[name] = anim
-end
-
-function Sprite:addAnimByIndices(name, prefix, indices, postfix, framerate,
-								 looped)
-	if postfix == nil then postfix = "" end
-	if framerate == nil then framerate = 30 end
-	if looped == nil then looped = true end
-
-	local anim = {
-		name = name,
-		framerate = framerate,
-		looped = looped,
-		frames = {}
-	}
-
-	local allFrames, foundFrame = {}, false
-	local notPostfix = #postfix <= 0
-	for _, f in ipairs(self.__frames) do
-		if f.name:startsWith(prefix) and
-			(notPostfix or f.name:endsWith(postfix)) then
-			foundFrame = true
-			table.insert(allFrames, f)
-		end
-	end
-	if not foundFrame then return end
-
-	table.sort(allFrames, sortFramesByIndices(prefix, postfix))
-
-	for _, i in ipairs(indices) do
-		local f = allFrames[i + 1]
-		if f then table.insert(anim.frames, f) end
-	end
-
-	if not self.__animations then self.__animations = {} end
-	self.__animations[name] = anim
-end
-
-function Sprite:play(anim, force, frame)
-	local curAnim = self.curAnim
-
-	if curAnim and not force and curAnim.name == anim and
-		not self.animFinished then
-		self.animFinished = false
-		self.animPaused = false
-		return
-	end
-
-	curAnim = self.__animations[anim]
-	if curAnim then
-		self.curAnim = curAnim
-		self.curFrame = frame or 1
-		self.animFinished = false
-		self.animPaused = false
-	end
-end
-
-function Sprite:pause()
-	if self.curAnim and not self.animFinished then self.animPaused = true end
-end
-
-function Sprite:resume()
-	if self.curAnim and not self.animFinished then self.animPaused = false end
-end
-
-function Sprite:stop()
-	if self.curAnim then
-		self.animFinished = true
-		self.animPaused = true
-	end
-end
-
-function Sprite:finish()
-	if self.curAnim then
-		self:stop()
-		self.curFrame = #self.curAnim.frames
-	end
-end
-
-function Sprite:setFrames(frames)
-	self.__frames = frames.frames
-	self.texture = frames.texture
-
-	self:loadTexture(frames.texture)
-	self.width, self.height = self:getFrameDimensions()
-	self.__width, self.__height = self.width, self.height
-	self:centerOrigin()
-end
-
-function Sprite:getCurrentFrame()
-	if self.curAnim then
-		return self.curAnim.frames[math.floor(self.curFrame)]
-	elseif self.__frames then
-		return self.__frames[1]
-	end
-	return nil
-end
-
 function Sprite:getFrameWidth()
-	local f = self:getCurrentFrame()
+	local f = self.animation and self.animation:getCurrentFrame()
 	return f and f.width or self.texture and self.texture:getWidth()
 end
 
 function Sprite:getFrameHeight()
-	local f = self:getCurrentFrame()
+	local f = self.animation and self.animation:getCurrentFrame()
 	return f and f.height or self.texture and self.texture:getHeight()
 end
 
-function Sprite:getFrameDimensions()
-	return self:getFrameWidth(), self:getFrameHeight()
-end
+function Sprite:getFrameDimensions() return self:getFrameWidth(), self:getFrameHeight() end
 
 function Sprite:getGraphicMidpoint()
 	return self.x + self:getFrameWidth() / 2,
@@ -457,26 +166,8 @@ function Sprite:update(dt)
 		self:setGraphicSize(self.width, self.height)
 		self.__width, self.__height = self.width, self.height
 	end
-
-	if self.curAnim and not self.animFinished and not self.animPaused then
-		self.curFrame = self.curFrame + dt * self.curAnim.framerate
-		if self.curFrame >= #self.curAnim.frames + 1 then
-			if self.curAnim.looped then
-				self.curFrame = 1
-			else
-				self.curFrame = #self.curAnim.frames
-				self.animFinished = true
-			end
-		end
-	end
-
-	if self.moves then
-		self.velocity.x = self.velocity.x + self.acceleration.x * dt
-		self.velocity.y = self.velocity.y + self.acceleration.y * dt
-
-		self.x = self.x + self.velocity.x * dt
-		self.y = self.y + self.velocity.y * dt
-	end
+	self.animation:update(dt)
+	Sprite.super.update(self, dt)
 end
 
 function Sprite:_canDraw()
@@ -485,31 +176,18 @@ function Sprite:_canDraw()
 end
 
 function Sprite:__render(camera)
-	local min, mag, anisotropy, mode
-
-	mode = self.antialiasing and "linear" or "nearest"
-	min, mag, anisotropy = self.texture:getFilter()
-	self.texture:setFilter(mode, mode, anisotropy)
-
 	love.graphics.push("all")
-	local f = self:getCurrentFrame()
+	local f, texture = self:getCurrentFrame(), self.texture
+	if f and f.texture then texture = f.texture end
 
 	local x, y, rad, sx, sy, ox, oy, kx, ky = self:setupDrawLogic(camera)
-
 	if f then
-		if f.rotated then
-			f.offset.x, f.offset.y = f.offset.y, -f.offset.x
-			rad = rad - math.pi / 2
-		end
 		ox, oy = ox + f.offset.x, oy + f.offset.y
 	end
-
-	if camera.pixelPerfect then
-		ox, oy = math.floor(ox), math.floor(oy)
+	if self.animation.curAnim then
+		local ax, ay = self.animation.curAnim:rotateOffset(self.angle, sx, sy)
+		x, y = x - ax, y - ay
 	end
-
-	love.graphics.setShader(self.shader); love.graphics.setBlendMode(self.blend)
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.alpha)
 
 	if self.clipRect then
 		stencilSprite, stencilX, stencilY = self, x, y
@@ -517,19 +195,106 @@ function Sprite:__render(camera)
 		love.graphics.setStencilTest("greater", 0)
 	end
 
-	if f then
-		love.graphics.draw(self.texture, f.quad, x, y, rad, sx, sy, ox, oy, kx, ky)
-	else
-		love.graphics.draw(self.texture, x, y, rad, sx, sy, ox, oy, kx, ky)
-	end
-	love.graphics.pop()
-	if f then
-		if f.rotated then
-			f.offset.x, f.offset.y = -f.offset.y, f.offset.x
-		end
-	end
+	local min, mag, anisotropy = texture:getFilter()
+	local mode = self.antialiasing and "linear" or "nearest"
+	texture:setFilter(mode, mode, anisotropy)
 
-	self.texture:setFilter(min, mag, anisotropy)
+	if f then
+		love.graphics.draw(texture, f.quad, x, y, rad, sx, sy, ox, oy, kx, ky)
+	else
+		love.graphics.draw(texture, x, y, rad, sx, sy, ox, oy, kx, ky)
+	end
+	texture:setFilter(min, mag, anisotropy)
+
+	love.graphics.pop()
 end
+
+function Sprite:_markDeprecated(func, new)
+	local str = "[%s] %s is deprecated, use %s."
+	Toast.deprecated(str:format(tostring(self):upper(), func, new))
+end
+
+function Sprite.newFrame(name, x, y, w, h, sw, sh, ox, oy, ow, oh, r)
+	Sprite._markDeprecated("Sprite", "Sprite.newFrame", "Frame")
+	return Frame(name, x, y, w, h, sw, sh, ox, oy, ow, oh, r)
+end
+
+function Sprite.getFramesFromSparrow(texture, description)
+	Sprite._markDeprecated("Sprite", "Sprite.getFramesFromSparrow", "FrameCollection.fromSparrow")
+	return FrameCollection.fromSparrow(texture, description)
+end
+
+function Sprite.getFramesFromPacker(texture, description)
+	Sprite._markDeprecated("Sprite", "Sprite.getFramesFromPacker", "FrameCollection.fromPacker")
+	return FrameCollection.fromPacker(texture, description)
+end
+
+function Sprite.getTiles(texture, tileSize, region, tileSpacing)
+	Sprite._markDeprecated("Sprite", "Sprite.getTiles", "FrameCollection.fromTiles")
+	return FrameCollection.fromTiles(texture, tileSize, region, tileSpacing)
+end
+
+function Sprite:addAnim(name, frameIndices, framerate, looped)
+	self:_markDeprecated("addAnim", "animation:add")
+	self.animation:add(name, frameIndices, framerate, looped)
+end
+
+function Sprite:addAnimByPrefix(name, prefix, framerate, looped)
+	self:_markDeprecated("addAnimByPrefix", "animation:addByPrefix")
+	self.animation:addByPrefix(name, prefix, framerate, looped)
+end
+
+function Sprite:addAnimByIndices(name, prefix, indices, postfix, framerate, looped)
+	self:_markDeprecated("addAnimByIndices", "animation:addByIndices")
+	self.animation:addByIndices(name, prefix, indices, postfix, framerate, looped)
+end
+
+function Sprite:play(...)
+	self:_markDeprecated("play", "animation:play"); self.animation:play(...)
+end
+
+function Sprite:pause()
+	self:_markDeprecated("pause", "animation:pause"); self.animation:pause()
+end
+
+-- function Sprite:resume() -- this is getting called by Group lmao
+	-- self:_markDeprecated("resume", "animation:resume"); self.animation:resume()
+-- end
+
+function Sprite:stop()
+	self:_markDeprecated("stop", "animation:stop"); self.animation:stop()
+end
+
+function Sprite:finish()
+	self:_markDeprecated("finish", "animation:finish"); self.animation:finish()
+end
+
+function Sprite:setFrames(collection)
+	-- self:_markDeprecated("setFrames")
+	self.frames = collection
+	self.texture = collection.texture
+
+	self.__frames = self.frames.frames
+
+	self.width, self.height = self:getFrameDimensions()
+	self.__width, self.__height = self.width, self.height
+	self:centerOrigin()
+end
+
+function Sprite:getCurrentFrame()
+	-- self:_markDeprecated("getCurrentFrame", "animation:getCurrentFrame")
+	return self.animation:getCurrentFrame()
+end
+
+-- function Sprite:__index(key)
+	-- if key == "__frames" then
+		-- self:_markDeprecated(".__frames", ".frames")
+		-- return self.frames and self.frames.frames or nil
+	-- elseif key == "__animations" then
+		-- self:_markDeprecated(".__animation", ".animation")
+		-- return self.animation.animations
+	-- end
+	-- return rawget(self, key) or getmetatable(self)[key]
+-- end
 
 return Sprite

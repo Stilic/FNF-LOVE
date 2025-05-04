@@ -7,7 +7,7 @@ function UIState:enter()
 	local bg = Sprite()
 	bg:loadTexture(paths.getImage('menus/menuDesat'))
 	bg.color = {0.15, 0.15, 0.15}
-	bg:setScrollFactor()
+	bg.scrollFactor:set()
 	self:add(bg)
 
 	self.uiList = {}

@@ -44,6 +44,8 @@ function Notefield:new(x, y, keys, skin, character, vocals, speed)
 	self.__offsetX = self.__offsetX / (1 + 1 / keys)
 	self:add(self.__topSprites)
 
+	self.groupScale = Point(1, 1)
+
 	self:getWidth()
 end
 
@@ -317,6 +319,8 @@ function Notefield:__render(camera)
 	for i, lane in ipairs(self.lanes) do
 		self:__prepareLane(i - 1, lane, time)
 	end
+	love.graphics.push()
+	love.graphics.scale(self.groupScale.x, self.groupScale.y)
 
 	for _, mod in pairs(self.modifiers) do if mod.apply then mod:apply(self) end end
 	if self.downscroll then self.scale.y = -self.scale.y end
@@ -332,6 +336,7 @@ function Notefield:__render(camera)
 			note.speed, note.rotation.x, note.rotation.y, note.rotation.z = note._speed, note._rx, note._ry, note._rz
 		end
 	end
+	love.graphics.pop()
 end
 
 return Notefield

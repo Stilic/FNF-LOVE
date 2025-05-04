@@ -128,7 +128,7 @@ function Text:__render(camera)
 
 	if outline then
 		color = outline.color
-		love.graphics.setColor(color[1], color[2], color[3], (color[4] or 1) * self.alpha)
+		love.graphics.setColor(self:getDrawColor(color))
 
 		if outline.style == "simple" then
 			love.graphics.printf(content,
@@ -152,12 +152,11 @@ function Text:__render(camera)
 	self.font:setFilter(mode, mode, anisotropy)
 
 	color = self.bgColor
-	local bgAlpha = #color > 3 and color[4] * self.alpha or self.alpha
-	love.graphics.setColor(color[1], color[2], color[3], bgAlpha)
+	love.graphics.setColor(self:getDrawColor(color))
 	love.graphics.rectangle("fill", x, y, self:getWidth(), self:getHeight())
 
 	color = self.color
-	love.graphics.setColor(color[1], color[2], color[3], self.alpha)
+	love.graphics.setColor(self:getDrawColor())
 	love.graphics.printf(content, x, y, width, align, rad, sx, sy, ox, oy, kx, ky)
 
 	self.font:setFilter(min, mag, anisotropy)

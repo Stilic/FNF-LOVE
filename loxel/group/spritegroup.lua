@@ -1,6 +1,5 @@
 ---@class SpriteGroup:Sprite
 local SpriteGroup = Sprite:extend("SpriteGroup")
-local Boundary = loxreq "util.boundary"
 
 function SpriteGroup:new(x, y)
 	SpriteGroup.super.new(self, x, y)
@@ -190,9 +189,6 @@ function SpriteGroup:__render(camera)
 		else
 			member:__render(camera)
 		end
-		Boundary.render(camera, member, i, #list, function(c)
-			return {0, c, 1}
-		end)
 
 		list[i] = nil
 	end
@@ -274,6 +270,10 @@ end
 
 function SpriteGroup:destroy()
 	self.group:destroy(); Sprite.super.destroy(self)
+end
+
+function SpriteGroup:__len()
+	return #self.members
 end
 
 return SpriteGroup

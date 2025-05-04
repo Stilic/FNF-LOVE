@@ -4,6 +4,8 @@ local vanilla = require(f .. "vanilla")
 local codename = require(f .. "codename")
 local vslice = require(f .. "vslice")
 
+local mt = {__mode = "v"}
+
 local ChartParse = {}
 
 function ChartParse.get(song, diff)
@@ -21,7 +23,7 @@ function ChartParse.get(song, diff)
 		getFolder("chart")
 	}) do
 		if paths.exists(p[1], "file") then
-			return paths.getJSON(p[2]), path
+			return setmetatable(paths.getJSON(p[2]), mt), path
 		end
 	end
 end
