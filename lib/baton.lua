@@ -300,7 +300,8 @@ function Player:_updatePairs()
 
 		-- down/pressed/released
 		pair.downPrevious = pair.down
-		pair.down = pair.x ~= 0 or pair.y ~= 0
+		pair.down = not pair.downPrevious
+		print(pair.down, pair.downPrevious)
 		pair.pressed = pair.down and not pair.downPrevious
 		pair.released = pair.downPrevious and not pair.down
 	end
@@ -321,6 +322,7 @@ function Player:_pressControls(names, source, type, ...)
 		control.released = false
 		control.debounce = true
 	end
+	print(source, ..., 'from baton')
 end
 
 function Player:_releaseControls(names, source, type, ...)
@@ -359,6 +361,7 @@ end
 
 -- keyboard presses handler
 function Player:onKeyPress(source, ...)
+	print(source, ..., 'from baton')
 	local names = self._sourceControls.keyboardMouse[source]
 	if not names then return end
 	self:_pressControls(names, source, 'key', ...)

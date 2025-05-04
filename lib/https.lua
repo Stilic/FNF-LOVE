@@ -1,3 +1,5 @@
+require "love.system"
+
 local OS, https = love.system.getOS(), "https"
 
 if OS == "Windows" then

@@ -279,7 +279,7 @@ function funkin.throwError(msg)
 	if love.handlers then love.handlers = nil end
 
 	collectgarbage()
-	collec	-- async.shutdown()
+	-- async.shutdown()
 
 	local interactTxt = ""
 	if love.system then

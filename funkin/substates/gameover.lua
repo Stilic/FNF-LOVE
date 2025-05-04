@@ -59,20 +59,11 @@ function GameOverSubstate:new(x, y)
 end
 
 function GameOverSubstate:resetState()
-	local state = getmetatable(game.getState())()
-	state.skipTransIn = false
-	self.parent.skipTransOut = false
-	self.parent.skipTransIn = false
+	self.lock = true
 
-	self.load = LoadScreen(state)
-	self.load.cameras = {self.parent.camOther}
+	self.load = LoadScreen(getmetatable(game.getState())())
 	self:add(self.load)
-	paths.threadLoad.start(function()
-		Timer.wait(0.044, function()
-			game.switchState(state)
-		end)
-	end)
-end
+end	
 
 function GameOverSubstate:enter()
 	self.scripts = self.parent.scripts or ScriptsHandler()
@@ -88,6 +79,14 @@ end
 
 function GameOverSubstate:update(dt)
 	self.scripts:call("gameOverUpdate", dt)
+	if self.load then
+		if paths.async.getProgress() == 1 then
+			local state = self.load.nextState
+			state.skipTransIn = true
+			self.parent.skipTransOut = true
+			game.switchState(state)
+		end
+	end
 	GameOverSubstate.super.update(self, dt)
 
 	if not self.isEnding then

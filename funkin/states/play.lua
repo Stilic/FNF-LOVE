@@ -1497,7 +1497,7 @@ function PlayState:updateDiscordRPC(paused)
 		})
 	else
 		local startTimestamp = os.time(os.date("*t"))
-		local endTimestamp = (startTimestamp + game.sound.music:getDuration()) - PlayState.conductor.time / 1000
+		local endTimestamp = (startTimestamp + game.sound.music.duration) - PlayState.conductor.time / 1000
 		Discord.changePresence({
 			details = detailsText,
 			state = PlayState.SONG.song .. ' - [' .. diff .. ']',
