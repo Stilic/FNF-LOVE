@@ -716,6 +716,8 @@ function PlayState:beat(b)
 	self.scripts:set("curBeat", b)
 	self.scripts:call("beat", b)
 
+	self.stage:beat(b)
+
 	local character
 	for _, notefield in ipairs(self.notefields) do
 		character = notefield.character

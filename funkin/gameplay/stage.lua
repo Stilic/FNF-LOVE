@@ -42,6 +42,9 @@ function Stage:new(name)
 end
 
 function Stage:create()
+    local debug = false
+    if debug then print("Stage:create() - Start") end
+
     local path = "stages/" .. self.name .. '/'
 
     local function hexToRGB(hex)
@@ -55,29 +58,36 @@ function Stage:create()
         return tonumber("0x" .. r) / 255, tonumber("0x" .. g) / 255, tonumber("0x" .. b) / 255
     end
 
+    if debug then print("Stage:create() - Processing props") end
     for _, prop in pairs(self.__props) do
         local instance
         local isAnimated = prop.animations and next(prop.animations)
+        if debug then print('Creating Prop: "' .. prop.name .. '"') end
 
         if isAnimated then
+            if debug then print('Prop "' .. prop.name .. '" is animated') end
             instance = Sprite(prop.position[1], prop.position[2]):loadTexture(paths.getImage(path .. prop.assetPath))
             instance:setFrames(paths.getSparrowAtlas(path .. prop.assetPath))
+            instance.danceEvery = prop.danceEvery or 1.0
+            instance.danced = false
             for _, anim in pairs(prop.animations) do
                 local name = anim.name
                 if anim.frameIndices then
-                    instance:addAnimByIndices(name, anim.prefix or '', anim.frameIndices, anim.frameRate or 24, anim.looped or false)
+                    instance:addAnimByIndices(name, anim.prefix or '', anim.frameIndices, nil, anim.frameRate or 24, anim.looped or false)
                 else
                     instance:addAnimByPrefix(name, anim.prefix or '', anim.frameRate or 24, anim.looped or false)
                 end
                 if anim.offsets then
-                    instance:addOffset(name, anim.offsets[1], anim.offsets[2])
+                    --instance:addOffset(name, anim.offsets[1], anim.offsets[2])
                 end
             end
             instance:play(prop.startingAnimation or "danceLeft", true)
         elseif prop.assetPath:sub(1, 1) == '#' then
+            if debug then print('Prop "' .. prop.name .. '" is a graphic') end
             instance = Graphic(prop.position[1], prop.position[2], prop.scale[1] or 1.0, prop.scale[2] or 1.0)
             instance.color = {hexToRGB(prop.assetPath)}
         else
+            if debug then print('Prop "' .. prop.name .. '" is a static sprite') end
             instance = Sprite(prop.position[1], prop.position[2]):loadTexture(paths.getImage(path .. prop.assetPath))
         end
 
@@ -88,9 +98,13 @@ function Stage:create()
 
         self.props:add(instance)
         self.script:set(prop.name, instance)
+        if debug then print('Prop "' .. prop.name .. '" added to props') end
     end
 
+    if debug then print("Stage:create() - Sorting props by zIndex") end
     self.props:sort(function(a, b) return (a.zIndex or 0) < (b.zIndex or 0) end)
+
+    if debug then print("Stage:create() - End") end
 end
 
 function Stage:add(obj, foreground)
@@ -99,6 +113,19 @@ function Stage:add(obj, foreground)
 	else
 		Stage.super.add(self, obj)
 	end
+end
+
+function Stage:beat(b)
+    for _, prop in pairs(self.props.members) do
+        if prop.danceEvery and b % prop.danceEvery == 0 then
+            if prop.danced then
+                prop:play(prop.startingAnimation or "danceLeft", true)
+            else
+                prop:play(prop.startingAnimation or "danceRight", true)
+            end
+            prop.danced = not prop.danced
+        end
+    end
 end
 
 return Stage
