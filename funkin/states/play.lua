@@ -843,7 +843,7 @@ function PlayState:update(dt)
 						end
 					end
 
-					if noSustainHit and hasInput and char then
+					if not isPlayer and noSustainHit and hasInput and char then
 						char.lastHit = PlayState.conductor.time
 					end
 				elseif isPlayer then
